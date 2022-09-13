@@ -15,7 +15,6 @@ lazy val microservice = Project("find-my-nino-add-to-wallet-frontend", file(".")
       ".*BuildInfo.*;.*javascript.*;.*Routes.*;.*GuiceInjector;" +
       ".*ControllerConfiguration;.*TestController;.*LanguageSwitchController;.*viewmodels.govuk.*;.*components.*;" +
       "models.Mode.*;models.Enumerable.*;pages.*",
-    ScoverageKeys.coverageExcludedPackages := "<empty>;target.*",
     ScoverageKeys.coverageMinimumStmtTotal := 0,
     ScoverageKeys.coverageFailOnMinimum := false,
     ScoverageKeys.coverageHighlighting := true,

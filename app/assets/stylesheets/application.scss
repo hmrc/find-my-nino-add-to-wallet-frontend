@@ -1,1 +1,8 @@
 @import "lib/govuk-frontend/govuk/base";
+
+.js-visible {
+  display: none !important;
+}
+.js-enabled .js-visible {
+  display: inline-block !important;
+}

@@ -16,8 +16,8 @@
 
 package pages
 
+import behaviours.PageBehaviours
 import models.EnterYourNino
-import pages.behaviours.PageBehaviours
 
 class EnterYourNinoPageSpec extends PageBehaviours {
 

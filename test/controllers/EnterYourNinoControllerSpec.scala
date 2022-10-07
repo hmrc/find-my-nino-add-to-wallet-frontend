@@ -18,7 +18,7 @@ package controllers
 
 import base.SpecBase
 import forms.EnterYourNinoFormProvider
-import models.{NormalMode, EnterYourNino, UserAnswers}
+import models.{EnterYourNino, NormalMode, UserAnswers}
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
@@ -36,7 +36,7 @@ import scala.concurrent.Future
 
 class EnterYourNinoControllerSpec extends SpecBase with MockitoSugar {
 
-  def onwardRoute = Call("GET", "/foo")
+  def onwardRoute = Call("GET", "/find-my-nino-add-to-wallet-frontend/store-my-nino")
 
   val formProvider = new EnterYourNinoFormProvider()
   val form = formProvider()

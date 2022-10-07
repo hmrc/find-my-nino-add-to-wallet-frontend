@@ -20,6 +20,7 @@ import base.SpecBase
 import controllers.routes
 import pages._
 import models._
+import play.api.mvc.Call
 
 class NavigatorSpec extends SpecBase {
 
@@ -31,7 +32,10 @@ class NavigatorSpec extends SpecBase {
 
       "must go from a page that doesn't exist in the route map to Index" in {
 
-        case object UnknownPage extends Page
+        case object UnknownPage extends Page {
+          override def route(): Call = ???
+          override def nextPageNormalMode(answers: UserAnswers): Page = ???
+        }
         navigator.nextPage(UnknownPage, NormalMode, UserAnswers("id")) mustBe routes.IndexController.onPageLoad
       }
     }
@@ -40,7 +44,10 @@ class NavigatorSpec extends SpecBase {
 
       "must go from a page that doesn't exist in the edit route map to CheckYourAnswers" in {
 
-        case object UnknownPage extends Page
+        case object UnknownPage extends Page {
+          override def route(): Call = ???
+          override def nextPageNormalMode(answers: UserAnswers): Page = ???
+        }
         navigator.nextPage(UnknownPage, CheckMode, UserAnswers("id")) mustBe routes.CheckYourAnswersController.onPageLoad
       }
     }

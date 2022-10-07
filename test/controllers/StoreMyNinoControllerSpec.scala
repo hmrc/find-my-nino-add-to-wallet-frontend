@@ -17,13 +17,17 @@
 package controllers
 
 import base.SpecBase
-import models.StoreMyNino
+import forms.EnterYourNinoFormProvider
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import views.html.StoreMyNinoView
 
 class StoreMyNinoControllerSpec extends SpecBase {
 
-  "SaveToWallet Controller" - {
+  val formProvider = new EnterYourNinoFormProvider()
+  val form = formProvider()
+
+  "StoreMyNino Controller" - {
 
     "must return OK and the correct view for a GET" in {
 
@@ -34,10 +38,10 @@ class StoreMyNinoControllerSpec extends SpecBase {
 
         val result = route(application, request).value
 
-        val view = application.injector.instanceOf[StoreMyNino]
+        val view = application.injector.instanceOf[StoreMyNinoView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view()(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form)(request, messages(application)).toString
       }
     }
   }

@@ -14,13 +14,22 @@
  * limitations under the License.
  */
 
-package generators
+package pages
 
-import org.scalacheck.Arbitrary
-import pages._
+import controllers.routes
+import models.{EnterYourNino, NormalMode, UserAnswers}
+import play.api.libs.json.JsPath
+import play.api.mvc.Call
 
-trait PageGenerators {
+case object EnterYourNinoPage extends QuestionPage[EnterYourNino] {
 
-  implicit lazy val arbitraryEnterYourNinoPage: Arbitrary[EnterYourNinoPage.type] =
-    Arbitrary(EnterYourNinoPage)
+  override def path: JsPath = JsPath \ toString
+
+  override def toString: String = "enter-your-nino"
+
+  override def nextPageNormalMode(answers: UserAnswers): Page =
+    EnterYourNinoPage
+
+  override def route(): Call =
+    routes.EnterYourNinoController.onPageLoad(NormalMode)
 }

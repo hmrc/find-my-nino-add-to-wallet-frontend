@@ -19,3 +19,10 @@ GET         /account/sign-out                            controllers.auth.AuthCo
 GET         /account/signed-out                          controllers.auth.SignedOutController.onPageLoad
 
 GET         /unauthorised                                controllers.UnauthorisedController.onPageLoad
+
+GET         /enter-your-nino                             controllers.EnterYourNinoController.onPageLoad(mode: Mode = NormalMode)
+POST        /enter-your-nino                             controllers.EnterYourNinoController.onSubmit(mode: Mode = NormalMode)
+GET         /change-enter-your-nino                      controllers.EnterYourNinoController.onPageLoad(mode: Mode = CheckMode)
+POST        /change-enter-your-nino                      controllers.EnterYourNinoController.onSubmit(mode: Mode = CheckMode)
+
+GET         /store-my-nino                               controllers.StoreMyNinoController.onPageLoad()

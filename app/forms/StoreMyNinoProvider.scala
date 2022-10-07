@@ -14,13 +14,20 @@
  * limitations under the License.
  */
 
-package generators
+package forms
 
-import org.scalacheck.Arbitrary
-import pages._
+import javax.inject.Inject
+import forms.mappings.Mappings
+import play.api.data.{Form}
+import play.api.data.Forms._
+import models.StoreMyNino
 
-trait PageGenerators {
+class StoreMyNinoProvider @Inject() extends Mappings {
 
-  implicit lazy val arbitraryEnterYourNinoPage: Arbitrary[EnterYourNinoPage.type] =
-    Arbitrary(EnterYourNinoPage)
+  def apply(): Form[StoreMyNino] = Form(
+    mapping(
+      "passId" -> text(),
+      "nino" -> text()
+    )(StoreMyNino.apply)(StoreMyNino.unapply)
+  )
 }

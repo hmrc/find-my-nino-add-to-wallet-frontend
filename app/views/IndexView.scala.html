@@ -15,7 +15,8 @@
  *@
 
 @this(
-    layout: templates.Layout
+    layout: templates.Layout,
+        govukButton: GovukButton
 )
 
 @()(implicit request: Request[_], messages: Messages)
@@ -28,4 +29,9 @@
     <h1 class="govuk-heading-xl">@messages("index.heading")</h1>
 
     <p class="govuk-body">@messages("index.guidance")</p>
+
+    @govukButton(
+        ButtonViewModel(messages("site.goToEnterDetails"))
+                .asLink("/find-my-nino-add-to-wallet-frontend/enter-your-nino")
+    )
 }

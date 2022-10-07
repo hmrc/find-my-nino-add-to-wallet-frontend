@@ -21,4 +21,12 @@ import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
 
 trait ModelGenerators {
+
+  implicit lazy val arbitraryEnterYourNino: Arbitrary[EnterYourNino] =
+    Arbitrary {
+      for {
+        fullName <- arbitrary[String]
+        nino <- arbitrary[String]
+      } yield EnterYourNino(fullName, nino)
+    }
 }

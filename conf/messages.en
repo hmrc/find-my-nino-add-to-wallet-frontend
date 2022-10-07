@@ -10,13 +10,14 @@ site.start = Start now
 site.startAgain = Start again
 site.signIn = Sign in
 site.govuk = GOV.UK
+site.goToEnterDetails = Enter your Nino Details
 
 date.day = Day
 date.month = Month
 date.year = Year
 
 timeout.title = You’re about to be signed out
-timeout.message = For security reasons, you will be signed out of this service in
+timeout.message = For security reasons, you will be signed out of this service in Enter your Nino Details button
 timeout.keepAlive = Stay signed in
 timeout.signOut = Sign out
 
@@ -36,8 +37,8 @@ error.required = Please enter a value
 error.summary.title = There is a problem
 
 index.title = find-my-nino-add-to-wallet-frontend
-index.heading = find-my-nino-add-to-wallet-frontend
-index.guidance = Welcome to your new frontend. Please see the README file for a guide to getting started.
+index.heading = Find my Nino Service
+index.guidance = To create a Nino Card for your Apple Wallet please enter your details with using 'Enter your Nino Details' button
 
 checkYourAnswers.title = Check Your Answers
 checkYourAnswers.heading = Check Your Answers
@@ -55,3 +56,24 @@ signedOut.guidance = We did not save your answers.
 
 unauthorised.title = You can’t access this service with this account
 unauthorised.heading = You can’t access this service with this account
+
+enterYourNino.title = Enter Your Details
+enterYourNino.heading = Enter Your Details
+enterYourNino.fullName = Full Name
+enterYourNino.nino = Nino
+enterYourNino.checkYourAnswersLabel = Enter Your Nino
+enterYourNino.error.fullName.required = Enter Your FullName
+enterYourNino.error.nino.required = Enter nino
+enterYourNino.error.fullName.length = Full Name must be 100 characters or less
+enterYourNino.error.nino.length = Nino must be 20 characters or less
+enterYourNino.fullName.change.hidden = fullName
+enterYourNino.nino.change.hidden = nino
+
+storeMyNino.title = Save To Wallet
+storeMyNino.heading = Your National Insurance number
+storeMyNino.saveToPhoneWallet.saveSafePlace.title = Before you leave, record this number and keep it in a safe place.
+storeMyNino.saveToPhoneWallet.saveSafePlace.label = Your National Insurance number is unique to you and will never change. To prevent identity fraud, do not share it with anyone who does not need it.
+storeMyNino.yourInsuranceNumberText = Your National Insurance number is:
+storeMyNino.saveToPhoneWallet.title = Save your National Insurance number to your phone's wallet
+storeMyNino.saveToPhoneWallet.label = Make sure you can find your National Insurance number anytime by saving it in the Apple Wallet or in Google Pay. For Android, you may need to check that Google Pay is already installed on your phone.
+storeMyNino.saveToPhoneWallet.apple = Apple iPhones

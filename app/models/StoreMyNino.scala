@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package generators
+package models
 
-import org.scalacheck.Arbitrary
-import pages._
+import play.api.libs.json.Json
 
-trait PageGenerators {
+case class StoreMyNino(passId: String, nino: String)
 
-  implicit lazy val arbitraryEnterYourNinoPage: Arbitrary[EnterYourNinoPage.type] =
-    Arbitrary(EnterYourNinoPage)
+object StoreMyNino {
+  implicit val format = Json.format[StoreMyNino]
 }
+
+

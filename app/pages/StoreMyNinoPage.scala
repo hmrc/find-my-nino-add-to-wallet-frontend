@@ -14,13 +14,23 @@
  * limitations under the License.
  */
 
-package generators
+package pages
 
-import org.scalacheck.Arbitrary
-import pages._
+import controllers.routes
+import models.{StoreMyNino, UserAnswers}
+import play.api.libs.json.JsPath
+import play.api.mvc.Call
+import queries.{Gettable, Settable}
 
-trait PageGenerators {
+case object StoreMyNinoPage extends Page with Gettable[StoreMyNino] with Settable[StoreMyNino] {
 
-  implicit lazy val arbitraryEnterYourNinoPage: Arbitrary[EnterYourNinoPage.type] =
-    Arbitrary(EnterYourNinoPage)
+  def path: JsPath = JsPath \ toString
+
+  override def toString: String = "save-to-wallet"
+
+  override def nextPageNormalMode(answers: UserAnswers): Page =
+    StoreMyNinoPage
+
+  override def route(): Call =
+    routes.StoreMyNinoController.onPageLoad
 }

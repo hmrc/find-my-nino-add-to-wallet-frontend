@@ -20,9 +20,14 @@ import base.SpecBase
 import com.google.inject.Inject
 import config.FrontendAppConfig
 import controllers.routes
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
+import org.scalatestplus.mockito.MockitoSugar
+import play.api.inject
 import play.api.mvc.{BodyParsers, Results}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import repositories.SessionRepository
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.auth.core.retrieve.Retrieval
@@ -31,7 +36,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 
-class AuthActionSpec extends SpecBase {
+class AuthActionSpec extends SpecBase with MockitoSugar{
 
   class Harness(authAction: IdentifierAction) {
     def onPageLoad() = authAction { _ => Results.Ok }
@@ -43,7 +48,15 @@ class AuthActionSpec extends SpecBase {
 
       "must redirect the user to log in " in {
 
-        val application = applicationBuilder(userAnswers = None).build()
+        val mockSessionRepository = mock[SessionRepository]
+        when(mockSessionRepository.get(any())) thenReturn Future.successful(None)
+
+        val application =
+          applicationBuilder(userAnswers = None)
+            .overrides(
+              inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            )
+            .build()
 
         running(application) {
           val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
@@ -63,7 +76,15 @@ class AuthActionSpec extends SpecBase {
 
       "must redirect the user to log in " in {
 
-        val application = applicationBuilder(userAnswers = None).build()
+        val mockSessionRepository = mock[SessionRepository]
+        when(mockSessionRepository.get(any())) thenReturn Future.successful(None)
+
+        val application =
+          applicationBuilder(userAnswers = None)
+            .overrides(
+              inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            )
+            .build()
 
         running(application) {
           val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
@@ -83,7 +104,15 @@ class AuthActionSpec extends SpecBase {
 
       "must redirect the user to the unauthorised page" in {
 
-        val application = applicationBuilder(userAnswers = None).build()
+        val mockSessionRepository = mock[SessionRepository]
+        when(mockSessionRepository.get(any())) thenReturn Future.successful(None)
+
+        val application =
+          applicationBuilder(userAnswers = None)
+            .overrides(
+              inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            )
+            .build()
 
         running(application) {
           val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
@@ -103,7 +132,15 @@ class AuthActionSpec extends SpecBase {
 
       "must redirect the user to the unauthorised page" in {
 
-        val application = applicationBuilder(userAnswers = None).build()
+        val mockSessionRepository = mock[SessionRepository]
+        when(mockSessionRepository.get(any())) thenReturn Future.successful(None)
+
+        val application =
+          applicationBuilder(userAnswers = None)
+            .overrides(
+              inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            )
+            .build()
 
         running(application) {
           val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
@@ -123,7 +160,15 @@ class AuthActionSpec extends SpecBase {
 
       "must redirect the user to the unauthorised page" in {
 
-        val application = applicationBuilder(userAnswers = None).build()
+        val mockSessionRepository = mock[SessionRepository]
+        when(mockSessionRepository.get(any())) thenReturn Future.successful(None)
+
+        val application =
+          applicationBuilder(userAnswers = None)
+            .overrides(
+              inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            )
+            .build()
 
         running(application) {
           val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
@@ -143,7 +188,15 @@ class AuthActionSpec extends SpecBase {
 
       "must redirect the user to the unauthorised page" in {
 
-        val application = applicationBuilder(userAnswers = None).build()
+        val mockSessionRepository = mock[SessionRepository]
+        when(mockSessionRepository.get(any())) thenReturn Future.successful(None)
+
+        val application =
+          applicationBuilder(userAnswers = None)
+            .overrides(
+              inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            )
+            .build()
 
         running(application) {
           val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
@@ -163,7 +216,15 @@ class AuthActionSpec extends SpecBase {
 
       "must redirect the user to the unauthorised page" in {
 
-        val application = applicationBuilder(userAnswers = None).build()
+        val mockSessionRepository = mock[SessionRepository]
+        when(mockSessionRepository.get(any())) thenReturn Future.successful(None)
+
+        val application =
+          applicationBuilder(userAnswers = None)
+            .overrides(
+              inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            )
+            .build()
 
         running(application) {
           val bodyParsers = application.injector.instanceOf[BodyParsers.Default]

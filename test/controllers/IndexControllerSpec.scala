@@ -17,17 +17,33 @@
 package controllers
 
 import base.SpecBase
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
+import org.scalatestplus.mockito.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar.mock
+import play.api.inject
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import repositories.SessionRepository
 import views.html.IndexView
 
-class IndexControllerSpec extends SpecBase {
+import scala.concurrent.Future
+
+class IndexControllerSpec extends SpecBase with MockitoSugar {
 
   "Index Controller" - {
 
     "must return OK and the correct view for a GET" in {
 
-      val application = applicationBuilder(userAnswers = None).build()
+      val mockSessionRepository = mock[SessionRepository]
+      when(mockSessionRepository.get(any())) thenReturn Future.successful(None)
+
+      val application =
+        applicationBuilder(userAnswers = None)
+          .overrides(
+            inject.bind[SessionRepository].toInstance(mockSessionRepository),
+          )
+          .build()
 
       running(application) {
         val request = FakeRequest(GET, routes.IndexController.onPageLoad.url)

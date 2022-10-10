@@ -18,11 +18,18 @@ package controllers
 
 import base.SpecBase
 import forms.EnterYourNinoFormProvider
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
+import org.scalatestplus.mockito.MockitoSugar
+import play.api.inject
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import repositories.SessionRepository
 import views.html.StoreMyNinoView
 
-class StoreMyNinoControllerSpec extends SpecBase {
+import scala.concurrent.Future
+
+class StoreMyNinoControllerSpec extends SpecBase with MockitoSugar{
 
   val formProvider = new EnterYourNinoFormProvider()
   val form = formProvider()
@@ -31,7 +38,15 @@ class StoreMyNinoControllerSpec extends SpecBase {
 
     "must return OK and the correct view for a GET" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val mockSessionRepository = mock[SessionRepository]
+      when(mockSessionRepository.get(any())) thenReturn Future.successful(Some(emptyUserAnswers))
+
+      val application =
+        applicationBuilder(userAnswers = Some(emptyUserAnswers))
+          .overrides(
+            inject.bind[SessionRepository].toInstance(mockSessionRepository),
+          )
+          .build()
 
       running(application) {
         val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad().url)

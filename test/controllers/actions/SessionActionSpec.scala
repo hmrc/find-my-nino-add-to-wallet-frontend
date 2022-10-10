@@ -17,14 +17,20 @@
 package controllers.actions
 
 import base.SpecBase
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
+import org.scalatestplus.mockito.MockitoSugar
+import play.api.inject
 import play.api.mvc.{Action, AnyContent, BodyParsers, Results}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import repositories.SessionRepository
 import uk.gov.hmrc.http.SessionKeys
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
-class SessionActionSpec extends SpecBase {
+class SessionActionSpec extends SpecBase with MockitoSugar{
 
   class Harness(action: IdentifierAction) {
     def onPageLoad(): Action[AnyContent] = action { _ => Results.Ok }
@@ -36,7 +42,15 @@ class SessionActionSpec extends SpecBase {
 
       "must redirect to the session expired page" in {
 
-        val application = applicationBuilder(userAnswers = None).build()
+        val mockSessionRepository = mock[SessionRepository]
+        when(mockSessionRepository.get(any())) thenReturn Future.successful(None)
+
+        val application =
+          applicationBuilder(userAnswers = None)
+            .overrides(
+              inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            )
+            .build()
 
         running(application){
           val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
@@ -57,7 +71,15 @@ class SessionActionSpec extends SpecBase {
 
       "must perform the action" in {
 
-        val application = applicationBuilder(userAnswers = None).build()
+        val mockSessionRepository = mock[SessionRepository]
+        when(mockSessionRepository.get(any())) thenReturn Future.successful(None)
+
+        val application =
+          applicationBuilder(userAnswers = None)
+            .overrides(
+              inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            )
+            .build()
 
         running(application) {
           val bodyParsers = application.injector.instanceOf[BodyParsers.Default]

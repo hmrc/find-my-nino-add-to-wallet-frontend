@@ -17,17 +17,32 @@
 package controllers
 
 import base.SpecBase
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
+import org.scalatestplus.mockito.MockitoSugar
+import play.api.inject
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import repositories.SessionRepository
 import views.html.UnauthorisedView
 
-class UnauthorisedControllerSpec extends SpecBase {
+import scala.concurrent.Future
+
+class UnauthorisedControllerSpec extends SpecBase with MockitoSugar{
 
   "Unauthorised Controller" - {
 
     "must return OK and the correct view for a GET" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val mockSessionRepository = mock[SessionRepository]
+      when(mockSessionRepository.get(any())) thenReturn Future.successful(Some(emptyUserAnswers))
+
+      val application =
+        applicationBuilder(userAnswers = Some(emptyUserAnswers))
+          .overrides(
+            inject.bind[SessionRepository].toInstance(mockSessionRepository),
+          )
+          .build()
 
       running(application) {
         val request = FakeRequest(GET, routes.UnauthorisedController.onPageLoad.url)

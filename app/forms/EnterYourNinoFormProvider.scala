@@ -25,12 +25,15 @@ import models.EnterYourNino
 
 class EnterYourNinoFormProvider @Inject() extends Mappings {
 
-   def apply(): Form[EnterYourNino] = Form(
+  private val MAX_FULL_NAME_LENGTH = 100
+  private val MAX_NINO_LENGTH = 20
+
+  def apply(): Form[EnterYourNino] = Form(
      mapping(
       "fullName" -> text("enterYourNino.error.fullName.required")
-        .verifying(maxLength(100, "enterYourNino.error.fullName.length")),
+        .verifying(maxLength(MAX_FULL_NAME_LENGTH, "enterYourNino.error.fullName.length")),
       "nino" -> text("enterYourNino.error.nino.required")
-        .verifying(maxLength(20, "enterYourNino.error.nino.length"))
+        .verifying(maxLength(MAX_NINO_LENGTH, "enterYourNino.error.nino.length"))
     )(EnterYourNino.apply)(EnterYourNino.unapply)
    )
  }

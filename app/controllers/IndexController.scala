@@ -18,16 +18,14 @@ package controllers
 
 import controllers.actions.IdentifierAction
 import models.UserAnswers
-import pages.EnterYourNinoPage
-
-import javax.inject.Inject
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
 import uk.gov.hmrc.http.SessionKeys
-import uk.gov.hmrc.mongo.cache.SessionCacheRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.IndexView
+
+import javax.inject.Inject
 
 class IndexController @Inject()(
                                  val controllerComponents: MessagesControllerComponents,

@@ -17,6 +17,7 @@
 package controllers
 
 import base.SpecBase
+import connectors.FindMyNinoServiceConnector
 import forms.EnterYourNinoFormProvider
 import models.{EnterYourNino, NormalMode, UserAnswers}
 import navigation.{FakeNavigator, Navigator}
@@ -32,6 +33,7 @@ import play.api.test.Helpers._
 import repositories.SessionRepository
 import views.html.EnterYourNinoView
 
+import java.util.UUID
 import scala.concurrent.Future
 
 class EnterYourNinoControllerSpec extends SpecBase with MockitoSugar {
@@ -90,14 +92,17 @@ class EnterYourNinoControllerSpec extends SpecBase with MockitoSugar {
     "must redirect to the next page when valid data is submitted" in {
 
       val mockSessionRepository = mock[SessionRepository]
+      val mockFindMyNinoServiceConnector = mock[FindMyNinoServiceConnector]
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      when(mockFindMyNinoServiceConnector.createApplePass(any())(any(), any())) thenReturn Future.successful(Some(UUID.randomUUID().toString))
 
       val application =
         applicationBuilder(userAnswers = Some(emptyUserAnswers))
           .overrides(
             bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
-            bind[SessionRepository].toInstance(mockSessionRepository)
+            bind[SessionRepository].toInstance(mockSessionRepository),
+            bind[FindMyNinoServiceConnector].toInstance(mockFindMyNinoServiceConnector)
           )
           .build()
 

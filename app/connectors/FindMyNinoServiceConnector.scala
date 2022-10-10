@@ -54,11 +54,6 @@ class FindMyNinoServiceConnector @Inject()(
         }
       }
   }
-
-  private def mapExceptionsToStatus: PartialFunction[Throwable, Future[HttpResponse]] = {
-    case _: NotFoundException =>
-      Future.successful(HttpResponse(NOT_FOUND, "Not found"))
-  }
 }
 
 

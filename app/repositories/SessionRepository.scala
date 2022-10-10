@@ -54,13 +54,13 @@ class SessionRepository @Inject()(
 
   private def byId(id: String): Bson = Filters.equal("_id", id)
 
-  def keepAlive(id: String): Future[Boolean] = {
-    val updated = Updates.set("lastUpdated", Instant.now(clock))
+  def keepAlive(id: String): Future[Boolean] =
     collection
-      .updateOne(filter = byId(id), update = updated)
-      .toFuture()
+      .updateOne(
+        filter = byId(id),
+        update = Updates.set("lastUpdated", Instant.now(clock))
+      ).toFuture()
       .map(_ => true)
-  }
 
   def get(id: String): Future[Option[UserAnswers]] =
     keepAlive(id).flatMap {

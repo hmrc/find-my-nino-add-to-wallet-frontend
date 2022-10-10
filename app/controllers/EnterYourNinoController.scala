@@ -40,7 +40,7 @@ class EnterYourNinoController @Inject()(
                                          requireData: DataRequiredAction,
                                          formProvider: EnterYourNinoFormProvider,
                                          val controllerComponents: MessagesControllerComponents,
-                                         val findMyNinoServiceConnector: FindMyNinoServiceConnector,
+                                         findMyNinoServiceConnector: FindMyNinoServiceConnector,
                                          view: EnterYourNinoView
                                        )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 

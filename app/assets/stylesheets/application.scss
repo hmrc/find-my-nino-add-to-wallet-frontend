@@ -1,1 +1,18 @@
 @import "lib/govuk-frontend/govuk/base";
+
+.js-visible {
+  display: none !important;
+}
+.js-enabled .js-visible {
+  display: inline-block !important;
+}
+
+.nino-number-area {
+  padding: 10px 0;
+  background-color: $govuk-success-colour;
+  text-align: center;
+}
+
+.nino-number-text {
+  color: white !important;
+}

@@ -21,9 +21,10 @@ import play.api.Configuration
 import play.api.i18n.Lang
 import play.api.mvc.RequestHeader
 import uk.gov.hmrc.play.bootstrap.binders.SafeRedirectUrl
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 @Singleton
-class FrontendAppConfig @Inject() (configuration: Configuration) {
+class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig: ServicesConfig) {
 
   val host: String    = configuration.get[String]("host")
   val appName: String = configuration.get[String]("appName")
@@ -38,7 +39,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration) {
   val loginUrl: String                  = configuration.get[String]("urls.login")
   val loginContinueUrl: String          = configuration.get[String]("urls.loginContinue")
   val signOutUrl: String                = configuration.get[String]("urls.signOut")
-  lazy val findMyNinoServiceUrl: String = configuration.get[String]("urls.findMyNinoAddToWalletService")
+  lazy val findMyNinoServiceUrl: String = servicesConfig.baseUrl("find-my-nino-add-to-wallet-service")
 
   private val exitSurveyBaseUrl: String = configuration.get[Service]("microservice.services.feedback-frontend").baseUrl
   val exitSurveyUrl: String             = s"$exitSurveyBaseUrl/feedback/find-my-nino-add-to-wallet-frontend"

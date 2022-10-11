@@ -40,7 +40,7 @@ class FindMyNinoServiceConnector @Inject()(
   def createApplePass(userAnswers: UserAnswers)
                      (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Some[String]] = {
 
-    val url = s"${config.findMyNinoServiceUrl}/create-apple-pass"
+    val url = s"${config.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/create-apple-pass"
     val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
 
     val enterYourNinoResults = userAnswers.get(EnterYourNinoPage).get

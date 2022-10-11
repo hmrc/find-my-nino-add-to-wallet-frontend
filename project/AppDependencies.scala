@@ -9,7 +9,7 @@ object AppDependencies {
     "uk.gov.hmrc"       %% "play-conditional-form-mapping"  % "1.11.0-play-28",
     "uk.gov.hmrc"       %% "bootstrap-frontend-play-28"     % "7.3.0",
     "uk.gov.hmrc"       %% "play-language"                  % "5.3.0-play-28",
-    "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-28"             % "0.68.0"
+    "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-28"             % "0.71.0"
   )
 
   val test = Seq(
@@ -22,7 +22,7 @@ object AppDependencies {
     "com.typesafe.play"       %% "play-test"               % PlayVersion.current,
     "org.mockito"             %% "mockito-scala"           % "1.16.42",
     "org.scalacheck"          %% "scalacheck"              % "1.15.4",
-    "uk.gov.hmrc.mongo"       %% "hmrc-mongo-test-play-28" % "0.68.0",
+    "uk.gov.hmrc.mongo"       %% "hmrc-mongo-test-play-28" % "0.71.0",
     "com.vladsch.flexmark"    %  "flexmark-all"            % "0.62.2",
     "wolfendale"              %%  "scalacheck-gen-regexp"  % "0.1.1"
   ).map(_ % "test, it")

@@ -25,6 +25,7 @@ import play.api.libs.json._
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http._
 
+import java.util.Base64
 import scala.concurrent.{ExecutionContext, Future}
 
 case class ApplePassDetails(fullName: String, nino: String)
@@ -50,6 +51,34 @@ class FindMyNinoServiceConnector @Inject()(
       .map { response =>
         response.status match {
           case OK => Some(response.body)
+          case _ => throw new HttpException(response.body, response.status)
+        }
+      }
+  }
+
+  def getApplePass(passId: String)(implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Option[Array[Byte]]] = {
+
+    val url = s"${config.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-pass-card?passId=$passId"
+    val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
+
+    http.GET[HttpResponse](url)(implicitly, hc, implicitly)
+      .map { response =>
+        response.status match {
+          case OK => Some(Base64.getDecoder.decode(response.body))
+          case _ => throw new HttpException(response.body, response.status)
+        }
+      }
+  }
+
+  def getQrCode(passId: String)(implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Option[Array[Byte]]] = {
+
+    val url = s"${config.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-qr-code?passId=$passId"
+    val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
+
+    http.GET[HttpResponse](url)(implicitly, hc, implicitly)
+      .map { response =>
+        response.status match {
+          case OK => Some(Base64.getDecoder.decode(response.body))
           case _ => throw new HttpException(response.body, response.status)
         }
       }

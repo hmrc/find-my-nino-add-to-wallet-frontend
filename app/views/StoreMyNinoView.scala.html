@@ -52,13 +52,13 @@
         <h3 class="govuk-heading-s">@messages("storeMyNino.saveToPhoneWallet.apple")</h3>
 
         <p class="govuk-body">
-            <a href="@{appConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-pass-card?passId=@{form("passId").value}">
+            <a href="/find-my-nino-add-to-wallet-frontend/get-pass-card?passId=@{form("passId").value}">
                 <img src="assets/images/apple-pay.svg">
             </a>
         </p>
 
         <p class="govuk-body">
-            <img src="@{appConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-qr-code?passId=@{form("passId").value}">
+            <img src="/find-my-nino-add-to-wallet-frontend/get-qr-code?passId=@{form("passId").value}">
         </p>
 
     }

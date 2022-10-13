@@ -16,6 +16,7 @@
 
 package controllers
 
+import connectors.FindMyNinoServiceConnector
 import controllers.actions._
 import forms.StoreMyNinoProvider
 import pages.StoreMyNinoPage
@@ -25,16 +26,18 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.StoreMyNinoView
 
 import javax.inject.Inject
+import scala.concurrent.ExecutionContext
 
 class StoreMyNinoController @Inject()(
                                        override val messagesApi: MessagesApi,
+                                       findMyNinoServiceConnector: FindMyNinoServiceConnector,
                                        identify: IdentifierAction,
                                        getData: DataRetrievalAction,
                                        requireData: DataRequiredAction,
                                        val controllerComponents: MessagesControllerComponents,
                                        formProvider: StoreMyNinoProvider,
                                        view: StoreMyNinoView
-                                     ) extends FrontendBaseController with I18nSupport {
+                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   private val form = formProvider()
 
@@ -42,6 +45,26 @@ class StoreMyNinoController @Inject()(
     implicit request => {
       val preparedForm = request.userAnswers.get(StoreMyNinoPage).fold(form)(form.fill)
       Ok(view(preparedForm))
+    }
+  }
+
+  def getPassCard(passId: String): Action[AnyContent] = Action.async {
+    implicit request => {
+      findMyNinoServiceConnector.getApplePass(passId)
+        .map {
+          case Some(data) => Ok(data).withHeaders("Content-Disposition" -> "attachment; filename=NinoPass.pkpass")
+          case _ => NotFound
+        }
+    }
+  }
+
+  def getQrCode(passId: String): Action[AnyContent] = Action.async {
+    implicit request => {
+      findMyNinoServiceConnector.getQrCode(passId)
+        .map {
+          case Some(data) => Ok(data).withHeaders("Content-Disposition" -> "attachment; filename=NinoPass.pkpass")
+          case _ => NotFound
+        }
     }
   }
 }

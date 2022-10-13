@@ -26,3 +26,5 @@ GET         /change-enter-your-nino                      controllers.EnterYourNi
 POST        /change-enter-your-nino                      controllers.EnterYourNinoController.onSubmit(mode: Mode = CheckMode)
 
 GET         /store-my-nino                               controllers.StoreMyNinoController.onPageLoad()
+GET         /get-pass-card                               controllers.StoreMyNinoController.getPassCard(passId: String)
+GET         /get-qr-code                                 controllers.StoreMyNinoController.getQrCode(passId: String)

@@ -17,7 +17,7 @@
 package controllers.actions
 
 import com.google.inject.Inject
-import config.FrontendAppConfig
+import config.ConfigDecorator
 import controllers.routes
 import models.requests.IdentifierRequest
 import play.api.mvc.Results._
@@ -33,7 +33,7 @@ trait IdentifierAction extends ActionBuilder[IdentifierRequest, AnyContent] with
 
 class AuthenticatedIdentifierAction @Inject()(
                                                override val authConnector: AuthConnector,
-                                               config: FrontendAppConfig,
+                                               config: ConfigDecorator,
                                                val parser: BodyParsers.Default
                                              )
                                              (implicit val executionContext: ExecutionContext) extends IdentifierAction with AuthorisedFunctions {

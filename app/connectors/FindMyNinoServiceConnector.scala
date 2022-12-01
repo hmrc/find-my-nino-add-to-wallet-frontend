@@ -17,7 +17,7 @@
 package connectors
 
 import com.google.inject.Inject
-import config.FrontendAppConfig
+import config.ConfigDecorator
 import models.UserAnswers
 import pages.EnterYourNinoPage
 import play.api.http.Status._
@@ -31,7 +31,7 @@ import scala.concurrent.{ExecutionContext, Future}
 case class ApplePassDetails(fullName: String, nino: String)
 
 class FindMyNinoServiceConnector @Inject()(
-                                            config: FrontendAppConfig,
+                                            config: ConfigDecorator,
                                             http: HttpClient
                                           ) {
 

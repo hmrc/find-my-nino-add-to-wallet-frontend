@@ -14,12 +14,12 @@
  * limitations under the License.
  *@
 
-@import config.FrontendAppConfig
+@import config.ConfigDecorator
 @this(
         layout: templates.Layout,
         govukButton: GovukButton,
         govukWarningText: GovukWarningText,
-        appConfig: FrontendAppConfig
+        appConfig: ConfigDecorator
 )
 
 @(form: Form[_])(implicit request: Request[_], messages: Messages)

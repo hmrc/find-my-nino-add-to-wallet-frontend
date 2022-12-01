@@ -16,19 +16,15 @@
 
 package controllers
 
-import com.google.inject.Inject
-import config.ConfigDecorator
-import play.api.i18n.Lang
+import com.google.inject.Singleton
+import play.api.http.HttpErrorHandler
 import play.api.mvc._
-import uk.gov.hmrc.play.language.{LanguageController, LanguageUtils}
 
-class LanguageSwitchController @Inject()(
-                                          appConfig: ConfigDecorator,
-                                          languageUtils: LanguageUtils,
-                                          cc: ControllerComponents
-                                        ) extends LanguageController(languageUtils, cc) {
+import scala.concurrent.Future
 
-  override def fallbackURL: String = routes.IndexController.onPageLoad.url
+@Singleton
+class LocalErrorHandler extends HttpErrorHandler {
+  override def onClientError(request: RequestHeader, statusCode: Int, message: String): Future[Result] = null
 
-  override def languageMap: Map[String, Lang] = appConfig.languageMap
+  override def onServerError(request: RequestHeader, exception: Throwable): Future[Result] = null
 }

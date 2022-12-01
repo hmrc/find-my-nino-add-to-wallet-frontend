@@ -18,7 +18,7 @@ package controllers.actions
 
 import base.SpecBase
 import com.google.inject.Inject
-import config.FrontendAppConfig
+import config.ConfigDecorator
 import controllers.routes
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
@@ -60,7 +60,7 @@ class AuthActionSpec extends SpecBase with MockitoSugar{
 
         running(application) {
           val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
-          val appConfig   = application.injector.instanceOf[FrontendAppConfig]
+          val appConfig   = application.injector.instanceOf[ConfigDecorator]
 
           val authAction = new AuthenticatedIdentifierAction(new FakeFailingAuthConnector(new MissingBearerToken), appConfig, bodyParsers)
           val controller = new Harness(authAction)
@@ -88,7 +88,7 @@ class AuthActionSpec extends SpecBase with MockitoSugar{
 
         running(application) {
           val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
-          val appConfig   = application.injector.instanceOf[FrontendAppConfig]
+          val appConfig   = application.injector.instanceOf[ConfigDecorator]
 
           val authAction = new AuthenticatedIdentifierAction(new FakeFailingAuthConnector(new BearerTokenExpired), appConfig, bodyParsers)
           val controller = new Harness(authAction)
@@ -116,7 +116,7 @@ class AuthActionSpec extends SpecBase with MockitoSugar{
 
         running(application) {
           val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
-          val appConfig   = application.injector.instanceOf[FrontendAppConfig]
+          val appConfig   = application.injector.instanceOf[ConfigDecorator]
 
           val authAction = new AuthenticatedIdentifierAction(new FakeFailingAuthConnector(new InsufficientEnrolments), appConfig, bodyParsers)
           val controller = new Harness(authAction)
@@ -144,7 +144,7 @@ class AuthActionSpec extends SpecBase with MockitoSugar{
 
         running(application) {
           val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
-          val appConfig   = application.injector.instanceOf[FrontendAppConfig]
+          val appConfig   = application.injector.instanceOf[ConfigDecorator]
 
           val authAction = new AuthenticatedIdentifierAction(new FakeFailingAuthConnector(new InsufficientConfidenceLevel), appConfig, bodyParsers)
           val controller = new Harness(authAction)
@@ -172,7 +172,7 @@ class AuthActionSpec extends SpecBase with MockitoSugar{
 
         running(application) {
           val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
-          val appConfig   = application.injector.instanceOf[FrontendAppConfig]
+          val appConfig   = application.injector.instanceOf[ConfigDecorator]
 
           val authAction = new AuthenticatedIdentifierAction(new FakeFailingAuthConnector(new UnsupportedAuthProvider), appConfig, bodyParsers)
           val controller = new Harness(authAction)
@@ -200,7 +200,7 @@ class AuthActionSpec extends SpecBase with MockitoSugar{
 
         running(application) {
           val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
-          val appConfig   = application.injector.instanceOf[FrontendAppConfig]
+          val appConfig   = application.injector.instanceOf[ConfigDecorator]
 
           val authAction = new AuthenticatedIdentifierAction(new FakeFailingAuthConnector(new UnsupportedAffinityGroup), appConfig, bodyParsers)
           val controller = new Harness(authAction)
@@ -228,7 +228,7 @@ class AuthActionSpec extends SpecBase with MockitoSugar{
 
         running(application) {
           val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
-          val appConfig   = application.injector.instanceOf[FrontendAppConfig]
+          val appConfig   = application.injector.instanceOf[ConfigDecorator]
 
           val authAction = new AuthenticatedIdentifierAction(new FakeFailingAuthConnector(new UnsupportedCredentialRole), appConfig, bodyParsers)
           val controller = new Harness(authAction)

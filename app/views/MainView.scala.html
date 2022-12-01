@@ -1,0 +1,89 @@
+@*
+ * Copyright 2022 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import config.ConfigDecorator
+@import uk.gov.hmrc.hmrcfrontend.views.html._
+@import components.{backLink, Link, FullWidthMainContent}
+@import uk.gov.hmrc.hmrcfrontend.config.AccountMenuConfig
+@import uk.gov.hmrc.hmrcfrontend.views.viewmodels.accountmenu.{AccountMenu, SignOut, AccountHome, AccountMessages, CheckProgress, _}
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits.RichAccountMenu
+@import views.html.helper.CSPNonce
+
+@this(
+    hmrcLayout: HmrcLayout,
+    hmrcLanguageSelectHelper: HmrcLanguageSelectHelper,
+    hmrcTimeoutDialogHelper: HmrcTimeoutDialogHelper,
+    fullWidthMainContent: FullWidthMainContent,
+    twoThirdsMainContent: TwoThirdsMainContent,
+    twoThirdsOneThirdMainContent: TwoThirdsOneThirdMainContent,
+    hmrcReportTechnicalIssueHelper: HmrcReportTechnicalIssueHelper,
+    govukPhaseBanner: GovukPhaseBanner,
+    configDecorator: ConfigDecorator,
+    link: Link,
+    backLink: backLink,
+    hmrcAccountMenu: HmrcAccountMenu
+    )
+
+@(
+    pageTitle: String,
+    serviceName: String = "label.your_personal_tax_account",
+    sidebarContent: Option[Html] = None,
+    beforeContentHtml: Option[Html] = None,
+    showBackLink: Boolean = false,
+    backLinkID: Boolean = true,
+    backLinkUrl: String = "#",
+    disableSessionExpired: Boolean = false,
+    fullWidth: Boolean = true,
+    stylesheets: Option[Html] = None
+)(content: Html)(implicit request: Request[_], messages: Messages)
+
+@headBlock = {
+    <meta name="format-detection" content="telephone=no" />
+
+    <link rel="stylesheet" href='@controllers.routes.AssetsController.versioned("stylesheets/application.css")'/>
+
+    @stylesheets
+
+}
+
+@contentBlock = {
+    @content
+<hr aria-hidden="true" class="govuk-section-break govuk-section-break--m">
+<p>Adding  test</p>
+<hr aria-hidden="true" class="govuk-section-break govuk-section-break--m">
+}
+
+@fullPageTitle = @{
+    s"""$pageTitle - ${messages("Save your NINO")}"""
+}
+
+
+@beforeContent = {
+        <p>Before content block</p>
+
+}
+
+
+@hmrcLayout(
+    pageTitle = Some(fullPageTitle),
+additionalHeadBlock = Some(headBlock),
+beforeContentBlock = Some(beforeContent),
+    mainContentLayout = Some(sidebarContent match {
+        case _ =>
+                            fullWidthMainContent(_)
+
+    })
+    )(contentBlock)

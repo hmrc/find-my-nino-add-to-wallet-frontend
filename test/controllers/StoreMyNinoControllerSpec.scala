@@ -16,18 +16,22 @@
 
 package controllers
 
+import play.api.mvc.Results.Ok
 import base.SpecBase
 import forms.EnterYourNinoFormProvider
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
+import org.mockito.stubbing.OngoingStubbing
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import play.shaded.ahc.io.netty.util.internal.EmptyArrays
 import repositories.SessionRepository
 import views.html.StoreMyNinoView
 
 import scala.concurrent.Future
+import scala.concurrent.Future.successful
 
 class StoreMyNinoControllerSpec extends SpecBase with MockitoSugar{
 
@@ -50,14 +54,16 @@ class StoreMyNinoControllerSpec extends SpecBase with MockitoSugar{
 
       running(application) {
         val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad().url)
-
         val result = route(application, request).value
-
         val view = application.injector.instanceOf[StoreMyNinoView]
-
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(form)(request, messages(application)).toString
+
       }
     }
+
+
+
+
   }
 }

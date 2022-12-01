@@ -16,7 +16,7 @@
 
 package controllers.auth
 
-import config.FrontendAppConfig
+import config.ConfigDecorator
 import controllers.actions.IdentifierAction
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -29,7 +29,7 @@ import scala.concurrent.ExecutionContext
 
 class AuthController @Inject()(
                                 val controllerComponents: MessagesControllerComponents,
-                                config: FrontendAppConfig,
+                                config: ConfigDecorator,
                                 sessionRepository: SessionRepository,
                                 identify: IdentifierAction
                               )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {

@@ -16,7 +16,7 @@
 
 package repositories
 
-import config.FrontendAppConfig
+import config.ConfigDecorator
 import models.UserAnswers
 import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model._
@@ -33,7 +33,7 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class SessionRepository @Inject()(
                                    mongoComponent: MongoComponent,
-                                   appConfig: FrontendAppConfig,
+                                   appConfig: ConfigDecorator,
                                    clock: Clock
                                  )(implicit ec: ExecutionContext)
   extends PlayMongoRepository[UserAnswers](

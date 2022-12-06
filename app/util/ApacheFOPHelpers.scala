@@ -19,17 +19,20 @@ package util
 import java.io.StringReader
 import javax.xml.transform.stream.StreamSource
 object ApacheFOPHelpers {
-  def xmlData(title: String, firstName: String, lastName: String, nino: String, add1: String, add2: String, add3: String) = {
+  def xmlData(initialsName: String, fullName: String,  nino: String, addressLines: List[String], postcode: String, date: String) = {
     val xmlInput =
       s"""
-    <root>
-         |    <title>${title}</title>
-         |    <first-name>${firstName.toUpperCase}</first-name>
-         |    <last-name>${lastName.toUpperCase}</last-name>
-         |    <address-line-1>${add1}</address-line-1>
-         |    <address-line-2>${add2}</address-line-2>
-         |    <address-line-3>${add3}</address-line-3>
+         |<root>
+         |    <initials-name>${initialsName}</initials-name>
+         |    <full-name>${fullName}</full-name>
+         |    <address>
+         |    ${
+                for (addLine <- addressLines) yield s"<address-line>$addLine</address-line>"
+              }
+         |    </address>
+         |    <postcode>${postcode}</postcode>
          |    <nino>${nino}</nino>
+         |    <date>${date}</date>
          |</root>
          |
          |""".stripMargin
@@ -53,14 +56,29 @@ object ApacheFOPHelpers {
          |    </xsl:attribute-set>
          |
          |    <xsl:attribute-set name="small">
-         |        <xsl:attribute name="font-size">10pt</xsl:attribute>
+         |        <xsl:attribute name="font-size">9.5pt</xsl:attribute>
          |        <xsl:attribute name="font-family">Helvetica</xsl:attribute>
          |        <xsl:attribute name="padding-before">6px</xsl:attribute>
          |        <xsl:attribute name="padding-after">6px</xsl:attribute>
+         |    </xsl:attribute-set>
          |
+         |    <xsl:attribute-set name="small-list">
+         |        <xsl:attribute name="font-size">9.5pt</xsl:attribute>
+         |        <xsl:attribute name="font-family">Helvetica</xsl:attribute>
+         |        <xsl:attribute name="line-height">11pt</xsl:attribute>
+         |        <xsl:attribute name="padding-before">2.8px</xsl:attribute>
+         |        <xsl:attribute name="padding-after">2.8px</xsl:attribute>
          |    </xsl:attribute-set>
          |
          |    <xsl:attribute-set name="normal-list">
+         |        <xsl:attribute name="font-size">10.5pt</xsl:attribute>
+         |        <xsl:attribute name="font-family">Helvetica</xsl:attribute>
+         |        <xsl:attribute name="line-height">12pt</xsl:attribute>
+         |        <xsl:attribute name="padding-before">3px</xsl:attribute>
+         |        <xsl:attribute name="padding-after">3px</xsl:attribute>
+         |    </xsl:attribute-set>
+         |
+         |    <xsl:attribute-set name="address-line">
          |        <xsl:attribute name="font-size">10.5pt</xsl:attribute>
          |        <xsl:attribute name="font-family">Helvetica</xsl:attribute>
          |        <xsl:attribute name="line-height">12pt</xsl:attribute>
@@ -83,7 +101,7 @@ object ApacheFOPHelpers {
          |        <xsl:attribute name="font-size">10.5pt</xsl:attribute>
          |        <xsl:attribute name="font-family">Helvetica</xsl:attribute>
          |        <xsl:attribute name="font-weight">bold</xsl:attribute>
-         |        <xsl:attribute name="padding-before">6px</xsl:attribute>
+         |        <xsl:attribute name="padding-before">8px</xsl:attribute>
          |        <xsl:attribute name="padding-after">6px</xsl:attribute>
          |        <xsl:attribute name="role">H2</xsl:attribute>
          |    </xsl:attribute-set>
@@ -96,6 +114,12 @@ object ApacheFOPHelpers {
          |
          |    <xsl:attribute-set name="default-font">
          |        <xsl:attribute name="font-family">Helvetica</xsl:attribute>
+         |    </xsl:attribute-set>
+         |
+         |    <xsl:attribute-set name="footer">
+         |        <xsl:attribute name="font-size">10pt</xsl:attribute>
+         |        <xsl:attribute name="font-family">serif</xsl:attribute>
+         |        <xsl:attribute name="line-height">14pt</xsl:attribute>
          |    </xsl:attribute-set>
          |
          |    <xsl:output method="xml" indent="yes"/>
@@ -112,7 +136,7 @@ object ApacheFOPHelpers {
          |                                       margin-right="3cm">
          |                    <fo:region-body margin-top="1.5cm"/>
          |                    <fo:region-before extent="0.5cm"/>
-         |                    <fo:region-after extent="1.5cm"/>
+         |                    <fo:region-after extent="0.5cm"/>
          |                </fo:simple-page-master>
          |
          |                <!-- layout for the other pages -->
@@ -125,7 +149,7 @@ object ApacheFOPHelpers {
          |                                       margin-right="3cm">
          |                    <fo:region-body margin-top="1cm"/>
          |                    <fo:region-before extent="0.5cm"/>
-         |                    <fo:region-after extent="1.5cm"/>
+         |                    <fo:region-after extent="0.5cm"/>
          |                </fo:simple-page-master>
          |
          |                <fo:page-sequence-master master-name="basicPSM">
@@ -144,29 +168,52 @@ object ApacheFOPHelpers {
          |
          |            <!-- actual layout -->
          |            <fo:page-sequence master-reference="basicPSM">
+         |                <!-- footer -->
+         |                <fo:static-content flow-name="xsl-region-after">
+         |                    <fo:block xsl:use-attribute-sets="footer">
+         |                        <!-- page number -->
+         |                        <fo:inline-container inline-progression-dimension="50%">
+         |                            <fo:block text-align="start">
+         |                                Page <fo:page-number/>
+         |                            </fo:block>
+         |                        </fo:inline-container>
+         |                        <!-- date -->
+         |                        <fo:inline-container inline-progression-dimension="50%">
+         |                            <fo:block text-align="end">
+         |                                HMRC <xsl:value-of select="root/date"/>
+         |                            </fo:block>
+         |                        </fo:inline-container>
+         |                    </fo:block>
+         |
+         |
+         |                </fo:static-content>
          |                <!-- body -->
          |                <fo:flow flow-name="xsl-region-body">
          |
          |                    <!-- logo and heading -->
-         |                    <fo:block space-after="10px">
-         |                        <fo:inline-container inline-progression-dimension="22%">
-         |                            <fo:block border-left-style="solid"
+         |                    <fo:block role="Div" space-after="10px">
+         |                        <fo:inline-container role="Div" inline-progression-dimension="22%">
+         |                            <fo:block role="Div"
+         |                                      border-left-style="solid"
          |                                      border-width="2px"
          |                                      border-color="#28a197"
          |                                      padding-start="4px">
-         |                                <fo:external-graphic src="images/HMRC-logo.jpg" fox:alt-text="HMRC" content-height="scale-to-fit"  content-width="0.8cm"/>
-         |                                <fo:block xsl:use-attribute-sets="default-font"
+         |                                <fo:external-graphic content-type="content-type:image/png" src="images/HMRC-logo.jpg" fox:alt-text="HMRC" content-height="scale-to-fit"  content-width="0.8cm"/>
+         |                                <fo:block role="P"
+         |                                          xsl:use-attribute-sets="default-font"
          |                                          line-height="14pt"
          |                                          font-size="14pt">
          |                                    HM Revenue &amp; Customs
          |                                </fo:block>
          |                            </fo:block>
          |                        </fo:inline-container>
-         |                        <fo:inline-container inline-progression-dimension="78%">
+         |                        <fo:inline-container role="Div" inline-progression-dimension="78%">
          |                            <fo:block role="H1"
          |                                      font-weight="bold"
          |                                      text-align="end"
-         |                                      xsl:use-attribute-sets="default-font-and-padding">
+         |                                      padding-before="10px"
+         |                                      padding-after="6px"
+         |                                      xsl:use-attribute-sets="default-font">
          |                                Your National Insurance letter
          |                            </fo:block>
          |                        </fo:inline-container>
@@ -174,56 +221,53 @@ object ApacheFOPHelpers {
          |
          |
          |                    <!-- Addresses -->
-         |                    <fo:block>
-         |                        <fo:inline-container inline-progression-dimension="63%">
+         |                    <fo:block role="Div">
+         |                        <fo:inline-container role="Div" inline-progression-dimension="63%">
          |                            <fo:block>
-         |                                <fo:block xsl:use-attribute-sets="normal-list">
-         |                                    <xsl:value-of select="root/title"/>
-         |                                    <xsl:value-of select="concat(' ', substring(root/first-name, 1, 1))"/>
-         |                                    <xsl:value-of select="concat(' ', root/last-name)"/>
+         |                                <fo:block role="P" xsl:use-attribute-sets="address-line">
+         |                                    <xsl:value-of select="root/initials-name"/>
          |                                </fo:block>
-         |                                <fo:block xsl:use-attribute-sets="normal-list">
-         |                                    <xsl:value-of select="root/address-line-1"/>
-         |                                </fo:block>
-         |                                <fo:block xsl:use-attribute-sets="normal-list">
-         |                                    <xsl:value-of select="root/address-line-2"/>
-         |                                </fo:block>
-         |                                <fo:block xsl:use-attribute-sets="normal-list">
-         |                                    <xsl:value-of select="root/address-line-3"/>
+         |                                <xsl:for-each select="root/address/address-line">
+         |                                    <fo:block role="P" xsl:use-attribute-sets="address-line">
+         |                                        <xsl:value-of select="."/>
+         |                                    </fo:block>
+         |                                </xsl:for-each>
+         |                                <fo:block role="P" xsl:use-attribute-sets="address-line">
+         |                                    <xsl:value-of select="root/postcode"/>
          |                                </fo:block>
          |                            </fo:block>
          |                        </fo:inline-container>
-         |                        <fo:inline-container inline-progression-dimension="37%">
+         |                        <fo:inline-container role="Div" inline-progression-dimension="37%">
          |                            <fo:block>
-         |                                <fo:block xsl:use-attribute-sets="normal-list">NIC&amp;EO</fo:block>
-         |                                <fo:block xsl:use-attribute-sets="normal-list">HMRC</fo:block>
-         |                                <fo:block xsl:use-attribute-sets="normal-list">BX9 1AN</fo:block>
-         |                                <fo:block xsl:use-attribute-sets="normal">Phone&#x9;0300 200 3500</fo:block>
-         |                                <fo:block xsl:use-attribute-sets="normal">www.gov.uk/hmrc</fo:block>
+         |                                <fo:block role="P" xsl:use-attribute-sets="address-line">NIC&amp;EO</fo:block>
+         |                                <fo:block role="P" xsl:use-attribute-sets="address-line">HMRC</fo:block>
+         |                                <fo:block role="P" xsl:use-attribute-sets="address-line">BX9 1AN</fo:block>
+         |                                <fo:block role="P" xsl:use-attribute-sets="normal">Phone&#x9;0300 200 3500</fo:block>
+         |                                <fo:block role="P" xsl:use-attribute-sets="normal">www.gov.uk/hmrc</fo:block>
          |                            </fo:block>
          |                        </fo:inline-container>
-         |                    </fo:block>-
+         |                    </fo:block>
          |
          |
          |                    <!-- name and title -->
          |                    <fo:block xsl:use-attribute-sets="normal">
-         |                        <xsl:value-of select="root/title"/>
-         |                        <xsl:value-of select="concat(' ', root/first-name)"/>
-         |                        <xsl:value-of select="concat(' ', root/last-name)"/>
+         |                        <xsl:value-of select="root/full-name"/>
          |                    </fo:block>
          |
          |
          |                    <!-- NINO number box -->
-         |                    <fo:block space-after="10px"
-         |                            background-color="#DAF4F2"
-         |                            border-style="solid"
-         |                            border-width="1.5px"
-         |                            border-color="#28a197">
+         |                    <fo:block role="Div"
+         |                              space-after="10px"
+         |                              background-color="#DAF4F2"
+         |                              border-style="solid"
+         |                              border-width="1.5px"
+         |                              border-color="#28a197">
          |                        <fo:block xsl:use-attribute-sets="header-small"
          |                                  text-align="center">
          |                            Your National Insurance number is
          |                        </fo:block>
-         |                        <fo:block font-size="20pt"
+         |                        <fo:block role="P"
+         |                                  font-size="20pt"
          |                                  font-weight="bold"
          |                                  text-align="center"
          |                                  xsl:use-attribute-sets="default-font">
@@ -231,7 +275,8 @@ object ApacheFOPHelpers {
          |                        </fo:block>
          |                    </fo:block>
          |
-         |                    <fo:block space-after="10px"
+         |                    <fo:block role="P"
+         |                              space-after="10px"
          |                              font-weight="bold"
          |                              text-align="center"
          |                              xsl:use-attribute-sets="default-font-and-padding">
@@ -240,9 +285,10 @@ object ApacheFOPHelpers {
          |
          |
          |                    <!-- about NINO information -->
-         |                    <fo:block>
-         |                        <fo:inline-container inline-progression-dimension="63%">
-         |                            <fo:block margin-left="5px"
+         |                    <fo:block role="Div">
+         |                        <fo:inline-container role="Div" inline-progression-dimension="63%">
+         |                            <fo:block role="Div"
+         |                                      margin-left="5px"
          |                                      margin-right="5px">
          |                                <fo:block role="H2"
          |                                          xsl:use-attribute-sets="header-small">
@@ -258,62 +304,82 @@ object ApacheFOPHelpers {
          |                                    You will need it if you:
          |                                </fo:block>
          |                                <fo:list-block xsl:use-attribute-sets="list-block">
-         |                                    <fo:list-item>
-         |                                        <fo:list-item-label end-indent="label-end()">
+         |                                    <fo:list-item xsl:use-attribute-sets="normal-list" role="LI">
+         |                                            <fo:list-item-label role="Lbl" end-indent="label-end()">
+         |                                                    <fo:block>
+         |                                                        <fo:inline>
+         |                                                            <fo:wrapper role="artifact">
+         |                                                                &#8226;
+         |                                                            </fo:wrapper>
+         |                                                        </fo:inline>
+         |                                                    </fo:block>
+         |                                            </fo:list-item-label>
+         |                                        <fo:list-item-body role="LBody" start-indent="body-start()">
          |                                            <fo:block>
-         |                                                <fo:inline>&#8226;</fo:inline>
-         |                                            </fo:block>
-         |                                        </fo:list-item-label>
-         |                                        <fo:list-item-body start-indent="body-start()">
-         |                                            <fo:block xsl:use-attribute-sets="normal-list">
          |                                                start work (including part time and weekend jobs)
          |                                            </fo:block>
          |                                        </fo:list-item-body>
          |                                    </fo:list-item>
-         |                                    <fo:list-item>
-         |                                        <fo:list-item-label end-indent="label-end()">
+         |                                    <fo:list-item xsl:use-attribute-sets="normal-list" role="LI">
+         |                                        <fo:list-item-label role="Lbl" end-indent="label-end()">
          |                                            <fo:block>
-         |                                                <fo:inline>&#8226;</fo:inline>
+         |                                                <fo:inline>
+         |                                                    <fo:wrapper role="artifact">
+         |                                                        &#8226;
+         |                                                    </fo:wrapper>
+         |                                                </fo:inline>
          |                                            </fo:block>
          |                                        </fo:list-item-label>
-         |                                        <fo:list-item-body start-indent="body-start()">
-         |                                            <fo:block xsl:use-attribute-sets="normal-list">
+         |                                        <fo:list-item-body role="LBody" start-indent="body-start()">
+         |                                            <fo:block>
          |                                                apply for a driving license
          |                                            </fo:block>
          |                                        </fo:list-item-body>
          |                                    </fo:list-item>
-         |                                    <fo:list-item>
-         |                                        <fo:list-item-label end-indent="label-end()">
+         |                                    <fo:list-item xsl:use-attribute-sets="normal-list" role="LI">
+         |                                        <fo:list-item-label role="Lbl" end-indent="label-end()">
          |                                            <fo:block>
-         |                                                <fo:inline>&#8226;</fo:inline>
+         |                                                <fo:inline>
+         |                                                    <fo:wrapper role="artifact">
+         |                                                        &#8226;
+         |                                                    </fo:wrapper>
+         |                                                </fo:inline>
          |                                            </fo:block>
          |                                        </fo:list-item-label>
-         |                                        <fo:list-item-body start-indent="body-start()">
-         |                                            <fo:block xsl:use-attribute-sets="normal-list">
+         |                                        <fo:list-item-body role="LBody" start-indent="body-start()">
+         |                                            <fo:block>
          |                                                apply for a student loan
          |                                            </fo:block>
          |                                        </fo:list-item-body>
          |                                    </fo:list-item>
-         |                                    <fo:list-item>
-         |                                        <fo:list-item-label end-indent="label-end()">
+         |                                    <fo:list-item xsl:use-attribute-sets="normal-list" role="LI">
+         |                                        <fo:list-item-label role="Lbl" end-indent="label-end()">
          |                                            <fo:block>
-         |                                                <fo:inline>&#8226;</fo:inline>
+         |                                                <fo:inline>
+         |                                                    <fo:wrapper role="artifact">
+         |                                                        &#8226;
+         |                                                    </fo:wrapper>
+         |                                                </fo:inline>
          |                                            </fo:block>
          |                                        </fo:list-item-label>
-         |                                        <fo:list-item-body start-indent="body-start()">
-         |                                            <fo:block xsl:use-attribute-sets="normal-list">
+         |                                        <fo:list-item-body role="LBody" start-indent="body-start()">
+         |                                            <fo:block>
          |                                                claim state benefits
          |                                            </fo:block>
          |                                        </fo:list-item-body>
          |                                    </fo:list-item>
-         |                                    <fo:list-item>
-         |                                        <fo:list-item-label end-indent="label-end()">
+         |                                    <fo:list-item xsl:use-attribute-sets="normal-list" role="LI">
+         |                                        <fo:list-item-label role="Lbl" end-indent="label-end()">
          |                                            <fo:block>
-         |                                                <fo:inline>&#8226;</fo:inline>
+         |                                                <fo:inline>
+         |                                                    <fo:wrapper role="artifact">
+         |                                                        &#8226;
+         |                                                    </fo:wrapper>
+         |                                                </fo:inline>
          |                                            </fo:block>
          |                                        </fo:list-item-label>
-         |                                        <fo:list-item-body start-indent="body-start()">
-         |                                            <fo:block xsl:use-attribute-sets="normal-list">
+         |                                        <fo:list-item-body role="LBody" start-indent="body-start()">
+         |                                            <fo:block>
          |                                                register to vote
          |                                            </fo:block>
          |                                        </fo:list-item-body>
@@ -323,26 +389,34 @@ object ApacheFOPHelpers {
          |                                    It is not proof of:
          |                                </fo:block>
          |                                <fo:list-block xsl:use-attribute-sets="list-block">
-         |                                    <fo:list-item>
-         |                                        <fo:list-item-label end-indent="label-end()">
+         |                                    <fo:list-item xsl:use-attribute-sets="normal-list" role="LI">
+         |                                        <fo:list-item-label role="Lbl" end-indent="label-end()">
          |                                            <fo:block>
-         |                                                <fo:inline>&#8226;</fo:inline>
+         |                                                <fo:inline>
+         |                                                    <fo:wrapper role="artifact">
+         |                                                        &#8226;
+         |                                                    </fo:wrapper>
+         |                                                </fo:inline>
          |                                            </fo:block>
          |                                        </fo:list-item-label>
-         |                                        <fo:list-item-body start-indent="body-start()">
-         |                                            <fo:block xsl:use-attribute-sets="normal-list">
+         |                                        <fo:list-item-body role="LBody" start-indent="body-start()">
+         |                                            <fo:block>
          |                                                your identity
          |                                            </fo:block>
          |                                        </fo:list-item-body>
          |                                    </fo:list-item>
-         |                                    <fo:list-item>
-         |                                        <fo:list-item-label end-indent="label-end()">
+         |                                    <fo:list-item xsl:use-attribute-sets="normal-list" role="LI">
+         |                                        <fo:list-item-label role="Lbl" end-indent="label-end()">
          |                                            <fo:block>
-         |                                                <fo:inline>&#8226;</fo:inline>
+         |                                                <fo:inline>
+         |                                                    <fo:wrapper role="artifact">
+         |                                                        &#8226;
+         |                                                    </fo:wrapper>
+         |                                                </fo:inline>
          |                                            </fo:block>
          |                                        </fo:list-item-label>
-         |                                        <fo:list-item-body start-indent="body-start()">
-         |                                            <fo:block xsl:use-attribute-sets="normal-list">
+         |                                        <fo:list-item-body role="LBody" start-indent="body-start()">
+         |                                            <fo:block>
          |                                                your right to work in the UK
          |                                            </fo:block>
          |                                        </fo:list-item-body>
@@ -370,26 +444,34 @@ object ApacheFOPHelpers {
          |                                    To continue to receive a Welsh language service:
          |                                </fo:block>
          |                                <fo:list-block xsl:use-attribute-sets="list-block">
-         |                                    <fo:list-item>
-         |                                        <fo:list-item-label end-indent="label-end()">
+         |                                    <fo:list-item xsl:use-attribute-sets="normal-list" role="LI">
+         |                                        <fo:list-item-label role="Lbl" end-indent="label-end()">
          |                                            <fo:block>
-         |                                                <fo:inline>&#8226;</fo:inline>
+         |                                                <fo:inline>
+         |                                                    <fo:wrapper role="artifact">
+         |                                                        &#8226;
+         |                                                    </fo:wrapper>
+         |                                                </fo:inline>
          |                                            </fo:block>
          |                                        </fo:list-item-label>
-         |                                        <fo:list-item-body start-indent="body-start()">
-         |                                            <fo:block xsl:use-attribute-sets="normal-list">
+         |                                        <fo:list-item-body role="LBody" start-indent="body-start()">
+         |                                            <fo:block>
          |                                                email gwasanaeth.cymraeg@hmrc.gov.uk
          |                                            </fo:block>
          |                                        </fo:list-item-body>
          |                                    </fo:list-item>
-         |                                    <fo:list-item>
-         |                                        <fo:list-item-label end-indent="label-end()">
+         |                                    <fo:list-item xsl:use-attribute-sets="normal-list" role="LI">
+         |                                        <fo:list-item-label role="Lbl" end-indent="label-end()">
          |                                            <fo:block>
-         |                                                <fo:inline>&#8226;</fo:inline>
+         |                                                <fo:inline>
+         |                                                    <fo:wrapper role="artifact">
+         |                                                        &#8226;
+         |                                                    </fo:wrapper>
+         |                                                </fo:inline>
          |                                            </fo:block>
          |                                        </fo:list-item-label>
-         |                                        <fo:list-item-body start-indent="body-start()">
-         |                                            <fo:block xsl:use-attribute-sets="normal-list">
+         |                                        <fo:list-item-body role="LBody" start-indent="body-start()">
+         |                                            <fo:block>
          |                                                phone 0300 200 1900
          |                                            </fo:block>
          |                                        </fo:list-item-body>
@@ -397,8 +479,9 @@ object ApacheFOPHelpers {
          |                                </fo:list-block>
          |                            </fo:block>
          |                        </fo:inline-container>
-         |                        <fo:inline-container inline-progression-dimension="37%">
-         |                            <fo:block background-color="#DAF4F2"
+         |                        <fo:inline-container role="Div" inline-progression-dimension="37%">
+         |                            <fo:block role="Div"
+         |                                      background-color="#DAF4F2"
          |                                      margin-left="5px"
          |                                      margin-right="5px"
          |                                      padding-start="5px"
@@ -412,11 +495,11 @@ object ApacheFOPHelpers {
          |                                          xsl:use-attribute-sets="header-small">
          |                                    Now you have got your National Insurance number
          |                                </fo:block>
-         |                                <fo:block
-         |                                        border-after-style="solid"
-         |                                        border-width="1.5px"
-         |                                        border-color="#00A298"
-         |                                        padding-after="5px">
+         |                                <fo:block role="Div"
+         |                                          border-after-style="solid"
+         |                                          border-width="1.5px"
+         |                                          border-color="#00A298"
+         |                                          padding-after="5px">
          |                                    <fo:block xsl:use-attribute-sets="small">
          |                                        You can download and use the HMRC App or go online at
          |                                        <fo:basic-link color="#531fff"
@@ -427,57 +510,73 @@ object ApacheFOPHelpers {
          |                                        where you can:
          |                                    </fo:block>
          |                                    <fo:list-block xsl:use-attribute-sets="list-block">
-         |                                        <fo:list-item>
-         |                                            <fo:list-item-label end-indent="label-end()">
+         |                                        <fo:list-item xsl:use-attribute-sets="small-list" role="LI">
+         |                                            <fo:list-item-label role="Lbl" end-indent="label-end()">
          |                                                <fo:block>
-         |                                                    <fo:inline>&#8226;</fo:inline>
+         |                                                    <fo:inline>
+         |                                                        <fo:wrapper role="artifact">
+         |                                                            &#8226;
+         |                                                        </fo:wrapper>
+         |                                                    </fo:inline>
          |                                                </fo:block>
          |                                            </fo:list-item-label>
-         |                                            <fo:list-item-body start-indent="body-start()">
-         |                                                <fo:block xsl:use-attribute-sets="normal-list">
+         |                                            <fo:list-item-body role="LBody" start-indent="body-start()">
+         |                                                <fo:block>
          |                                                    create and access your Personal Tax Account
          |                                                </fo:block>
          |                                            </fo:list-item-body>
          |                                        </fo:list-item>
-         |                                        <fo:list-item>
-         |                                            <fo:list-item-label end-indent="label-end()">
+         |                                        <fo:list-item xsl:use-attribute-sets="small-list" role="LI">
+         |                                            <fo:list-item-label role="Lbl" end-indent="label-end()">
          |                                                <fo:block>
-         |                                                    <fo:inline>&#8226;</fo:inline>
+         |                                                    <fo:inline>
+         |                                                        <fo:wrapper role="artifact">
+         |                                                            &#8226;
+         |                                                        </fo:wrapper>
+         |                                                    </fo:inline>
          |                                                </fo:block>
          |                                            </fo:list-item-label>
-         |                                            <fo:list-item-body start-indent="body-start()">
-         |                                                <fo:block xsl:use-attribute-sets="normal-list">
+         |                                            <fo:list-item-body role="LBody" start-indent="body-start()">
+         |                                                <fo:block>
          |                                                    save and print another copy of this letter
          |                                                </fo:block>
          |                                            </fo:list-item-body>
          |                                        </fo:list-item>
-         |                                        <fo:list-item>
-         |                                            <fo:list-item-label end-indent="label-end()">
+         |                                        <fo:list-item xsl:use-attribute-sets="small-list" role="LI">
+         |                                            <fo:list-item-label role="Lbl" end-indent="label-end()">
          |                                                <fo:block>
-         |                                                    <fo:inline>&#8226;</fo:inline>
+         |                                                    <fo:inline>
+         |                                                        <fo:wrapper role="artifact">
+         |                                                            &#8226;
+         |                                                        </fo:wrapper>
+         |                                                    </fo:inline>
          |                                                </fo:block>
          |                                            </fo:list-item-label>
-         |                                            <fo:list-item-body start-indent="body-start()">
-         |                                                <fo:block xsl:use-attribute-sets="normal-list">
+         |                                            <fo:list-item-body role="LBody" start-indent="body-start()">
+         |                                                <fo:block>
          |                                                    tell us about a change to your address
          |                                                </fo:block>
          |                                            </fo:list-item-body>
          |                                        </fo:list-item>
-         |                                        <fo:list-item>
-         |                                            <fo:list-item-label end-indent="label-end()">
+         |                                        <fo:list-item xsl:use-attribute-sets="small-list" role="LI">
+         |                                            <fo:list-item-label role="Lbl" end-indent="label-end()">
          |                                                <fo:block>
-         |                                                    <fo:inline>&#8226;</fo:inline>
+         |                                                    <fo:inline>
+         |                                                        <fo:wrapper role="artifact">
+         |                                                            &#8226;
+         |                                                        </fo:wrapper>
+         |                                                    </fo:inline>
          |                                                </fo:block>
          |                                            </fo:list-item-label>
-         |                                            <fo:list-item-body start-indent="body-start()">
-         |                                                <fo:block xsl:use-attribute-sets="normal-list">
+         |                                            <fo:list-item-body role="LBody" start-indent="body-start()">
+         |                                                <fo:block>
          |                                                    check your income tax estimate tax code
          |                                                </fo:block>
          |                                            </fo:list-item-body>
          |                                        </fo:list-item>
          |                                    </fo:list-block>
          |                                </fo:block>
-         |                                <fo:block>
+         |                                <fo:block role="Div">
          |                                    <fo:block xsl:use-attribute-sets="small">
          |                                        View more information about National Insurance at:
          |                                    </fo:block>
@@ -503,7 +602,7 @@ object ApacheFOPHelpers {
          |
          |
          |                    <!-- end text -->
-         |                    <fo:block>
+         |                    <fo:block role="Div">
          |                        <fo:block xsl:use-attribute-sets="large">
          |                            Information is available in large print, audio tape and Braille formats.
          |                        </fo:block>

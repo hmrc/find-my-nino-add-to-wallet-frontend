@@ -26,7 +26,7 @@ class ApacheFOPHelpersSpec extends SpecBase {
     }
 
     "xmlData must return String" in {
-      ApacheFOPHelpers.xmlData("","","","","","","")
+      ApacheFOPHelpers.xmlData("","","", List[String](),"","")
     }
   }
 }

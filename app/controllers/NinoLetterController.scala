@@ -17,7 +17,7 @@
 package controllers
 
 import controllers.actions._
-import models.PersonDetails
+import models.{Address, PersonDetails}
 import org.apache.fop.apps.{FOUserAgent, Fop, FopFactory}
 import org.apache.xmlgraphics.util.MimeConstants
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -53,15 +53,16 @@ class NinoLetterController @Inject()(
 
   def saveNationalInsuranceNumberAsPdf(): Action[AnyContent] = Action {
 
+    val address: Address = PersonDetails.personDetails.correspondenceAddress.getOrElse(PersonDetails.personDetails.address.get)
+
     val xmlSrc = ApacheFOPHelpers.xmlData(
-      PersonDetails.personDetails.person.title.get,
-      PersonDetails.personDetails.person.firstName.get,
-      PersonDetails.personDetails.person.lastName.get,
+      PersonDetails.personDetails.person.initialsName,
+      PersonDetails.personDetails.person.fullName,
       PersonDetails.personDetails.person.nino.get,
-      PersonDetails.personDetails.address.get.line1.get,
-      PersonDetails.personDetails.address.get.line2.get,
-      PersonDetails.personDetails.address.get.line3.get
-      )
+      address.lines,
+      address.postcode.get,
+      LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY"))
+    )
 
     val out: ByteArrayOutputStream = new ByteArrayOutputStream()
     val pdf = generateNinoPDF(xmlSrc, ApacheFOPHelpers.xslData, out)
@@ -79,6 +80,8 @@ class NinoLetterController @Inject()(
       val fopFactory: FopFactory = FopFactory.newInstance(new File("./app/assets").toURI())
       val foUserAgent: FOUserAgent = fopFactory.newFOUserAgent()
       foUserAgent.setAccessibility(true)
+      foUserAgent.setPdfUAEnabled(true)
+      foUserAgent.setTitle("Your National Insurance letter")
 
       val fop: Fop = fopFactory.newFop(MimeConstants.MIME_PDF, foUserAgent, outStream)
 

@@ -28,22 +28,22 @@ object PersonDetails {
   implicit val formats = Json.format[PersonDetails]
 
   // temporary dummy data
-  var personDetails : PersonDetails = PersonDetails(
+  var personDetails: PersonDetails = PersonDetails(
     Person(
       Option("Joanne"),
       Option("Rachel"),
       Option("Bloggs"),
-      Option(""),
+      None,
       Option("Ms"),
-      Option(""),
+      None,
       Option("QQ 12 34 56 A")
-  ),
+    ),
     Option(Address(
       Option("10 Long Lane"),
       Option("Leeds"),
-      Option(""),
-      Option(""),
-      Option(""),
+      None,
+      None,
+      None,
       Option("LS1 1AB"),
       Option("England"),
       None,

@@ -77,7 +77,7 @@ class NinoLetterController @Inject()(
   private def generateNinoPDF(xmlSrc: StreamSource, xslData: StreamSource, outStream: ByteArrayOutputStream): Array[Byte] = {
 
     try {
-      val fopFactory: FopFactory = FopFactory.newInstance(new File("./app/assets").toURI())
+      val fopFactory: FopFactory = FopFactory.newInstance(new File(".").toURI())
       val foUserAgent: FOUserAgent = fopFactory.newFOUserAgent()
       foUserAgent.setAccessibility(true)
       foUserAgent.setPdfUAEnabled(true)

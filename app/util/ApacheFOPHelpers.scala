@@ -169,7 +169,7 @@ object ApacheFOPHelpers {
          |            <!-- actual layout -->
          |            <fo:page-sequence master-reference="basicPSM">
          |                <!-- footer -->
-         |                <fo:static-content flow-name="xsl-region-after">
+         |                <fo:static-content role="artifact" flow-name="xsl-region-after">
          |                    <fo:block xsl:use-attribute-sets="footer">
          |                        <!-- page number -->
          |                        <fo:inline-container inline-progression-dimension="50%">
@@ -198,7 +198,9 @@ object ApacheFOPHelpers {
          |                                      border-width="2px"
          |                                      border-color="#28a197"
          |                                      padding-start="4px">
-         |                                <fo:external-graphic content-type="content-type:image/png" src="images/HMRC-logo.jpg" fox:alt-text="HMRC" content-height="scale-to-fit"  content-width="0.8cm"/>
+         |                                <fo:wrapper role="artifact">
+         |                                    <fo:external-graphic content-type="content-type:image/png" src="url('public/images/hmrc-logo.png')" fox:alt-text="HMRC" content-height="scale-to-fit"  content-width="0.8cm"/>
+         |                                </fo:wrapper>
          |                                <fo:block role="P"
          |                                          xsl:use-attribute-sets="default-font"
          |                                          line-height="14pt"
@@ -282,7 +284,6 @@ object ApacheFOPHelpers {
          |                              xsl:use-attribute-sets="default-font-and-padding">
          |                        Keep this number in a safe place. Do not destroy this letter.
          |                    </fo:block>
-         |
          |
          |                    <!-- about NINO information -->
          |                    <fo:block role="Div">

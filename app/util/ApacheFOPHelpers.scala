@@ -199,7 +199,7 @@ object ApacheFOPHelpers {
          |                                      border-color="#28a197"
          |                                      padding-start="4px">
          |                                <fo:wrapper role="artifact">
-         |                                    <fo:external-graphic content-type="content-type:image/png" src="url('public/images/hmrc-logo.png')" fox:alt-text="HMRC" content-height="scale-to-fit"  content-width="0.8cm"/>
+         |                                    <fo:external-graphic content-type="content-type:image/png" src="url('public/images/HMRC-logo.jpg')" fox:alt-text="HMRC" content-height="scale-to-fit"  content-width="0.8cm"/>
          |                                </fo:wrapper>
          |                                <fo:block role="P"
          |                                          xsl:use-attribute-sets="default-font"

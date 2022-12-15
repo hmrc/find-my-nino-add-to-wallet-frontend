@@ -17,45 +17,42 @@
 package controllers
 
 import base.SpecBase
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
-import org.scalatestplus.mockito.MockitoSugar.mock
-import play.api.inject
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import repositories.SessionRepository
+import util.Stubs.userLoggedInFMNUser
+import util.TestData.NinoUser
 import views.html.IndexView
-
-import scala.concurrent.Future
 
 class IndexControllerSpec extends SpecBase with MockitoSugar {
 
   "Index Controller" - {
+     lazy val indexController = applicationWithConfig.injector.instanceOf[IndexController]
+     lazy val view = applicationWithConfig.injector.instanceOf[IndexView]
 
     "must return OK and the correct view for a GET" in {
 
-      val mockSessionRepository = mock[SessionRepository]
-      when(mockSessionRepository.get(any())) thenReturn Future.successful(None)
-
-      val application =
-        applicationBuilder(userAnswers = None)
-          .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
-          )
-          .build()
-
-      running(application) {
+      running(applicationWithConfig){
+        userLoggedInFMNUser(NinoUser)
         val request = FakeRequest(GET, routes.IndexController.onPageLoad.url)
+          .withSession(("sessionId", "someId"))
+          .withSession(("authToken","Bearer 123"))
 
-        val result = route(application, request).value
 
-        val view = application.injector.instanceOf[IndexView]
-
-        status(result) mustEqual OK
-
-        contentAsString(result) mustEqual view()(request, messages(application)).toString
+        val result = indexController.onPageLoad(request)
+        status(result) mustBe OK
+        contentAsString(result) mustEqual view()(request, messages(applicationWithConfig)).toString
       }
+
+    }
+
+
+    "must return 303 and the correct view for unauthorised access GET" in {
+      val request = FakeRequest(GET, routes.IndexController.onPageLoad.url)
+      val result = indexController.onPageLoad(request)
+      status(result) mustBe 303
+      contentAsString(result) != view()(request, messages(applicationWithConfig)).toString
     }
   }
 }
+

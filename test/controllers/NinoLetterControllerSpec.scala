@@ -31,7 +31,7 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import scala.concurrent.Future
 
-class NinoLetterControllerSpec extends SpecBase {
+class NinoLetterControllerSpec extends SpecBase  {
 
   val pd = PersonDetails.personDetails
 

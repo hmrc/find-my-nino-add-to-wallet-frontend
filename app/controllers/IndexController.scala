@@ -16,27 +16,42 @@
 
 package controllers
 
-import controllers.actions.IdentifierAction
+import config.FrontendAppConfig
 import models.UserAnswers
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import play.api.routing.Router.RequestImplicits.WithHandlerDef
+import play.api.{Configuration, Environment}
 import repositories.SessionRepository
+import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.SessionKeys
-import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.IndexView
 
 import javax.inject.Inject
+import scala.concurrent.{ExecutionContext, Future}
 
 class IndexController @Inject()(
-                                 val controllerComponents: MessagesControllerComponents,
-                                 identify: IdentifierAction,
-                                 sessionRepository: SessionRepository,
-                                 view: IndexView
-                               ) extends FrontendBaseController with I18nSupport {
+                                 view: IndexView,
+                                 authConnector: AuthConnector,
+                                 sessionRepository: SessionRepository
+                               )(implicit
+                                 config: Configuration,
+                                 env: Environment,
+                                 ec: ExecutionContext,
+                                 cc: MessagesControllerComponents,
+                                 frontendAppConfig: FrontendAppConfig
+                               )
+  extends FMNBaseController(authConnector) with I18nSupport {
 
-  def onPageLoad: Action[AnyContent] = identify { implicit request =>
-    val sessionId = request.request.session.get(SessionKeys.sessionId).get
-    sessionRepository.set(new UserAnswers(sessionId))
-    Ok(view())
-  }
-}
+  def onPageLoad: Action[AnyContent] =
+    Action.async { implicit request =>
+      authorisedAsFMNUser { _ =>
+        Future successful  {
+           val sessionId = request.request.session.get(SessionKeys.sessionId).get
+           sessionRepository.set(new UserAnswers(sessionId))
+           Ok(view())
+        }
+      }(routes.IndexController.onPageLoad)
+    }}
+
+

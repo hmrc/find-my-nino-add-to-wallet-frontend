@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 package controllers
 
 import base.SpecBase
-import connectors.FindMyNinoServiceConnector
+import connectors.ApplePassConnector
 import forms.EnterYourNinoFormProvider
 import models.{EnterYourNino, NormalMode, UserAnswers}
 import navigation.{FakeNavigator, Navigator}
@@ -108,7 +108,7 @@ class EnterYourNinoControllerSpec extends SpecBase with MockitoSugar {
     "must redirect to the next page when valid data is submitted" in {
 
       val mockSessionRepository = mock[SessionRepository]
-      val mockFindMyNinoServiceConnector = mock[FindMyNinoServiceConnector]
+      val mockFindMyNinoServiceConnector = mock[ApplePassConnector]
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
       when(mockFindMyNinoServiceConnector.createApplePass(any())(any(), any())) thenReturn Future.successful(Some(UUID.randomUUID().toString))
@@ -118,7 +118,7 @@ class EnterYourNinoControllerSpec extends SpecBase with MockitoSugar {
           .overrides(
             bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
             bind[SessionRepository].toInstance(mockSessionRepository),
-            bind[FindMyNinoServiceConnector].toInstance(mockFindMyNinoServiceConnector)
+            bind[ApplePassConnector].toInstance(mockFindMyNinoServiceConnector)
           )
           .build()
 

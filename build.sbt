@@ -72,6 +72,8 @@ lazy val testSettings: Seq[Def.Setting[_]] = Seq(
     unmanagedSourceDirectories += baseDirectory.value / "test-utils"
 )
 
+PlayKeys.fileWatchService := play.dev.filewatch.FileWatchService.jdk7(play.sbt.run.toLoggerProxy(sLog.value))
+
 lazy val itSettings = Defaults.itSettings ++ Seq(
     unmanagedSourceDirectories := Seq(
         baseDirectory.value / "it",

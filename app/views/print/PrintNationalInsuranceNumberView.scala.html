@@ -1,5 +1,5 @@
 @*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@
     hmrcPageHeading: uk.gov.hmrc.hmrcfrontend.views.html.components.HmrcPageHeading
 )
 
-@(personDetails: models.PersonDetails, dateString: String, saveNiLetterAsPdfLinkEnabled: Boolean, nino : String)(implicit request: Request[_], messages: Messages)
+@(personDetails: models.PersonDetails, dateString: String, saveNiLetterAsPdfLinkEnabled: Boolean, nino : String, pdId: String)(implicit request: Request[_], messages: Messages)
 
 @stylesheet = {
     <link rel="stylesheet" href='@routes.AssetsController.versioned("stylesheets/partials/print-this-document.css")'>
@@ -40,7 +40,7 @@
 
     @hmrcPageHeading(PageHeading(
         text = messages("label.your_national_insurance_letter"),
-        section = Some(messages("label.profile_and_settings"))
+
     ))
 
     <div class="print-this">
@@ -49,7 +49,7 @@
     </div>
     @if(saveNiLetterAsPdfLinkEnabled) {
         <div class="save-this">
-            <a class="save-this__link" href="/find-my-nino-add-to-wallet-frontend/nino-letter/save-letter-as-pdf" data-journey-click="save - click:Your National Insurance letter:@messages("label.save_as_a_PDF")">@messages("label.save_as_a_PDF")</a>
+            <a class="save-this__link" href="/find-my-nino-add-to-wallet-frontend/nino-letter/save-letter-as-pdf?pdId=@{pdId}" data-journey-click="save - click:Your National Insurance letter:@messages("label.save_as_a_PDF")">@messages("label.save_as_a_PDF")</a>
         </div>
     }
 

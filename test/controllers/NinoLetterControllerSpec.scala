@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,8 @@
 package controllers
 
 import base.SpecBase
-import models.PersonDetails
+import connectors.ApplePassConnector
+import models.{Person, PersonDetails}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar.mock
@@ -25,47 +26,49 @@ import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
+import util.CitizenDetailsFixtures
 import views.html.print.PrintNationalInsuranceNumberView
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import scala.concurrent.Future
 
-class NinoLetterControllerSpec extends SpecBase  {
+class NinoLetterControllerSpec extends SpecBase with CitizenDetailsFixtures {
 
-  val pd = PersonDetails.personDetails
+  val pd = buildPersonDetails
 
   "NinoLetter Controller" - {
     "must return OK and the correct view for a GET" in {
+      val jsonPd = play.api.libs.json.Json.toJson(pd)
+      val mockApplePassConnector = mock[ApplePassConnector]
       val mockSessionRepository = mock[SessionRepository]
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+
+      when(mockApplePassConnector.getPersonDetails(any())(any(),any())) thenReturn (Future.successful(Option[String](jsonPd.toString())))
       val application =
         applicationBuilder(userAnswers = Some(emptyUserAnswers))
           .overrides(
             bind[SessionRepository].toInstance(mockSessionRepository),
+            bind[ApplePassConnector].toInstance(mockApplePassConnector)
           )
           .build()
 
       running(application) {
-
-        val request = FakeRequest(GET, routes.NinoLetterController.onPageLoad().url)
-
         val view = application.injector.instanceOf[PrintNationalInsuranceNumberView]
 
+        val request = FakeRequest(GET, routes.NinoLetterController.onPageLoad("somePdId").url)
         val result = route(application, request).value
-
-        status(result) mustEqual OK
+        status(result) mustEqual 303
 
         contentAsString(result).trim mustEqual
-          view(pd,LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),saveNiLetterAsPdfLinkEnabled = true,PersonDetails.personDetails.person.nino.get)(request,messages(application)).toString().trim
+          view(pd,LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),saveNiLetterAsPdfLinkEnabled = true,
+            pd.person.nino.get.nino,"pdId")(request,messages(application)).toString().trim
 
-        val requestPdf = FakeRequest(GET, routes.NinoLetterController.saveNationalInsuranceNumberAsPdf().url)
+        val requestPdf = FakeRequest(GET, routes.NinoLetterController.saveNationalInsuranceNumberAsPdf("pdID").url)
         val res2 = route(application, requestPdf).value
         contentAsString(res2).contains("national-insurance-letter.pdf").equals(true)
 
       }
     }
-
   }
-
 }

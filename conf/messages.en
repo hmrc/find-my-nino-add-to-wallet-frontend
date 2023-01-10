@@ -70,10 +70,10 @@ enterYourNino.fullName.change.hidden = fullName
 enterYourNino.nino.change.hidden = nino
 
 storeMyNino.title = Save To Wallet
-storeMyNino.heading = Your National Insurance number
+storeMyNino.heading = Store your National Insurance number
 storeMyNino.saveToPhoneWallet.saveSafePlace.title = Before you leave, record this number and keep it in a safe place.
 storeMyNino.saveToPhoneWallet.saveSafePlace.label = Your National Insurance number is unique to you and will never change. To prevent identity fraud, do not share it with anyone who does not need it.
-storeMyNino.yourInsuranceNumberText = Your National Insurance number is:
+storeMyNino.yourInsuranceNumberText = Your National Insurance number is
 storeMyNino.saveToPhoneWallet.title = Save your National Insurance number to your phone's wallet
 storeMyNino.saveToPhoneWallet.label = Make sure you can find your National Insurance number anytime by saving it in the Apple Wallet or in Google Pay. For Android, you may need to check that Google Pay is already installed on your phone.
 storeMyNino.saveToPhoneWallet.apple = Apple iPhones

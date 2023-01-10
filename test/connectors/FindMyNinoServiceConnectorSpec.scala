@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ class FindMyNinoServiceConnectorSpec extends SpecBase with MockitoSugar{
   implicit val hc: HeaderCarrier = HeaderCarrier()
   implicit lazy val ec: ExecutionContext = scala.concurrent.ExecutionContext.global //TODO: remove lazy keyword when Caching spec is done.
 
-  val mockFMNConnector = mock[FindMyNinoServiceConnector]
+  val mockFMNConnector = mock[ApplePassConnector]
 
   "Methods tests" - {
     "getApplePass" in {

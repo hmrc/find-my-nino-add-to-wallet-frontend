@@ -1,5 +1,5 @@
 @*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,9 @@
 @import tags._
 @import components.{H2,H3, P}
 @this(h2: H2, h3: H3, p: P)
-@(personDetails: models.PersonDetails, dateString: String, nino: String)(implicit request: Request[_], messages: play.api.i18n.Messages)
+@(personDetails: models.PersonDetails,
+dateString: String,
+nino: String)(implicit request: Request[_], messages: play.api.i18n.Messages)
 
 
 
@@ -25,8 +27,10 @@
     <div class="grid-row print-header">
         <div class="govuk-grid-column-one-third">
             <img class="print-header__hmrc-logo" src="assets/images/HMRC-logo.jpg"/>
-
-            <h2 class="govuk-heading-m"><span>@messages("label.hm_revenue_customs_ni_print.revenue")</span> @Html(messages("label.hm_revenue_customs_ni_print.customs"))</h2>
+            <h2 class="govuk-heading-m">
+                <span>@messages("label.hm_revenue_customs_ni_print.revenue")</span>
+                @Html(messages("label.hm_revenue_customs_ni_print.customs"))
+            </h2>
         </div>
         <div class="govuk-grid-column-two-thirds">
             <h3 class="govuk-heading-m print-header__heading">

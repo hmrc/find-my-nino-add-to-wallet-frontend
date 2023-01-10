@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 package controllers
 
-import connectors.FindMyNinoServiceConnector
+import connectors.ApplePassConnector
 import controllers.actions._
 import forms.EnterYourNinoFormProvider
 import models.{Mode, StoreMyNino}
@@ -40,7 +40,7 @@ class EnterYourNinoController @Inject()(
                                          requireData: DataRequiredAction,
                                          formProvider: EnterYourNinoFormProvider,
                                          val controllerComponents: MessagesControllerComponents,
-                                         findMyNinoServiceConnector: FindMyNinoServiceConnector,
+                                         findMyNinoServiceConnector: ApplePassConnector,
                                          view: EnterYourNinoView
                                        )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
@@ -68,7 +68,7 @@ class EnterYourNinoController @Inject()(
           for {
             updatedAnswers <- Future.fromTry(request.userAnswers.set(EnterYourNinoPage, value))
             passId <- findMyNinoServiceConnector.createApplePass(updatedAnswers)
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(StoreMyNinoPage, StoreMyNino(passId.get, value.nino)))
+            updatedAnswers <- Future.fromTry(request.userAnswers.set(StoreMyNinoPage, StoreMyNino(passId.get, value.nino, "")))
             _ <- sessionRepository.set(updatedAnswers)
           } yield Redirect(StoreMyNinoPage.route)
         }

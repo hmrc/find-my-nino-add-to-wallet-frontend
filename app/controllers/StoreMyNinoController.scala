@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,55 +16,108 @@
 
 package controllers
 
-import connectors.FindMyNinoServiceConnector
-import controllers.actions._
+import config.FrontendAppConfig
+import connectors.{ApplePassConnector, CitizenDetailsConnector}
 import forms.StoreMyNinoProvider
-import pages.StoreMyNinoPage
+import models.{PersonDetails, StoreMyNino}
 import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
+import play.api.{Configuration, Environment}
+import uk.gov.hmrc.auth.core.AuthConnector
 import views.html.StoreMyNinoView
 
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
+import scala.concurrent.duration.DurationInt
+import scala.concurrent.{Await, ExecutionContext, Future}
 
 class StoreMyNinoController @Inject()(
+                                       val citizenDetailsConnector: CitizenDetailsConnector,
+                                       findMyNinoServiceConnector: ApplePassConnector,
+                                       authConnector: AuthConnector,
                                        override val messagesApi: MessagesApi,
-                                       findMyNinoServiceConnector: FindMyNinoServiceConnector,
-                                       identify: IdentifierAction,
-                                       getData: DataRetrievalAction,
-                                       requireData: DataRequiredAction,
-                                       val controllerComponents: MessagesControllerComponents,
+                                       getPersonDetailsAction: GetPersonDetailsAction,
                                        formProvider: StoreMyNinoProvider,
                                        view: StoreMyNinoView
-                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                     )(implicit config: Configuration,
+                                       env: Environment,
+                                       ec: ExecutionContext,
+                                       cc: MessagesControllerComponents,
+                                       frontendAppConfig: FrontendAppConfig) extends FMNBaseController(authConnector) with I18nSupport {
 
   private val form = formProvider()
-
-  def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData) {
+  /*def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData) {
     implicit request => {
       val preparedForm = request.userAnswers.get(StoreMyNinoPage).fold(form)(form.fill)
+      val t = citizenDetailsConnector.personDetails(uk.gov.hmrc.domain.Nino("AA000003B"))
+      Ok(view(preparedForm))
+    }
+  }*/
+
+
+  implicit val loginContinueUrl: Call = routes.StoreMyNinoController.onPageLoad()
+
+  def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction) {
+    implicit request => {
+      val pd: PersonDetails = request.personDetails.get
+      val pdId = Await.result(findMyNinoServiceConnector.createPersonDetailsRow(pd), 10 seconds).getOrElse("xxx")
+      val passId: String = Await.result(findMyNinoServiceConnector.createApplePass(pd.person.fullName, request.nino.get.nino), 10 seconds).getOrElse("xxx")
+      val preparedForm = form.fill(new StoreMyNino(passId, request.nino.get.nino, pdId))
       Ok(view(preparedForm))
     }
   }
 
-  def getPassCard(passId: String): Action[AnyContent] = Action.async {
+
+  /*
+  //working........................
+  def onPageLoad: Action[AnyContent] = Action.async(
+    implicit request =>
+      authorisedAsFMNUser { x =>
+        Future successful {
+          val nino = new Nino(x.nino.nino)
+          val pd = Await.result(getPersonDetails(nino, hc), 10 seconds).value.get
+          val passId: String = Await.result(findMyNinoServiceConnector.createApplePass(pd.person.fullName, x.nino.nino), 10 seconds).getOrElse("xxx")
+          val preparedForm = form.fill(new StoreMyNino(passId, x.nino.nino))
+          Ok(view(preparedForm))
+        }
+      }(routes.StoreMyNinoController.onPageLoad))*/
+
+
+  /*private def getPersonDetails(nino:Nino, hc:HeaderCarrier)= {
+    implicit request =>
+      authorisedAsFMNUser { x =>
+    Option(nino) match {
+      case Some(nino) =>
+        citizenDetailsConnector.personDetails(nino)(hc).map {
+          case PersonDetailsSuccessResponse(pd) =>
+            Right(Some(pd))
+          case _ => Right(None)
+        }
+      case _ => Future.successful(Right(None))
+    }
+  }}*/
+
+
+  def getPassCard(passId: String): Action[AnyContent] = Action async {
     implicit request => {
-      findMyNinoServiceConnector.getApplePass(passId)
-        .map {
+      authorisedAsFMNUser { _ =>
+        findMyNinoServiceConnector.getApplePass(passId).map {
           case Some(data) => Ok(data).withHeaders("Content-Disposition" -> "attachment; filename=NinoPass.pkpass")
           case _ => NotFound
         }
+      }(loginContinueUrl)
     }
   }
 
-  def getQrCode(passId: String): Action[AnyContent] = Action.async {
+  def getQrCode(passId: String): Action[AnyContent] = Action async {
     implicit request => {
-      findMyNinoServiceConnector.getQrCode(passId)
-        .map {
+      authorisedAsFMNUser { _ =>
+        findMyNinoServiceConnector.getQrCode(passId).map {
           case Some(data) => Ok(data).withHeaders("Content-Disposition" -> "attachment; filename=NinoPass.pkpass")
           case _ => NotFound
         }
+      }(loginContinueUrl)
     }
   }
 }
+
+

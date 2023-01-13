@@ -26,42 +26,42 @@
 
     @layout(pageTitle = titleNoForm(messages("storeMyNino.title"))) {
 
-        <h2 class="govuk-heading-l">Save your National Insurance number</h2>
+        <h2 class="govuk-heading-l">@messages("storeMyNino.heading")</h2>
 
         <div class="govuk-inset-text">
-            <p>Your National Insurance number is <strong>@{
+            <p>@messages("storeMyNino.saveYourNino.yourNinoIs")&nbsp;<strong>@{
                 form("nino").value
                 }</strong></p>
         </div>
 
         <div>
-            <p class="govuk-body">You can:</p>
+            <p class="govuk-body">@messages("storeMyNino.saveYourNino.p1")</p>
             <ul class="govuk-list govuk-list--bullet">
-                <li>get a PDF of your National Insurance number confirmation letter </li>
-                <li>add your number to your phone's wallet </li>
+                <li>@messages("storeMyNino.saveYourNino.list1.li1")</li>
+                <li>@messages("storeMyNino.saveYourNino.list1.li2")</li>
             </ul>
         </div>
 
 
-        <p class="govuk-body">If you save your National Insurance number on your phone, make sure it has security like Face ID, a pattern, or a pin code set up. This helps protect your details.</p>
+        <p class="govuk-body">@messages("storeMyNino.saveYourNino.p2")</p>
 
-        <h2 class="govuk-heading-m">Get your National Insurance number on a letter (PDF)</h2>
+        <h2 class="govuk-heading-m">@messages("storeMyNino.subHeading1")</h2>
 
         <ul class="govuk-list govuk-list--bullet govuk-list--spaced">
-            <li><a href="/find-my-nino-add-to-wallet-frontend/nino-letter?pdId=@{form("pdId").value}">View or print</a></li>
-            <li><a href="/find-my-nino-add-to-wallet-frontend/nino-letter/save-letter-as-pdf?pdId=@{form("pdId").value}"" download="">Download (PDF)</a></li>
+            <li><a href="/find-my-nino-add-to-wallet-frontend/nino-letter?pdId=@{form("pdId").value}">@messages("storeMyNino.getYourNinoLetter.list1.li1")</a></li>
+            <li><a href="/find-my-nino-add-to-wallet-frontend/nino-letter/save-letter-as-pdf?pdId=@{form("pdId").value}"" download="">@messages("storeMyNino.getYourNinoLetter.list1.li2")</a></li>
         </ul>
 
 
-        <h2 class="govuk-heading-m">Save your number to your phone</h2>
+        <h2 class="govuk-heading-m">@messages("storeMyNino.subHeading2")</h2>
 
-        <p class="govuk-body">Your National Insurance number would:</p>
+        <p class="govuk-body">@messages("storeMyNino.saveToPhone.p1")</p>
 
         <ul class="govuk-list govuk-list--bullet">
-            <li>be readily available in your Apple or Google wallet with your other cards — even offline</li>
-            <li>be protected by your phone's security settings</li>
-            <li>only be shared with the wallet provider and no other third parties</li>
-            <li>take up minimal storage space on your phone</li>
+            <li>@messages("storeMyNino.saveToPhone.list1.li1")</li>
+            <li>@messages("storeMyNino.saveToPhone.list1.li2")</li>
+            <li>@messages("storeMyNino.saveToPhone.list1.li3")</li>
+            <li>@messages("storeMyNino.saveToPhone.list1.li4")</li>
         </ul>
 
         <div class="hide-on-phones">

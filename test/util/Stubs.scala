@@ -16,23 +16,10 @@
 
 package util
 
-import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, equalToJson, post, stubFor, unauthorized, urlEqualTo}
+import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 
 object Stubs {
-
-
-
-  /*private val FMNRetrievals: String =
-    """
-      |{
-      |	"authorise": [{
-      |		"authProviders": ["GovernmentGateway"]
-      |	}],
-      |	"retrieve": ["nino", "credentialRole", "internalId" ]
-      |}
-      |""".stripMargin*/
-
 
   private val FMNRetrievals: String =
     """

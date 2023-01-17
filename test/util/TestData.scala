@@ -16,24 +16,12 @@
 
 package util
 
-import java.time.LocalDate
-
 object TestData {
-
-  /*val NinoUser: String =
-    """
-      |{
-      |	"nino": "QQ123456A",
-      |	"credentialRole": "User",
-      |	"internalId": "Int-8612ba91-5581-411d-9d32-fb2de937a565"
-      |}
-      |""".stripMargin*/
-
 
   val NinoUser: String =
     """
       |{
-      |	"nino": "QQ123456A",
+      |	"nino": "AA000003B",
       |	"credentialRole": "User",
       |	"internalId": "Int-8612ba91-5581-411d-9d32-fb2de937a565",
       | "confidenceLevel": 250,

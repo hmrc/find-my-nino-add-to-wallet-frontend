@@ -19,7 +19,6 @@ package connectors
 import com.google.inject.Inject
 import config.ConfigDecorator
 import models.{PersonDetails, UserAnswers}
-import pages.EnterYourNinoPage
 import play.api.http.Status._
 import play.api.libs.json._
 import uk.gov.hmrc.http.HttpReads.Implicits._
@@ -35,23 +34,6 @@ class ApplePassConnector @Inject()(config: ConfigDecorator, http: HttpClient) {
   private val headers: Seq[(String, String)] = Seq("Content-Type" -> "application/json")
   implicit val writes: Writes[ApplePassDetails] = Json.writes[ApplePassDetails]
 
-  def createApplePass(userAnswers: UserAnswers)
-                     (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Some[String]] = {
-
-    val url = s"${config.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/create-apple-pass"
-    val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
-
-    val enterYourNinoResults = userAnswers.get(EnterYourNinoPage).get
-    val details = ApplePassDetails(enterYourNinoResults.fullName, enterYourNinoResults.nino)
-
-    http.POST[JsValue, HttpResponse](url, Json.toJson(details))(implicitly, implicitly, hc, implicitly)
-      .map { response =>
-        response.status match {
-          case OK => Some(response.body)
-          case _ => throw new HttpException(response.body, response.status)
-        }
-      }
-  }
 
 
   def createPersonDetailsRow(personDetails:PersonDetails)

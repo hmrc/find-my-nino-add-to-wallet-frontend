@@ -27,7 +27,8 @@ import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.auth.core.AuthConnector
 import util.ApacheFOPHelpers
-import views.html.print._
+import play.api.libs.json._
+import views.html.print.PrintNationalInsuranceNumberView
 
 import java.io.{ByteArrayOutputStream, File}
 import java.time.LocalDate
@@ -38,7 +39,6 @@ import javax.xml.transform.stream.StreamSource
 import javax.xml.transform.{Result, Transformer, TransformerFactory}
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, ExecutionContext, Future}
-import play.api.libs.json._
 
 class NinoLetterController @Inject()(
                                       override val messagesApi: MessagesApi,
@@ -46,7 +46,7 @@ class NinoLetterController @Inject()(
                                       getData: DataRetrievalAction,
                                       requireData: DataRequiredAction,
                                       authConnector: AuthConnector,
-                                      findMyNinoServiceConnector: ApplePassConnector,
+                                      applePassConnector: ApplePassConnector,
                                       view: PrintNationalInsuranceNumberView
                                     )(implicit config: Configuration,
                                       env: Environment,
@@ -60,15 +60,17 @@ class NinoLetterController @Inject()(
   def onPageLoad(pdId: String): Action[AnyContent] = Action async {
     implicit request => {
       authorisedAsFMNUser { authContext =>
-        val pd = Await.result(findMyNinoServiceConnector.getPersonDetails(pdId), 10 seconds).getOrElse("xxx")
-        val personDetails = Json.fromJson[PersonDetails](Json.parse(Json.parse(pd).asInstanceOf[JsString].value)).get
-        val personNino = personDetails.person.nino.get.nino
-
-        Future(Ok(view(
-          personDetails,
-          LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
-          true,
-          personNino, pdId)))
+        for {
+          pd <- applePassConnector.getPersonDetails(pdId)
+        } yield {
+          val personDetails = Json.fromJson[PersonDetails](Json.parse(Json.parse(pd.get).asInstanceOf[JsString].value)).get
+          val personNino = personDetails.person.nino.get.nino
+          Ok(view(
+            personDetails,
+            LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
+            true,
+            personNino, pdId))
+        }
       }(routes.NinoLetterController.onPageLoad(pdId))
 
     }
@@ -79,7 +81,7 @@ class NinoLetterController @Inject()(
 
     implicit request => {
       authorisedAsFMNUser { authContext =>
-        val pd = Await.result(findMyNinoServiceConnector.getPersonDetails(pdId), 10 seconds).getOrElse("xxx")
+        val pd = Await.result(applePassConnector.getPersonDetails(pdId), 10 seconds).getOrElse("xxx")
         val personDetails = Json.fromJson[PersonDetails](Json.parse(Json.parse(pd).asInstanceOf[JsString].value)).get
 
 

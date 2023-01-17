@@ -35,11 +35,9 @@ class CheckYourAnswersController @Inject()(
 
   def onPageLoad(): Action[AnyContent] = (identify andThen getData andThen requireData) {
     implicit request =>
-
       val list = SummaryListViewModel(
         rows = Seq.empty
       )
-
       Ok(view(list))
   }
 }

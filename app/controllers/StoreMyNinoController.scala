@@ -28,7 +28,7 @@ import views.html.StoreMyNinoView
 
 import javax.inject.Inject
 import scala.concurrent.duration.DurationInt
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.{Await, ExecutionContext}
 
 class StoreMyNinoController @Inject()(
                                        val citizenDetailsConnector: CitizenDetailsConnector,
@@ -45,14 +45,6 @@ class StoreMyNinoController @Inject()(
                                        frontendAppConfig: FrontendAppConfig) extends FMNBaseController(authConnector) with I18nSupport {
 
   private val form = formProvider()
-  /*def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData) {
-    implicit request => {
-      val preparedForm = request.userAnswers.get(StoreMyNinoPage).fold(form)(form.fill)
-      val t = citizenDetailsConnector.personDetails(uk.gov.hmrc.domain.Nino("AA000003B"))
-      Ok(view(preparedForm))
-    }
-  }*/
-
 
   implicit val loginContinueUrl: Call = routes.StoreMyNinoController.onPageLoad()
 
@@ -65,36 +57,6 @@ class StoreMyNinoController @Inject()(
       Ok(view(preparedForm))
     }
   }
-
-
-  /*
-  //working........................
-  def onPageLoad: Action[AnyContent] = Action.async(
-    implicit request =>
-      authorisedAsFMNUser { x =>
-        Future successful {
-          val nino = new Nino(x.nino.nino)
-          val pd = Await.result(getPersonDetails(nino, hc), 10 seconds).value.get
-          val passId: String = Await.result(findMyNinoServiceConnector.createApplePass(pd.person.fullName, x.nino.nino), 10 seconds).getOrElse("xxx")
-          val preparedForm = form.fill(new StoreMyNino(passId, x.nino.nino))
-          Ok(view(preparedForm))
-        }
-      }(routes.StoreMyNinoController.onPageLoad))*/
-
-
-  /*private def getPersonDetails(nino:Nino, hc:HeaderCarrier)= {
-    implicit request =>
-      authorisedAsFMNUser { x =>
-    Option(nino) match {
-      case Some(nino) =>
-        citizenDetailsConnector.personDetails(nino)(hc).map {
-          case PersonDetailsSuccessResponse(pd) =>
-            Right(Some(pd))
-          case _ => Right(None)
-        }
-      case _ => Future.successful(Right(None))
-    }
-  }}*/
 
 
   def getPassCard(passId: String): Action[AnyContent] = Action async {

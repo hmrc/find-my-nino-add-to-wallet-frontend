@@ -18,55 +18,68 @@ package controllers
 
 import base.SpecBase
 import connectors.ApplePassConnector
-import models.{Person, PersonDetails}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
-import org.scalatestplus.mockito.MockitoSugar.mock
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject.bind
+import play.api.libs.json.{JsString, Json}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import repositories.SessionRepository
 import util.CitizenDetailsFixtures
+import util.Stubs.userLoggedInFMNUser
+import util.TestData.NinoUser
 import views.html.print.PrintNationalInsuranceNumberView
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import scala.concurrent.Future
 
-class NinoLetterControllerSpec extends SpecBase with CitizenDetailsFixtures {
+class NinoLetterControllerSpec extends SpecBase with CitizenDetailsFixtures with MockitoSugar {
 
   val pd = buildPersonDetails
+  val jsonPd: JsString = JsString(Json.toJson(pd).toString())
+
+
+
+  val personDetailsId = "pdId"
+
+  lazy val mockApplePassConnector = mock[ApplePassConnector]
+  lazy val ninoLetterController = applicationWithConfig.injector.instanceOf[NinoLetterController]
+  lazy val view = applicationWithConfig.injector.instanceOf[PrintNationalInsuranceNumberView]
+
 
   "NinoLetter Controller" - {
     "must return OK and the correct view for a GET" in {
-      val jsonPd = play.api.libs.json.Json.toJson(pd)
-      val mockApplePassConnector = mock[ApplePassConnector]
-      val mockSessionRepository = mock[SessionRepository]
-      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      userLoggedInFMNUser(NinoUser)
 
-      when(mockApplePassConnector.getPersonDetails(any())(any(),any())) thenReturn (Future.successful(Option[String](jsonPd.toString())))
-      val application =
-        applicationBuilder(userAnswers = Some(emptyUserAnswers))
-          .overrides(
-            bind[SessionRepository].toInstance(mockSessionRepository),
-            bind[ApplePassConnector].toInstance(mockApplePassConnector)
-          )
-          .build()
+      when(mockApplePassConnector.getPersonDetails(any())(any(), any()))
+        .thenReturn(Future.successful(Some(jsonPd.toString())))
+
+      val application = applicationBuilderWithConfig()
+        .overrides(
+          bind[ApplePassConnector].toInstance(mockApplePassConnector),
+        )
+        .build()
+
 
       running(application) {
-        val view = application.injector.instanceOf[PrintNationalInsuranceNumberView]
+        val request = FakeRequest(GET, routes.NinoLetterController.onPageLoad(personDetailsId).url)
+          .withSession(("authToken", "Bearer 123"))
 
-        val request = FakeRequest(GET, routes.NinoLetterController.onPageLoad("somePdId").url)
         val result = route(application, request).value
-        status(result) mustEqual 303
+        status(result) mustEqual OK
 
         contentAsString(result).trim mustEqual
-          view(pd,LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),saveNiLetterAsPdfLinkEnabled = true,
-            pd.person.nino.get.nino,"pdId")(request,messages(application)).toString().trim
+          (view(
+                    pd,
+                    LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
+                    true,
+                    pd.person.nino.get.nino,personDetailsId)(request,messages(application))).toString().trim
 
         val requestPdf = FakeRequest(GET, routes.NinoLetterController.saveNationalInsuranceNumberAsPdf("pdID").url)
         val res2 = route(application, requestPdf).value
         contentAsString(res2).contains("national-insurance-letter.pdf").equals(true)
+
 
       }
     }

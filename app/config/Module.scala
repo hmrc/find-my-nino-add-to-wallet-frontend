@@ -18,6 +18,7 @@ package config
 
 import com.google.inject.AbstractModule
 import controllers.actions._
+import util.{BaseResourceStreamResolver, DefaultFopURIResolver, DefaultResourceStreamResolver, DefaultStylesheetResourceStreamResolver, DefaultXmlFoToPDF, FopURIResolver, StylesheetResourceStreamResolver, XmlFoToPDF}
 
 import java.time.{Clock, ZoneOffset}
 
@@ -32,5 +33,11 @@ class Module extends AbstractModule {
     bind(classOf[IdentifierAction]).to(classOf[SessionIdentifierAction]).asEagerSingleton()
 
     bind(classOf[Clock]).toInstance(Clock.systemDefaultZone.withZone(ZoneOffset.UTC))
+
+    bind(classOf[XmlFoToPDF]).to(classOf[DefaultXmlFoToPDF])
+    bind(classOf[StylesheetResourceStreamResolver]).to(classOf[DefaultStylesheetResourceStreamResolver])
+    bind(classOf[FopURIResolver]).to(classOf[DefaultFopURIResolver])
+    bind(classOf[BaseResourceStreamResolver]).to(classOf[DefaultResourceStreamResolver])
+
   }
 }

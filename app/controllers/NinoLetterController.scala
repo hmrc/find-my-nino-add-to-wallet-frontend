@@ -26,7 +26,7 @@ import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.auth.core.AuthConnector
-import util.ApacheFOPHelpers
+import util.{ApacheFOPHelpers, XmlFoToPDF}
 import play.api.libs.json._
 import views.html.print.PrintNationalInsuranceNumberView
 
@@ -47,7 +47,8 @@ class NinoLetterController @Inject()(
                                       requireData: DataRequiredAction,
                                       authConnector: AuthConnector,
                                       applePassConnector: ApplePassConnector,
-                                      view: PrintNationalInsuranceNumberView
+                                      view: PrintNationalInsuranceNumberView,
+                                      xmlFoToPDF: XmlFoToPDF
                                     )(implicit config: Configuration,
                                       env: Environment,
                                       ec: ExecutionContext,
@@ -84,9 +85,7 @@ class NinoLetterController @Inject()(
         val pd = Await.result(applePassConnector.getPersonDetails(pdId), 10 seconds).getOrElse("xxx")
         val personDetails = Json.fromJson[PersonDetails](Json.parse(Json.parse(pd).asInstanceOf[JsString].value)).get
 
-
-        val xmlSrc = ApacheFOPHelpers.xmlData(
-          personDetails.person.initialsName,
+        val pdf = xmlFoToPDF.createPDF(personDetails.person.initialsName,
           personDetails.person.fullName,
           personDetails.person.nino.get.nino,
           personDetails.address.get.lines,
@@ -94,45 +93,11 @@ class NinoLetterController @Inject()(
           LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY"))
         )
 
-        val out: ByteArrayOutputStream = new ByteArrayOutputStream()
-        val pdf = generateNinoPDF(xmlSrc, ApacheFOPHelpers.xslData, out)
-
         Future(Ok(pdf).as(MimeConstants.MIME_PDF)
           .withHeaders(
             CONTENT_TYPE -> "application/x-download",
             CONTENT_DISPOSITION -> "attachment; filename=national-insurance-letter.pdf"))
       }(routes.NinoLetterController.onPageLoad(pdId))
     }
-
   }
-
-  private def generateNinoPDF(xmlSrc: StreamSource, xslData: StreamSource, outStream: ByteArrayOutputStream): Array[Byte] = {
-
-    try {
-      val fopFactory: FopFactory = FopFactory.newInstance(new File(".").toURI())
-      val foUserAgent: FOUserAgent = fopFactory.newFOUserAgent()
-      foUserAgent.setAccessibility(true)
-      foUserAgent.setPdfUAEnabled(true)
-      foUserAgent.setTitle("Your National Insurance letter")
-
-      val fop: Fop = fopFactory.newFop(MimeConstants.MIME_PDF, foUserAgent, outStream)
-
-      val factory: TransformerFactory = TransformerFactory.newInstance()
-      val transformer: Transformer = factory.newTransformer(xslData)
-      transformer.setParameter("versionParam", "2.0")
-
-      // Resulting SAX events (the generated FO) must be piped through to FOP
-      val res: Result = new SAXResult(fop.getDefaultHandler())
-
-      // Start XSLT transformation and FOP processing
-      transformer.transform(xmlSrc, res)
-      outStream.toByteArray()
-    } catch {
-      case e: Exception => outStream.toByteArray
-    } finally {
-      outStream.close()
-    }
-  }
-
-
 }

@@ -18,6 +18,8 @@ package util
 
 import java.io.StringReader
 import javax.xml.transform.stream.StreamSource
+
+@Deprecated
 object ApacheFOPHelpers {
   def xmlData(initialsName: String, fullName: String,  nino: String, addressLines: List[String], postcode: String, date: String) = {
     val xmlInput =

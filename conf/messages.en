@@ -1,156 +1,86 @@
 service.name = find-my-nino-add-to-wallet-frontend
 
 site.back = Back
-site.remove = Remove
 site.change = Change
 site.no = No
 site.yes = Yes
-site.continue = Continue
 site.start = Start now
 site.startAgain = Start again
 site.signIn = Sign in
 site.govuk = GOV.UK
-site.goToEnterDetails = Enter your Nino Details
 
+# ------ these date messages are used in viewmodels/govuk/DateFluency - are they needed? ---------
 date.day = Day
 date.month = Month
 date.year = Year
+# ------------------------------------------------------------------------------------------------
 
 timeout.title = You’re about to be signed out
-timeout.message = For security reasons, you will be signed out of this service in Enter your Nino Details button
+timeout.message = For security reasons, you will be signed out of this service
 timeout.keepAlive = Stay signed in
 timeout.signOut = Sign out
 
 error.browser.title.prefix = Error:
-error.boolean = Please give an answer
-error.invalid_date = Give a correct date
-error.date.day_blank = Enter a day
-error.date.day_invalid = Give a correct day using numbers 1 to 31
-error.date.month_blank = Enter a month
-error.date.month_invalid = Give a correct month using numbers 1 to 12
-error.date.year_blank = Enter a year
-error.date.year_invalid = Give a correct year
-error.integer = Give an answer in whole numbers
-error.non_numeric = Give a value using only numbers
-error.number = Please enter a valid number
-error.required = Please enter a value
 error.summary.title = There is a problem
 
+# ------ These will need to change --------------------------------------------------------------
 index.title = find-my-nino-add-to-wallet-frontend
 index.heading = Find my Nino Service
 index.guidance = Please click on the button below to visit the 'Store your Nino page'
+# ------------------------------------------------------------------------------------------------
 
 checkYourAnswers.title = Check Your Answers
 checkYourAnswers.heading = Check Your Answers
-
-journeyRecovery.continue.title = Sorry, there is a problem with the service
-journeyRecovery.continue.heading = Sorry, there is a problem with the service
-journeyRecovery.continue.guidance = [Add content to explain how to proceed.]
-journeyRecovery.startAgain.title = Sorry, there is a problem with the service
-journeyRecovery.startAgain.heading = Sorry, there is a problem with the service
-journeyRecovery.startAgain.guidance = [Add content to explain why the user needs to start again.]
-
-signedOut.title = For your security, we signed you out
-signedOut.heading = For your security, we signed you out
-signedOut.guidance = We did not save your answers.
-
 unauthorised.title = You can’t access this service with this account
 unauthorised.heading = You can’t access this service with this account
 
 
-visitStoreMyNinoPage = Visit Store my NINO page
+label.your_personal_tax_account=Personal tax account
 
-enterYourNino.title = Enter Your Details
-enterYourNino.heading = Enter Your Details
-enterYourNino.fullName = Full Name
-enterYourNino.nino = Nino
-enterYourNino.checkYourAnswersLabel = Enter Your Nino
-enterYourNino.error.fullName.required = Enter your full name
-enterYourNino.error.nino.required = Enter your nino
-enterYourNino.error.fullName.length = Full Name must be 100 characters or less
-enterYourNino.error.nino.length = Nino must be 20 characters or less
-enterYourNino.fullName.change.hidden = fullName
-enterYourNino.nino.change.hidden = nino
-
-storeMyNino.title = Save To Wallet
-storeMyNino.heading = Store your National Insurance number
-storeMyNino.saveToPhoneWallet.saveSafePlace.title = Before you leave, record this number and keep it in a safe place.
-storeMyNino.saveToPhoneWallet.saveSafePlace.label = Your National Insurance number is unique to you and will never change. To prevent identity fraud, do not share it with anyone who does not need it.
-storeMyNino.yourInsuranceNumberText = Your National Insurance number is
-storeMyNino.saveToPhoneWallet.title = Save your National Insurance number to your phone's wallet
-storeMyNino.saveToPhoneWallet.label = Make sure you can find your National Insurance number anytime by saving it in the Apple Wallet or in Google Pay. For Android, you may need to check that Google Pay is already installed on your phone.
-storeMyNino.saveToPhoneWallet.apple = Apple iPhones
-
-ninoLetter.title = ninoLetter
-ninoLetter.heading = Your National Insurance letter
-ninoLetter.printLink = Print this letter
-ninoLetter.saveLink = Save as a PDF
-ninoLetter.htmlLetter.revenue = HM Revenue
-ninoLetter.htmlLetter.customs = &amp; Customs
-ninoLetter.htmlLetter.heading = Your National Insurance letter
-ninoLetter.htmlLetter.senderAddress.line1 = NIC&amp;EO
-ninoLetter.htmlLetter.senderAddress.line2 = HMRC
-ninoLetter.htmlLetter.senderAddress.line3 = BX9 1AN
-ninoLetter.htmlLetter.senderAddress.phoneText = Phone
-ninoLetter.htmlLetter.senderAddress.phoneNumber = 0300 200 3500
-ninoLetter.htmlLetter.senderAddress.website = www.gov.uk/hmrc
-ninoLetter.htmlLetter.ninoBox.label = Your National Insurance number is
-ninoLetter.htmlLetter.ninoBox.under = Keep this number in a safe place. Do not destroy this letter.
-ninoLetter.htmlLetter.columnLeft.about.heading = About your National Insurance number
-ninoLetter.htmlLetter.columnLeft.about.p1 = Your National Insurance number is unique to you and will never change. To prevent identity fraud, do not share it with anyone who does not need it.
-ninoLetter.htmlLetter.columnLeft.about.p2 = You will need it if you:
-ninoLetter.htmlLetter.columnLeft.about.list1.li1 = start work (including part time and weekend jobs)
-ninoLetter.htmlLetter.columnLeft.about.list1.li2 = apply for a driving licence
-ninoLetter.htmlLetter.columnLeft.about.list1.li3 = apply for a student loan
-ninoLetter.htmlLetter.columnLeft.about.list1.li4 = claim state benefits
-ninoLetter.htmlLetter.columnLeft.about.list1.li5 = register to vote
-ninoLetter.htmlLetter.columnLeft.about.p3 = It is not proof of:
-ninoLetter.htmlLetter.columnLeft.about.list2.li1 = your identity
-ninoLetter.htmlLetter.columnLeft.about.list2.li2 = your right to work in the UK
-ninoLetter.htmlLetter.columnLeft.childTrustFund.heading = Child Trust Fund
-ninoLetter.htmlLetter.columnLeft.childTrustFund.p1 = When you turn 16, take control of your Child Trust Fund. Ask your parents or guardian, for more information go to www.gov.uk/child-trust-funds
-ninoLetter.htmlLetter.columnLeft.welshLanguage.header = Welsh language
-ninoLetter.htmlLetter.columnLeft.welshLanguage.p1 = To continue to receive a Welsh language service:
-ninoLetter.htmlLetter.columnLeft.welshLanguage.list1.li1 = email gwasanaeth.cymraeg@hmrc.gov.uk
-ninoLetter.htmlLetter.columnLeft.welshLanguage.list1.li2 = phone 0300 200 1900
-ninoLetter.htmlLetter.columnRight.header.part1 = Now you have got your
-ninoLetter.htmlLetter.columnRight.header.part2 = National Insurance number
-ninoLetter.htmlLetter.columnRight.p1 = You can download and use the HMRC App or go online at www.gov.uk/personal-tax-account where you can:
-ninoLetter.htmlLetter.columnRight.list1.li1 = create and access your Personal Tax Account
-ninoLetter.htmlLetter.columnRight.list1.li2 = save and print another copy of this letter
-ninoLetter.htmlLetter.columnRight.list1.li3 = tell us about a change to your address
-ninoLetter.htmlLetter.columnRight.list1.li4 = check your income tax estimate and tax code
-ninoLetter.htmlLetter.columnRight.p2 = View more information about National Insurance at:
-ninoLetter.htmlLetter.columnRight.p3 = www.gov.uk/national-insurance
-ninoLetter.htmlLetter.columnRight.p4 = or our YouTube channel at:
-ninoLetter.htmlLetter.columnRight.p5 = www.youtube.com/HMRCgovuk
-ninoLetter.htmlLetter.endText.p1 = Information is available in large print, audio tape and Braille formats.
-ninoLetter.htmlLetter.endText.p2 = Text Relay service prefix number - 18001
-ninoLetter.htmlLetter.footer.page = Page
-ninoLetter.htmlLetter.footer.hmrc = HMRC
+storeMyNino.title = Save your National Insurance number
+storeMyNino.heading = Save your National Insurance number
+storeMyNino.saveYourNino.yourNinoIs = Your National Insurance number is
+storeMyNino.saveYourNino.p1 = You can:
+storeMyNino.saveYourNino.list1.li1 = get a PDF of your National Insurance number confirmation letter
+storeMyNino.saveYourNino.list1.li2 = add your number to your phone's wallet
+storeMyNino.saveYourNino.p2 = If you save your National Insurance number on your phone, make sure it has security like Face ID, a pattern, or a pin code set up. This helps protect your details.
+storeMyNino.subHeading1 = Get your National Insurance number on a letter (PDF)
+storeMyNino.getYourNinoLetter.list1.li1 = View or print
+storeMyNino.getYourNinoLetter.list1.li2 = Download (PDF)
+storeMyNino.subHeading2 = Save your number to your phone
+storeMyNino.saveToPhone.p1 = Your National Insurance number would:
+storeMyNino.saveToPhone.list1.li1 = be readily available in your Apple or Google wallet with your other cards — even offline
+storeMyNino.saveToPhone.list1.li2 = be protected by your phone's security settings
+storeMyNino.saveToPhone.list1.li3 = only be shared with the wallet provider and no other third parties
+storeMyNino.saveToPhone.list1.li4 = take up minimal storage space on your phone
 
 
 
-label.beta=BETA
+
+
+
+label.print_your_national_insurance_summary=Print your National Insurance summary
+
+label.your_national_insurance_letter=Your National Insurance letter
+
+label.print=Print this letter
+label.save_as_a_PDF=Save as a PDF
+
 label.hm_revenue_customs=HM Revenue & Customs
 label.hm_revenue_customs_ni_print.revenue=HM Revenue
 label.hm_revenue_customs_ni_print.customs=&amp; Customs
-label.continue=Continue
-label.continue_to_your_sa302=Continue to your SA302
-label.we_are_processing_your-details=We are processing your details
-label.this_may_take_up_to_30_seconds=This may take up to 30 seconds.
-label.if_you_are_not_redirected_in_text_before_link=If you are not redirected within 30 seconds
-label.if_you_are_not_redirected_in_link_text=click here
-label.your_personal_tax_account=Personal tax account
-label.your_personal_tax_account_gov_uk=Personal tax account - GOV.UK
-label.track_your_forms=Track your forms
+
+label.nic_eo_hmrc_address.line1=NIC&amp;EO
+label.nic_eo_hmrc_address.line2=HMRC
+label.nic_eo_hmrc_address.line3=BX9 1AN
+label.phone_text=Phone
+label.contact_number=0300 200 3500
+label.www_gov_uk_hmrc=www.gov.uk/hmrc
+
 label.your_national_insurance_number_is=Your National Insurance number is
-label.national_insurance_number=National Insurance number
-label.check_your_national_insurance_contributions=Check your National Insurance contributions
-label.see_a_record_of_the_national_insurance_contributions_which_count_towards_=See a record of the National Insurance contributions which count towards your State Pension and check for any gaps.
-label.hm_revenue_and_customs=HM Revenue and Customs
-label.print_proof_of_your_national_insurance_number=Print proof of your National Insurance number
+
 label.keep_this_number_in_a_safe_place_do_not_destroy_this_letter=Keep this number in a safe place. Do not destroy this letter.
+
 label.about_your_national_insurance_number=About your National Insurance number
 label.your_national_insurance_number_is_unique_to_you_and_will_never_change_=Your National Insurance number is unique to you and will never change. To prevent identity fraud, do not share it with anyone who does not need it.
 label.you_will_need_it_if_you=You will need it if you:
@@ -159,118 +89,42 @@ label.apply_for_a_driving_licence=apply for a driving licence
 label.apply_for_a_student_loan=apply for a student loan
 label.claim_state_benefits=claim state benefits
 label.register_to_vote=register to vote
+label.it_is_not_proof_of=It is not proof of:
+label.your_identity=your identity
+label.your_right_to_work_in_the_uk=your right to work in the UK
+
+label.child.trust.fund=Child Trust Fund
+label.child.trust.fund.details=When you turn 16, take control of your Child Trust Fund. Ask your parents or guardian, for more information go to www.gov.uk/child-trust-funds
+
 label.welsh_language=Welsh language
 label.to_continue_to_receive_a_welsh_language_service_=To continue to receive a Welsh language service:
 label.email.for.welsh.language=email gwasanaeth.cymraeg@hmrc.gov.uk
 label.phone.number.for.welsh.language=phone 0300 200 1900
-label.information_is_available_in_large_print_audio_tape_and_braille_formats=Information is available in large print, audio tape and Braille formats.
-label.text_relay_service_prefix_number_18001=Text Relay service prefix number - 18001
+
 label.now_you_have_got_your=Now you have got your
+label.national_insurance_number=National Insurance number
 label.you_can_download_and_use_the_hmrc_app_or_go_online_to=You can download and use the HMRC App or go online at www.gov.uk/personal-tax-account where you can:
 label.create_and_access_your_personal_tax_account=create and access your Personal Tax Account
-label.update_and_track_your_tax_information_online=save and print another copy of this letter
-label.check_if_you_are_due_a_tax_refund=tell us about a change to your address
+label.save_and_print_another_copy_of_this_letter=save and print another copy of this letter
+label.tell_us_about_a_change_to_your_address=tell us about a change to your address
 label.view_your_tax_code=check your income tax estimate and tax code
 label.view_more_information_about_national_insurance_at=View more information about National Insurance at:
 label.www_gov_uk_national_insurance=www.gov.uk/national-insurance
 label.or_our_youtube_channel_at=or our YouTube channel at:
 label.www_youtube_com_hmrcgovuk=www.youtube.com/HMRCgovuk
-label.it_is_not_proof_of=It is not proof of:
-label.your_identity=your identity
-label.your_right_to_work_in_the_uk=your right to work in the UK
-label.child.trust.fund=Child Trust Fund
-label.child.trust.fund.details=When you turn 16, take control of your Child Trust Fund. Ask your parents or guardian, for more information go to www.gov.uk/child-trust-funds
+
+label.information_is_available_in_large_print_audio_tape_and_braille_formats=Information is available in large print, audio tape and Braille formats.
+label.text_relay_service_prefix_number_18001=Text Relay service prefix number - 18001
+
 label.hmrc_date=HMRC {0}
 label.page=Page
-label.your_national_insurance_number=Your National Insurance number
-label.your_national_insurance_letter=Your National Insurance letter
-label.print_your_national_insurance_summary=Print your National Insurance summary
-label.nic_eo_hmrc_address.line1=NIC&amp;EO
-label.nic_eo_hmrc_address.line2=HMRC
-label.nic_eo_hmrc_address.line3=BX9 1AN
-label.www_gov_uk_hmrc=www.gov.uk/hmrc
-label.phone_text=Phone
-label.contact_number=0300 200 3500
-label.print=Print this letter
-label.save_as_a_PDF=Save as a PDF
-label.date=Date
-label.if_you_start_a_new_job_your_employer_will_ask_for_your_national_insurance_number_=If you start a new job your employer will ask for your National Insurance number. You may also need your National Insurance number at other times, for example if you apply for a student loan or for certain benefits.
-label.your_personal_details=Your personal details
-label.your_address=Your address
-label.main_address=Main address
-label.find_your_address=What is your address?
-label.find_your_postal_address=What is your postal address?
-label.change_your_main_address=Change your main address
-label.change_your_postal_address=Change your postal address
-label.postal_address=Postal address
-label.your.postal_address=your postal address
-label.trusted_helpers=Trusted Helpers
-label.your_trusted_helpers=your Trusted helpers
-label.manage_trusted_helpers=Manage your Trusted helpers
-label.manage_tax_agents=Manage your Tax agents
-label.your_tax_agents=your Tax agents
-label.add_view_change_tax_agents=Add, view or change tax agents
-label.go_paperless=Go paperless
-label.go_paperless_content=Replace the letters you get about taxes with emails
-label.sign_in_details=Sign-in details
-label.your_sign_in_details=Your sign-in details
-label.sign_in_details_content=Government Gateway user ID and password you use to sign-in
-label.your_gg_details=your Government Gateway details
-label.is_your_main_address_in_the_uk=Is your main address in the UK?
-label.is_your_main_address_in_the_uk.change=is your main address in the UK?
-label.is_your_postal_address_in_the_uk = Is your postal address in the UK?
-label.the_uk_is_england_=The UK is England, Northern Ireland, Scotland and Wales.
-label.this_is_because_you_do_not_live_in_the_uk=This is because you do not live in the UK.
-label.if_you_do_live_in_the_uk_text_before_link=If you do live in the UK, you can
-label.if_you_do_live_in_the_uk_link_text=change your address
-label.if_you_do_not_live_in_the_uk_text_before_link=If you do not live in the UK,
-label.if_you_do_not_live_in_the_uk_link_text=fill in the ‘Notification of a change in personal details’ form to update your address
-label.all_letters_will_be_sent_to_this_address=All letters will be sent to this address.
-label.same_as_main_address=Same as main address
-label.you_can_only_change_this_address_once_a_day_please_try_again_tomorrow=You can only change this address once a day. Please try again tomorrow.
-label.select_your_address=Select your address
-label.your_address_has_already_been_updated=Your address has already been updated
-label.your_address_has_been_changed=Your address has been changed
-label.enter_your_address_if_it_is_not_shown=Enter your address manually
-label.enter_your_address_yourself=Enter your address manually
-label.sign_in=Sign in
-label.youve_been_signed_out=For your security, we signed you out
-label.timeout_message=We did not save your answers.
-label.please_sign_in_again=Please sign in again.
-label.timeout.dialog.title=You are about to be signed out
-label.timeout.dialog.message=You will be signed out for security reasons in
-label.timeout.dialog.minutes=minutes
-label.timeout.dialog.seconds=seconds
+
+
+
 label.timeout.dialog.keepAlive.button=Stay signed in
 label.timeout.dialog.signout.button=Sign out now
-label.theres_a_problem=There is a problem
-label.first_line_of_your_address=Address line 1
-label.second_line_of_your_address=Address line 2
-label.third_line_of_your_address=Address line 3 (optional)
-label.fourth_line_of_your_address=Address line 4 (optional)
-label.fifth_line_of_your_address=Address line 5 (optional)
-label.address_line_one=Address line 1
-label.address_line_two=Address line 2
-label.address_line_three=Address line 3 (optional)
-label.address_line_four=Address line 4 (optional)
-label.address_line_five=Address line 5 (optional)
-label.country=Country
-country.select=Select a country
-label.change=Change
-label.manage=Manage
-label.telephone_0300_200_3300=Telephone: 0300 200 3300
-label.textphone_0300_200_3319=Textphone: 0300 200 3319
-label.outside_uk_441355359022=Outside UK: +44 135 535 9022
-label.phone_lines_are_open=Phone lines are open:
-label.8am_to_8pm_monday_to_friday=8am to 8pm, Monday to Friday
-label.8am_to_4pm_saturdays=8am to 4pm Saturdays
-label.8am_to_5pm_sundays=9am to 5pm Sundays
-label.closed_bank_holidays=Closed bank holidays.
-label.find_out_about_call_charges=Find out about call charges
+
 label.you_cannot_access_your_account=We cannot access your details
 label.we_need_to_speak_to_you_about_an_mci_error_=This is because of an MCI issue. It means that we need to check some details with you before you can sign in again
 label.how_to_contact_us=You can call us to
 label.resolve.mci.issue=resolve the MCI issue with an advisor.
-label.opens_in_a_new_window=(opens in new tab)
-label.yes=Yes
-label.no=No

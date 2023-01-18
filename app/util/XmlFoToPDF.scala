@@ -16,6 +16,7 @@
 
 package util
 
+
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, File}
 import javax.inject.{Inject, Singleton}
 import javax.xml.transform.sax.SAXResult
@@ -29,8 +30,8 @@ import play.api.Logging
 
 @Singleton
 class DefaultXmlFoToPDF @Inject()(val stylesheetResourceStreamResolver: StylesheetResourceStreamResolver,
-                           val resourceStreamResolver: BaseResourceStreamResolver,
-                           val fopURIResolver: FopURIResolver) extends XmlFoToPDF
+                                  val resourceStreamResolver: BaseResourceStreamResolver,
+                                  val fopURIResolver: FopURIResolver) extends XmlFoToPDF
 
 trait XmlFoToPDF extends Logging{
   val resourceStreamResolver: BaseResourceStreamResolver
@@ -118,7 +119,7 @@ trait XmlFoToPDF extends Logging{
     transformer.setErrorListener(errorListener)
   }
 
-  private def getXMLSource(initialsName: String, fullName: String,  nino: String, addressLines: List[String], postcode: String, date: String): Array[Byte] = {
+  def getXMLSource(initialsName: String, fullName: String,  nino: String, addressLines: List[String], postcode: String, date: String): Array[Byte] = {
     val initialsNameXML = s"<initials-name>${initialsName}</initials-name>"
     val fullNameXML = s"<full-name>${fullName}</full-name>"
     var addressXML = s"<address>"

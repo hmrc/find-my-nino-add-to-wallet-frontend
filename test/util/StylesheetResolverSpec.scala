@@ -16,8 +16,34 @@
 
 package util
 
-class StylesheetResolverSpec {
+import base.SpecBase
+import org.scalatestplus.mockito.MockitoSugar
+import play.api.Environment
 
+import javax.xml.transform.stream.StreamSource
+
+class StylesheetResolverSpec extends SpecBase with MockitoSugar{
+
+  class Setup {
+    val resourceStreamResolver: BaseResourceStreamResolver = new BaseResourceStreamResolver {
+      override val environment: Environment = application.environment
+    }
+  }
+
+  "Must return a valid StreamSource" in new Setup {
+    val inputResource = "/pdf/niLetterXSL.xsl"
+    val result = resourceStreamResolver.resolvePath(inputResource)
+
+    result mustBe a[StreamSource]
+    result mustNot equal(null)
+  }
+
+  "Must throw exception if Resource is not valid" in new Setup {
+    val inputResource = "/invalid-resource"
+    a[RuntimeException] shouldBe thrownBy {
+      resourceStreamResolver.resolvePath(inputResource)
+    }
+  }
 
 
 }

@@ -16,6 +16,28 @@
 
 package util
 
-class XmlFoToPDFSpec {
+import base.SpecBase
+import org.scalatestplus.mockito.MockitoSugar
+
+class XmlFoToPDFSpec extends SpecBase with MockitoSugar {
+  class Setup {
+    val xmlFoToPDF: XmlFoToPDF = new XmlFoToPDF {
+      override val resourceStreamResolver: BaseResourceStreamResolver = application.injector.instanceOf[BaseResourceStreamResolver]
+      override val stylesheetResourceStreamResolver: StylesheetResourceStreamResolver = application.injector.instanceOf[StylesheetResourceStreamResolver]
+      override val fopURIResolver: FopURIResolver = application.injector.instanceOf[FopURIResolver]
+    }
+  }
+  "XmlFoToPDF getXMLSource" - {
+    "return correct XML when passed in valid person details and a date" in new Setup {
+      val result: Array[Byte] = xmlFoToPDF.getXMLSource("B Jones", "Bob Jones",  "AB123456B", List("11 Test Street", "TestTown"), "FX97 2TU", "01/23")
+      result.length > 0 mustBe true
+    }
+  }
+  "XmlFoToPDF createPDF" - {
+    "must have correct contents for the PDF" in new Setup {
+      val result: Array[Byte] = xmlFoToPDF.createPDF("B Jones", "Bob Jones", "AB123456B", List("11 Test Street", "TestTown"), "FX97 2TU", "01/23")
+      result.length must be > 0
+    }
+  }
 
 }

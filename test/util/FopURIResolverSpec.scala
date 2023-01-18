@@ -16,6 +16,33 @@
 
 package util
 
-class FopURIResolverSpec {
+import base.SpecBase
+import org.apache.xmlgraphics.io.Resource
+import org.scalatestplus.mockito.MockitoSugar
+import play.api.Environment
+
+import java.net.URI
+
+class FopURIResolverSpec extends SpecBase with MockitoSugar {
+
+  class Setup {
+    val fopURIResolver = new FopURIResolver {
+      override val environment: Environment = application.environment
+    }
+  }
+
+  "Must return a valid Resource" in new Setup {
+    val inputResource = new URI("/pdf/niLetterXSL.xsl")
+    val result = fopURIResolver.getResource(inputResource)
+
+    result mustBe a[Resource]
+  }
+
+  "Must throw an exception if Resource is not valid" in new Setup {
+    val inputResource = new URI("/invalid-resource")
+    a[RuntimeException] shouldBe thrownBy {
+      fopURIResolver.getResource(inputResource)
+    }
+  }
 
 }

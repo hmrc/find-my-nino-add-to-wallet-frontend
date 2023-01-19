@@ -14,8 +14,14 @@
  * limitations under the License.
  */
 
-package pages
+package util
 
-import queries.{Gettable, Settable}
+import play.api.libs.json.Json
 
-trait QuestionPage[A] extends Page with Gettable[A] with Settable[A]
+case class UserDetails(authProviderType: String) {
+  def hasGovernmentGatewayAuthProvider = authProviderType == UserDetails.GovernmentGatewayAuthProvider
+}
+object UserDetails {
+  implicit val formats              = Json.format[UserDetails]
+  val GovernmentGatewayAuthProvider = "GovernmentGateway"
+}

@@ -28,7 +28,7 @@ import play.api.inject
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
-import util.CitizenDetailsFixtures
+import util.CDFixtures
 import util.Stubs.userLoggedInFMNUser
 import util.TestData.NinoUser
 import views.html.StoreMyNinoView
@@ -37,7 +37,7 @@ import java.util.Base64
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class StoreMyNinoControllerSpec extends SpecBase with CitizenDetailsFixtures with MockitoSugar {
+class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSugar {
 
   val passId = "applePassId"
   val notApplePassId = ""

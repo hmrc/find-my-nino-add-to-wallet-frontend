@@ -42,9 +42,6 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 
 class NinoLetterController @Inject()(
                                       override val messagesApi: MessagesApi,
-                                      identify: IdentifierAction,
-                                      getData: DataRetrievalAction,
-                                      requireData: DataRequiredAction,
                                       authConnector: AuthConnector,
                                       applePassConnector: ApplePassConnector,
                                       view: PrintNationalInsuranceNumberView,
@@ -76,7 +73,6 @@ class NinoLetterController @Inject()(
 
     }
   }
-
 
   def saveNationalInsuranceNumberAsPdf(pdId: String): Action[AnyContent] = Action async {
 

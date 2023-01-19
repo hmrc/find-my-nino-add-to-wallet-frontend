@@ -30,7 +30,7 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json}
 import play.api.mvc._
 import play.api.test.{FakeRequest, Helpers, Injecting}
 import play.twirl.api.Html
@@ -45,9 +45,8 @@ import scala.reflect.ClassTag
 import scala.util.Random
 
 
-
-trait CitizenDetailsFixtures {
-  def buildPersonDetails =
+trait CDFixtures {
+  def buildPersonDetails: PersonDetails =
     PersonDetails(
       Person(
         Some("Firstname"),
@@ -64,7 +63,7 @@ trait CitizenDetailsFixtures {
       None
     )
 
-  def buildPersonDetailsCorrespondenceAddress =
+  def buildPersonDetailsCorrespondenceAddress: PersonDetails =
     PersonDetails(
       Person(
         Some("Firstname"),
@@ -81,7 +80,7 @@ trait CitizenDetailsFixtures {
       Some(buildFakeCorrespondenceAddress)
     )
 
-  def buildFakeAddress = Address(
+  def buildFakeAddress: Address = Address(
     Some("1 Fake Street"),
     Some("Fake Town"),
     Some("Fake City"),
@@ -95,7 +94,7 @@ trait CitizenDetailsFixtures {
     false
   )
 
-  def buildFakeCorrespondenceAddress = Address(
+  def buildFakeCorrespondenceAddress: Address = Address(
     Some("1 Fake Street"),
     Some("Fake Town"),
     Some("Fake City"),
@@ -109,7 +108,7 @@ trait CitizenDetailsFixtures {
     false
   )
 
-  def buildFakeAddressWithEndDate = Address(
+  def buildFakeAddressWithEndDate: Address = Address(
     Some("1 Fake Street"),
     Some("Fake Town"),
     Some("Fake City"),
@@ -123,50 +122,9 @@ trait CitizenDetailsFixtures {
     false
   )
 
-  def buildFakeJsonAddress = Json.toJson(buildFakeAddress)
+  def buildFakeJsonAddress: JsValue = Json.toJson(buildFakeAddress)
 
 
-object Fixtures extends CitizenDetailsFixtures  {
-
-  val fakeNino = Nino(new Generator(new Random()).nextNino.nino)
-
-  val saUtr = new SaUtrGenerator().nextSaUtr
-
-  val etag = "1"
-
-  def buildFakeRequestWithSessionId(method: String) =
-    FakeRequest(method, "/personal-account").withSession("sessionId" -> "FAKE_SESSION_ID")
-
-  def buildFakeRequestWithAuth(
-    method: String,
-    uri: String = "/find-my-nino-add-to-wallet"
-  ): FakeRequest[AnyContentAsEmpty.type] = {
-    val session = Map(
-      SessionKeys.sessionId            -> s"session-${UUID.randomUUID()}",
-      SessionKeys.lastRequestTimestamp -> LocalDate.now().toEpochDay.toString
-    )
-
-    FakeRequest(method, uri).withSession(session.toList: _*)
-  }
-
-
-
-  def buildFakePersonDetails = PersonDetails(buildFakePerson, None, None)
-
-  def buildFakePerson =
-    Person(
-      Some("Firstname"),
-      Some("Middlename"),
-      Some("Lastname"),
-      Some("FML"),
-      Some("Mr"),
-      None,
-      Some("M"),
-      Some(LocalDate.parse("1931-01-17")),
-      Some(Fixtures.fakeNino)
-    )
-
-}
 
 trait BaseSpec
     extends AnyWordSpec
@@ -220,4 +178,48 @@ trait ActionBuilderFixture extends ActionBuilder[UserRequest, AnyContent] {
   override def invokeBlock[A](a: Request[A], block: UserRequest[A] => Future[Result]): Future[Result]
   override def parser: BodyParser[AnyContent]               = Helpers.stubBodyParser()
   override protected def executionContext: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
-}}
+}
+}
+
+
+object Fixtures extends CDFixtures  {
+
+  val fakeNino = Nino(new Generator(new Random()).nextNino.nino)
+
+  val saUtr = new SaUtrGenerator().nextSaUtr
+
+  val etag = "1"
+
+  def buildFakeRequestWithSessionId(method: String): FakeRequest[AnyContentAsEmpty.type] =
+    FakeRequest(method, "/personal-account").withSession("sessionId" -> "FAKE_SESSION_ID")
+
+  def buildFakeRequestWithAuth(
+                                method: String,
+                                uri: String = "/find-my-nino-add-to-wallet"
+                              ): FakeRequest[AnyContentAsEmpty.type] = {
+    val session = Map(
+      SessionKeys.sessionId            -> s"session-${UUID.randomUUID()}",
+      SessionKeys.lastRequestTimestamp -> LocalDate.now().toEpochDay.toString
+    )
+
+    FakeRequest(method, uri).withSession(session.toList: _*)
+  }
+
+
+
+  /*def buildFakePersonDetails: PersonDetails = PersonDetails(buildFakePerson, None, None)
+
+  def buildFakePerson: Person =
+    Person(
+      Some("Firstname"),
+      Some("Middlename"),
+      Some("Lastname"),
+      Some("FML"),
+      Some("Mr"),
+      None,
+      Some("M"),
+      Some(LocalDate.parse("1931-01-17")),
+      Some(Fixtures.fakeNino)
+    )*/
+
+}

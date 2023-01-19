@@ -25,7 +25,7 @@ import play.api.inject.bind
 import play.api.libs.json.{JsString, Json}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import util.CitizenDetailsFixtures
+import util.CDFixtures
 import util.Stubs.userLoggedInFMNUser
 import util.TestData.NinoUser
 import views.html.print.PrintNationalInsuranceNumberView
@@ -34,7 +34,7 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import scala.concurrent.Future
 
-class NinoLetterControllerSpec extends SpecBase with CitizenDetailsFixtures with MockitoSugar {
+class NinoLetterControllerSpec extends SpecBase with CDFixtures with MockitoSugar {
 
   val pd = buildPersonDetails
   val jsonPd: JsString = JsString(Json.toJson(pd).toString())

@@ -18,7 +18,7 @@ package connectors
 
 import com.google.inject.Inject
 import config.ConfigDecorator
-import models.{PersonDetails, UserAnswers}
+import models.PersonDetails
 import play.api.http.Status._
 import play.api.libs.json._
 import uk.gov.hmrc.http.HttpReads.Implicits._
@@ -99,10 +99,10 @@ class ApplePassConnector @Inject()(config: ConfigDecorator, http: HttpClient) {
       }
   }
 
-  def getApplePass(fullName: String, nino: String)
-                  (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Option[Array[Byte]]] = {
+  def getApplePassByNameAndNino(fullName: String, nino: String)
+                               (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Option[Array[Byte]]] = {
 
-    val url = s"${config.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-pass-card?fullName=$fullName&nino=$nino"
+    val url = s"${config.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-pass-details-by-name-and-nino?fullName=$fullName&nino=$nino"
     val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
 
     http.GET[HttpResponse](url)(implicitly, hc, implicitly)

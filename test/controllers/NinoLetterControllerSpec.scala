@@ -75,12 +75,29 @@ class NinoLetterControllerSpec extends SpecBase with CitizenDetailsFixtures with
                     LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
                     true,
                     pd.person.nino.get.nino,personDetailsId)(request,messages(application))).toString().trim
+      }
+    }
+  }
+  "NinoLetterController saveNationalInsuranceNumberAsPdf" - {
+    "must return OK and pdf file with correct content" in {
+      userLoggedInFMNUser(NinoUser)
 
-        val requestPdf = FakeRequest(GET, routes.NinoLetterController.saveNationalInsuranceNumberAsPdf("pdID").url)
-        val res2 = route(application, requestPdf).value
-        contentAsString(res2).contains("national-insurance-letter.pdf").equals(true)
+      when(mockApplePassConnector.getPersonDetails(any())(any(), any()))
+        .thenReturn(Future.successful(Some(jsonPd.toString())))
 
+      val application = applicationBuilderWithConfig()
+        .overrides(
+          bind[ApplePassConnector].toInstance(mockApplePassConnector),
+        )
+        .build()
 
+      running(application) {
+        val request = FakeRequest(GET, routes.NinoLetterController.saveNationalInsuranceNumberAsPdf("pdID").url)
+          .withSession(("authToken", "Bearer 123"))
+
+        val result = route(application, request).value
+        status(result) mustEqual OK
+        contentAsString(result).contains("national-insurance-letter.pdf").equals(true)
       }
     }
   }

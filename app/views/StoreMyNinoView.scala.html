@@ -22,14 +22,14 @@
         appConfig: ConfigDecorator
 )
 
-@(form: Form[_])(implicit request: Request[_], messages: Messages)
+@(passId:String, nino:String, pdId:String)(implicit request: Request[_], messages: Messages)
 
     @layout(pageTitle = titleNoForm(messages("storeMyNino.title"))) {
 
         <h2 class="govuk-heading-l">@messages("storeMyNino.heading")</h2>
 
         <div class="govuk-inset-text">
-            <p>@messages("storeMyNino.saveYourNino.yourNinoIs")<strong>@{form("nino").value}</strong></p>
+            <p>@messages("storeMyNino.saveYourNino.yourNinoIs")<strong> @{nino}</strong></p>
         </div>
 
         <div>
@@ -46,8 +46,8 @@
         <h2 class="govuk-heading-m">@messages("storeMyNino.subHeading1")</h2>
 
         <ul class="govuk-list govuk-list--bullet govuk-list--spaced">
-            <li><a href='/find-my-nino-add-to-wallet-frontend/nino-letter?pdId=@{form("pdId").value}'>@messages("storeMyNino.getYourNinoLetter.list1.li1")</a></li>
-            <li><a href='/find-my-nino-add-to-wallet-frontend/nino-letter/save-letter-as-pdf?pdId=@{form("pdId").value}' download="">@messages("storeMyNino.getYourNinoLetter.list1.li2")</a></li>
+            <li><a href='/find-my-nino-add-to-wallet-frontend/nino-letter?pdId=@{pdId}'>@messages("storeMyNino.getYourNinoLetter.list1.li1")</a></li>
+            <li><a href='/find-my-nino-add-to-wallet-frontend/nino-letter/save-letter-as-pdf?pdId=@{pdId}' download="">@messages("storeMyNino.getYourNinoLetter.list1.li2")</a></li>
         </ul>
 
 
@@ -73,13 +73,13 @@
 
 
             <p class="govuk-body">
-                <a href='/find-my-nino-add-to-wallet-frontend/get-pass-card?passId=@{form("passId").value}'>
+                <a href='/find-my-nino-add-to-wallet-frontend/get-pass-card?passId=@{passId}'>
                 <img src="assets/images/apple-pay.svg" width="200px">
                 </a>
             </p>
 
             <p class="govuk-body">
-                <img src='/find-my-nino-add-to-wallet-frontend/get-qr-code?passId=@{form("passId").value}'>
+                <img src='/find-my-nino-add-to-wallet-frontend/get-qr-code?passId=@{passId}'>
             </p>
 
 

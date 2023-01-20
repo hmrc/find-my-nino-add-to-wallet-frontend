@@ -18,25 +18,19 @@ package controllers
 
 import config.FrontendAppConfig
 import connectors.ApplePassConnector
-import controllers.actions._
 import models.PersonDetails
-import org.apache.fop.apps.{FOUserAgent, Fop, FopFactory}
 import org.apache.xmlgraphics.util.MimeConstants
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.auth.core.AuthConnector
-import util.{ApacheFOPHelpers, XmlFoToPDF}
+import util.XmlFoToPDF
 import play.api.libs.json._
 import views.html.print.PrintNationalInsuranceNumberView
 
-import java.io.{ByteArrayOutputStream, File}
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
-import javax.xml.transform.sax.SAXResult
-import javax.xml.transform.stream.StreamSource
-import javax.xml.transform.{Result, Transformer, TransformerFactory}
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, ExecutionContext, Future}
 

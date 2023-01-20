@@ -18,11 +18,9 @@ package connectors
 
 import com.google.inject.{Inject, Singleton}
 import com.kenshoo.play.metrics.Metrics
-import metrics._
 import models._
 import play.api.Logging
 import play.api.http.Status._
-import play.api.libs.json.{JsObject, Json}
 import services.http.SimpleHttp
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
@@ -44,31 +42,26 @@ class CitizenDetailsConnector @Inject() (
   val simpleHttp: SimpleHttp,
   val metrics: Metrics,
   servicesConfig: ServicesConfig
-) extends HasMetrics
-    with Logging {
+) extends  Logging {
 
   lazy val citizenDetailsUrl = servicesConfig.baseUrl("citizen-details")
 
   def personDetails(nino: Nino)(implicit hc: HeaderCarrier): Future[PersonDetailsResponse] =
-    withMetricsTimer("get-person-details") { timer =>
+     {
       simpleHttp.get[PersonDetailsResponse](s"$citizenDetailsUrl/citizen-details/$nino/designatory-details")(
         onComplete = {
           case response if response.status >= 200 && response.status < 300 =>
-            timer.completeTimerAndIncrementSuccessCounter()
             PersonDetailsSuccessResponse(response.json.as[PersonDetails])
 
           case response if response.status == LOCKED =>
-            timer.completeTimerAndIncrementFailedCounter()
             logger.warn("Personal details record in citizen-details was hidden")
             PersonDetailsHiddenResponse
 
           case response if response.status == NOT_FOUND =>
-            timer.completeTimerAndIncrementFailedCounter()
             logger.warn("Unable to find personal details record in citizen-details")
             PersonDetailsNotFoundResponse
 
           case response =>
-            timer.completeTimerAndIncrementFailedCounter()
             if (response.status >= INTERNAL_SERVER_ERROR) {
               logger.warn(
                 s"Unexpected ${response.status} response getting personal details record from citizen-details"
@@ -77,12 +70,10 @@ class CitizenDetailsConnector @Inject() (
             PersonDetailsUnexpectedResponse(response)
         },
         onError = { e =>
-          timer.completeTimerAndIncrementFailedCounter()
           logger.warn("Error getting personal details record from citizen-details", e)
           PersonDetailsErrorResponse(e)
         }
       )
     }
-
 
 }

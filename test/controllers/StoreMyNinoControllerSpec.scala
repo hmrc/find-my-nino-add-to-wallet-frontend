@@ -18,7 +18,6 @@ package controllers
 
 import base.SpecBase
 import connectors.{ApplePassConnector, CitizenDetailsConnector, PersonDetailsSuccessResponse}
-import forms.StoreMyNinoProvider
 import models.StoreMyNino
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
@@ -44,9 +43,6 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
   val personDetailsId = "pdId"
   val pd = buildPersonDetails
   val controller = applicationWithConfig.injector.instanceOf[StoreMyNinoController]
-  val form = new StoreMyNinoProvider().apply()
-  val preparedForm = form.fill(new StoreMyNino(passId, "AA000003B", personDetailsId))
-
 
   lazy val view = applicationWithConfig.injector.instanceOf[StoreMyNinoView]
   val mockSessionRepository = mock[SessionRepository]
@@ -91,7 +87,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         status(result) mustEqual OK
-        contentAsString(result) mustEqual (view(preparedForm)(request, messages(application))).toString
+        contentAsString(result) mustEqual (view(passId, "AA000003B", personDetailsId)(request, messages(application))).toString
       }
     }
 

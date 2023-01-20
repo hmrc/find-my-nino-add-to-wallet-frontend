@@ -18,8 +18,7 @@ package controllers
 
 import config.FrontendAppConfig
 import connectors.{ApplePassConnector, CitizenDetailsConnector}
-import forms.StoreMyNinoProvider
-import models.{PersonDetails, StoreMyNino}
+import models.PersonDetails
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
 import play.api.{Configuration, Environment}
@@ -36,7 +35,6 @@ class StoreMyNinoController @Inject()(
                                        authConnector: AuthConnector,
                                        override val messagesApi: MessagesApi,
                                        getPersonDetailsAction: GetPersonDetailsAction,
-                                       formProvider: StoreMyNinoProvider,
                                        view: StoreMyNinoView
                                      )(implicit config: Configuration,
                                        env: Environment,
@@ -44,7 +42,6 @@ class StoreMyNinoController @Inject()(
                                        cc: MessagesControllerComponents,
                                        frontendAppConfig: FrontendAppConfig) extends FMNBaseController(authConnector) with I18nSupport {
 
-  private val form = formProvider()
 
   implicit val loginContinueUrl: Call = routes.StoreMyNinoController.onPageLoad()
 
@@ -53,8 +50,7 @@ class StoreMyNinoController @Inject()(
       val pd: PersonDetails = request.personDetails.get
       val pdId = Await.result(findMyNinoServiceConnector.createPersonDetailsRow(pd), 10 seconds).getOrElse("xxx")
       val passId: String = Await.result(findMyNinoServiceConnector.createApplePass(pd.person.fullName, request.nino.get.nino), 10 seconds).getOrElse("xxx")
-      val preparedForm = form.fill(new StoreMyNino(passId, request.nino.get.nino, pdId))
-      Ok(view(preparedForm))
+      Ok(view(passId, request.nino.get.nino, pdId))
     }
   }
 

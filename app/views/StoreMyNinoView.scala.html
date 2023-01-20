@@ -1,5 +1,5 @@
 @*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,43 +22,67 @@
         appConfig: ConfigDecorator
 )
 
-@(form: Form[_])(implicit request: Request[_], messages: Messages)
+@(passId:String, nino:String, pdId:String)(implicit request: Request[_], messages: Messages)
 
     @layout(pageTitle = titleNoForm(messages("storeMyNino.title"))) {
 
         <h2 class="govuk-heading-l">@messages("storeMyNino.heading")</h2>
 
-        <div class="govuk-grid-row govuk-!-margin-bottom-6">
-            <div class="govuk-grid-column-full nino-number-area">
-                <p class="govuk-body govuk-!-font-size-36 nino-number-text">@messages("storeMyNino.yourInsuranceNumberText")</p>
-                <p class="govuk-body govuk-!-font-size-36 govuk-!-font-weight-bold nino-number-text">@{
-                    form("nino").value
-                }</p>
-            </div>
+        <div class="govuk-inset-text">
+            <p>@messages("storeMyNino.saveYourNino.yourNinoIs")<strong> @{nino}</strong></p>
         </div>
 
-        @govukWarningText(
-            WarningText(
-                iconFallbackText = "Something",
-                content = Text(messages("storeMyNino.saveToPhoneWallet.saveSafePlace.title"))
-            )
-        )
-        <p class="govuk-body">@messages("storeMyNino.saveToPhoneWallet.saveSafePlace.label")</p>
+        <div>
+            <p class="govuk-body">@messages("storeMyNino.saveYourNino.p1")</p>
+            <ul class="govuk-list govuk-list--bullet">
+                <li>@messages("storeMyNino.saveYourNino.list1.li1")</li>
+                <li>@messages("storeMyNino.saveYourNino.list1.li2")</li>
+            </ul>
+        </div>
 
-        <hr/>
 
-        <h2 class="govuk-heading-m govuk-!-margin-top-6">@messages("storeMyNino.saveToPhoneWallet.title")</h2>
-        <p class="govuk-body">@messages("storeMyNino.saveToPhoneWallet.label")</p>
-        <h3 class="govuk-heading-s">@messages("storeMyNino.saveToPhoneWallet.apple")</h3>
+        <p class="govuk-body">@messages("storeMyNino.saveYourNino.p2")</p>
 
-        <p class="govuk-body">
-            <a href="/find-my-nino-add-to-wallet-frontend/get-pass-card?passId=@{form("passId").value}">
-                <img src="assets/images/apple-pay.svg">
-            </a>
-        </p>
+        <h2 class="govuk-heading-m">@messages("storeMyNino.subHeading1")</h2>
 
-        <p class="govuk-body">
-            <img src="/find-my-nino-add-to-wallet-frontend/get-qr-code?passId=@{form("passId").value}">
-        </p>
+        <ul class="govuk-list govuk-list--bullet govuk-list--spaced">
+            <li><a href='/find-my-nino-add-to-wallet-frontend/nino-letter?pdId=@{pdId}'>@messages("storeMyNino.getYourNinoLetter.list1.li1")</a></li>
+            <li><a href='/find-my-nino-add-to-wallet-frontend/nino-letter/save-letter-as-pdf?pdId=@{pdId}' download="">@messages("storeMyNino.getYourNinoLetter.list1.li2")</a></li>
+        </ul>
 
-    }
+
+        <h2 class="govuk-heading-m">@messages("storeMyNino.subHeading2")</h2>
+
+        <p class="govuk-body">@messages("storeMyNino.saveToPhone.p1")</p>
+
+        <ul class="govuk-list govuk-list--bullet">
+            <li>@messages("storeMyNino.saveToPhone.list1.li1")</li>
+            <li>@messages("storeMyNino.saveToPhone.list1.li2")</li>
+            <li>@messages("storeMyNino.saveToPhone.list1.li3")</li>
+            <li>@messages("storeMyNino.saveToPhone.list1.li4")</li>
+        </ul>
+
+        <div class="hide-on-phones">
+
+
+            <div class="govuk-!-padding-bottom-6">
+                <a href="service-wallet-android-1">
+                    <img src="assets/images/google-wallet.svg" alt="" class="add-wallet-android">
+                </a>
+            </div>
+
+
+            <p class="govuk-body">
+                <a href='/find-my-nino-add-to-wallet-frontend/get-pass-card?passId=@{passId}'>
+                <img src="assets/images/apple-pay.svg" width="200px">
+                </a>
+            </p>
+
+            <p class="govuk-body">
+                <img src='/find-my-nino-add-to-wallet-frontend/get-qr-code?passId=@{passId}'>
+            </p>
+
+
+        </div>
+
+}

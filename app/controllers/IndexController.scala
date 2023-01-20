@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,11 +47,11 @@ class IndexController @Inject()(
     Action.async { implicit request =>
       authorisedAsFMNUser { _ =>
         Future successful  {
-           val sessionId = request.request.session.get(SessionKeys.sessionId).get
-           sessionRepository.set(new UserAnswers(sessionId))
+           //val sessionId = request.session.get(SessionKeys.sessionId).get
+           //sessionRepository.set(new UserAnswers(sessionId))
            Ok(view())
         }
-      }(routes.IndexController.onPageLoad)
+      } (routes.IndexController.onPageLoad)
     }}
 
 

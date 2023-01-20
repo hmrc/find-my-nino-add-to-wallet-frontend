@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,9 @@
 package models
 
 import play.api.libs.json._
+import uk.gov.hmrc.domain.Nino
+
+import java.time.LocalDate
 //import uk.gov.hmrc.domain.Nino
 
 case class Person(
@@ -26,7 +29,9 @@ case class Person(
                    initials: Option[String],
                    title: Option[String],
                    honours: Option[String],
-                   nino: Option[String] //TODO make this Nino not String
+                   sex: Option[String],
+                   dateOfBirth: Option[LocalDate],
+                   nino: Option[Nino]
                  ) {
   lazy val initialsName =
     initials.getOrElse(List(title, firstName.map(_.take(1)), middleName.map(_.take(1)), lastName).flatten.mkString(" "))
@@ -42,3 +47,4 @@ object Person {
   implicit val formats = Json.format[Person]
 
 }
+

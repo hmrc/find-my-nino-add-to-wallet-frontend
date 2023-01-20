@@ -18,7 +18,6 @@ package controllers
 
 import base.SpecBase
 import connectors.{ApplePassConnector, CitizenDetailsConnector, PersonDetailsSuccessResponse}
-import models.StoreMyNino
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.when
@@ -52,8 +51,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
 
   when(mockApplePassConnector.getApplePass(eqTo(passId))(any(),any()))
     .thenReturn(Future(Some(Base64.getDecoder.decode(fakeBase64String))))
-  /*when(mockApplePassConnector.getApplePass(eqTo(notApplePassId))(any(),any()))
-    .thenThrow(eqTo(new HttpException("", 404)))*/
+
   when(mockSessionRepository.get(any())) thenReturn Future.successful(Some(emptyUserAnswers))
   when(mockSessionRepository.get(any())) thenReturn Future.successful(Some(emptyUserAnswers))
   when(mockApplePassConnector.createApplePass(any(),any())(any(),any()))
@@ -64,10 +62,8 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
     .thenReturn(Future(PersonDetailsSuccessResponse(pd)))
   when(mockApplePassConnector.getQrCode(eqTo(passId))(any(),any()))
     .thenReturn(Future(Some(Base64.getDecoder.decode(fakeBase64String))))
-  /*when(mockApplePassConnector.getQrCode(eqTo(notApplePassId))(any(), any()))
-    .thenThrow(new HttpException("", 404))*/
-  when(mockSessionRepository.get(any())) thenReturn Future.successful(Some(emptyUserAnswers))
 
+  when(mockSessionRepository.get(any())) thenReturn Future.successful(Some(emptyUserAnswers))
 
   "StoreMyNino Controller" - {
 
@@ -126,25 +122,6 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
         contentAsBytes(result) mustEqual Base64.getDecoder.decode(fakeBase64String)
       }
     }
-
-    /*"must return NOT FOUND code" in {
-      val application = applicationBuilderWithConfig()
-        .overrides(
-          inject.bind[SessionRepository].toInstance(mockSessionRepository),
-          inject.bind[ApplePassConnector].toInstance(mockApplePassConnector),
-        )
-        .build()
-
-      running(application) {
-        userLoggedInFMNUser(NinoUser)
-        val request = FakeRequest(GET, routes.StoreMyNinoController.getQrCode(notApplePassId).url)
-          .withSession(("authToken", "Bearer 123"))
-        val result = route(application, request).value
-        status(result) mustEqual NOT_FOUND
-
-      }
-    }*/
-
 
   }
 }

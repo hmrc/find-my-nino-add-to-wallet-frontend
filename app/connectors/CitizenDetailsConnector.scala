@@ -42,7 +42,7 @@ case class PersonDetailsErrorResponse(cause: Exception) extends PersonDetailsRes
 class CitizenDetailsConnector @Inject() (
   val simpleHttp: SimpleHttp,
   val metrics: Metrics,
-  config: ConfigDecorator,
+  config: ConfigDecorator
 ) extends  Logging {
 
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,10 @@ import config.FrontendAppConfig
 import controllers.auth.FMNAuth.toContinueUrl
 import models.NationalInsuranceNumber
 import play.api.Logging
-import play.api.mvc.{ActionBuilder, AnyContent, BodyParser, Call, ControllerComponents, Request, RequestHeader, Result}
+import play.api.mvc.{ActionBuilder, AnyContent, BodyParser, Call, ControllerComponents, Request, RequestHeader, Result, WrappedRequest}
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
-import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.{credentialRole, internalId, nino}
-import uk.gov.hmrc.auth.core.retrieve.~
+import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
+import uk.gov.hmrc.auth.core.retrieve.{Name, ~}
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.config.AuthRedirects
@@ -34,31 +34,41 @@ import scala.concurrent.{ExecutionContext, Future}
 
 
 final case class AuthContext[A](
-   nino: NationalInsuranceNumber,
-   isUser: Boolean,
-   internalId: String,
-   request: Request[A]
-)
+                                 nino: NationalInsuranceNumber,
+                                 isUser: Boolean,
+                                 internalId: String,
+                                 confidenceLevel: ConfidenceLevel,
+                                 affinityGroup: AffinityGroup,
+                                 allEnrolments: Enrolments,
+                                 name: Name,
+                                 request: Request[A]
+                               )
 
 trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
   this: FrontendController =>
   protected type FMNAction[A] = AuthContext[A] => Future[Result]
   private val AuthPredicate = AuthProviders(GovernmentGateway)
-  private val FMNRetrievals = nino and credentialRole and internalId
+  private val FMNRetrievals = Retrievals.nino and
+    Retrievals.credentialRole and
+    Retrievals.internalId and
+    Retrievals.confidenceLevel and
+    Retrievals.affinityGroup and
+    Retrievals.allEnrolments and
+    Retrievals.name
 
-  def authorisedAsFMNUser(body: FMNAction[Any])(loginContinueUrl: Call)(implicit
-    ec: ExecutionContext,
-    hc: HeaderCarrier,
-    request: Request[_],
-    config: FrontendAppConfig): Future[Result] = authorisedUser(loginContinueUrl, body)
+  def authorisedAsFMNUser(body: FMNAction[Any])(loginContinueUrl: Call)
+                         (implicit ec: ExecutionContext,
+                          hc: HeaderCarrier,
+                          request: Request[_],
+                          config: FrontendAppConfig): Future[Result] = authorisedUser(loginContinueUrl, body)
 
 
   def authorisedAsFMNUser(implicit
-     ec: ExecutionContext,
-     config: FrontendAppConfig,
-     cc: ControllerComponents,
-     loginContinueUrl: Call
-  ): ActionBuilder[AuthContext, AnyContent] =
+                          ec: ExecutionContext,
+                         config: FrontendAppConfig,
+                          cc: ControllerComponents,
+                          loginContinueUrl: Call
+                         ): ActionBuilder[AuthContext, AnyContent] =
     new ActionBuilder[AuthContext, AnyContent] {
       override protected def executionContext: ExecutionContext = ec
       override def parser: BodyParser[AnyContent] = cc.parsers.defaultBodyParser
@@ -71,19 +81,20 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
       }
     }
 
-  private def authorisedUser[A](loginContinueUrl: Call, block: FMNAction[A])(implicit
-     ec: ExecutionContext,
-     hc: HeaderCarrier,
-     config: FrontendAppConfig,
-     request: Request[A]
-  ) = {
+  private def authorisedUser[A](loginContinueUrl: Call, block: FMNAction[A])
+                               (implicit
+                                ec: ExecutionContext,
+                                hc: HeaderCarrier,
+                                config: FrontendAppConfig,
+                                request: Request[A]
+                               ) = {
     authorised(AuthPredicate)
       .retrieve(FMNRetrievals) {
-        case Some(nino) ~ Some(User) ~ Some(internalId) =>
-          logger.debug("user is authorised: executing action block")
-          block(AuthContext(NationalInsuranceNumber(nino), isUser = true, internalId, request))
+        case Some(nino) ~ Some(User) ~ Some(internalId) ~ confidenceLevel ~ Some(affinityGroup) ~ allEnrolments ~ Some(name) =>
+          //logger.debug("user is authorised: executing action block")
+          block(AuthContext(NationalInsuranceNumber(nino), isUser = true, internalId, confidenceLevel, affinityGroup, allEnrolments, name, request))
         case _ =>
-          logger.warn("user could not be authorised: redirecting")
+          //logger.warn("user could not be authorised: redirecting")
           Future successful Redirect(
             controllers.routes.UnauthorisedController.onPageLoad
           )

@@ -1,16 +1,23 @@
+import AppDependencies.playVersion
 import sbt._
 
 object AppDependencies {
   import play.core.PlayVersion
 
+  private val playVersion = "play-28"
+
   val compile = Seq(
     play.sbt.PlayImport.ws,
-    "uk.gov.hmrc"             %% "play-frontend-hmrc"             % "3.24.0-play-28",
-    "uk.gov.hmrc"             %% "play-conditional-form-mapping"  % "1.11.0-play-28",
-    "uk.gov.hmrc"             %% "bootstrap-frontend-play-28"     % "7.3.0",
-    "uk.gov.hmrc"             %% "play-language"                  % "5.3.0-play-28",
-    "uk.gov.hmrc.mongo"       %% "hmrc-mongo-play-28"             % "0.71.0",
-    "org.apache.xmlgraphics"  % "fop"                             % "2.8"
+    "uk.gov.hmrc"             %% "play-frontend-hmrc"                   %   s"3.24.0-$playVersion",
+    "uk.gov.hmrc"             %% "play-conditional-form-mapping"        %   s"1.11.0-$playVersion",
+    "uk.gov.hmrc"             %% "play-partials"                        %   s"8.3.0-$playVersion",
+    "uk.gov.hmrc"             %% s"bootstrap-frontend-$playVersion"     %   s"7.3.0",
+    "uk.gov.hmrc"             %% "play-language"                        %   s"5.3.0-$playVersion",
+    "uk.gov.hmrc"             %% "domain"                               %   s"8.0.0-$playVersion",
+    "uk.gov.hmrc.mongo"       %% "hmrc-mongo-play-28"                   %   "0.71.0",
+    "org.apache.xmlgraphics"  % "fop"                                   %   "2.8",
+    "org.typelevel"           %% "cats-core"                            %   "2.8.0",
+
   )
 
   val test = Seq(

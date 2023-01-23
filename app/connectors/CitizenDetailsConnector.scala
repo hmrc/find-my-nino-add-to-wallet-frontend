@@ -18,6 +18,7 @@ package connectors
 
 import com.google.inject.{Inject, Singleton}
 import com.kenshoo.play.metrics.Metrics
+import config.ConfigDecorator
 import models._
 import play.api.Logging
 import play.api.http.Status._
@@ -41,14 +42,14 @@ case class PersonDetailsErrorResponse(cause: Exception) extends PersonDetailsRes
 class CitizenDetailsConnector @Inject() (
   val simpleHttp: SimpleHttp,
   val metrics: Metrics,
-  servicesConfig: ServicesConfig
+  config: ConfigDecorator,
 ) extends  Logging {
 
-  lazy val citizenDetailsUrl = servicesConfig.baseUrl("citizen-details")
+
 
   def personDetails(nino: Nino)(implicit hc: HeaderCarrier): Future[PersonDetailsResponse] =
      {
-      simpleHttp.get[PersonDetailsResponse](s"$citizenDetailsUrl/citizen-details/$nino/designatory-details")(
+      simpleHttp.get[PersonDetailsResponse](s"${config.citizenDetailsServiceUrl}/citizen-details/$nino/designatory-details")(
         onComplete = {
           case response if response.status >= 200 && response.status < 300 =>
             PersonDetailsSuccessResponse(response.json.as[PersonDetails])

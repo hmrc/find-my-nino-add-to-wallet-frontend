@@ -40,6 +40,8 @@ class ConfigDecorator @Inject()(configuration: Configuration, servicesConfig: Se
   val loginContinueUrl: String          = configuration.get[String]("urls.loginContinue")
   val signOutUrl: String                = configuration.get[String]("urls.signOut")
   lazy val findMyNinoServiceUrl: String = servicesConfig.baseUrl("find-my-nino-add-to-wallet-service")
+  lazy val citizenDetailsServiceUrl: String = servicesConfig.baseUrl("citizen-details-service")
+
 
   private val exitSurveyBaseUrl: String = configuration.get[Service]("microservice.services.feedback-frontend").baseUrl
   val exitSurveyUrl: String             = s"$exitSurveyBaseUrl/feedback/find-my-nino-add-to-wallet-frontend"

@@ -17,6 +17,7 @@
 package controllers
 
 import com.kenshoo.play.metrics.Metrics
+import config.ConfigDecorator
 import connectors.{CitizenDetailsConnector, PersonDetailsNotFoundResponse, PersonDetailsSuccessResponse}
 import models._
 import org.scalatestplus.mockito.MockitoSugar
@@ -40,7 +41,7 @@ class CitizenDetailsConnectorSpec
     with Injecting {
 
   override implicit lazy val app: Application = app(
-    Map("microservice.services.citizen-details.port" -> server.port())
+    Map("microservice.services.citizen-details-service.port" -> server.port())
   )
 
   val nino: Nino = Nino(new Generator(new Random()).nextNino.nino)
@@ -68,8 +69,8 @@ class CitizenDetailsConnectorSpec
     lazy val connector = {
       val httpClient = app.injector.instanceOf[SimpleHttp]
       val metrics = app.injector.instanceOf[Metrics]
-      val serviceConfig = app.injector.instanceOf[ServicesConfig]
-      new CitizenDetailsConnector(httpClient, metrics, serviceConfig)
+      val configDecorator = app.injector.instanceOf[ConfigDecorator]
+      new CitizenDetailsConnector(httpClient, metrics, configDecorator)
     }
   }
 

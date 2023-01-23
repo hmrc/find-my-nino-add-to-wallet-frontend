@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,55 +17,88 @@
 package controllers
 
 import base.SpecBase
-import models.PersonDetails
+import connectors.ApplePassConnector
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
-import org.scalatestplus.mockito.MockitoSugar.mock
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject.bind
+import play.api.libs.json.{JsString, Json}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import repositories.SessionRepository
+import util.CDFixtures
+import util.Stubs.userLoggedInFMNUser
+import util.TestData.NinoUser
 import views.html.print.PrintNationalInsuranceNumberView
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import scala.concurrent.Future
 
-class NinoLetterControllerSpec extends SpecBase  {
+class NinoLetterControllerSpec extends SpecBase with CDFixtures with MockitoSugar {
 
-  val pd = PersonDetails.personDetails
+  val pd = buildPersonDetails
+  val jsonPd: JsString = JsString(Json.toJson(pd).toString())
+
+
+
+  val personDetailsId = "pdId"
+
+  lazy val mockApplePassConnector = mock[ApplePassConnector]
+  lazy val ninoLetterController = applicationWithConfig.injector.instanceOf[NinoLetterController]
+  lazy val view = applicationWithConfig.injector.instanceOf[PrintNationalInsuranceNumberView]
+
 
   "NinoLetter Controller" - {
     "must return OK and the correct view for a GET" in {
-      val mockSessionRepository = mock[SessionRepository]
-      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      val application =
-        applicationBuilder(userAnswers = Some(emptyUserAnswers))
-          .overrides(
-            bind[SessionRepository].toInstance(mockSessionRepository),
-          )
-          .build()
+      userLoggedInFMNUser(NinoUser)
+
+      when(mockApplePassConnector.getPersonDetails(any())(any(), any()))
+        .thenReturn(Future.successful(Some(jsonPd.toString())))
+
+      val application = applicationBuilderWithConfig()
+        .overrides(
+          bind[ApplePassConnector].toInstance(mockApplePassConnector),
+        )
+        .build()
+
 
       running(application) {
-
-        val request = FakeRequest(GET, routes.NinoLetterController.onPageLoad().url)
-
-        val view = application.injector.instanceOf[PrintNationalInsuranceNumberView]
+        val request = FakeRequest(GET, routes.NinoLetterController.onPageLoad(personDetailsId).url)
+          .withSession(("authToken", "Bearer 123"))
 
         val result = route(application, request).value
-
         status(result) mustEqual OK
 
         contentAsString(result).trim mustEqual
-          view(pd,LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),saveNiLetterAsPdfLinkEnabled = true,PersonDetails.personDetails.person.nino.get)(request,messages(application)).toString().trim
-
-        val requestPdf = FakeRequest(GET, routes.NinoLetterController.saveNationalInsuranceNumberAsPdf().url)
-        val res2 = route(application, requestPdf).value
-        contentAsString(res2).contains("national-insurance-letter.pdf").equals(true)
-
+          (view(
+                    pd,
+                    LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
+                    true,
+                    pd.person.nino.get.nino,personDetailsId)(request,messages(application))).toString().trim
       }
     }
-
   }
+  "NinoLetterController saveNationalInsuranceNumberAsPdf" - {
+    "must return OK and pdf file with correct content" in {
+      userLoggedInFMNUser(NinoUser)
 
+      when(mockApplePassConnector.getPersonDetails(any())(any(), any()))
+        .thenReturn(Future.successful(Some(jsonPd.toString())))
+
+      val application = applicationBuilderWithConfig()
+        .overrides(
+          bind[ApplePassConnector].toInstance(mockApplePassConnector),
+        )
+        .build()
+
+      running(application) {
+        val request = FakeRequest(GET, routes.NinoLetterController.saveNationalInsuranceNumberAsPdf("pdID").url)
+          .withSession(("authToken", "Bearer 123"))
+
+        val result = route(application, request).value
+        status(result) mustEqual OK
+        contentAsString(result).contains("national-insurance-letter.pdf").equals(true)
+      }
+    }
+  }
 }

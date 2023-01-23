@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,91 +16,78 @@
 
 package controllers
 
-import controllers.actions._
-import models.{Address, PersonDetails}
-import org.apache.fop.apps.{FOUserAgent, Fop, FopFactory}
+import config.FrontendAppConfig
+import connectors.ApplePassConnector
+import models.PersonDetails
 import org.apache.xmlgraphics.util.MimeConstants
 import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import util.ApacheFOPHelpers
-import views.html.print._
+import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
+import play.api.{Configuration, Environment}
+import uk.gov.hmrc.auth.core.AuthConnector
+import util.XmlFoToPDF
+import play.api.libs.json._
+import views.html.print.PrintNationalInsuranceNumberView
 
-import java.io.{ByteArrayOutputStream, File}
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
-import javax.xml.transform.sax.SAXResult
-import javax.xml.transform.stream.StreamSource
-import javax.xml.transform.{Result, Transformer, TransformerFactory}
+import scala.concurrent.duration.DurationInt
+import scala.concurrent.{Await, ExecutionContext, Future}
 
 class NinoLetterController @Inject()(
                                       override val messagesApi: MessagesApi,
-                                      identify: IdentifierAction,
-                                      getData: DataRetrievalAction,
-                                      requireData: DataRequiredAction,
-                                      val controllerComponents: MessagesControllerComponents,
-                                      view: PrintNationalInsuranceNumberView
-                                    ) extends FrontendBaseController with I18nSupport {
+                                      authConnector: AuthConnector,
+                                      applePassConnector: ApplePassConnector,
+                                      view: PrintNationalInsuranceNumberView,
+                                      xmlFoToPDF: XmlFoToPDF
+                                    )(implicit config: Configuration,
+                                      env: Environment,
+                                      ec: ExecutionContext,
+                                      cc: MessagesControllerComponents,
+                                      frontendAppConfig: FrontendAppConfig) extends FMNBaseController(authConnector) with I18nSupport {
 
-  implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
 
-  def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData) {
+  implicit val loginContinueUrl: Call = routes.StoreMyNinoController.onPageLoad
+
+  def onPageLoad(pdId: String): Action[AnyContent] = Action async {
     implicit request => {
-      Ok(view(PersonDetails.personDetails, LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")), true, PersonDetails.personDetails.person.nino.get))
+      authorisedAsFMNUser { authContext =>
+        for {
+          pd <- applePassConnector.getPersonDetails(pdId)
+        } yield {
+          val personDetails = Json.fromJson[PersonDetails](Json.parse(Json.parse(pd.get).asInstanceOf[JsString].value)).get
+          val personNino = personDetails.person.nino.get.nino
+          Ok(view(
+            personDetails,
+            LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
+            true,
+            personNino, pdId))
+        }
+      }(routes.NinoLetterController.onPageLoad(pdId))
+
     }
   }
 
-  def saveNationalInsuranceNumberAsPdf(): Action[AnyContent] = Action {
+  def saveNationalInsuranceNumberAsPdf(pdId: String): Action[AnyContent] = Action async {
 
-    val address: Address = PersonDetails.personDetails.correspondenceAddress.getOrElse(PersonDetails.personDetails.address.get)
+    implicit request => {
+      authorisedAsFMNUser { authContext =>
+        val pd = Await.result(applePassConnector.getPersonDetails(pdId), 10 seconds).getOrElse("xxx")
+        val personDetails = Json.fromJson[PersonDetails](Json.parse(Json.parse(pd).asInstanceOf[JsString].value)).get
 
-    val xmlSrc = ApacheFOPHelpers.xmlData(
-      PersonDetails.personDetails.person.initialsName,
-      PersonDetails.personDetails.person.fullName,
-      PersonDetails.personDetails.person.nino.get,
-      address.lines,
-      address.postcode.get,
-      LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY"))
-    )
+        val pdf = xmlFoToPDF.createPDF(personDetails.person.initialsName,
+          personDetails.person.fullName,
+          personDetails.person.nino.get.nino,
+          personDetails.address.get.lines,
+          personDetails.address.get.postcode.get,
+          LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY"))
+        )
 
-    val out: ByteArrayOutputStream = new ByteArrayOutputStream()
-    val pdf = generateNinoPDF(xmlSrc, ApacheFOPHelpers.xslData, out)
-
-    Ok(pdf).as(MimeConstants.MIME_PDF)
-      .withHeaders(
-        CONTENT_TYPE -> "application/x-download",
-        CONTENT_DISPOSITION -> "attachment; filename=national-insurance-letter.pdf")
-
-  }
-
-  private def generateNinoPDF(xmlSrc: StreamSource, xslData: StreamSource, outStream: ByteArrayOutputStream): Array[Byte] = {
-
-    try {
-      val fopFactory: FopFactory = FopFactory.newInstance(new File(".").toURI())
-      val foUserAgent: FOUserAgent = fopFactory.newFOUserAgent()
-      foUserAgent.setAccessibility(true)
-      foUserAgent.setPdfUAEnabled(true)
-      foUserAgent.setTitle("Your National Insurance letter")
-
-      val fop: Fop = fopFactory.newFop(MimeConstants.MIME_PDF, foUserAgent, outStream)
-
-      val factory: TransformerFactory = TransformerFactory.newInstance()
-      val transformer: Transformer = factory.newTransformer(xslData)
-      transformer.setParameter("versionParam", "2.0")
-
-      // Resulting SAX events (the generated FO) must be piped through to FOP
-      val res: Result = new SAXResult(fop.getDefaultHandler())
-
-      // Start XSLT transformation and FOP processing
-      transformer.transform(xmlSrc, res)
-      outStream.toByteArray()
-    } catch {
-      case e: Exception => outStream.toByteArray
-    } finally {
-      outStream.close()
+        Future(Ok(pdf).as(MimeConstants.MIME_PDF)
+          .withHeaders(
+            CONTENT_TYPE -> "application/x-download",
+            CONTENT_DISPOSITION -> "attachment; filename=national-insurance-letter.pdf"))
+      }(routes.NinoLetterController.onPageLoad(pdId))
     }
   }
-
-
 }

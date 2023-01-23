@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,11 +35,9 @@ class IndexControllerSpec extends SpecBase with MockitoSugar {
       running(applicationWithConfig){
         userLoggedInFMNUser(NinoUser)
         val request = FakeRequest(GET, routes.IndexController.onPageLoad.url)
-          .withSession(("sessionId", "someId"))
           .withSession(("authToken","Bearer 123"))
-
-
         val result = indexController.onPageLoad(request)
+
         status(result) mustBe OK
         contentAsString(result) mustEqual view()(request, messages(applicationWithConfig)).toString
       }

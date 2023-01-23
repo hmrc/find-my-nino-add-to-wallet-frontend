@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,10 @@
 
 package models
 
-import play.api.libs.json.Json
+//import play.api.libs.json.Json
+
+
+import play.api.libs.json._
 
 case class PersonDetails(
                           person: Person,
@@ -27,43 +30,45 @@ case class PersonDetails(
 object PersonDetails {
   implicit val formats = Json.format[PersonDetails]
 
-  // temporary dummy data
-  var personDetails: PersonDetails = PersonDetails(
-    Person(
-      Option("Joanne"),
-      Option("Rachel"),
-      Option("Bloggs"),
-      None,
-      Option("Ms"),
-      None,
-      Option("QQ 12 34 56 A")
-    ),
-    Option(Address(
-      Option("10 Long Lane"),
-      Option("Leeds"),
-      None,
-      None,
-      None,
-      Option("LS1 1AB"),
-      Option("England"),
-      None,
-      None,
-      None,
-      false
-    )),
-    Option(Address(
-      Option("10 Long Lane"),
-      Option("Leeds"),
-      None,
-      None,
-      None,
-      Option("LS1 1AB"),
-      Option("England"),
-      None,
-      None,
-      None,
-      false
-    ))
-  )
-
 }
+
+/*
+val designatoryDetails =
+          """|
+             |{
+             |  "etag" : "115",
+             |  "person" : {
+             |    "firstName" : "HIPPY",
+             |    "middleName" : "T",
+             |    "lastName" : "NEWYEAR",
+             |    "title" : "Mr",
+             |    "honours": "BSC",
+             |    "sex" : "M",
+             |    "dateOfBirth" : "1952-04-01",
+             |    "nino" : "TW189213B",
+             |    "deceased" : false
+             |  },
+             |  "address" : {
+             |    "line1" : "26 FARADAY DRIVE",
+             |    "line2" : "PO BOX 45",
+             |    "line3" : "LONDON",
+             |    "postcode" : "CT1 1RQ",
+             |    "startDate": "2009-08-29",
+             |    "country" : "GREAT BRITAIN",
+             |    "type" : "Residential",
+             |    "status": 1
+             |  },
+             |  "correspondenceAddress" : {
+             |    "line1" : "26 FARADAY DRIVE",
+             |    "line2" : "PO BOX 45",
+             |    "line3" : "LONDON",
+             |    "postcode" : "CT1 1RQ",
+             |    "startDate": "2009-08-29",
+             |    "country" : "GREAT BRITAIN",
+             |    "type" : "Correspondence",
+             |    "status": 1
+             |  }
+             |}
+             |""".stripMargin
+ */
+

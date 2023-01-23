@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,14 +29,14 @@ import uk.gov.hmrc.play.http.HeaderCarrierConverter
 
 import scala.concurrent.{ExecutionContext, Future}
 
+import play.api.Logging
+
 trait IdentifierAction extends ActionBuilder[IdentifierRequest, AnyContent] with ActionFunction[Request, IdentifierRequest]
 
-class AuthenticatedIdentifierAction @Inject()(
-                                               override val authConnector: AuthConnector,
-                                               config: ConfigDecorator,
-                                               val parser: BodyParsers.Default
-                                             )
-                                             (implicit val executionContext: ExecutionContext) extends IdentifierAction with AuthorisedFunctions {
+class AuthenticatedIdentifierAction @Inject()(val authConnector: AuthConnector,
+                                              config: ConfigDecorator,
+                                              val parser: BodyParsers.Default)
+                                             (implicit val executionContext: ExecutionContext) extends IdentifierAction with AuthorisedFunctions with Logging {
 
   override def invokeBlock[A](request: Request[A], block: IdentifierRequest[A] => Future[Result]): Future[Result] = {
 
@@ -45,30 +45,37 @@ class AuthenticatedIdentifierAction @Inject()(
     authorised().retrieve(Retrievals.internalId) {
       _.map {
         internalId => block(IdentifierRequest(request, internalId))
-      }.getOrElse(throw new UnauthorizedException("Unable to retrieve internal Id"))
+      }.getOrElse(throw new UnauthorizedException("******************** Unable to retrieve internal Id"))
     } recover {
-      case _: NoActiveSession =>
+      case _: NoActiveSession => {
+        logger.info("********************* no session detected ********** redirecting to continue url")
         Redirect(config.loginUrl, Map("continue" -> Seq(config.loginContinueUrl)))
+      }
+
       case _: AuthorisationException =>
         Redirect(routes.UnauthorisedController.onPageLoad)
     }
   }
 }
 
-class SessionIdentifierAction @Inject()(
-                                         val parser: BodyParsers.Default
-                                       )
-                                       (implicit val executionContext: ExecutionContext) extends IdentifierAction {
+class SessionIdentifierAction @Inject()(val parser: BodyParsers.Default)
+                                       (implicit val executionContext: ExecutionContext) extends IdentifierAction with Logging {
 
   override def invokeBlock[A](request: Request[A], block: IdentifierRequest[A] => Future[Result]): Future[Result] = {
 
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
     hc.sessionId match {
-      case Some(session) =>
+      case Some(session) => {
+        logger.info(s"******************************** session detected, sessionId ${hc.sessionId}")
         block(IdentifierRequest(request, session.value))
-      case None =>
+      }
+
+      case None => {
+        logger.info("********************* no session detected ********** redirecting to continue url")
         Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
+      }
+
     }
   }
 }

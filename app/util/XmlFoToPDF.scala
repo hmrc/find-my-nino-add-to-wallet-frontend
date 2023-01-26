@@ -17,6 +17,8 @@
 package util
 
 
+import models.PersonDetails
+
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, File}
 import javax.inject.{Inject, Singleton}
 import javax.xml.transform.sax.SAXResult
@@ -27,6 +29,7 @@ import org.apache.xmlgraphics.util.MimeConstants
 import org.apache.fop.events.{Event, EventFormatter, EventListener}
 import org.apache.fop.events.model.EventSeverity
 import play.api.Logging
+import play.api.i18n.Messages
 
 @Singleton
 class DefaultXmlFoToPDF @Inject()(val stylesheetResourceStreamResolver: StylesheetResourceStreamResolver,
@@ -41,24 +44,26 @@ trait XmlFoToPDF extends Logging{
   private val fopConfigFilePath = "pdf/fop.xconf"
   private val niLetterXSLFilePath = "pdf/niLetterXSL.xsl"
 
-  def createPDF(initialsName: String, fullName: String,  nino: String, addressLines: List[String], postcode: String, date: String): Array[Byte] = {
+  def createPDF(personDetails: PersonDetails, date: String, messages: Messages): Array[Byte] = {
     val xmlStream: StreamSource = new StreamSource(
-      new ByteArrayInputStream(getXMLSource(initialsName, fullName,  nino, addressLines, postcode, date))
+      new ByteArrayInputStream(getXMLSource(personDetails, date))
     )
     val pdfOutStream = new ByteArrayOutputStream()
-    createTransformer().transform(xmlStream, new SAXResult(fop(pdfOutStream).getDefaultHandler))
+    createTransformer(messages).transform(xmlStream, new SAXResult(fop(pdfOutStream).getDefaultHandler))
 
     pdfOutStream.write(pdfOutStream.toByteArray)
     pdfOutStream.toByteArray
   }
 
-  private def createTransformer(): Transformer = {
+  private def createTransformer(messages: Messages): Transformer = {
     val xslStream: StreamSource = resourceStreamResolver.resolvePath(niLetterXSLFilePath)
     val transformerFactory: TransformerFactory = TransformerFactory.newInstance
     transformerFactory.setURIResolver(stylesheetResourceStreamResolver)
 
     val transformer: Transformer = transformerFactory.newTransformer(xslStream)
     setupTransformerEventHandling(transformer)
+
+    transformer.setParameter("translator", XSLScalaBridge(messages))
 
     transformer
   }
@@ -119,16 +124,16 @@ trait XmlFoToPDF extends Logging{
     transformer.setErrorListener(errorListener)
   }
 
-  def getXMLSource(initialsName: String, fullName: String,  nino: String, addressLines: List[String], postcode: String, date: String): Array[Byte] = {
-    val initialsNameXML = s"<initials-name>${initialsName}</initials-name>"
-    val fullNameXML = s"<full-name>${fullName}</full-name>"
+  def getXMLSource(personDetails: PersonDetails, date: String): Array[Byte] = {
+    val initialsNameXML = s"<initials-name>${personDetails.person.initialsName}</initials-name>"
+    val fullNameXML = s"<full-name>${personDetails.person.fullName}</full-name>"
     var addressXML = s"<address>"
-    for (addLine <- addressLines){
+    for (addLine <- personDetails.address.get.lines) {
       addressXML = addressXML + s"<address-line>${addLine}</address-line>"
     }
     addressXML = addressXML + s"</address>"
-    val postcodeXML = s"<postcode>${postcode}</postcode>"
-    val ninoXML = s"<nino>${nino}</nino>"
+    val postcodeXML = s"<postcode>${personDetails.address.get.postcode.get}</postcode>"
+    val ninoXML = s"<nino>${personDetails.person.nino.get.nino}</nino>"
     val dateXML = s"<date>${date}</date>"
     val xml = s"<root>" + initialsNameXML + fullNameXML + addressXML + postcodeXML + ninoXML + dateXML + s"</root>"
     xml.getBytes

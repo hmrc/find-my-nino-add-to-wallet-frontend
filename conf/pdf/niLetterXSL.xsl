@@ -2,10 +2,12 @@
 <xsl:stylesheet version="2.0"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 xmlns:fo="http://www.w3.org/1999/XSL/Format"
-                xmlns:fox="http://xmlgraphics.apache.org/fop/extensions">
+                xmlns:fox="http://xmlgraphics.apache.org/fop/extensions"
+                xmlns:scala="java:util.XSLScalaBridge">
 
     <xsl:include href="pdf/styles.xsl"/>
 
+    <xsl:param name="translator" />
 
 
 
@@ -102,7 +104,7 @@
                                       padding-before="10px"
                                       padding-after="6px"
                                       xsl:use-attribute-sets="default-font-bold">
-                                Your National Insurance letter
+                                <xsl:value-of select="scala:getMessagesText($translator, 'label.your_national_insurance_letter')"/>
                             </fo:block>
                         </fo:inline-container>
                     </fo:block>

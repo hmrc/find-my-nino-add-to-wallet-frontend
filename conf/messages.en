@@ -66,11 +66,14 @@ label.your_national_insurance_letter=Your National Insurance letter
 label.print=Print this letter
 label.save_as_a_PDF=Save as a PDF
 
-label.hm_revenue_customs=HM Revenue & Customs
+label.hm_revenue_and_customs=HM Revenue and Customs
 label.hm_revenue_customs_ni_print.revenue=HM Revenue
 label.hm_revenue_customs_ni_print.customs=&amp; Customs
+label.hm_revenue_customs_ni_print.revenue.pdf=HM Revenue
+label.hm_revenue_customs_ni_print.customs.pdf=& Customs
 
 label.nic_eo_hmrc_address.line1=NIC&amp;EO
+label.nic_eo_hmrc_address.line1.pdf=NIC&EO
 label.nic_eo_hmrc_address.line2=HMRC
 label.nic_eo_hmrc_address.line3=BX9 1AN
 label.phone_text=Phone
@@ -94,7 +97,8 @@ label.your_identity=your identity
 label.your_right_to_work_in_the_uk=your right to work in the UK
 
 label.child.trust.fund=Child Trust Fund
-label.child.trust.fund.details=When you turn 16, take control of your Child Trust Fund. Ask your parents or guardian, for more information go to www.gov.uk/child-trust-funds
+label.child.trust.fund.details=When you turn 16, take control of your Child Trust Fund. Ask your parents or guardian, for more information go to
+label.child.trust.fund.details.link=www.gov.uk/child-trust-funds
 
 label.welsh_language=Welsh language
 label.to_continue_to_receive_a_welsh_language_service_=To continue to receive a Welsh language service:
@@ -103,7 +107,9 @@ label.phone.number.for.welsh.language=phone 0300 200 1900
 
 label.now_you_have_got_your=Now you have got your
 label.national_insurance_number=National Insurance number
-label.you_can_download_and_use_the_hmrc_app_or_go_online_to=You can download and use the HMRC App or go online at www.gov.uk/personal-tax-account where you can:
+label.you_can_download_and_use_the_hmrc_app_or_go_online_to.text.part1=You can download and use the HMRC App or go online at
+label.you_can_download_and_use_the_hmrc_app_or_go_online_to.link=www.gov.uk/personal-tax-account
+label.you_can_download_and_use_the_hmrc_app_or_go_online_to.text.part2=where you can:
 label.create_and_access_your_personal_tax_account=create and access your Personal Tax Account
 label.save_and_print_another_copy_of_this_letter=save and print another copy of this letter
 label.tell_us_about_a_change_to_your_address=tell us about a change to your address

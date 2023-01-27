@@ -90,7 +90,7 @@
     </xsl:attribute-set>
 
     <xsl:attribute-set name="footer">
-        <xsl:attribute name="font-size">10pt</xsl:attribute>
+        <xsl:attribute name="font-size">9pt</xsl:attribute>
         <xsl:attribute name="font-family">OpenSans</xsl:attribute>
         <xsl:attribute name="font-weight">normal</xsl:attribute>
         <xsl:attribute name="line-height">14pt</xsl:attribute>

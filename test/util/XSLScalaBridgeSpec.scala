@@ -36,5 +36,16 @@ class XSLScalaBridgeSpec extends SpecBase with MockitoSugar with I18nSupport {
       result mustBe messagesApi("label.your_national_insurance_letter")
     }
   }
+
+  "XSLScalaBridge getMessagesTextWithParameter" - {
+    "return the correct string" in {
+
+      val date = "01/23"
+
+      val result = XSLScalaBridge(messages).getMessagesTextWithParameter("label.hmrc_date", date)
+
+      result mustBe messagesApi("label.hmrc_date", date)
+    }
+  }
 }
 

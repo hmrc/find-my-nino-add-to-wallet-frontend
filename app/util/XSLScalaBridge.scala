@@ -24,5 +24,8 @@ object XSLScalaBridge {
 
 class XSLScalaBridge private(messages: Messages) {
   def getMessagesText(key: String): String = messages(key)
+
+  def getMessagesTextWithParameter(key: String, parameter:String ): String = messages(key, parameter)
+
 }
 

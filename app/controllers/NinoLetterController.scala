@@ -75,13 +75,9 @@ class NinoLetterController @Inject()(
         val pd = Await.result(applePassConnector.getPersonDetails(pdId), 10 seconds).getOrElse("xxx")
         val personDetails = Json.fromJson[PersonDetails](Json.parse(Json.parse(pd).asInstanceOf[JsString].value)).get
 
-        val pdf = xmlFoToPDF.createPDF(personDetails.person.initialsName,
-          personDetails.person.fullName,
-          personDetails.person.nino.get.nino,
-          personDetails.address.get.lines,
-          personDetails.address.get.postcode.get,
-          LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY"))
-        )
+        val pdf = xmlFoToPDF.createPDF(personDetails,
+          LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
+          messagesApi.preferred(request))
 
         Future(Ok(pdf).as(MimeConstants.MIME_PDF)
           .withHeaders(

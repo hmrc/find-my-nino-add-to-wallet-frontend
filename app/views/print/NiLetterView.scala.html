@@ -26,7 +26,7 @@ nino: String)(implicit request: Request[_], messages: play.api.i18n.Messages)
 <div class="print-document">
     <div class="grid-row print-header">
         <div class="govuk-grid-column-one-third">
-            <img class="print-header__hmrc-logo" src="assets/images/HMRC-logo.jpg"/>
+            <img class="print-header__hmrc-logo" alt='@messages("label.hm_revenue_and_customs")' src="assets/images/HMRC-logo.jpg"/>
             <h2 class="govuk-heading-m">
                 <span>@messages("label.hm_revenue_customs_ni_print.revenue")</span>
                 @Html(messages("label.hm_revenue_customs_ni_print.customs"))
@@ -104,7 +104,10 @@ nino: String)(implicit request: Request[_], messages: play.api.i18n.Messages)
                         <li>@messages("label.your_right_to_work_in_the_uk")</li>
                     </ul>
                     <h3 class="govuk-heading-s">@messages("label.child.trust.fund")</h3>
-                    <p class="govuk-body">@messages("label.child.trust.fund.details")</p>
+                    <p class="govuk-body">
+                        @messages("label.child.trust.fund.details")
+                        <span>@messages("label.child.trust.fund.details.link")</span>
+                    </p>
                     @if(messages.lang.equals(Lang("en"))) {
                         <h3 class="govuk-heading-s">@messages("label.welsh_language")</h3>
                         <p class="govuk-body list-paragraph welsh-info-text">@messages("label.to_continue_to_receive_a_welsh_language_service_")</p>
@@ -119,7 +122,11 @@ nino: String)(implicit request: Request[_], messages: play.api.i18n.Messages)
                         <div class="ni-number-right">
                             <h3 class="govuk-heading-s">@messages("label.now_you_have_got_your")<br /> @messages("label.national_insurance_number")</h3>
                         </div>
-                        <p class="govuk-body-s you-download-and-use" id="you-download">@messages("label.you_can_download_and_use_the_hmrc_app_or_go_online_to")</p>
+                        <p class="govuk-body-s you-download-and-use" id="you-download">
+                            @messages("label.you_can_download_and_use_the_hmrc_app_or_go_online_to.text.part1")
+                            <span>@messages("label.you_can_download_and_use_the_hmrc_app_or_go_online_to.link")</span>
+                            @messages("label.you_can_download_and_use_the_hmrc_app_or_go_online_to.text.part2")
+                        </p>
                         <div class="hmrc-app">
                             <ul class="govuk-list govuk-list--bullet">
                                 <li>@messages("label.create_and_access_your_personal_tax_account")</li>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,18 @@
 
 package util
 
-import java.time.LocalDate
-
 object TestData {
 
   val NinoUser: String =
     """
       |{
-      |	"nino": "QQ123456A",
+      |	"nino": "AA000003B",
       |	"credentialRole": "User",
-      |	"internalId": "Int-8612ba91-5581-411d-9d32-fb2de937a565"
+      |	"internalId": "Int-8612ba91-5581-411d-9d32-fb2de937a565",
+      | "confidenceLevel": 250,
+      | "affinityGroup": "Individual",
+      | "allEnrolments": [],
+      | "optionalName" : {"name": "somename"}
       |}
       |""".stripMargin
 

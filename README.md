@@ -1,7 +1,8 @@
 
 # find-my-nino-add-to-wallet-frontend
 
-This is a placeholder README.md for a new repository
+
+
 
 ### License
 

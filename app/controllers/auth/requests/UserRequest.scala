@@ -41,7 +41,7 @@ final case class UserRequest[A](
   // $COVERAGE-OFF$
   def name: Option[String] = personDetails match {
     case Some(personDetails) => personDetails.person.shortName
-    case _ => retrievedName.map(_.toString)
+    case _                   => retrievedName.map(_.toString)
   }
   // $COVERAGE-ON$
   //def isSa: Boolean = saUserType != NonFilerSelfAssessmentUser

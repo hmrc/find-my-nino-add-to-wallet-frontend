@@ -46,7 +46,7 @@ lazy val root = (project in file("."))
           "controllers.routes._",
           "viewmodels.govuk.all._"
       ),
-      PlayKeys.playDefaultPort := 9900,
+      PlayKeys.playDefaultPort := 14006,
       scalacOptions ++= Seq(
           "-feature",
           "-Ypartial-unification",

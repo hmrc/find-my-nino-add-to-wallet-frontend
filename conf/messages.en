@@ -1,4 +1,4 @@
-service.name = find-my-nino-add-to-wallet-frontend
+service.name = find-your-national-insurance-number
 
 site.back = Back
 site.change = Change
@@ -9,33 +9,24 @@ site.startAgain = Start again
 site.signIn = Sign in
 site.govuk = GOV.UK
 
-# ------ these date messages are used in viewmodels/govuk/DateFluency - are they needed? ---------
-date.day = Day
-date.month = Month
-date.year = Year
-# ------------------------------------------------------------------------------------------------
-
 timeout.title = You’re about to be signed out
-timeout.message = For security reasons, you will be signed out of this service
+timeout.message = For security reasons, you will be signed out of this service in
 timeout.keepAlive = Stay signed in
 timeout.signOut = Sign out
 
 error.browser.title.prefix = Error:
 error.summary.title = There is a problem
 
-# ------ These will need to change --------------------------------------------------------------
-index.title = find-my-nino-add-to-wallet-frontend
-index.heading = Find my Nino Service
-index.guidance = Please click on the button below to visit the 'Store your Nino page'
-# ------------------------------------------------------------------------------------------------
-
 checkYourAnswers.title = Check Your Answers
 checkYourAnswers.heading = Check Your Answers
-unauthorised.title = You can’t access this service with this account
-unauthorised.heading = You can’t access this service with this account
 
+unauthorised.title = You cannot access this service with this account
+unauthorised.heading = You cannot access this service with this account
 
-label.your_personal_tax_account=Personal tax account
+journeyRecovery.continue.title = Sorry, there is a problem with the service
+journeyRecovery.continue.heading = Sorry, there is a problem with the service
+journeyRecovery.startAgain.title = Sorry, there is a problem with the service
+journeyRecovery.startAgain.heading = Sorry, there is a problem with the service
 
 storeMyNino.title = Save your National Insurance number
 storeMyNino.heading = Save your National Insurance number
@@ -46,22 +37,25 @@ storeMyNino.saveYourNino.list1.li2 = add your number to your phone's wallet
 storeMyNino.saveYourNino.p2 = If you save your National Insurance number on your phone, make sure it has security like Face ID, a pattern, or a pin code set up. This helps protect your details.
 storeMyNino.subHeading1 = Get your National Insurance number on a letter (PDF)
 storeMyNino.getYourNinoLetter.list1.li1 = View or print
-storeMyNino.getYourNinoLetter.list1.li2 = Download (PDF)
+
+storeMyNino.getYourNinoLetter.list1.li2 = Save as a PDF
+
 storeMyNino.subHeading2 = Save your number to your phone
 storeMyNino.saveToPhone.p1 = Your National Insurance number would:
 storeMyNino.saveToPhone.list1.li1 = be readily available in your Apple or Google wallet with your other cards — even offline
 storeMyNino.saveToPhone.list1.li2 = be protected by your phone's security settings
 storeMyNino.saveToPhone.list1.li3 = only be shared with the wallet provider and no other third parties
 storeMyNino.saveToPhone.list1.li4 = take up minimal storage space on your phone
+storeMyNino.saveToPhone.googleWallet.heading = Google Wallet
+storeMyNino.saveToPhone.appleWallet.heading = Apple Wallet
+storeMyNino.saveToPhone.appleWallet.p1 = Using your Apple iPhone, scan the QR code to add your National Insurance number to your Apple Wallet.
 
 
 
 
+label.save_your_national_insurance_number=Save your National Insurance number
 
-
-label.print_your_national_insurance_summary=Print your National Insurance summary
-
-label.your_national_insurance_letter=Your National Insurance letter
+label.your_national_insurance_number_letter=Your National Insurance number letter
 
 label.print=Print this letter
 label.save_as_a_PDF=Save as a PDF

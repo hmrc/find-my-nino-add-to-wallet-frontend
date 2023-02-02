@@ -38,7 +38,7 @@ storeMyNino.saveYourNino.p2 = If you save your National Insurance number on your
 storeMyNino.subHeading1 = Get your National Insurance number on a letter (PDF)
 storeMyNino.getYourNinoLetter.list1.li1 = View or print
 
-storeMyNino.getYourNinoLetter.list1.li2 = Download (PDF)
+storeMyNino.getYourNinoLetter.list1.li2 = Save as a PDF
 
 storeMyNino.subHeading2 = Save your number to your phone
 storeMyNino.saveToPhone.p1 = Your National Insurance number would:

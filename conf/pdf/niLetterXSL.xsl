@@ -112,7 +112,7 @@
                                       padding-before="10px"
                                       padding-after="6px"
                                       xsl:use-attribute-sets="default-font-bold">
-                                <xsl:value-of select="scala:getMessagesText($translator, 'label.your_national_insurance_letter')"/>
+                                <xsl:value-of select="scala:getMessagesText($translator, 'label.your_national_insurance_number_letter')"/>
                             </fo:block>
                         </fo:inline-container>
                     </fo:block>

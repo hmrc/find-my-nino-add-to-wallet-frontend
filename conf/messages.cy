@@ -3,10 +3,6 @@ label.your_personal_tax_account=Cyfrif treth personol
 
 
 
-label.print_your_national_insurance_summary=Argraffu’ch crynodeb Yswiriant Gwladol
-
-label.your_national_insurance_letter=Eich llythyr Yswiriant Gwladol
-
 label.print=Argraffu’r llythyr hwn
 label.save_as_a_PDF=ACadw fel PDF
 

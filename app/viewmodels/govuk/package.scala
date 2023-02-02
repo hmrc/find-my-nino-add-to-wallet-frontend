@@ -23,7 +23,6 @@ package object govuk {
       with BackLinkFluency
       with ButtonFluency
       with CheckboxFluency
-      with DateFluency
       with ErrorSummaryFluency
       with FieldsetFluency
       with HintFluency

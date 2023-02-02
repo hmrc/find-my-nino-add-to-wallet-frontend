@@ -31,9 +31,9 @@ class XSLScalaBridgeSpec extends SpecBase with MockitoSugar with I18nSupport {
   "XSLScalaBridge getMessagesText" - {
     "must return the correct string" in {
 
-      val result = XSLScalaBridge(messages).getMessagesText("label.your_national_insurance_letter")
+      val result = XSLScalaBridge(messages).getMessagesText("label.your_national_insurance_number_letter")
 
-      result mustBe messagesApi("label.your_national_insurance_letter")
+      result mustBe messagesApi("label.your_national_insurance_number_letter")
     }
   }
 

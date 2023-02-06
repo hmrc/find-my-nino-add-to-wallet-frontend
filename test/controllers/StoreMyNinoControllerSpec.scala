@@ -79,7 +79,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
 
       running(application) {
         userLoggedInFMNUser(NinoUser)
-        val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad().url)
+        val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         status(result) mustEqual OK

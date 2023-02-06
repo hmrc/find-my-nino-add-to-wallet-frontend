@@ -16,9 +16,11 @@
 
 @import scala.concurrent.ExecutionContext
 @import uk.gov.hmrc.hmrcfrontend.views.html.components._
+@import config.ConfigDecorator
 
 @this(
     main: MainView,
+    configDecorator: ConfigDecorator,
     niLetter: views.html.print.NiLetterView,
     hmrcPageHeading: uk.gov.hmrc.hmrcfrontend.views.html.components.HmrcPageHeading
 )
@@ -49,7 +51,7 @@
     </div>
     @if(saveNiLetterAsPdfLinkEnabled) {
         <div class="save-this">
-            <a class="save-this__link" href="/find-my-nino-add-to-wallet-frontend/print-letter/save-letter-as-pdf?pdId=@{pdId}" data-journey-click="save - click:Your National Insurance letter:@messages("label.save_as_a_PDF")">@messages("label.save_as_a_PDF")</a>
+            <a class="save-this__link" href="/@configDecorator.serviceName/print-letter/save-letter-as-pdf?pdId=@{pdId}" data-journey-click="save - click:Your National Insurance letter:@messages("label.save_as_a_PDF")">@messages("label.save_as_a_PDF")</a>
         </div>
     }
 

@@ -4,8 +4,6 @@
 
 GET         /assets/*file                                controllers.Assets.versioned(path="/public", file: Asset)
 
-GET         /                                            controllers.IndexController.onPageLoad
-
 GET         /language/:lang                              controllers.LanguageSwitchController.switchToLanguage(lang: String)
 
 GET         /refresh-session                             controllers.KeepAliveController.keepAlive
@@ -20,7 +18,7 @@ GET         /account/signed-out                          controllers.auth.Signed
 
 GET         /unauthorised                                controllers.UnauthorisedController.onPageLoad
 
-GET         /store-my-nino                               controllers.StoreMyNinoController.onPageLoad()
+GET         /                                            controllers.StoreMyNinoController.onPageLoad
 GET         /get-pass-card                               controllers.StoreMyNinoController.getPassCard(passId: String)
 GET         /get-qr-code                                 controllers.StoreMyNinoController.getQrCode(passId: String)
 GET         /print-letter                                controllers.NinoLetterController.onPageLoad(pdId:String)

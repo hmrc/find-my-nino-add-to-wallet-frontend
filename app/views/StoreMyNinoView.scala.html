@@ -19,7 +19,7 @@
         layout: templates.Layout,
         govukButton: GovukButton,
         govukWarningText: GovukWarningText,
-        appConfig: ConfigDecorator
+        configDecorator: ConfigDecorator
 )
 
 @(passId:String, nino:String, pdId:String)(implicit request: Request[_], messages: Messages)
@@ -46,8 +46,8 @@
         <h2 class="govuk-heading-m">@messages("storeMyNino.subHeading1")</h2>
 
         <ul class="govuk-list govuk-list--bullet govuk-list--spaced">
-            <li><a href='/find-my-nino-add-to-wallet-frontend/print-letter?pdId=@{pdId}'>@messages("storeMyNino.getYourNinoLetter.list1.li1")</a></li>
-            <li><a href='/find-my-nino-add-to-wallet-frontend/print-letter/save-letter-as-pdf?pdId=@{pdId}' download="">@messages("storeMyNino.getYourNinoLetter.list1.li2")</a></li>
+            <li><a href='/@configDecorator.serviceName/print-letter?pdId=@{pdId}'>@messages("storeMyNino.getYourNinoLetter.list1.li1")</a></li>
+            <li><a href='/@configDecorator.serviceName/print-letter/save-letter-as-pdf?pdId=@{pdId}' download="">@messages("storeMyNino.getYourNinoLetter.list1.li2")</a></li>
         </ul>
 
 
@@ -67,19 +67,19 @@
 
             <div class="govuk-!-padding-bottom-6">
                 <a href="service-wallet-android-1">
-                    <img src="assets/images/google-wallet.svg" alt="" class="add-wallet-android">
+                    <img src="/@configDecorator.serviceName/assets/images/google-wallet.svg" alt="" class="add-wallet-android">
                 </a>
             </div>
 
 
             <p class="govuk-body">
-                <a href='/find-my-nino-add-to-wallet-frontend/get-pass-card?passId=@{passId}'>
-                <img src="assets/images/apple-pay.svg" width="200px">
+                <a href='/@configDecorator.serviceName/get-pass-card?passId=@{passId}'>
+                <img src="/@configDecorator.serviceName/assets/images/apple-pay.svg" width="200px">
                 </a>
             </p>
 
             <p class="govuk-body">
-                <img src='/find-my-nino-add-to-wallet-frontend/get-qr-code?passId=@{passId}'>
+                <img src='/@configDecorator.serviceName/get-qr-code?passId=@{passId}'>
             </p>
 
 

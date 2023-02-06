@@ -36,7 +36,7 @@ class NavigatorSpec extends SpecBase {
           override def route(): Call = ???
           override def nextPageNormalMode(answers: UserAnswers): Page = ???
         }
-        navigator.nextPage(UnknownPage, NormalMode, UserAnswers("id")) mustBe routes.IndexController.onPageLoad
+        navigator.nextPage(UnknownPage, NormalMode, UserAnswers("id")) mustBe routes.StoreMyNinoController.onPageLoad
       }
     }
 

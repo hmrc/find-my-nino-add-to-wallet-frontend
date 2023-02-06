@@ -43,7 +43,7 @@ class StoreMyNinoController @Inject()(
                                        frontendAppConfig: FrontendAppConfig) extends FMNBaseController(authConnector) with I18nSupport {
 
 
-  implicit val loginContinueUrl: Call = routes.StoreMyNinoController.onPageLoad()
+  implicit val loginContinueUrl: Call = routes.StoreMyNinoController.onPageLoad
 
   def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction) {
     implicit request => {

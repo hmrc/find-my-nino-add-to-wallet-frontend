@@ -63,13 +63,10 @@ trait WireMockHelper {
     ws.url(s"http://localhost:$port/find-my-nino-add-to-wallet-frontend/language/$language").withHttpHeaders("Referer" -> referer)
       .withFollowRedirects(false)
 
-  def buildClientTestOnlyRoutes(path: String) =
-    ws.url(s"http://localhost:$port/lookup-address/test-only/$path").withFollowRedirects(false)
-
   def listAllStubs: ListStubMappingsResult = listAllStubMappings
 
   def stubKeystore(session: String, theData: JsValue, status: Int = 200): StubMapping = {
-    val keystoreUrl = s"/keystore/address-lookup-frontend/$session"
+    val keystoreUrl = s"/keystore/find-my-nino-add-to-wallet-frontend/$session"
     stubFor(get(urlMatching(keystoreUrl))
       .willReturn(aResponse()
         .withStatus(status)
@@ -81,7 +78,7 @@ trait WireMockHelper {
   }
 
   def stubKeystoreSave(session: String, theData: JsValue, status: Int): StubMapping = {
-    val keystoreUrl = s"/keystore/address-lookup-frontend/$session/data/$keyId"
+    val keystoreUrl = s"/keystore/find-my-nino-add-to-wallet-frontend/$session/data/$keyId"
     stubFor(put(urlMatching(keystoreUrl))
       .withRequestBody(equalTo(Json.toJson(theData).toString))
       .willReturn(aResponse()

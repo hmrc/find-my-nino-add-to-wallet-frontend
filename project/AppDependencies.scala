@@ -14,7 +14,7 @@ object AppDependencies {
     "uk.gov.hmrc"             %% s"bootstrap-frontend-$playVersion"     %   s"7.3.0",
     "uk.gov.hmrc"             %% "domain"                               %   s"8.0.0-$playVersion",
     "uk.gov.hmrc.mongo"       %% "hmrc-mongo-play-28"                   %   "0.71.0",
-    "org.apache.xmlgraphics"  % "fop"                                   %   "2.3",
+    "org.apache.xmlgraphics"  % "fop"                                   %   "2.6",
     "org.typelevel"           %% "cats-core"                            %   "2.8.0",
 
   )

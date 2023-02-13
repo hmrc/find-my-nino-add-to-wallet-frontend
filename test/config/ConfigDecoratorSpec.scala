@@ -93,8 +93,6 @@ class ConfigDecoratorSpec extends SpecBase with MockitoSugar{
       mockConfigDecorator.countdown.isInstanceOf[Int]
     }
 
-
-
     "findMyNinoServiceUrl" in {
       mockConfigDecorator.findMyNinoServiceUrl.isInstanceOf[String]
     }
@@ -105,6 +103,10 @@ class ConfigDecoratorSpec extends SpecBase with MockitoSugar{
 
     "loginContinueUrl" in {
       mockConfigDecorator.loginContinueUrl.isInstanceOf[String]
+    }
+
+    "container" in {
+      mockConfigDecorator.gtmContainer.isInstanceOf[String]
     }
 
 }

@@ -35,7 +35,8 @@
 
 @(pageTitle: String, showBackLink: Boolean = true, timeout: Boolean = true, showSignOut: Boolean = true)(contentBlock: Html)(implicit request: Request[_], messages: Messages)
 
-@head = {
+@headWithTrackingConsent = {
+    @hmrcTrackingConsentSnippet()
 
     @hmrcHead(
         nonce     = CSPNonce.get,
@@ -85,7 +86,7 @@
 
 @govukLayout(
     pageTitle   = Some(pageTitle),
-    headBlock   = Some(head),
+    headBlock   = Some(headWithTrackingConsent),
     headerBlock = Some(hmrcStandardHeader(
         serviceUrl  = Some(routes.StoreMyNinoController.onPageLoad.url),
         signOutUrl  = if(showSignOut) Some(controllers.auth.routes.AuthController.signOut.url) else None,

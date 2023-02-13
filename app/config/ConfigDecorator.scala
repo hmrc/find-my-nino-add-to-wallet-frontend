@@ -32,6 +32,7 @@ class ConfigDecorator @Inject()(configuration: Configuration, servicesConfig: Se
   private val contactHost = configuration.get[String]("contact-frontend.host")
   val serviceName = "find-my-nino-add-to-wallet-frontend"
 
+  val gtmContainer: String = configuration.get[String]("tracking-consent-frontend.gtm.container")
 
   def feedbackUrl(implicit request: RequestHeader): String =
     s"$contactHost/contact/beta-feedback?service=$serviceName&backUrl=${SafeRedirectUrl(host + request.uri).encodedUrl}"

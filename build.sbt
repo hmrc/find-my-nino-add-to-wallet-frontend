@@ -3,7 +3,7 @@ import sbt.Def
 import scoverage.ScoverageKeys
 import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
 
-lazy val appName: String = "find-my-nino-add-to-wallet-frontend"
+lazy val appName: String = "save-your-national-insurance-number"
 
 lazy val scoverageSettings = {
   import scoverage.ScoverageKeys

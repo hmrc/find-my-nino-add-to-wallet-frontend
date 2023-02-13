@@ -30,7 +30,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
   val appName: String = configuration.get[String]("appName")
 
   private val contactHost = configuration.get[String]("contact-frontend.host")
-  private val contactFormServiceIdentifier = "find-my-nino-add-to-wallet-frontend"
+  private val contactFormServiceIdentifier = "save-your-national-insurance-number"
 
 
   def feedbackUrl(implicit request: RequestHeader): String =
@@ -42,7 +42,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
   lazy val findMyNinoServiceUrl: String = servicesConfig.baseUrl("find-my-nino-add-to-wallet-service")
 
   private val exitSurveyBaseUrl: String = configuration.get[Service]("microservice.services.feedback-frontend").baseUrl
-  val exitSurveyUrl: String             = s"$exitSurveyBaseUrl/feedback/find-my-nino-add-to-wallet-frontend"
+  val exitSurveyUrl: String             = s"$exitSurveyBaseUrl/feedback/save-your-national-insurance-number"
 
   val languageTranslationEnabled: Boolean =
     configuration.get[Boolean]("features.welsh-translation")

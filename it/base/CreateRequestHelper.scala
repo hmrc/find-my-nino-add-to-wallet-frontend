@@ -26,7 +26,7 @@ trait CreateRequestHelper extends ServerProvider {
 
   def getRequest(path: String, follow: Boolean = false, headers: Seq[(String, String)] = Seq.empty)(sessionKvs: (String, String)*): Future[WSResponse] = {
     val allHeaders = headers ++ Seq("Csrf-Token" -> "nocheck", bakeCookie(sessionKvs:_*))
-    ws.url(s"http://localhost:$port/find-my-nino-add-to-wallet-frontend$path")
+    ws.url(s"http://localhost:$port/save-your-national-insurance-number$path")
       .withHttpHeaders(allHeaders: _*)
       .withFollowRedirects(follow)
       .get()
@@ -36,7 +36,7 @@ trait CreateRequestHelper extends ServerProvider {
                  (sessionKvs: (String, String)*)(): Future[WSResponse] = {
 
     val allHeaders = headers ++ Seq("Csrf-Token" -> "nocheck", bakeCookie(sessionKvs:_*))
-    ws.url(s"http://localhost:$port/find-my-nino-add-to-wallet-frontend$path")
+    ws.url(s"http://localhost:$port/save-your-national-insurance-number$path")
       .withHttpHeaders(allHeaders: _*)
       .withFollowRedirects(follow)
       .post(formJson)

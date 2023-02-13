@@ -30,7 +30,7 @@ class ConfigDecorator @Inject()(configuration: Configuration, servicesConfig: Se
   val appName: String = configuration.get[String]("appName")
 
   private val contactHost = configuration.get[String]("contact-frontend.host")
-  val serviceName = "find-my-nino-add-to-wallet-frontend"
+  val serviceName = "save-your-national-insurance-number"
 
 
   def feedbackUrl(implicit request: RequestHeader): String =

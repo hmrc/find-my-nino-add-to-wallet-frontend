@@ -56,7 +56,7 @@ class NinoLetterController @Inject()(
           pd <- applePassConnector.getPersonDetails(pdId)
         } yield {
           val personDetails = Json.fromJson[PersonDetails](Json.parse(Json.parse(pd.get).asInstanceOf[JsString].value)).get
-          val personNino = personDetails.person.nino.get.nino
+          val personNino = personDetails.person.nino.get.formatted
           Ok(view(
             personDetails,
             LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),

@@ -19,10 +19,9 @@
 @import config.ConfigDecorator
 
 @this(
-    main: MainView,
+    layout: templates.Layout,
     configDecorator: ConfigDecorator,
-    niLetter: views.html.print.NiLetterView,
-    hmrcPageHeading: uk.gov.hmrc.hmrcfrontend.views.html.components.HmrcPageHeading
+    niLetter: views.html.print.NiLetterView
 )
 
 @(personDetails: models.PersonDetails, dateString: String, saveNiLetterAsPdfLinkEnabled: Boolean, nino : String, pdId: String)(implicit request: Request[_], messages: Messages)
@@ -31,27 +30,17 @@
     <link rel="stylesheet" href='@routes.AssetsController.versioned("stylesheets/partials/print-this-document.css")'>
 }
 
-@main(
-    pageTitle = messages("label.save_your_national_insurance_number"),
-    serviceName = messages("label.national_insurance"),
-    showBackLink = true,
-    backLinkUrl = "#",
-    fullWidth = true,
-    stylesheets = Some(stylesheet)
-) {
+@layout(pageTitle = titleNoForm(messages("label.your_national_insurance_number_letter")), stylesheets = Some(stylesheet), fullWidth = true) {
 
-    @hmrcPageHeading(PageHeading(
-        text = messages("label.your_national_insurance_number_letter"),
-
-    ))
+    <h1 class="govuk-heading-xl">@messages("label.your_national_insurance_number_letter")</h1>
 
     <div class="print-this">
         <img class="print-this__icon" src='@controllers.routes.AssetsController.versioned("images/icon-print.svg")' alt="Print Icon" aria-hidden="true"/>
-        <a class="print-this__link" href="javascript:window.print()" data-journey-click="print - click:Your National Insurance letter:@messages("label.print")">@messages("label.print")</a>
+        <a class="print-this__link govuk-link" href="javascript:window.print()" data-journey-click="print - click:Your National Insurance letter:@messages("label.print")">@messages("label.print")</a>
     </div>
     @if(saveNiLetterAsPdfLinkEnabled) {
         <div class="save-this">
-            <a class="save-this__link" href="/@configDecorator.serviceName/print-letter/save-letter-as-pdf?pdId=@{pdId}" data-journey-click="save - click:Your National Insurance letter:@messages("label.save_as_a_PDF")">@messages("label.save_as_a_PDF")</a>
+            <a class="save-this__link govuk-link" href="/@configDecorator.serviceName/print-letter/save-letter-as-pdf?pdId=@{pdId}" data-journey-click="save - click:Your National Insurance letter:@messages("label.save_as_a_PDF")">@messages("label.save_as_a_PDF")</a>
         </div>
     }
 

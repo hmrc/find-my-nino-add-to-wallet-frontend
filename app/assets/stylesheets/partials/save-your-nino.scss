@@ -1,0 +1,23 @@
+.show-on-phones {
+  display: none;
+}
+
+.hide-on-phones {
+  display: inline-block;
+}
+
+@media all and (max-width: 640px) {
+  .add-wallet-ios {
+    width: 150px;
+  }
+  .add-wallet-android {
+    width: 150px;
+    margin-right: 10px;
+  }
+  .show-on-phones {
+    display: inline-block;
+  }
+  .hide-on-phones {
+    display: none;
+  }
+}

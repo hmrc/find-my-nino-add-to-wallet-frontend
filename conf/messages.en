@@ -1,4 +1,4 @@
-service.name = find-your-national-insurance-number
+service.name = Save your National Insurance number
 
 site.back = Back
 site.change = Change
@@ -50,7 +50,9 @@ storeMyNino.saveToPhone.googleWallet.heading = Google Wallet
 storeMyNino.saveToPhone.appleWallet.heading = Apple Wallet
 storeMyNino.saveToPhone.appleWallet.p1 = Using your Apple iPhone, scan the QR code to add your National Insurance number to your Apple Wallet.
 
-
+storeMyNino.saveToPhone.appleWallet.saveToWallet.alt = Save to Apple wallet
+storeMyNino.saveToPhone.appleWallet.saveToWallet.QRCode.alt = QR code to save to an Apple wallet
+storeMyNino.saveToPhone.googleWallet.saveToWallet.alt = Save to Google wallet
 
 
 label.save_your_national_insurance_number=Save your National Insurance number

@@ -50,7 +50,7 @@ class StoreMyNinoController @Inject()(
       val pd: PersonDetails = request.personDetails.get
       val pdId = Await.result(findMyNinoServiceConnector.createPersonDetailsRow(pd), 10 seconds).getOrElse("xxx")
       val passId: String = Await.result(findMyNinoServiceConnector.createApplePass(pd.person.fullName, request.nino.get.nino), 10 seconds).getOrElse("xxx")
-      Ok(view(passId, request.nino.get.nino, pdId))
+      Ok(view(passId, request.nino.get.formatted, pdId))
     }
   }
 

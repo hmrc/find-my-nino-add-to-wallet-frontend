@@ -74,7 +74,7 @@ class NinoLetterControllerSpec extends SpecBase with CDFixtures with MockitoSuga
                     pd,
                     LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
                     true,
-                    pd.person.nino.get.nino,personDetailsId)(request,messages(application))).toString().trim
+                    pd.person.nino.get.formatted, personDetailsId)(request,messages(application))).toString().trim
       }
     }
   }

@@ -17,6 +17,7 @@
 @import config.ConfigDecorator
 @import uk.gov.hmrc.hmrcfrontend.views.config.StandardAlphaBanner
 @import views.html.helper.CSPNonce
+@import components.FullWidthMainContent
 
 @this(
     appConfig: ConfigDecorator,
@@ -29,11 +30,15 @@
     hmrcLanguageSelect: HmrcLanguageSelect,
     hmrcTimeoutDialog: HmrcTimeoutDialog,
     hmrcReportTechnicalIssueHelper: HmrcReportTechnicalIssueHelper,
+    twoThirdsMainContent: TwoThirdsMainContent,
+    fullWidthMainContent: FullWidthMainContent,
+    twoThirdsOneThirdMainContent: TwoThirdsOneThirdMainContent,
     hmrcScripts: HmrcScripts,
     alphaBanner: StandardAlphaBanner
 )
 
-@(pageTitle: String, showBackLink: Boolean = true, timeout: Boolean = true, showSignOut: Boolean = true)(contentBlock: Html)(implicit request: Request[_], messages: Messages)
+@(
+pageTitle: String, showBackLink: Boolean = true, timeout: Boolean = true, showSignOut: Boolean = true, stylesheets: Option[Html] = None, fullWidth: Boolean = false, sidebarContent: Option[Html] = None)(contentBlock: Html)(implicit request: Request[_], messages: Messages)
 
 @headWithTrackingConsent = {
     @hmrcHead(
@@ -53,6 +58,7 @@
     )
 
     <link href="@routes.Assets.versioned("stylesheets/application.css")" media="all" rel="stylesheet" type="text/css"@CSPNonce.get.map {n=> nonce="@n"} />
+    @stylesheets
 }
 
 @additionalScripts = {
@@ -95,5 +101,14 @@
     scriptsBlock       = Some(hmrcScripts(
         nonce        = CSPNonce.get,
         scriptsBlock = Some(additionalScripts)
-    ))
+    )),
+    mainContentLayout = Some(sidebarContent match {
+        case Some(sidebarHtml) => twoThirdsOneThirdMainContent(sidebarHtml)
+        case None =>
+        if(fullWidth) {
+            fullWidthMainContent(_)
+        } else {
+            twoThirdsMainContent(_)
+        }
+    })
 )(content)

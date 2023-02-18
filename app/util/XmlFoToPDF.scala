@@ -133,7 +133,7 @@ trait XmlFoToPDF extends Logging{
     }
     addressXML = addressXML + s"</address>"
     val postcodeXML = s"<postcode>${personDetails.address.get.postcode.get}</postcode>"
-    val ninoXML = s"<nino>${personDetails.person.nino.get.nino}</nino>"
+    val ninoXML = s"<nino>${personDetails.person.nino.get.formatted}</nino>"
     val dateXML = s"<date>${date}</date>"
     val xml = s"<root>" + initialsNameXML + fullNameXML + addressXML + postcodeXML + ninoXML + dateXML + s"</root>"
     xml.getBytes

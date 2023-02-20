@@ -21,11 +21,14 @@ import connectors.ApplePassConnector
 import models.PersonDetails
 import org.apache.xmlgraphics.util.MimeConstants
 import play.api.i18n.{I18nSupport, MessagesApi}
+import play.api.libs.json.{JsString, Json}
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
 import play.api.{Configuration, Environment}
+import services.AuditService
 import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.domain.Nino
 import util.XmlFoToPDF
-import play.api.libs.json._
+import util.AuditUtils
 import views.html.print.PrintNationalInsuranceNumberView
 
 import java.time.LocalDate
@@ -38,6 +41,7 @@ class NinoLetterController @Inject()(
                                       override val messagesApi: MessagesApi,
                                       authConnector: AuthConnector,
                                       applePassConnector: ApplePassConnector,
+                                      auditService: AuditService,
                                       view: PrintNationalInsuranceNumberView,
                                       xmlFoToPDF: XmlFoToPDF
                                     )(implicit config: Configuration,
@@ -51,17 +55,18 @@ class NinoLetterController @Inject()(
 
   def onPageLoad(pdId: String): Action[AnyContent] = Action async {
     implicit request => {
-      authorisedAsFMNUser { authContext =>
+      authorisedAsFMNUser { _ =>
         for {
           pd <- applePassConnector.getPersonDetails(pdId)
         } yield {
+
           val personDetails = Json.fromJson[PersonDetails](Json.parse(Json.parse(pd.get).asInstanceOf[JsString].value)).get
-          val personNino = personDetails.person.nino.get.formatted
+          auditService.audit(AuditUtils.buildViewNinoLetterEvent(personDetails))
           Ok(view(
             personDetails,
             LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
             true,
-            personNino, pdId))
+            personDetails.person.nino.getOrElse(Nino("")).formatted, pdId))
         }
       }(routes.NinoLetterController.onPageLoad(pdId))
 
@@ -72,9 +77,9 @@ class NinoLetterController @Inject()(
 
     implicit request => {
       authorisedAsFMNUser { authContext =>
-        val pd = Await.result(applePassConnector.getPersonDetails(pdId), 10 seconds).getOrElse("xxx")
+        val pd = Await.result(applePassConnector.getPersonDetails(pdId), 10 seconds).getOrElse("")
         val personDetails = Json.fromJson[PersonDetails](Json.parse(Json.parse(pd).asInstanceOf[JsString].value)).get
-
+        auditService.audit(AuditUtils.buildDownloadNinoLetterEvent(personDetails))
         val pdf = xmlFoToPDF.createPDF(personDetails,
           LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
           messagesApi.preferred(request))

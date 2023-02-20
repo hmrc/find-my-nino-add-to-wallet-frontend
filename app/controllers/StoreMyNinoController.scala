@@ -22,7 +22,9 @@ import models.PersonDetails
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
 import play.api.{Configuration, Environment}
+import services.AuditService
 import uk.gov.hmrc.auth.core.AuthConnector
+import util.AuditUtils
 import views.html.StoreMyNinoView
 
 import javax.inject.Inject
@@ -33,6 +35,7 @@ class StoreMyNinoController @Inject()(
                                        val citizenDetailsConnector: CitizenDetailsConnector,
                                        findMyNinoServiceConnector: ApplePassConnector,
                                        authConnector: AuthConnector,
+                                       auditService: AuditService,
                                        override val messagesApi: MessagesApi,
                                        getPersonDetailsAction: GetPersonDetailsAction,
                                        view: StoreMyNinoView
@@ -48,29 +51,34 @@ class StoreMyNinoController @Inject()(
   def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction) {
     implicit request => {
       val pd: PersonDetails = request.personDetails.get
-      val pdId = Await.result(findMyNinoServiceConnector.createPersonDetailsRow(pd), 10 seconds).getOrElse("xxx")
-      val passId: String = Await.result(findMyNinoServiceConnector.createApplePass(pd.person.fullName, request.nino.get.nino), 10 seconds).getOrElse("xxx")
+      auditService.audit(AuditUtils.buildViewNinoLandingPageEvent(pd))
+      val pdId = Await.result(findMyNinoServiceConnector.createPersonDetailsRow(pd), 10 seconds).getOrElse("")
+      val passId: String = Await.result(findMyNinoServiceConnector.createApplePass(pd.person.fullName, request.nino.get.nino), 10 seconds).getOrElse("")
       Ok(view(passId, request.nino.get.formatted, pdId))
     }
   }
 
 
-  def getPassCard(passId: String): Action[AnyContent] = Action async {
+  def getPassCard(passId: String): Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction).async {
     implicit request => {
       authorisedAsFMNUser { _ =>
         findMyNinoServiceConnector.getApplePass(passId).map {
-          case Some(data) => Ok(data).withHeaders("Content-Disposition" -> "attachment; filename=NinoPass.pkpass")
+          case Some(data) =>
+            auditService.audit(AuditUtils.buildAddNinoToWalletEvent(request.personDetails.get))
+            Ok(data).withHeaders("Content-Disposition" -> "attachment; filename=NinoPass.pkpass")
           case _ => NotFound
         }
       }(loginContinueUrl)
     }
   }
 
-  def getQrCode(passId: String): Action[AnyContent] = Action async {
+  def getQrCode(passId: String): Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction).async {
     implicit request => {
       authorisedAsFMNUser { _ =>
         findMyNinoServiceConnector.getQrCode(passId).map {
-          case Some(data) => Ok(data).withHeaders("Content-Disposition" -> "attachment; filename=NinoPass.pkpass")
+          case Some(data) =>
+            auditService.audit(AuditUtils.buildCaptureNinoEvent(request.personDetails.get))
+            Ok(data).withHeaders("Content-Disposition" -> "attachment; filename=NinoPass.pkpass")
           case _ => NotFound
         }
       }(loginContinueUrl)

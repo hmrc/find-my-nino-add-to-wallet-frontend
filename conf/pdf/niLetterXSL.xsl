@@ -20,12 +20,12 @@
                                        page-height="29.7cm"
                                        page-width="21cm"
                                        margin-top="0.5cm"
-                                       margin-bottom="1.8cm"
+                                       margin-bottom="1.5cm"
                                        margin-left="2.5cm"
                                        margin-right="2.5cm">
                     <fo:region-body margin-top="1cm"/>
                     <fo:region-before extent="0.5cm"/>
-                    <fo:region-after extent="0.5cm"/>
+                    <fo:region-after extent="0.3cm"/>
                 </fo:simple-page-master>
 
                 <!-- layout for the other pages -->
@@ -38,7 +38,7 @@
                                        margin-right="3cm">
                     <fo:region-body margin-top="0.7cm"/>
                     <fo:region-before extent="0.5cm"/>
-                    <fo:region-after extent="0.5cm"/>
+                    <fo:region-after extent="0.3cm"/>
                 </fo:simple-page-master>
 
                 <fo:page-sequence-master master-name="basicPSM">

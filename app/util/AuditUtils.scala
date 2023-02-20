@@ -37,7 +37,7 @@ object AuditUtils {
                                     submissionFromAgent: Boolean = false,
                                     agentCode: Option[String] = None, // Omit if submissionFromAgent is false
                                     device: Option[String],
-                                    language: String = "eng",
+                                    language: String = "en",
                                     declareAccurateAndComplete: Boolean = true
                                   )
 
@@ -45,21 +45,25 @@ object AuditUtils {
     implicit val format: OFormat[YourDetailsAuditEvent] = Json.format[YourDetailsAuditEvent]
   }
 
-  def getLang(hc: HeaderCarrier): String = hc.otherHeaders.toMap.get("Cookie") match {
-    case Some(s) => if (s.length > 0 && s.contains(";")) s.replace("; ", ";")
-      .split(";").filter(p => p.contains("PLAY_LANG"))(0).split("=").toList(1) else ""
-    case _ => ""
+  def getLanguageFromCookieStr(hc: HeaderCarrier): String = hc.otherHeaders.toMap.get("Cookie") match {
+    case Some(s) =>
+      if (s.length > 0 && s.contains("PLAY_LANG="))
+        "PLAY_LANG=([A-Za-z]*)".r.findAllIn(s).group(1)
+      else "en"
+    case _ => "en"
   }
 
   def getUserDevice(hc: HeaderCarrier): String = {
     val strUserAgent = hc.otherHeaders.toMap.getOrElse("User-Agent", "")
     if (strUserAgent.length > 0 && strUserAgent.contains(" ")) {
-      strUserAgent.replace("; ", ";").split(" ")(1)
-        .replace("(", "")
-        .replace(")", "")
-
+      try{
+        val m = "(\\w+);\\s+([^\\)]*)".r.findAllIn(strUserAgent)
+        m.group(1) + ";" + m.group(2)
+      } catch {
+        case e:Exception => "not detected"
+      }
     }
-    else ""
+    else "not detected"
   }
 
   def getUserAgent(hc: HeaderCarrier): String = hc.otherHeaders.toMap.getOrElse("User-Agent", "")
@@ -96,7 +100,7 @@ object AuditUtils {
     val person = personDetails.person
     val mainAddress = getPersonAddress(personDetails)
     val strUserAgent = getUserAgent(hc)
-    val strLang = getLang(hc)
+    val strLang = getLanguageFromCookieStr(hc)
     val strDevice = getUserDevice(hc)
 
     YourDetailsAuditEvent(

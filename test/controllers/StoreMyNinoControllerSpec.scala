@@ -92,6 +92,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
       val application = applicationBuilderWithConfig().overrides(
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[ApplePassConnector].toInstance(mockApplePassConnector),
+            inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
           )
           .build()
 
@@ -110,6 +111,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .overrides(
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[ApplePassConnector].toInstance(mockApplePassConnector),
+            inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
           )
           .build()
 

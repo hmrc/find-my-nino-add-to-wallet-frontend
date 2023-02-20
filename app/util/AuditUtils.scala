@@ -56,8 +56,12 @@ object AuditUtils {
   def getUserDevice(hc: HeaderCarrier): String = {
     val strUserAgent = hc.otherHeaders.toMap.getOrElse("User-Agent", "")
     if (strUserAgent.length > 0 && strUserAgent.contains(" ")) {
-      val m = "(\\w+);\\s+([^\\)]*)".r.findAllIn(strUserAgent)
-      m.group(1) + ";" + m.group(2)
+      try{
+        val m = "(\\w+);\\s+([^\\)]*)".r.findAllIn(strUserAgent)
+        m.group(1) + ";" + m.group(2)
+      } catch {
+        case e:Exception => "not detected"
+      }
     }
     else "not detected"
   }

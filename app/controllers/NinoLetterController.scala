@@ -84,10 +84,12 @@ class NinoLetterController @Inject()(
           LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
           messagesApi.preferred(request))
 
+        val filename = messagesApi.preferred(request).messages("label.your_national_insurance_number_letter")
+
         Future(Ok(pdf).as(MimeConstants.MIME_PDF)
           .withHeaders(
             CONTENT_TYPE -> "application/x-download",
-            CONTENT_DISPOSITION -> "attachment; filename=national-insurance-letter.pdf"))
+            CONTENT_DISPOSITION -> s"attachment; filename=${filename.replaceAll(" ", "-")}.pdf"))
       }(routes.NinoLetterController.onPageLoad(pdId))
     }
   }

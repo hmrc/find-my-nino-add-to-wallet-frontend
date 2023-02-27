@@ -1,4 +1,4 @@
-service.name=dod-o-hyd-ich-rhif-yswiriant-gwladol
+service.name=Cadw eich rhif Yswiriant Gwladol
 site.back=Yn ôl
 site.change=Newid
 site.no=Na
@@ -74,7 +74,8 @@ label.child.trust.fund.details=Pan fyddwch yn cyrraedd 16 oed, cymerwch reolaeth
 label.child.trust.fund.details.link=www.gov.uk/cronfeydd-ymddiriedolaeth-plant
 label.welsh_language=Y Gymraeg
 label.to_continue_to_receive_a_welsh_language_service_=Er mwyn parhau i gael gwasanaeth Cymraeg:
-label.email.for.welsh.language=e-bostiwch gwasanaeth.cymraeg@hmrc.gov.uk
+label.email = e-bostiwch
+label.email_for_welsh_language = gwasanaeth.cymraeg@hmrc.gov.uk
 label.phone.number.for.welsh.language=ffoniwch 0300 200 1900
 label.now_you_have_got_your=Nawr bod gennych eich
 label.national_insurance_number=Rhif Yswiriant Gwladol

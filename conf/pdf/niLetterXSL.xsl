@@ -13,7 +13,10 @@
 
     <xsl:output method="xml" indent="yes"/>
     <xsl:template match="/">
-        <fo:root xml:lang="en">
+        <fo:root>
+            <xsl:attribute name="xml:lang">
+                <xsl:value-of select="scala:getLang($translator)"/>
+            </xsl:attribute>
             <fo:layout-master-set>
                 <!-- layout for the first page -->
                 <fo:simple-page-master master-name="first"
@@ -51,38 +54,44 @@
                         <fo:conditional-page-master-reference master-reference="rest"/>
                     </fo:repeatable-page-master-alternatives>
                 </fo:page-sequence-master>
-
             </fo:layout-master-set>
             <!-- end: defines page layout -->
+
+            <!-- Document metadata -->
+            <fo:declarations>
+                <x:xmpmeta xmlns:x="adobe:ns:meta/">
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                        <rdf:Description xmlns:dc="http://purl.org/dc/elements/1.1/">
+                            <dc:title>
+                                <xsl:value-of select="scala:getMessagesText($translator, 'label.your_national_insurance_number_letter')"/>
+                            </dc:title>
+                        </rdf:Description>
+                    </rdf:RDF>
+                </x:xmpmeta>
+            </fo:declarations>
+
 
             <!-- actual layout -->
             <fo:page-sequence master-reference="basicPSM">
                 <!-- footer -->
                 <fo:static-content role="artifact" flow-name="xsl-region-after">
                     <fo:block xsl:use-attribute-sets="footer">
-                        <!-- page number -->
-                        <fo:inline-container inline-progression-dimension="50%">
-                            <fo:block text-align="start">
-                                <xsl:value-of select="scala:getMessagesText($translator, 'label.page')"/>
-                                <xsl:text>&#160;</xsl:text>
-                                <fo:page-number/>
-                            </fo:block>
-                        </fo:inline-container>
                         <!-- date -->
-                        <fo:inline-container inline-progression-dimension="50%">
-                            <fo:block text-align="end">
-                                <xsl:variable name="date" >
-                                    <xsl:value-of select="root/date"/>
-                                </xsl:variable>
-                                <xsl:value-of select="scala:getMessagesTextWithParameter($translator, 'label.hmrc_date', $date)"/>
-                            </fo:block>
-                        </fo:inline-container>
+                        <fo:block text-align="end">
+                            <xsl:variable name="date" >
+                                <xsl:value-of select="root/date"/>
+                            </xsl:variable>
+                            <xsl:value-of select="scala:getMessagesTextWithParameter($translator, 'label.hmrc_date', $date)"/>
+                        </fo:block>
                     </fo:block>
 
 
                 </fo:static-content>
                 <!-- body -->
                 <fo:flow flow-name="xsl-region-body">
+
+                    <!-- variable for start of a link -->
+                    <xsl:variable name="https" select="'https://'"/>
 
                     <!-- logo and heading -->
                     <fo:block role="Div" space-after="10px">
@@ -112,7 +121,7 @@
                                       padding-before="10px"
                                       padding-after="6px"
                                       xsl:use-attribute-sets="default-font-bold">
-                                <xsl:value-of select="scala:getMessagesText($translator, 'label.your_national_insurance_number_letter')"/>
+                                <xsl:value-of select="scala:getMessagesText($translator, 'label.your_national_insurance_number')"/>
                             </fo:block>
                         </fo:inline-container>
                     </fo:block>
@@ -152,7 +161,16 @@
                                     <xsl:value-of select="scala:getMessagesText($translator, 'label.contact_number')"/>
                                 </fo:block>
                                 <fo:block role="P" xsl:use-attribute-sets="p">
-                                    <xsl:value-of select="scala:getMessagesText($translator, 'label.www_gov_uk_hmrc')"/>
+                                    <xsl:variable name="hmrc-link">
+                                        <xsl:value-of select="scala:getMessagesText($translator, 'label.www_gov_uk_hmrc')"/>
+                                    </xsl:variable>
+                                    <fo:basic-link color="#1F70B8"
+                                                   text-decoration="underline">
+                                        <xsl:attribute name="external-destination">
+                                            <xsl:value-of select="concat($https, $hmrc-link)"/>
+                                        </xsl:attribute>
+                                        <xsl:value-of select="$hmrc-link"/>
+                                    </fo:basic-link>
                                 </fo:block>
                             </fo:block>
                         </fo:inline-container>
@@ -172,7 +190,7 @@
                               border-style="solid"
                               border-width="1.5px"
                               border-color="#28a197">
-                        <fo:block xsl:use-attribute-sets="header-small"
+                        <fo:block role="H2" xsl:use-attribute-sets="header-small"
                                   text-align="center">
                             <xsl:value-of select="scala:getMessagesText($translator, 'label.your_national_insurance_number_is')"/>
                         </fo:block>
@@ -335,10 +353,15 @@
                                 <fo:block xsl:use-attribute-sets="p">
                                     <xsl:value-of select="scala:getMessagesText($translator, 'label.child.trust.fund.details')"/>
                                     <xsl:text>&#160;</xsl:text>
-                                    <fo:basic-link color="#531fff"
-                                                   text-decoration="underline"
-                                                   external-destination="www.gov.uk/child-trust-funds">
+                                    <xsl:variable name="child-trust-funds-link" >
                                         <xsl:value-of select="scala:getMessagesText($translator, 'label.child.trust.fund.details.link')"/>
+                                    </xsl:variable>
+                                    <fo:basic-link color="#1F70B8"
+                                                   text-decoration="underline">
+                                        <xsl:attribute name="external-destination">
+                                            <xsl:value-of select="concat($https, $child-trust-funds-link)"/>
+                                        </xsl:attribute>
+                                        <xsl:value-of select="$child-trust-funds-link"/>
                                     </fo:basic-link>
                                 </fo:block>
 
@@ -362,7 +385,18 @@
                                         </fo:list-item-label>
                                         <fo:list-item-body role="LBody" start-indent="2em">
                                             <fo:block>
-                                                <xsl:value-of select="scala:getMessagesText($translator, 'label.email.for.welsh.language')"/>
+                                                <xsl:value-of select="scala:getMessagesText($translator, 'label.email')"/>
+                                                <xsl:text>&#160;</xsl:text>
+                                                <xsl:variable name="email-link">
+                                                    <xsl:value-of select="scala:getMessagesText($translator, 'label.email_for_welsh_language')"/>
+                                                </xsl:variable>
+                                                <fo:basic-link color="#1F70B8"
+                                                               text-decoration="underline">
+                                                    <xsl:attribute name="external-destination">
+                                                        <xsl:value-of select='concat("mailto:", $email-link)'/>
+                                                    </xsl:attribute>
+                                                    <xsl:value-of select="$email-link"/>
+                                                </fo:basic-link>
                                             </fo:block>
                                         </fo:list-item-body>
                                     </fo:list-item>
@@ -412,10 +446,15 @@
                                     <fo:block xsl:use-attribute-sets="small">
                                         <xsl:value-of select="scala:getMessagesText($translator, 'label.you_can_download_and_use_the_hmrc_app_or_go_online_to.text.part1')"/>
                                         <xsl:text>&#160;</xsl:text>
-                                        <fo:basic-link color="#531fff"
-                                                       text-decoration="underline"
-                                                       external-destination="www.gov.uk/personal-tax-account">
+                                        <xsl:variable name="personal-tax-account-link">
                                             <xsl:value-of select="scala:getMessagesText($translator, 'label.you_can_download_and_use_the_hmrc_app_or_go_online_to.link')"/>
+                                        </xsl:variable>
+                                        <fo:basic-link color="#1F70B8"
+                                                       text-decoration="underline">
+                                            <xsl:attribute name="external-destination">
+                                                <xsl:value-of select="concat($https, $personal-tax-account-link)"/>
+                                            </xsl:attribute>
+                                            <xsl:value-of select="$personal-tax-account-link"/>
                                         </fo:basic-link>
                                         <xsl:text>&#160;</xsl:text>
                                         <xsl:value-of select="scala:getMessagesText($translator, 'label.you_can_download_and_use_the_hmrc_app_or_go_online_to.text.part2')"/>
@@ -491,20 +530,30 @@
                                     <fo:block xsl:use-attribute-sets="small">
                                         <xsl:value-of select="scala:getMessagesText($translator, 'label.view_more_information_about_national_insurance_at')"/>
                                     </fo:block>
-                                    <fo:basic-link xsl:use-attribute-sets="small"
-                                                   color="#531fff"
-                                                   text-decoration="underline"
-                                                   external-destination="www.gov.uk/national-insurance">
+                                    <xsl:variable name="national-insurance-link">
                                         <xsl:value-of select="scala:getMessagesText($translator, 'label.www_gov_uk_national_insurance')"/>
+                                    </xsl:variable>
+                                    <fo:basic-link color="#1F70B8"
+                                                   text-decoration="underline"
+                                                   xsl:use-attribute-sets="small">
+                                        <xsl:attribute name="external-destination">
+                                            <xsl:value-of select="concat($https, $national-insurance-link)"/>
+                                        </xsl:attribute>
+                                        <xsl:value-of select="$national-insurance-link"/>
                                     </fo:basic-link>
                                     <fo:block xsl:use-attribute-sets="small">
                                         <xsl:value-of select="scala:getMessagesText($translator, 'label.or_our_youtube_channel_at')"/>
                                     </fo:block>
-                                    <fo:basic-link xsl:use-attribute-sets="small"
-                                                   color="#531fff"
-                                                   text-decoration="underline"
-                                                   external-destination="www.youtube.com/HMRCgovuk">
+                                    <xsl:variable name="youtube-channel-link">
                                         <xsl:value-of select="scala:getMessagesText($translator, 'label.www_youtube_com_hmrcgovuk')"/>
+                                    </xsl:variable>
+                                    <fo:basic-link color="#1F70B8"
+                                                   text-decoration="underline"
+                                                   xsl:use-attribute-sets="small">
+                                        <xsl:attribute name="external-destination">
+                                            <xsl:value-of select="concat($https, $youtube-channel-link)"/>
+                                        </xsl:attribute>
+                                        <xsl:value-of select="$youtube-channel-link"/>
                                     </fo:basic-link>
                                 </fo:block>
                             </fo:block>

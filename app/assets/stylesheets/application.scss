@@ -131,3 +131,11 @@ address {
 #newsHeading {
 margin-bottom: 1em;
 }
+
+.js-enabled .govuk-back-link {
+    display: inline-block;
+}
+
+.govuk-back-link {
+    display: none;
+}

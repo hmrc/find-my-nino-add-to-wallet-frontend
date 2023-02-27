@@ -27,5 +27,7 @@ class XSLScalaBridge private(messages: Messages) {
 
   def getMessagesTextWithParameter(key: String, parameter:String ): String = messages(key, parameter)
 
+  def getLang(): String = messages.lang.language
+
 }
 

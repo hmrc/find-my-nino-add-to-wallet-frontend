@@ -1,26 +1,18 @@
-.print-this, .save-this {
+.js-enabled .print-this, .save-this {
   border-bottom: 1px solid #0b0c0c;
   margin: 0 0 15px;
   display: inline-block;
-
-  &__link,
-  &__link:visited {
-    color: #0b0c0c;
-    font-size: 16px;
+  &__link:hover {
     text-decoration: none;
   }
 }
 
-.save-this {
-  margin-left: 1em;
+.print-this {
+  display: none;
 }
 
-.print-this__link, .save-this__link {
-     color: #000;
-     font-size: 16px;
-     padding-bottom: 20px;
-     text-decoration: none;
-     font-family: "GDS Transport", Arial, sans-serif;
+.js-enabled .save-this {
+  margin-left: 1em;
 }
 
 
@@ -32,7 +24,7 @@
 .print-document {
   border: 1px solid #6f777b;
   box-shadow: 6px 6px 0 0 #dee0e2;
-  padding: 25px 50px;
+  padding: 4% 6%;
   width: 75%;
 
   .print-header {
@@ -43,22 +35,19 @@
       padding-left: 8px;
     }
 
-    h2 {
-      font-size: 1.4em;
-      font-weight: normal;
+    .hmrc-logo-text-wrapper {
       margin: 0;
       line-height: 1;
 
-      span {
+      .hmrc-logo-text-inner {
         display: block;
       }
     }
 
-    h3 {
+    h2 {
       text-align: right;
       margin: 2em 0 0;
       color: #0b0c0c;
-      font-weight: 600;
     }
 
     @media (max-width: 640px) {
@@ -70,6 +59,13 @@
   }
 
   .document-address {
+
+    margin-bottom: 10px;
+
+    address > span {
+        display: block;
+    }
+
     &__recipient {
       margin-top: 25px;
     }
@@ -118,9 +114,15 @@
   border-bottom: 2px solid #28a197;
 }
 
+.ni-number-right > h3 > span {
+    display: block;
+}
+
 
 .you-download-and-use,
-.view-more-info-app {
+.view-more-info-app,
+#view-more-info-text
+ {
   margin-top: 15px;
 }
 
@@ -140,34 +142,28 @@
 
 .got-ni-box {
   background: #e1f3f1;
-  padding: 1px 10px;
+  padding: 1px 10px 7px 10px;
   print-color-adjust: exact;
 
   h3 {
     margin-top: 1.05263em;
     margin-bottom: 0;
   }
-}
 
-.got-ni-box,
-.got-ni-box ul li {
-  font-size: 15px;
+  // Make sure links wrap around and don't break out of containers
+  a {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
+  }
 }
 
 .insurance-number-text {
-  font-weight: 600;
-  font-size: 26px;
   margin-bottom: 5px;
 }
 
-.insurance-number {
-  font-weight: 600;
-  font-size: 36px;
-}
-
-.available-information {
-  font-size: 24px;
-  margin-bottom: 0;
+.braille-info {
+    display: block;
 }
 
 .footer-page-date {
@@ -175,7 +171,6 @@
 }
 
 .ni-footer-info {
-  font-size: 14px;
   margin-top: 5px;
 }
 
@@ -184,6 +179,10 @@
 }
 
 @media print {
+  .hide-for-print[href]:after {
+    display: none;
+  }
+
   .print-document {
     border: none;
     box-shadow: none;
@@ -238,17 +237,13 @@
       float: left;
     }
 
-    p,
-    li {
-      font-size: 16px;
-    }
+
 
     p.list-paragraph {
       margin-bottom: 5px;
     }
 
     p.available-information {
-      font-size: 24px;
       margin-bottom: 0;
       print-color-adjust: exact;
     }

@@ -32,10 +32,10 @@ storeMyNino.title = Save your National Insurance number
 storeMyNino.heading = Save your National Insurance number
 storeMyNino.saveYourNino.yourNinoIs = Your National Insurance number is
 storeMyNino.saveYourNino.p1 = You can:
-storeMyNino.saveYourNino.list1.li1 = get a PDF of your National Insurance number confirmation letter
+storeMyNino.saveYourNino.list1.li1 = view and get a PDF of your National Insurance number confirmation letter
 storeMyNino.saveYourNino.list1.li2 = add your number to your phone's wallet
 storeMyNino.saveYourNino.p2 = If you save your National Insurance number on your phone, make sure it has security like Face ID, a pattern, or a pin code set up. This helps protect your details.
-storeMyNino.subHeading1 = Get your National Insurance number on a letter (PDF)
+storeMyNino.subHeading1 = View and get a PDF of your National Insurance number on a letter
 storeMyNino.getYourNinoLetter.list1.li1 = View or print
 
 storeMyNino.getYourNinoLetter.list1.li2 = Save as a PDF
@@ -50,14 +50,15 @@ storeMyNino.saveToPhone.googleWallet.heading = Google Wallet
 storeMyNino.saveToPhone.appleWallet.heading = Apple Wallet
 storeMyNino.saveToPhone.appleWallet.p1 = Using your Apple iPhone, scan the QR code to add your National Insurance number to your Apple Wallet.
 
-storeMyNino.saveToPhone.appleWallet.saveToWallet.alt = Save to Apple wallet
+storeMyNino.saveToPhone.appleWallet.saveToWallet.alt = Add to Apple wallet
 storeMyNino.saveToPhone.appleWallet.saveToWallet.QRCode.alt = QR code to save to an Apple wallet
-storeMyNino.saveToPhone.googleWallet.saveToWallet.alt = Save to Google wallet
+storeMyNino.saveToPhone.googleWallet.saveToWallet.alt = Add to Google wallet
 
 
 label.save_your_national_insurance_number=Save your National Insurance number
 
 label.your_national_insurance_number_letter=Your National Insurance number letter
+label.your_national_insurance_number=Your National Insurance number
 
 label.print=Print this letter
 label.save_as_a_PDF=Save as a PDF
@@ -98,7 +99,8 @@ label.child.trust.fund.details.link=www.gov.uk/child-trust-funds
 
 label.welsh_language=Welsh language
 label.to_continue_to_receive_a_welsh_language_service_=To continue to receive a Welsh language service:
-label.email.for.welsh.language=email gwasanaeth.cymraeg@hmrc.gov.uk
+label.email = email
+label.email_for_welsh_language = gwasanaeth.cymraeg@hmrc.gov.uk
 label.phone.number.for.welsh.language=phone 0300 200 1900
 
 label.now_you_have_got_your=Now you have got your

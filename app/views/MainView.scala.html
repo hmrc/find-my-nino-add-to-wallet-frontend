@@ -47,7 +47,12 @@
     backLinkUrl: String = "#",
     disableSessionExpired: Boolean = false,
     fullWidth: Boolean = true,
-    stylesheets: Option[Html] = None
+    stylesheets: Option[Html] = None,
+    scripts: Option[Html] = None,
+    accountHome: Boolean = false,
+    messagesActive: Boolean = false,
+    yourProfileActive: Boolean = false,
+    hideAccountMenu: Boolean = false
 )(content: Html)(implicit request: Request[_], messages: Messages)
 
 @headBlock = {
@@ -56,6 +61,14 @@
     <link rel="stylesheet" href='@controllers.routes.AssetsController.versioned("stylesheets/application.css")'/>
 
     @stylesheets
+    @if(!disableSessionExpired){
+        @hmrcTimeoutDialogHelper(
+            signOutUrl = controllers.routes.SessionManagementController.timeOut.url,
+            keepAliveUrl = Some(controllers.routes.SessionManagementController.keepAlive.url),
+            timeout = Some(configDecorator.timeout),
+            countdown = Some(configDecorator.countdown)
+        )
+    }
 
 }
 

@@ -127,6 +127,8 @@ label.page=Page
 
 label.timeout.dialog.keepAlive.button=Stay signed in
 label.timeout.dialog.signout.button=Sign out now
+label.timeout.dialog.minutes=minutes
+label.timeout.dialog.seconds=seconds
 
 label.you_cannot_access_your_account=We cannot access your details
 label.we_need_to_speak_to_you_about_an_mci_error_=This is because of an MCI issue. It means that we need to check some details with you before you can sign in again

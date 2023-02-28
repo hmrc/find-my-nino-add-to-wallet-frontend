@@ -18,16 +18,17 @@ package controllers
 
 import com.google.inject.Inject
 import config.ConfigDecorator
+import controllers.bindable.Origin
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.auth.core.AuthConnector
 import views.html.public.SessionTimeoutView
-import scala.concurrent.{ExecutionContext, Future}
 
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 class PublicController @Inject()(sessionTimeoutView: SessionTimeoutView,authConnector: AuthConnector)(implicit
                                                                                                            configDecorator: ConfigDecorator,
-                                                                                                           ec: ExecutionContext,
                                                                                                            cc: MessagesControllerComponents,
                                                                                                            config: Configuration,
                                                                                                            env: Environment
@@ -41,11 +42,18 @@ class PublicController @Inject()(sessionTimeoutView: SessionTimeoutView,authConn
     }
   }
 
-  def redirectToYourProfile(): Action[AnyContent] = Action.async { _ =>
+/*  def redirectToYourProfile(): Action[AnyContent] = Action.async { _ =>
     Future.successful {
       Ok("")
       //Redirect(controllers.address.routes.PersonalDetailsController.onPageLoad)
     }
+  }*/
+
+  def redirectToExitSurvey(origin: Origin): Action[AnyContent] = Action.async { _ =>
+    Future.successful {
+      Redirect(configDecorator.getFeedbackSurveyUrl(origin))
+    }
   }
+
 
 }

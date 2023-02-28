@@ -16,6 +16,7 @@
 
 package base
 
+import config.ConfigDecorator
 import controllers.actions._
 import models.UserAnswers
 import org.jsoup.Jsoup
@@ -23,15 +24,18 @@ import org.scalactic.source.Position
 import org.scalatest.Assertion
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.Application
+import play.api.{Application, Configuration, Environment}
 import play.api.i18n.{Messages, MessagesApi}
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.mvc.RequestHeader
+import play.api.mvc.{MessagesControllerComponents, RequestHeader}
 import play.api.test.FakeRequest
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import util.WireMockSupport
+
+import scala.concurrent.ExecutionContext
+import scala.reflect.ClassTag
 
 class SpecBase extends WireMockSupport with MockitoSugar with GuiceOneAppPerSuite {
 
@@ -83,6 +87,22 @@ class SpecBase extends WireMockSupport with MockitoSugar with GuiceOneAppPerSuit
     val rightHtml = Jsoup.parse(transformation(right))
     leftHtml.html() mustBe rightHtml.html()
   }
+
+  def injected[T](c: Class[T]): T = app.injector.instanceOf(c)
+
+  def injected[T](implicit evidence: ClassTag[T]): T = app.injector.instanceOf[T]
+
+  //implicit lazy val ec = app.injector.instanceOf[ExecutionContext]
+
+  lazy val configDecorator = app.injector.instanceOf[ConfigDecorator]
+
+  lazy val config = app.injector.instanceOf[Configuration]
+
+  implicit lazy val cc = app.injector.instanceOf[MessagesControllerComponents]
+
+  implicit lazy val env = app.injector.instanceOf[Environment]
+  def buildFakeRequestWithSessionId(method: String) =
+    FakeRequest(method, "/save-your-national-insurance-number").withSession("sessionId" -> "FAKE_SESSION_ID")
 }
 
 

@@ -165,13 +165,13 @@ trait BaseSpec
 
   override implicit lazy val app: Application = localGuiceApplicationBuilder().build()
 
-  implicit lazy val ec = app.injector.instanceOf[ExecutionContext]
+  //implicit lazy val ec = app.injector.instanceOf[ExecutionContext]
 
-  lazy val config = app.injector.instanceOf[ConfigDecorator]
+  //lazy val config = app.injector.instanceOf[ConfigDecorator]
 
-  def injected[T](c: Class[T]): T = app.injector.instanceOf(c)
+  //def injected[T](c: Class[T]): T = app.injector.instanceOf(c)
 
-  def injected[T](implicit evidence: ClassTag[T]): T = app.injector.instanceOf[T]
+  //def injected[T](implicit evidence: ClassTag[T]): T = app.injector.instanceOf[T]
 
 }
 trait ActionBuilderFixture extends ActionBuilder[UserRequest, AnyContent] {

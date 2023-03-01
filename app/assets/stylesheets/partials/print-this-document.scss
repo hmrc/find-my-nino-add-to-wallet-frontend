@@ -53,18 +53,17 @@
       }
     }
 
-    h2 {
+    h1 {
       text-align: right;
       margin: 2em 0 0;
       color: #0b0c0c;
     }
 
     @media (max-width: 640px) {
-      h3 {
+      h1 {
         text-align: left;
       }
     }
-
   }
 
   .document-address {
@@ -195,10 +194,6 @@
   .print-document {
     border: none;
     box-shadow: none;
-
-   .print-header h3 {
-     text-align: right;
-   }
   }
 
   .govuk-template__body {

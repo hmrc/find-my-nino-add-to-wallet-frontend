@@ -63,6 +63,8 @@ label.your_national_insurance_number=Your National Insurance number
 label.print=Print this letter
 label.save_as_a_PDF=Save as a PDF
 
+label.your_national_insurance_number_letter_preview = Your National Insurance number letter preview
+
 label.hm_revenue_and_customs=HM Revenue and Customs
 label.hm_revenue_customs_ni_print.revenue=HM Revenue
 label.hm_revenue_customs_ni_print.customs=&amp; Customs

@@ -34,15 +34,21 @@
 
     <h1 class="govuk-heading-xl">@messages("label.your_national_insurance_number_letter")</h1>
 
-    <div class="print-this">
-        <img class="print-this__icon" src='@controllers.routes.AssetsController.versioned("images/icon-print.svg")' alt="" aria-hidden="true"/>
-        <a class="print-this__link govuk-link govuk-link--no-underline govuk-link--no-visited-state" href="javascript:window.print()" data-journey-click='print - click:Your National Insurance letter:@messages("label.print")'>@messages("label.print")</a>
-    </div>
-    @if(saveNiLetterAsPdfLinkEnabled) {
-        <div class="save-this">
-            <a class="save-this__link govuk-link govuk-link--no-underline govuk-link--no-visited-state" href="/@configDecorator.serviceName/print-letter/save-letter-as-pdf?pdId=@{pdId}" data-journey-click='save - click:Your National Insurance letter:@messages("label.save_as_a_PDF")'>@messages("label.save_as_a_PDF")</a>
+    <div class="links-flex-row">
+        <div class="link-container">
+            <div class="print-this">
+                <img class="print-this__icon" src='@controllers.routes.AssetsController.versioned("images/icon-print.svg")' alt="" aria-hidden="true"/>
+                <a class="print-this__link govuk-link govuk-link--no-underline govuk-link--no-visited-state" href="javascript:window.print()" data-journey-click='print - click:Your National Insurance letter:@messages("label.print")'>@messages("label.print")</a>
+            </div>
         </div>
-    }
+        <div class="link-container">
+            @if(saveNiLetterAsPdfLinkEnabled) {
+            <div class="save-this">
+                <a class="save-this__link govuk-link govuk-link--no-underline govuk-link--no-visited-state" href="/@configDecorator.serviceName/print-letter/save-letter-as-pdf?pdId=@{pdId}" data-journey-click='save - click:Your National Insurance letter:@messages("label.save_as_a_PDF")'>@messages("label.save_as_a_PDF")</a>
+            </div>
+            }
+        </div>
+    </div>
 
     @niLetter(personDetails, dateString, nino)
 }

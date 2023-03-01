@@ -215,7 +215,7 @@
                             <fo:block role="Div"
                                       margin-left="5px"
                                       margin-right="5px">
-                                <fo:block role="H2"
+                                <fo:block role="H3"
                                           xsl:use-attribute-sets="header-small">
                                     <xsl:value-of select="scala:getMessagesText($translator, 'label.about_your_national_insurance_number')"/>
                                 </fo:block>
@@ -346,7 +346,7 @@
                                         </fo:list-item-body>
                                     </fo:list-item>
                                 </fo:list-block>
-                                <fo:block role="H2"
+                                <fo:block role="H3"
                                           xsl:use-attribute-sets="header-small">
                                     <xsl:value-of select="scala:getMessagesText($translator, 'label.child.trust.fund')"/>
                                 </fo:block>
@@ -365,7 +365,7 @@
                                     </fo:basic-link>
                                 </fo:block>
 
-                                <fo:block role="H2"
+                                <fo:block role="H3"
                                           xsl:use-attribute-sets="header-small">
                                     <xsl:value-of select="scala:getMessagesText($translator, 'label.welsh_language')"/>
                                 </fo:block>
@@ -428,7 +428,7 @@
                                       padding-end="5px"
                                       padding-before="2px"
                                       padding-after="5px">
-                                <fo:block role="H2"
+                                <fo:block role="H3"
                                           border-after-style="solid"
                                           border-color="#00A298"
                                           border-width="1.5px"

@@ -1,9 +1,19 @@
+
+.links-flex-row {
+    display: flex;
+    flex-direction: row;
+}
+
 .js-enabled .print-this, .save-this {
   border-bottom: 1px solid #0b0c0c;
   margin: 0 0 15px;
-  display: inline-block;
+  display: block;
+  height: 1.3em;
   &__link:hover {
     text-decoration: none;
+  }
+  &__icon {
+    vertical-align: text-bottom;
   }
 }
 
@@ -14,7 +24,6 @@
 .js-enabled .save-this {
   margin-left: 1em;
 }
-
 
 @page {
   size: auto;

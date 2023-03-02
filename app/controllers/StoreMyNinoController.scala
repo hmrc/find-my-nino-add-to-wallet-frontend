@@ -77,7 +77,7 @@ class StoreMyNinoController @Inject()(
       authorisedAsFMNUser { _ =>
         findMyNinoServiceConnector.getQrCode(passId).map {
           case Some(data) =>
-            auditService.audit(AuditUtils.buildCaptureNinoEvent(request.personDetails.get))
+            auditService.audit(AuditUtils.buildDisplayQRCodeEvent(request.personDetails.get))
             Ok(data).withHeaders("Content-Disposition" -> "attachment; filename=NinoPass.pkpass")
           case _ => NotFound
         }

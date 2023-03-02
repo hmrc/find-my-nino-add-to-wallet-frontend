@@ -122,38 +122,11 @@ object AuditUtils {
   private def timestamp(): String =
     java.time.Instant.now().atOffset(ZoneOffset.UTC).format(DateTimeFormatter.ISO_DATE_TIME)
 
-  def buildViewNinoLandingPageEvent(personDetails: PersonDetails)(implicit hc: HeaderCarrier): ExtendedDataEvent = {
-    buildDataEvent(
-      "ViewNinoLandingPage",
-      "find-my-nino-add-to-wallet-frontend",
-      Json.toJson(buildDetails(personDetails, "ViewNinoLandingPage", hc)))
+  def buildAuditEvent(personDetails: PersonDetails,
+                     auditType: String,
+                      appName: String)(implicit hc: HeaderCarrier): ExtendedDataEvent = {
+    buildDataEvent(auditType, s"$appName-$auditType",
+      Json.toJson(buildDetails(personDetails, auditType, hc)))
   }
 
-  def buildViewNinoLetterEvent(personDetails: PersonDetails)(implicit hc: HeaderCarrier): ExtendedDataEvent = {
-    buildDataEvent(
-      "ViewNinoLetter",
-      "find-my-nino-add-to-wallet-frontend",
-      Json.toJson(buildDetails(personDetails, "ViewNinoLetter", hc)))
-  }
-
-  def buildDownloadNinoLetterEvent(personDetails: PersonDetails)(implicit hc: HeaderCarrier): ExtendedDataEvent = {
-    buildDataEvent(
-      "DownloadNinoLetter",
-      "find-my-nino-add-to-wallet-frontend",
-      Json.toJson(buildDetails(personDetails, "DownloadNinoLetter", hc)))
-  }
-
-  def buildAddNinoToWalletEvent(personDetails: PersonDetails)(implicit hc: HeaderCarrier): ExtendedDataEvent = {
-    buildDataEvent(
-      "AddNinoToWallet",
-      "find-my-nino-add-to-wallet-frontend",
-      Json.toJson(buildDetails(personDetails, "AddNinoToWallet", hc)))
-  }
-
-  def buildDisplayQRCodeEvent(personDetails: PersonDetails)(implicit hc: HeaderCarrier): ExtendedDataEvent = {
-    buildDataEvent(
-      "DisplayQRCode",
-      "find-my-nino-add-to-wallet-frontend",
-      Json.toJson(buildDetails(personDetails, "DisplayQRCode", hc)))
-  }
 }

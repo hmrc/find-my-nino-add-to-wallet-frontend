@@ -16,7 +16,7 @@
 
 package controllers
 
-import config.FrontendAppConfig
+import config.{ConfigDecorator, FrontendAppConfig}
 import connectors.ApplePassConnector
 import models.PersonDetails
 import org.apache.xmlgraphics.util.MimeConstants
@@ -43,7 +43,8 @@ class NinoLetterController @Inject()(
                                       applePassConnector: ApplePassConnector,
                                       auditService: AuditService,
                                       view: PrintNationalInsuranceNumberView,
-                                      xmlFoToPDF: XmlFoToPDF
+                                      xmlFoToPDF: XmlFoToPDF,
+                                      configDecorator: ConfigDecorator
                                     )(implicit config: Configuration,
                                       env: Environment,
                                       ec: ExecutionContext,
@@ -61,7 +62,7 @@ class NinoLetterController @Inject()(
         } yield {
 
           val personDetails = Json.fromJson[PersonDetails](Json.parse(Json.parse(pd.get).asInstanceOf[JsString].value)).get
-          auditService.audit(AuditUtils.buildViewNinoLetterEvent(personDetails))
+          auditService.audit(AuditUtils.buildAuditEvent(personDetails,"ViewNinoLetter",configDecorator.appName))
           Ok(view(
             personDetails,
             LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
@@ -79,7 +80,7 @@ class NinoLetterController @Inject()(
       authorisedAsFMNUser { authContext =>
         val pd = Await.result(applePassConnector.getPersonDetails(pdId), 10 seconds).getOrElse("")
         val personDetails = Json.fromJson[PersonDetails](Json.parse(Json.parse(pd).asInstanceOf[JsString].value)).get
-        auditService.audit(AuditUtils.buildDownloadNinoLetterEvent(personDetails))
+        auditService.audit(AuditUtils.buildAuditEvent(personDetails,"DownloadNinoLetter", configDecorator.appName))
         val pdf = xmlFoToPDF.createPDF(personDetails,
           LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
           messagesApi.preferred(request))

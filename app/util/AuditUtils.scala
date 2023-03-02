@@ -122,6 +122,14 @@ object AuditUtils {
   private def timestamp(): String =
     java.time.Instant.now().atOffset(ZoneOffset.UTC).format(DateTimeFormatter.ISO_DATE_TIME)
 
+  def buildAuditEvent(personDetails: PersonDetails,
+                     auditType: String,
+                      appName: String)(implicit hc: HeaderCarrier): ExtendedDataEvent = {
+    buildDataEvent(auditType, s"$appName-$auditType",
+      Json.toJson(buildDetails(personDetails, auditType, hc)))
+  }
+
+/*
   def buildViewNinoLandingPageEvent(personDetails: PersonDetails)(implicit hc: HeaderCarrier): ExtendedDataEvent = {
     buildDataEvent(
       "ViewNinoLandingPage",
@@ -155,5 +163,5 @@ object AuditUtils {
       "DisplayQRCode",
       "find-my-nino-add-to-wallet-frontend",
       Json.toJson(buildDetails(personDetails, "DisplayQRCode", hc)))
-  }
+  }*/
 }

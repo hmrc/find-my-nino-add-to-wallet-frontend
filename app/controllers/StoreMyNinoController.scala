@@ -16,7 +16,7 @@
 
 package controllers
 
-import config.FrontendAppConfig
+import config.{ConfigDecorator, FrontendAppConfig}
 import connectors.{ApplePassConnector, CitizenDetailsConnector}
 import models.PersonDetails
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -38,6 +38,7 @@ class StoreMyNinoController @Inject()(
                                        auditService: AuditService,
                                        override val messagesApi: MessagesApi,
                                        getPersonDetailsAction: GetPersonDetailsAction,
+                                       configDecorator: ConfigDecorator,
                                        view: StoreMyNinoView
                                      )(implicit config: Configuration,
                                        env: Environment,
@@ -51,7 +52,7 @@ class StoreMyNinoController @Inject()(
   def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction) {
     implicit request => {
       val pd: PersonDetails = request.personDetails.get
-      auditService.audit(AuditUtils.buildViewNinoLandingPageEvent(pd))
+      auditService.audit(AuditUtils.buildAuditEvent(pd,"ViewNinoLanding", configDecorator.appName))
       val pdId = Await.result(findMyNinoServiceConnector.createPersonDetailsRow(pd), 10 seconds).getOrElse("")
       val passId: String = Await.result(findMyNinoServiceConnector.createApplePass(pd.person.fullName, request.nino.get.nino), 10 seconds).getOrElse("")
       Ok(view(passId, request.nino.get.formatted, pdId))
@@ -64,7 +65,8 @@ class StoreMyNinoController @Inject()(
       authorisedAsFMNUser { _ =>
         findMyNinoServiceConnector.getApplePass(passId).map {
           case Some(data) =>
-            auditService.audit(AuditUtils.buildAddNinoToWalletEvent(request.personDetails.get))
+            auditService.audit(AuditUtils.buildAuditEvent(request.personDetails.get,
+              "AddNinoToWallet", configDecorator.appName))
             Ok(data).withHeaders("Content-Disposition" -> "attachment; filename=NinoPass.pkpass")
           case _ => NotFound
         }
@@ -77,7 +79,7 @@ class StoreMyNinoController @Inject()(
       authorisedAsFMNUser { _ =>
         findMyNinoServiceConnector.getQrCode(passId).map {
           case Some(data) =>
-            auditService.audit(AuditUtils.buildDisplayQRCodeEvent(request.personDetails.get))
+            auditService.audit(AuditUtils.buildAuditEvent(request.personDetails.get,"DisplayQRCode",configDecorator.appName))
             Ok(data).withHeaders("Content-Disposition" -> "attachment; filename=NinoPass.pkpass")
           case _ => NotFound
         }

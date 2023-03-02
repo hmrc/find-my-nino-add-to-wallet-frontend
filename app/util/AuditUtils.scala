@@ -68,6 +68,8 @@ object AuditUtils {
 
   def getUserAgent(hc: HeaderCarrier): String = hc.otherHeaders.toMap.getOrElse("User-Agent", "")
 
+  def getReferer(hc: HeaderCarrier): String = hc.otherHeaders.toMap.getOrElse("Referer", "")
+
   def getPersonAddress(personDetails: PersonDetails): Address = {
     personDetails.address match {
       case Some(a: Address) => a
@@ -80,6 +82,7 @@ object AuditUtils {
                                                                                           hc: HeaderCarrier
   ): ExtendedDataEvent = {
     val strPath = hc.otherHeaders.toMap.get("path")
+    val strReferer = getReferer(hc)
     ExtendedDataEvent(
       auditSource = auditSource,
       auditType = auditType,
@@ -90,7 +93,8 @@ object AuditUtils {
         "clientIP" -> hc.trueClientIp,
         "clientPort" -> hc.trueClientPort,
         "deviceID" -> hc.deviceID,
-        "path" -> strPath
+        "path" -> strPath,
+        "referer" -> Some(strReferer)
       ).map(x => x._2.map((x._1, _))).flatten.toMap,
       detail = detail
     )
@@ -146,10 +150,10 @@ object AuditUtils {
       Json.toJson(buildDetails(personDetails, "AddNinoToWallet", hc)))
   }
 
-  def buildCaptureNinoEvent(personDetails: PersonDetails)(implicit hc: HeaderCarrier): ExtendedDataEvent = {
+  def buildDisplayQRCodeEvent(personDetails: PersonDetails)(implicit hc: HeaderCarrier): ExtendedDataEvent = {
     buildDataEvent(
-      "CaptureNino",
+      "DisplayQRCode",
       "find-my-nino-add-to-wallet-frontend",
-      Json.toJson(buildDetails(personDetails, "CaptureNino", hc)))
+      Json.toJson(buildDetails(personDetails, "DisplayQRCode", hc)))
   }
 }

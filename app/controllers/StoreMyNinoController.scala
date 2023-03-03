@@ -55,7 +55,18 @@ class StoreMyNinoController @Inject()(
       auditService.audit(AuditUtils.buildAuditEvent(pd,"ViewNinoLanding", configDecorator.appName))
       val pdId = Await.result(findMyNinoServiceConnector.createPersonDetailsRow(pd), 10 seconds).getOrElse("")
       val passId: String = Await.result(findMyNinoServiceConnector.createApplePass(pd.person.fullName, request.nino.get.nino), 10 seconds).getOrElse("")
-      Ok(view(passId, request.nino.get.formatted, pdId))
+
+      // Display wallet options differently on mobile to pc
+      var displayForMobile: Boolean = false
+      val strUserAgent: String = hc.otherHeaders.toMap.getOrElse("User-Agent", "")
+      // Include any kind of mobile device except iPad, and also include Apple Watch
+      val regexInclude = "/Mobile|Watch|iP(hone|od)|Android|BlackBerry|IEMobile|Kindle|NetFront|Silk-Accelerated|(hpw|web)OS|Fennec|Minimo|Opera M(obi|ini)|Blazer|Dolfin|Dolphin|Skyfire|Zune/".r
+      regexInclude.findFirstMatchIn(strUserAgent) match {
+        case Some(_) => displayForMobile = true
+        case None => displayForMobile = false
+      }
+
+      Ok(view(passId, request.nino.get.formatted, pdId, displayForMobile))
     }
   }
 

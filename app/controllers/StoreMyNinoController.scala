@@ -58,7 +58,10 @@ class StoreMyNinoController @Inject()(
 
       // Display wallet options differently on mobile to pc
       var displayForMobile: Boolean = false
-      val strUserAgent: String = hc.otherHeaders.toMap.getOrElse("User-Agent", "")
+      var strUserAgent = hc.otherHeaders.toMap.getOrElse("User-Agent", "")
+      if (strUserAgent.isEmpty) {
+        strUserAgent = hc.otherHeaders.toMap.getOrElse("http_user_agent", "")
+      }
       // Include any kind of mobile device except iPad, and also include Apple Watch
       val regexInclude = "/Mobile|Watch|iP(hone|od)|Android|BlackBerry|IEMobile|Kindle|NetFront|Silk-Accelerated|(hpw|web)OS|Fennec|Minimo|Opera M(obi|ini)|Blazer|Dolfin|Dolphin|Skyfire|Zune/".r
       regexInclude.findFirstMatchIn(strUserAgent) match {

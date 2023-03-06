@@ -64,7 +64,7 @@ class StoreMyNinoController @Inject()(
         strUserAgent = request.headers.get("User-Agent").getOrElse("")
       }
       // Include any kind of mobile device except iPad, and also include Apple Watch
-      val regexInclude = "/Mobile|Watch|iP(hone|od)|Android|BlackBerry|IEMobile|Kindle|NetFront|Silk-Accelerated|(hpw|web)OS|Fennec|Minimo|Opera M(obi|ini)|Blazer|Dolfin|Dolphin|Skyfire|Zune/".r
+      val regexInclude = config.get[String]("mobileDeviceDetectionRegexStr").r
       regexInclude.findFirstMatchIn(strUserAgent) match {
         case Some(_) => displayForMobile = true
         case None => displayForMobile = false

@@ -28,7 +28,7 @@ lazy val root = (project in file("."))
   .settings(majorVersion := 0)
   .settings(useSuperShell in ThisBuild := false)
   .settings(
-      scalaVersion := "2.12.15",
+      scalaVersion := "2.13.8",
       name := appName,
       RoutesKeys.routesImport ++= Seq(
           "models._",
@@ -49,7 +49,7 @@ lazy val root = (project in file("."))
       PlayKeys.playDefaultPort := 14006,
       scalacOptions ++= Seq(
           "-feature",
-          "-Ypartial-unification",
+          "-language:postfixOps",
           "-rootdir",
           baseDirectory.value.getCanonicalPath,
           "-Wconf:cat=deprecation:ws,cat=feature:ws,cat=optimizer:ws,src=target/.*:s"

@@ -9,7 +9,7 @@ object AppDependencies {
   val compile = Seq(
     play.sbt.PlayImport.ws,
     "uk.gov.hmrc"             %% "play-frontend-hmrc"                   %   s"6.7.0-$playVersion",
-    "uk.gov.hmrc"             %% "play-conditional-form-mapping"        %   s"1.11.0-$playVersion",
+    "uk.gov.hmrc"             %% "play-conditional-form-mapping"        %   s"1.12.0-$playVersion",
     "uk.gov.hmrc"             %% "play-partials"                        %   s"8.3.0-$playVersion",
     "uk.gov.hmrc"             %% s"bootstrap-frontend-$playVersion"     %   s"7.3.0",
     "uk.gov.hmrc"             %% "domain"                               %   s"8.0.0-$playVersion",
@@ -31,7 +31,7 @@ object AppDependencies {
     "org.scalacheck"          %% "scalacheck"              % "1.15.4",
     "uk.gov.hmrc.mongo"       %% "hmrc-mongo-test-play-28" % "0.71.0",
     "com.vladsch.flexmark"    %  "flexmark-all"            % "0.62.2",
-    "wolfendale"              %%  "scalacheck-gen-regexp"  % "0.1.1",
+    "io.github.wolfendale"    %%  "scalacheck-gen-regexp"  % "1.1.0",
     "com.github.tomakehurst"  % "wiremock-jre8"            % "2.26.3"
   ).map(_ % "test, it")
 

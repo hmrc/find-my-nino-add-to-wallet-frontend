@@ -80,8 +80,12 @@ class StoreMyNinoController @Inject()(
       authorisedAsFMNUser { _ =>
         findMyNinoServiceConnector.getApplePass(passId).map {
           case Some(data) =>
-            auditService.audit(AuditUtils.buildAuditEvent(request.personDetails.get,
-              "AddNinoToWallet", configDecorator.appName))
+            request.getQueryString("qr-code") match {
+              case Some("true") => auditService.audit(AuditUtils.buildAuditEvent(request.personDetails.get,
+                "AddNinoToWalletFromQRCode", configDecorator.appName))
+              case _ => auditService.audit(AuditUtils.buildAuditEvent(request.personDetails.get,
+                "AddNinoToWallet", configDecorator.appName))
+            }
             Ok(data).withHeaders("Content-Disposition" -> "attachment; filename=NinoPass.pkpass")
           case _ => NotFound
         }

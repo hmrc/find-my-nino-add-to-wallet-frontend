@@ -16,11 +16,13 @@
 
 @import config.ConfigDecorator
 @import uk.gov.hmrc.hmrcfrontend.views.html._
-@import components.{backLink, Link, FullWidthMainContent}
 @import uk.gov.hmrc.hmrcfrontend.config.AccountMenuConfig
 @import uk.gov.hmrc.hmrcfrontend.views.viewmodels.accountmenu.{AccountMenu, SignOut, AccountHome, AccountMessages, CheckProgress, _}
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits.RichAccountMenu
 @import views.html.helper.CSPNonce
+@import views.html.components.FullWidthMainContent
+@import views.html.components.Link
+@import views.html.components.backLink
 
 @this(
     hmrcLayout: HmrcLayout,
@@ -39,7 +41,7 @@
 
 @(
     pageTitle: String,
-    serviceName: String = "service.name",
+    serviceName: Option[String] = Some("service.name"),
     sidebarContent: Option[Html] = None,
     beforeContentHtml: Option[Html] = None,
     showBackLink: Boolean = false,

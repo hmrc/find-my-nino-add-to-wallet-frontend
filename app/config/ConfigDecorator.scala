@@ -32,7 +32,9 @@ class ConfigDecorator @Inject()(configuration: Configuration, servicesConfig: Se
   val appName: String = configuration.get[String]("appName")
 
   private val contactHost = configuration.get[String]("contact-frontend.host")
+  val labelServiceName = configuration.get[String]("contact-frontend.host")
   val serviceName = "save-your-national-insurance-number"
+
 
   val gtmContainer: String = configuration.get[String]("tracking-consent-frontend.gtm.container")
 
@@ -79,4 +81,15 @@ class ConfigDecorator @Inject()(configuration: Configuration, servicesConfig: Se
   val countdown: Int = configuration.get[Int]("timeout-dialog.countdown")
 
   val cacheTtl: Int = configuration.get[Int]("mongodb.timeToLiveInSeconds")
+
+  lazy val accessibilityStatementToggle: Boolean =
+    configuration.getOptional[Boolean](s"accessibility-statement.toggle").getOrElse(false)
+  lazy val accessibilityBaseUrl: String = servicesConfig.getString("accessibility-statement.baseUrl")
+  lazy private val accessibilityRedirectUrl =
+    servicesConfig.getString("accessibility-statement.redirectUrl")
+
+  def accessibilityStatementUrl(referrer: String) =
+    s"$accessibilityBaseUrl/accessibility-statement$accessibilityRedirectUrl?referrerUrl=${SafeRedirectUrl(accessibilityBaseUrl + referrer).encodedUrl}"
+
+
 }

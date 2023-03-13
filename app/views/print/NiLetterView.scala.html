@@ -34,7 +34,7 @@ nino: String)(implicit request: Request[_], messages: play.api.i18n.Messages)
             </div>
             <div class="govuk-grid-column-two-thirds">
                 <h1 class="govuk-heading-m print-header__heading">
-                @messages("label.your_national_insurance_number")
+                    @messages("label.your_national_insurance_number")
                 </h1>
             </div>
         </div>
@@ -119,7 +119,7 @@ nino: String)(implicit request: Request[_], messages: play.api.i18n.Messages)
                                 </a>
                             </span>
                         </p>
-                        @if(messages.lang.equals(Lang("en"))) {
+                        @if(messages.lang.language.equals("en")) {
                             <h3 class="govuk-heading-s">@messages("label.welsh_language")</h3>
                             <p class="govuk-body list-paragraph welsh-info-text">@messages("label.to_continue_to_receive_a_welsh_language_service_")</p>
                             <ul class="govuk-list govuk-list--bullet">

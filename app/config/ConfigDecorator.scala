@@ -37,7 +37,8 @@ class ConfigDecorator @Inject()(configuration: Configuration, servicesConfig: Se
   val serviceNamePTA = "Personal tax account"
 
   val gtmContainer: String = configuration.get[String]("tracking-consent-frontend.gtm.container")
-
+  lazy val trackingHost: String                = getExternalUrl(s"tracking-frontend.host").getOrElse("")
+  lazy val trackingServiceUrl = s"$trackingHost/track"
   val enc = URLEncoder.encode(_: String, "UTF-8")
 
   private def getExternalUrl(key: String): Option[String] =

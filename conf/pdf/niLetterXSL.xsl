@@ -365,58 +365,66 @@
                                     </fo:basic-link>
                                 </fo:block>
 
-                                <fo:block role="H3"
-                                          xsl:use-attribute-sets="header-small">
-                                    <xsl:value-of select="scala:getMessagesText($translator, 'label.welsh_language')"/>
-                                </fo:block>
-                                <fo:block xsl:use-attribute-sets="p">
-                                    <xsl:value-of select="scala:getMessagesText($translator, 'label.to_continue_to_receive_a_welsh_language_service_')"/>
-                                </fo:block>
-                                <fo:list-block xsl:use-attribute-sets="list-block">
-                                    <fo:list-item xsl:use-attribute-sets="normal-list" role="LI">
-                                        <fo:list-item-label role="Lbl" end-indent="1em">
-                                            <fo:block>
-                                                <fo:inline>
-                                                    <fo:wrapper role="artifact">
-                                                        &#8226;
-                                                    </fo:wrapper>
-                                                </fo:inline>
-                                            </fo:block>
-                                        </fo:list-item-label>
-                                        <fo:list-item-body role="LBody" start-indent="2em">
-                                            <fo:block>
-                                                <xsl:value-of select="scala:getMessagesText($translator, 'label.email')"/>
-                                                <xsl:text>&#160;</xsl:text>
-                                                <xsl:variable name="email-link">
-                                                    <xsl:value-of select="scala:getMessagesText($translator, 'label.email_for_welsh_language')"/>
-                                                </xsl:variable>
-                                                <fo:basic-link color="#1F70B8"
-                                                               text-decoration="underline">
-                                                    <xsl:attribute name="external-destination">
-                                                        <xsl:value-of select='concat("mailto:", $email-link)'/>
-                                                    </xsl:attribute>
-                                                    <xsl:value-of select="$email-link"/>
-                                                </fo:basic-link>
-                                            </fo:block>
-                                        </fo:list-item-body>
-                                    </fo:list-item>
-                                    <fo:list-item xsl:use-attribute-sets="normal-list" role="LI">
-                                        <fo:list-item-label role="Lbl" end-indent="1em">
-                                            <fo:block>
-                                                <fo:inline>
-                                                    <fo:wrapper role="artifact">
-                                                        &#8226;
-                                                    </fo:wrapper>
-                                                </fo:inline>
-                                            </fo:block>
-                                        </fo:list-item-label>
-                                        <fo:list-item-body role="LBody" start-indent="2em">
-                                            <fo:block>
-                                                <xsl:value-of select="scala:getMessagesText($translator, 'label.phone.number.for.welsh.language')"/>
-                                            </fo:block>
-                                        </fo:list-item-body>
-                                    </fo:list-item>
-                                </fo:list-block>
+                                <xsl:variable name="language">
+                                    <xsl:value-of select="scala:getLang($translator)"/>
+                                </xsl:variable>
+
+                                <!-- only display welsh language section when in English -->
+                                <xsl:if test="$language = 'en'">
+                                    <fo:block role="H3"
+                                              xsl:use-attribute-sets="header-small">
+                                        <xsl:value-of select="scala:getMessagesText($translator, 'label.welsh_language')"/>
+                                    </fo:block>
+                                    <fo:block xsl:use-attribute-sets="p">
+                                        <xsl:value-of select="scala:getMessagesText($translator, 'label.to_continue_to_receive_a_welsh_language_service_')"/>
+                                    </fo:block>
+                                    <fo:list-block xsl:use-attribute-sets="list-block">
+                                        <fo:list-item xsl:use-attribute-sets="normal-list" role="LI">
+                                            <fo:list-item-label role="Lbl" end-indent="1em">
+                                                <fo:block>
+                                                    <fo:inline>
+                                                        <fo:wrapper role="artifact">
+                                                            &#8226;
+                                                        </fo:wrapper>
+                                                    </fo:inline>
+                                                </fo:block>
+                                            </fo:list-item-label>
+                                            <fo:list-item-body role="LBody" start-indent="2em">
+                                                <fo:block>
+                                                    <xsl:value-of select="scala:getMessagesText($translator, 'label.email')"/>
+                                                    <xsl:text>&#160;</xsl:text>
+                                                    <xsl:variable name="email-link">
+                                                        <xsl:value-of select="scala:getMessagesText($translator, 'label.email_for_welsh_language')"/>
+                                                    </xsl:variable>
+                                                    <fo:basic-link color="#1F70B8"
+                                                                   text-decoration="underline">
+                                                        <xsl:attribute name="external-destination">
+                                                            <xsl:value-of select='concat("mailto:", $email-link)'/>
+                                                        </xsl:attribute>
+                                                        <xsl:value-of select="$email-link"/>
+                                                    </fo:basic-link>
+                                                </fo:block>
+                                            </fo:list-item-body>
+                                        </fo:list-item>
+                                        <fo:list-item xsl:use-attribute-sets="normal-list" role="LI">
+                                            <fo:list-item-label role="Lbl" end-indent="1em">
+                                                <fo:block>
+                                                    <fo:inline>
+                                                        <fo:wrapper role="artifact">
+                                                            &#8226;
+                                                        </fo:wrapper>
+                                                    </fo:inline>
+                                                </fo:block>
+                                            </fo:list-item-label>
+                                            <fo:list-item-body role="LBody" start-indent="2em">
+                                                <fo:block>
+                                                    <xsl:value-of select="scala:getMessagesText($translator, 'label.phone.number.for.welsh.language')"/>
+                                                </fo:block>
+                                            </fo:list-item-body>
+                                        </fo:list-item>
+                                    </fo:list-block>
+                                </xsl:if>
+
                             </fo:block>
                         </fo:inline-container>
                         <fo:inline-container role="Div" inline-progression-dimension="37%">

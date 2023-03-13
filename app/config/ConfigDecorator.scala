@@ -34,7 +34,7 @@ class ConfigDecorator @Inject()(configuration: Configuration, servicesConfig: Se
   private val contactHost = configuration.get[String]("contact-frontend.host")
   val labelServiceName = configuration.get[String]("contact-frontend.host")
   val serviceName = "save-your-national-insurance-number"
-
+  val serviceNamePTA = "Personal tax account"
 
   val gtmContainer: String = configuration.get[String]("tracking-consent-frontend.gtm.container")
 

@@ -60,8 +60,11 @@
 
 @headBlock = {
     <meta name="format-detection" content="telephone=no" />
-    <link rel="stylesheet" href='@controllers.routes.AssetsController.versioned("stylesheets/pertaxMain.css")'/>
-
+    <!--<link rel="stylesheet" href='@controllers.routes.AssetsController.versioned("stylesheets/pertaxMain.css")'/>-->
+    <link href='@routes.Assets.versioned("stylesheets/application.css")'
+          media="all"
+          rel="stylesheet"
+          type="text/css" />
 
     @if(!disableSessionExpired){
         @hmrcTimeoutDialogHelper(
@@ -71,16 +74,13 @@
             countdown = Some(configDecorator.countdown)
         )
     }
-    <link href='@routes.Assets.versioned("stylesheets/application.css")'
-          media="all"
-          rel="stylesheet"
-          type="text/css"@CSPNonce.get.map {n=> nonce="@n"} />
+
     @stylesheets
 
 }
 
 @additionalScripts = {
-    <script src='@controllers.routes.Assets.versioned("javascripts/application.min.js")'></script>
+    <script src='@controllers.routes.Assets.versioned("javascripts/app.js")'></script>
 }
 
 @accountMenu = @{
@@ -120,7 +120,7 @@
 
 @hmrcLayout(
     pageTitle = Some(messages("service.name")),
-    serviceName = Some(messages("service.name")),
+    serviceName = Some(configDecorator.serviceNamePTA),
     serviceUrl = Some("/personal-account"),
     nonce = CSPNonce.get,
     isWelshTranslationAvailable = true,

@@ -22,20 +22,29 @@
         configDecorator: ConfigDecorator
 )
 
-@(passId:String, nino:String, pdId:String, displayForMobile: Boolean)(implicit request: Request[_], messages: Messages)
+@(
+    passId:String,
+    nino:String,
+    pdId:String,
+    displayForMobile: Boolean
+)(implicit request: Request[_], messages: Messages)
 
 @stylesheet = {
     <link rel="stylesheet" href='@routes.AssetsController.versioned("stylesheets/partials/save-your-nino.css")'>
 }
 
-@layout(pageTitle = titleNoForm(messages("storeMyNino.title")), stylesheets = Some(stylesheet)) {
-
+@heading1 = {
+    <!-- Save your National Insurance number -->
     <h1 class="govuk-heading-l">@messages("storeMyNino.heading")</h1>
+}
 
+@ninoBlock = {
     <div class="govuk-inset-text">
         <p>@messages("storeMyNino.saveYourNino.yourNinoIs")<strong> @{nino}</strong></p>
     </div>
+}
 
+@content_block1 = {
     <div>
         <p class="govuk-body">@messages("storeMyNino.saveYourNino.p1")</p>
         <ul class="govuk-list govuk-list--bullet">
@@ -43,55 +52,100 @@
             <li>@messages("storeMyNino.saveYourNino.list1.li2")</li>
         </ul>
     </div>
-
     <p class="govuk-body">@messages("storeMyNino.saveYourNino.p2")</p>
+}
 
+
+@heading2 = {
+    <!-- View and get a PDF of your National Insurance number on a letter -->
     <h2 class="govuk-heading-m">@messages("storeMyNino.subHeading1")</h2>
+}
 
+@content_block2 = {
     <ul class="govuk-list govuk-list--bullet govuk-list--spaced">
         <li><a class="govuk-link" href='/@configDecorator.serviceName/print-letter?pdId=@{pdId}'>@messages("storeMyNino.getYourNinoLetter.list1.li1")</a></li>
         <li><a class="govuk-link" href='/@configDecorator.serviceName/print-letter/save-letter-as-pdf?pdId=@{pdId}' download="">@messages("storeMyNino.getYourNinoLetter.list1.li2")</a></li>
     </ul>
+}
 
+@heading3 = {
+    <!-- Save your number to your phone -->
     <h2 class="govuk-heading-m">@messages("storeMyNino.subHeading2")</h2>
+}
 
+@content_block3 = {
     <p class="govuk-body">@messages("storeMyNino.saveToPhone.p1")</p>
-
     <ul class="govuk-list govuk-list--bullet">
         <li>@messages("storeMyNino.saveToPhone.list1.li1")</li>
         <li>@messages("storeMyNino.saveToPhone.list1.li2")</li>
         <li>@messages("storeMyNino.saveToPhone.list1.li3")</li>
         <li>@messages("storeMyNino.saveToPhone.list1.li4")</li>
     </ul>
+}
+
+@AppleButton = {
+    <p class="govuk-body">
+        <a href='/@configDecorator.serviceName/get-pass-card?passId=@{passId}'>
+            <img class="add-wallet-ios" src="/@configDecorator.serviceName/assets/images/apple-pay.svg" alt='@messages("storeMyNino.saveToPhone.appleWallet.saveToWallet.alt")'>
+        </a>
+    </p>
+}
+
+@qRCodeBlock = {
+    <p class="govuk-body">
+        <img src='/@configDecorator.serviceName/get-qr-code?passId=@{passId}' width="200" height="200" alt='@messages("storeMyNino.saveToPhone.appleWallet.saveToWallet.QRCode.alt")'>
+    </p>
+}
+
+@appleWalletHeading = {
+    <h3 class="govuk-heading-s">@messages("storeMyNino.saveToPhone.appleWallet.heading")</h3>
+}
+
+@appleWalletContent = {
+    <p class="govuk-body">@messages("storeMyNino.saveToPhone.appleWallet.p1")</p>
+}
+
+@MobileDeviceContent = {
+    <div class="show-on-phones">
+        <!--<div class="govuk-!-padding-bottom-6">
+            <a href="service-wallet-android-1">
+                <img src="/@configDecorator.serviceName/assets/images/google-wallet.svg" alt="@messages("storeMyNino.saveToPhone.googleWallet.saveToWallet.alt")" class="add-wallet-android">
+            </a>
+        </div>-->
+        @AppleButton
+    </div>
+}
+
+@NotForMobileDeviceContent = {
+    <div class="hide-on-phones">
+        <!--<h3 class="govuk-heading-s">@messages("storeMyNino.saveToPhone.googleWallet.heading")</h3>
+        <div class="govuk-!-padding-bottom-6">
+            <a href="service-wallet-android-1">
+                <img src="/@configDecorator.serviceName/assets/images/google-wallet.svg" alt="@messages("storeMyNino.saveToPhone.googleWallet.saveToWallet.alt")">
+            </a>
+        </div>-->
+        @appleWalletHeading
+        @appleWalletContent
+        @qRCodeBlock
+    </div>
+
+}
+
+@layout(pageTitle = titleNoForm(messages("storeMyNino.title")), stylesheets = Some(stylesheet)) {
+
+    @heading1
+    @ninoBlock
+    @content_block1
+
+    @heading2
+    @content_block2
+
+    @heading3
+    @content_block3
 
     @if(displayForMobile) {
-        <div class="show-on-phones">
-            <!--<div class="govuk-!-padding-bottom-6">
-                <a href="service-wallet-android-1">
-                    <img src="/@configDecorator.serviceName/assets/images/google-wallet.svg" alt="@messages("storeMyNino.saveToPhone.googleWallet.saveToWallet.alt")" class="add-wallet-android">
-                </a>
-            </div>-->
-
-            <p class="govuk-body">
-                <a href='/@configDecorator.serviceName/get-pass-card?passId=@{passId}'>
-                    <img class="add-wallet-ios" src="/@configDecorator.serviceName/assets/images/apple-pay.svg" alt='@messages("storeMyNino.saveToPhone.appleWallet.saveToWallet.alt")'>
-                </a>
-            </p>
-        </div>
+        @MobileDeviceContent
     } else {
-        <div class="hide-on-phones">
-            <!--<h3 class="govuk-heading-s">@messages("storeMyNino.saveToPhone.googleWallet.heading")</h3>
-            <div class="govuk-!-padding-bottom-6">
-                <a href="service-wallet-android-1">
-                    <img src="/@configDecorator.serviceName/assets/images/google-wallet.svg" alt="@messages("storeMyNino.saveToPhone.googleWallet.saveToWallet.alt")">
-                </a>
-            </div>-->
-
-            <h3 class="govuk-heading-s">@messages("storeMyNino.saveToPhone.appleWallet.heading")</h3>
-            <p class="govuk-body">@messages("storeMyNino.saveToPhone.appleWallet.p1")</p>
-            <p class="govuk-body">
-                <img src='/@configDecorator.serviceName/get-qr-code?passId=@{passId}' width="200" height="200" alt='@messages("storeMyNino.saveToPhone.appleWallet.saveToWallet.QRCode.alt")'>
-            </p>
-        </div>
+        @NotForMobileDeviceContent
     }
 }

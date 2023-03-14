@@ -67,7 +67,10 @@ nino: String)(implicit request: Request[_], messages: play.api.i18n.Messages)
                     <address class="govuk-body">
                         <span>@Html(messages("label.nic_eo_hmrc_address.line1"))</span>
                         <span>@messages("label.nic_eo_hmrc_address.line2")</span>
-                        <span>@messages("label.nic_eo_hmrc_address.line3")</span>
+                        @if(messages.lang.language.equals("cy")) {
+                            <span>@messages("label.nic_eo_hmrc_address.line3")</span>
+                        }
+                        <span>@messages("label.nic_eo_hmrc_address.postcode")</span>
                     </address>
                     <p class="phone govuk-body">@messages("label.phone_text")
                         <span class="phone-number">

@@ -116,5 +116,5 @@ label.timeout.dialog.minutes=o funudau
 label.timeout.dialog.seconds=eiliad
 label.timeout.dialog.keepAlive.button=Parhau i fod wedi’ch mewngofnodi
 label.timeout.dialog.signout.button=Allgofnodi nawr
-=======
+
 label.resolve.mci.issue=er mwyn datrys y broblem MCI gyda help ymgynghorydd.

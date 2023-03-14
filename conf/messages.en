@@ -1,4 +1,4 @@
-service.name = Save your National Insurance number
+service.name = Personal tax account
 
 site.back = Back
 site.change = Change
@@ -33,17 +33,20 @@ storeMyNino.heading = Save your National Insurance number
 storeMyNino.saveYourNino.yourNinoIs = Your National Insurance number is
 storeMyNino.saveYourNino.p1 = You can:
 storeMyNino.saveYourNino.list1.li1 = view and get a PDF of your National Insurance number confirmation letter
-storeMyNino.saveYourNino.list1.li2 = add your number to your phone's wallet
+storeMyNino.saveYourNino.list1.li2.v1 = add your number to the Wallet app on your Apple iPhone
+storeMyNino.saveYourNino.list1.li2.v2 = add your number to your phone’s wallet
 storeMyNino.saveYourNino.p2 = If you save your National Insurance number on your phone, make sure it has security like Face ID, a pattern, or a pin code set up. This helps protect your details.
-storeMyNino.subHeading1 = View and get a PDF of your National Insurance number on a letter
+storeMyNino.subHeading1 = View and get a copy of your National Insurance number on a letter
 storeMyNino.getYourNinoLetter.list1.li1 = View or print
 
 storeMyNino.getYourNinoLetter.list1.li2 = Save as a PDF
 
-storeMyNino.subHeading2 = Save your number to your phone
+storeMyNino.subHeading2.v1 = Save your number to your Apple iPhone
+storeMyNino.subHeading2.v2 = Save your number to your phone
 storeMyNino.saveToPhone.p1 = Your National Insurance number would:
-storeMyNino.saveToPhone.list1.li1 = be readily available in your Apple or Google wallet with your other cards — even offline
-storeMyNino.saveToPhone.list1.li2 = be protected by your phone's security settings
+storeMyNino.saveToPhone.list1.li1.v1 = be readily available in your Apple Wallet with your other cards — even offline
+storeMyNino.saveToPhone.list1.li1.v2 = be readily available in your phone’s wallet with your other cards — even offline
+storeMyNino.saveToPhone.list1.li2 = be protected by your phone’s security settings
 storeMyNino.saveToPhone.list1.li3 = only be shared with the wallet provider and no other third parties
 storeMyNino.saveToPhone.list1.li4 = take up minimal storage space on your phone
 storeMyNino.saveToPhone.googleWallet.heading = Google Wallet

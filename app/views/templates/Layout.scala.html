@@ -119,7 +119,7 @@
 }
 
 @hmrcLayout(
-    pageTitle = Some(messages("service.name")),
+    pageTitle = Some(pageTitle),
     serviceName = Some(configDecorator.serviceNamePTA),
     serviceUrl = Some("/personal-account"),
     nonce = CSPNonce.get,

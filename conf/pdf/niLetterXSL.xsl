@@ -93,6 +93,10 @@
                     <!-- variable for start of a link -->
                     <xsl:variable name="https" select="'https://'"/>
 
+                    <xsl:variable name="language">
+                        <xsl:value-of select="scala:getLang($translator)"/>
+                    </xsl:variable>
+
                     <!-- logo and heading -->
                     <fo:block role="Div" space-after="10px">
                         <fo:inline-container role="Div" inline-progression-dimension="22%">
@@ -152,8 +156,13 @@
                                 <fo:block role="P" xsl:use-attribute-sets="address-line">
                                     <xsl:value-of select="scala:getMessagesText($translator, 'label.nic_eo_hmrc_address.line2')"/>
                                 </fo:block>
+                                <xsl:if test="$language = 'cy'">
+                                    <fo:block role="P" xsl:use-attribute-sets="address-line">
+                                        <xsl:value-of select="scala:getMessagesText($translator, 'label.nic_eo_hmrc_address.line3')"/>
+                                    </fo:block>
+                                </xsl:if>
                                 <fo:block role="P" xsl:use-attribute-sets="address-line">
-                                    <xsl:value-of select="scala:getMessagesText($translator, 'label.nic_eo_hmrc_address.line3')"/>
+                                    <xsl:value-of select="scala:getMessagesText($translator, 'label.nic_eo_hmrc_address.postcode')"/>
                                 </fo:block>
                                 <fo:block role="P" xsl:use-attribute-sets="p">
                                     <xsl:value-of select="scala:getMessagesText($translator, 'label.phone_text')"/>
@@ -364,10 +373,6 @@
                                         <xsl:value-of select="$child-trust-funds-link"/>
                                     </fo:basic-link>
                                 </fo:block>
-
-                                <xsl:variable name="language">
-                                    <xsl:value-of select="scala:getLang($translator)"/>
-                                </xsl:variable>
 
                                 <!-- only display welsh language section when in English -->
                                 <xsl:if test="$language = 'en'">

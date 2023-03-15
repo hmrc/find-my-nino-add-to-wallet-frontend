@@ -28,7 +28,7 @@
 @()(implicit request: Request[_], configDecorator: ConfigDecorator, messages: play.api.i18n.Messages, ec: ExecutionContext)
 
 @main(
-    pageTitle = messages("label.sign_in"),
+    pageTitle = titleNoForm(messages("label.sign_in")),
     disableSessionExpired = true
 ) {
 

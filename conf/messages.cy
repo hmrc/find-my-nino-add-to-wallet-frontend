@@ -100,11 +100,21 @@ label.information_is_available_in_large_print_audio_tape_and_braille_formats=Mae
 label.text_relay_service_prefix_number_18001=I gael gwasanaeth Text Relay, gwasgwch 18001 yn gyntaf.
 label.hmrc_date=CThEF {0}
 label.page=Tudalen
-label.timeout.dialog.keepAlive.button=Parhau i fod wedi’ch mewngofnodi
-label.timeout.dialog.signout.button=Allgofnodi nawr
-label.timeout.dialog.minutes=o funudau
-label.timeout.dialog.seconds=eiliad
+
 label.you_cannot_access_your_account=Ni allwn gael at eich manylion
 label.we_need_to_speak_to_you_about_an_mci_error_=Mae hyn oherwydd problem MCI. Mae’n golygu bod angen i ni wirio rhai manylion gyda chi, cyn i chi allu mewngofnodi eto
 label.how_to_contact_us=Gallwch ein ffonio
+
+
+label.sign_in=Mewngofnodi
+label.youve_been_signed_out=Er eich diogelwch, gwnaethom eich allgofnodi
+label.timeout_message=Ni wnaethom gadw’ch atebion.
+label.please_sign_in_again=Mewngofnodwch eto.
+label.timeout.dialog.title=Rydych ar fin cael eich allgofnodi
+label.timeout.dialog.message=Am resymau diogelwch, byddwch yn cael eich allgofnodi ymhen
+label.timeout.dialog.minutes=o funudau
+label.timeout.dialog.seconds=eiliad
+label.timeout.dialog.keepAlive.button=Parhau i fod wedi’ch mewngofnodi
+label.timeout.dialog.signout.button=Allgofnodi nawr
+
 label.resolve.mci.issue=er mwyn datrys y broblem MCI gyda help ymgynghorydd.

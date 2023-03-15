@@ -14,94 +14,122 @@
  * limitations under the License.
  *@
 
+@import uk.gov.hmrc.hmrcfrontend.views.html.helpers._
+@import uk.gov.hmrc.hmrcfrontend.config.AccountMenuConfig
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits.RichAccountMenu
+@import uk.gov.hmrc.hmrcfrontend.views.viewmodels.accountmenu.{AccountMenu, SignOut, AccountHome, AccountMessages, CheckProgress, _}
 @import config.ConfigDecorator
 @import uk.gov.hmrc.hmrcfrontend.views.config.StandardAlphaBanner
 @import views.html.helper.CSPNonce
-@import components.FullWidthMainContent
+@import components.{FullWidthMainContent, backLink}
 
 @this(
-    appConfig: ConfigDecorator,
-    govukLayout: GovukLayout,
-    govukBackLink: GovukBackLink,
-    hmrcHead: HmrcHead,
-    hmrcStandardHeader: HmrcStandardHeader,
-    hmrcStandardFooter: HmrcStandardFooter,
-    hmrcTrackingConsentSnippet: HmrcTrackingConsentSnippet,
-    hmrcLanguageSelect: HmrcLanguageSelect,
-    hmrcTimeoutDialog: HmrcTimeoutDialog,
-    hmrcReportTechnicalIssueHelper: HmrcReportTechnicalIssueHelper,
+    hmrcLayout: HmrcLayout,
+    hmrcLanguageSelectHelper: HmrcLanguageSelectHelper,
+    hmrcTimeoutDialogHelper: HmrcTimeoutDialogHelper,
     twoThirdsMainContent: TwoThirdsMainContent,
     fullWidthMainContent: FullWidthMainContent,
     twoThirdsOneThirdMainContent: TwoThirdsOneThirdMainContent,
+    hmrcReportTechnicalIssueHelper: HmrcReportTechnicalIssueHelper,
+    configDecorator: ConfigDecorator,
+    hmrcAccountMenu: HmrcAccountMenu,
+    hmrcTrackingConsentSnippet: HmrcTrackingConsentSnippet,
+    backLink: backLink,
     hmrcScripts: HmrcScripts,
     alphaBanner: StandardAlphaBanner
-)
+)(implicit accountMenuConfig: AccountMenuConfig)
 
 @(
-pageTitle: String, showBackLink: Boolean = true, timeout: Boolean = true, showSignOut: Boolean = true, stylesheets: Option[Html] = None, fullWidth: Boolean = false, sidebarContent: Option[Html] = None)(contentBlock: Html)(implicit request: Request[_], messages: Messages)
+    pageTitle: String,
+    showBackLink: Boolean = true,
+    timeout: Boolean = true,
+    showSignOut: Boolean = true,
+    stylesheets: Option[Html] = None,
+    fullWidth: Boolean = false,
+    accountHome: Boolean = true,
+    yourProfileActive: Boolean = false,
+    hideAccountMenu: Boolean = false,
+    backLinkID: Boolean = true,
+    backLinkUrl: String = "#",
+    disableSessionExpired: Boolean = false,
+    sidebarContent: Option[Html] = None,
+    messagesActive: Boolean = false,
+)(contentBlock: Html)(implicit request: Request[_], messages: Messages)
 
-@headWithTrackingConsent = {
-    @hmrcHead(
-        nonce     = CSPNonce.get,
-        headBlock = if(timeout) { Some(
-            hmrcTimeoutDialog(TimeoutDialog(
-                timeout             = Some(appConfig.timeout),
-                countdown           = Some(appConfig.countdown),
-                keepAliveUrl        = Some(routes.KeepAliveController.keepAlive.url),
-                keepAliveButtonText = Some(messages("timeout.keepAlive")),
-                signOutUrl          = Some(controllers.auth.routes.AuthController.signOut.url),
-                signOutButtonText   = Some(messages("timeout.signOut")),
-                title               = Some(messages("timeout.title")),
-                message             = Some(messages("timeout.message"))
-            )))
-        } else None
-    )
 
-    <link href="@routes.Assets.versioned("stylesheets/application.css")" media="all" rel="stylesheet" type="text/css"@CSPNonce.get.map {n=> nonce="@n"} />
+
+@headBlock = {
+    <meta name="format-detection" content="telephone=no" />
+    <!--<link rel="stylesheet" href='@controllers.routes.AssetsController.versioned("stylesheets/pertaxMain.css")'/>-->
+    <link href='@routes.Assets.versioned("stylesheets/application.css")'
+          media="all"
+          rel="stylesheet"
+          type="text/css" />
+
+    @if(!disableSessionExpired){
+        @hmrcTimeoutDialogHelper(
+            signOutUrl = controllers.routes.SessionManagementController.timeOut.url,
+            keepAliveUrl = Some(controllers.routes.SessionManagementController.keepAlive.url),
+            timeout = Some(configDecorator.timeout),
+            countdown = Some(configDecorator.countdown)
+        )
+    }
+
     @stylesheets
+
 }
 
 @additionalScripts = {
-    <script src='@controllers.routes.Assets.versioned("javascripts/application.min.js")'></script>
+    <script src='@controllers.routes.Assets.versioned("javascripts/app.js")'></script>
+}
+
+@accountMenu = @{
+    hmrcAccountMenu(
+        AccountMenu(
+            signOut = SignOut(href = controllers.auth.routes.AuthController.signOut.url),
+            language = if(messages.lang.code == "cy") Cy else En,
+            accountHome = AccountHome(active = accountHome),
+            messages = AccountMessages(active = messagesActive, messageCount = Some(0)),
+            yourProfile = YourProfile(active = yourProfileActive)
+        ).withUrlsFromConfig()
+    )
 }
 
 @beforeContent = {
-
-    @if(appConfig.languageTranslationEnabled) {
-        @hmrcLanguageSelect(LanguageSelect(
-            if (messages.lang.code == "cy") Cy else En,
-            (En, routes.LanguageSwitchController.switchToLanguage("en").url),
-            (Cy, routes.LanguageSwitchController.switchToLanguage("cy").url)
-        ))
-    }
-
-    @if(showBackLink) {
-        @govukBackLink(BackLinkViewModel(href = "#").withCssClass("js-visible"))
+    @if(!hideAccountMenu) { @accountMenu }
+    @if(showBackLink){
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-one-half">
+                @backLink(backLinkUrl, backLinkID)
+            </div>
+            <div class="govuk-grid-column-one-half">
+                @hmrcLanguageSelectHelper()
+            </div>
+        </div>
+    } else {
+        @hmrcLanguageSelectHelper()
     }
 }
 
 @content = {
     @contentBlock
-
     <div class="govuk-!-margin-top-8">
         @hmrcReportTechnicalIssueHelper()
     </div>
 }
 
-@govukLayout(
-    pageTitle   = Some(pageTitle),
-    headBlock   = Some(headWithTrackingConsent),
-    headerBlock = Some(hmrcStandardHeader(
-        serviceUrl  = Some(routes.StoreMyNinoController.onPageLoad.url),
-        signOutUrl  = if(showSignOut) Some(controllers.auth.routes.AuthController.signOut.url) else None,
-        phaseBanner = Some(alphaBanner(appConfig.feedbackUrl))
-    )),
+@hmrcLayout(
+    pageTitle = Some(pageTitle),
+    serviceName = Some(configDecorator.serviceNamePTA),
+    serviceUrl = Some("/personal-account"),
+    nonce = CSPNonce.get,
+    isWelshTranslationAvailable = true,
+    accessibilityStatementUrl = Some(configDecorator.accessibilityStatementUrl(request.uri)),
+    displayHmrcBanner = false,
+    additionalHeadBlock = Some(headBlock),
     beforeContentBlock = Some(beforeContent),
-    footerBlock        = Some(hmrcStandardFooter()),
-    scriptsBlock       = Some(hmrcScripts(
-        nonce        = CSPNonce.get,
-        scriptsBlock = Some(additionalScripts)
-    )),
+    additionalScriptsBlock = Some(additionalScripts),
+
     mainContentLayout = Some(sidebarContent match {
         case Some(sidebarHtml) => twoThirdsOneThirdMainContent(sidebarHtml)
         case None =>

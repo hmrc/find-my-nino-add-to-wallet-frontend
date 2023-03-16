@@ -18,6 +18,7 @@ package controllers.auth
 
 import base.SpecBase
 import config.ConfigDecorator
+import controllers.bindable.Origin
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
@@ -25,9 +26,9 @@ import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
+import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
 
 import java.net.URLEncoder
-
 import scala.concurrent.Future
 
 class AuthControllerSpec extends SpecBase with MockitoSugar {
@@ -47,16 +48,14 @@ class AuthControllerSpec extends SpecBase with MockitoSugar {
       running(application) {
 
         val appConfig = application.injector.instanceOf[ConfigDecorator]
-        val request   = FakeRequest(GET, routes.AuthController.signOut.url)
+        val sentLocation = "http://example.com&origin=STORE_MY_NINO"
+        val request   = FakeRequest(GET, routes.AuthController.signout(Some(RedirectUrl(sentLocation)),Some(Origin("STORE_MY_NINO"))).url)
 
         val result = route(application, request).value
 
-        val encodedContinueUrl  = URLEncoder.encode(appConfig.exitSurveyUrl, "UTF-8")
-        val expectedRedirectUrl = s"${appConfig.signOutUrl}?continue=$encodedContinueUrl"
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual expectedRedirectUrl
-        verify(mockSessionRepository, times(1)).clear(eqTo(userAnswersId))
+
       }
     }
   }

@@ -34,6 +34,10 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
 
   lazy val gtmContainer: String = configuration.get[String]("tracking-consent-frontend.gtm.container")
 
+
+  private def getExternalUrl(key: String): Option[String] =
+    configuration.getOptional[String](s"external-url.$key")
+
   def feedbackUrl(implicit request: RequestHeader): String =
     s"$contactHost/contact/beta-feedback?service=$contactFormServiceIdentifier&backUrl=${SafeRedirectUrl(host + request.uri).encodedUrl}"
 
@@ -42,7 +46,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
   val signOutUrl: String                = configuration.get[String]("urls.signOut")
   lazy val findMyNinoServiceUrl: String = servicesConfig.baseUrl("find-my-nino-add-to-wallet-service")
 
-  private val exitSurveyBaseUrl: String = configuration.get[Service]("microservice.services.feedback-frontend").baseUrl
+  private val exitSurveyBaseUrl: String = getExternalUrl(s"feedback-survey-frontend.host").getOrElse("")
   val exitSurveyUrl: String             = s"$exitSurveyBaseUrl/feedback/save-your-national-insurance-number"
 
   val languageTranslationEnabled: Boolean =

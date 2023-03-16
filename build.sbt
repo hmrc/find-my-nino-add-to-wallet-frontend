@@ -31,8 +31,9 @@ lazy val root = (project in file("."))
       scalaVersion := "2.13.8",
       name := appName,
       RoutesKeys.routesImport ++= Seq(
-          "models._",
-          "uk.gov.hmrc.play.bootstrap.binders.RedirectUrl"
+          "uk.gov.hmrc.play.bootstrap.binders._",
+          "controllers.bindable._",
+          "models._"
       ),
       TwirlKeys.templateImports ++= Seq(
           "play.twirl.api.HtmlFormat",
@@ -44,7 +45,8 @@ lazy val root = (project in file("."))
           "views.ViewUtils._",
           "models.Mode",
           "controllers.routes._",
-          "viewmodels.govuk.all._"
+          "viewmodels.govuk.all._",
+          "uk.gov.hmrc.play.bootstrap.binders._",
       ),
       PlayKeys.playDefaultPort := 14006,
       scalacOptions ++= Seq(

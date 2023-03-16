@@ -27,7 +27,7 @@ GET         /account/sign-out                            controllers.auth.AuthCo
 GET         /account/signed-out                          controllers.auth.SignedOutController.onPageLoad
 
 #GET        /your-address                                controllers.PublicController.redirectToYourProfile
-GET         /account/sign-out-survey                     controllers.auth.AuthController.signOut
+GET         /account/sign-out-survey                     controllers.auth.AuthController.signout(continueUrl: Option[RedirectUrl], origin: Option[Origin])
 GET         /timeout                                     controllers.SessionManagementController.timeOut
 GET         /keep-alive                                  controllers.SessionManagementController.keepAlive
 

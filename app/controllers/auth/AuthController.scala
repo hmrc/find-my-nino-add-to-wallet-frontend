@@ -18,31 +18,23 @@ package controllers.auth
 
 import config.ConfigDecorator
 import controllers.actions.IdentifierAction
+import controllers.bindable.Origin
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
+import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl.idFunctor
+import uk.gov.hmrc.play.bootstrap.binders.{OnlyRelative, RedirectUrl}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
-
 class AuthController @Inject()(
                                 val controllerComponents: MessagesControllerComponents,
-                                config: ConfigDecorator,
+                                configDecorator: ConfigDecorator,
                                 sessionRepository: SessionRepository,
                                 identify: IdentifierAction
                               )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
-
-  def signOut(): Action[AnyContent] = identify.async {
-    implicit request =>
-      sessionRepository
-        .clear(request.userId)
-        .map {
-          _ =>
-            Redirect(config.signOutUrl, Map("continue" -> Seq(config.exitSurveyUrl)))
-      }
-  }
 
   def signOutNoSurvey(): Action[AnyContent] = identify.async {
     implicit request =>
@@ -50,7 +42,22 @@ class AuthController @Inject()(
       .clear(request.userId)
       .map {
         _ =>
-        Redirect(config.signOutUrl, Map("continue" -> Seq(routes.SignedOutController.onPageLoad.url)))
+        Redirect(configDecorator.signOutUrl, Map("continue" -> Seq(routes.SignedOutController.onPageLoad.url)))
       }
   }
+
+  def signout(continueUrl: Option[RedirectUrl], origin: Option[Origin]): Action[AnyContent] =
+    Action { implicit request =>
+      val safeUrl = continueUrl.flatMap { redirectUrl =>
+        redirectUrl.getEither(OnlyRelative) match {
+          case Right(safeRedirectUrl) => Some(safeRedirectUrl.url)
+          case _ => Some(configDecorator.getFeedbackSurveyUrl(configDecorator.defaultOrigin))
+        }
+      }
+      safeUrl
+        .orElse(origin.map(configDecorator.getFeedbackSurveyUrl))
+        .fold(BadRequest("Missing origin")) { url: String =>
+          Redirect(configDecorator.getBasGatewayFrontendSignOutUrl(url))
+        }
+    }
 }

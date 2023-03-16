@@ -17,7 +17,6 @@
 package config
 
 import com.google.inject.{Inject, Singleton}
-import controllers.bindable.Origin
 import play.api.Configuration
 import play.api.i18n.Lang
 import play.api.mvc.RequestHeader
@@ -65,7 +64,9 @@ class ConfigDecorator @Inject()(configuration: Configuration, servicesConfig: Se
   lazy val pertaxFrontendHost = getExternalUrl(s"pertax-frontend.host").getOrElse("")
   lazy val pertaxFrontendForAuthHost = getExternalUrl(s"pertax-frontend.auth-host").getOrElse("")
   lazy val feedbackSurveyFrontendHost = getExternalUrl(s"feedback-survey-frontend.host").getOrElse("")
-
+  val defaultOrigin: Origin = Origin("STORE_MY_NINO")
+  def getBasGatewayFrontendSignOutUrl(continueUrl: String): String =
+    basGatewayFrontendHost + s"/bas-gateway/sign-out-without-state?continue=$continueUrl"
 
   private val exitSurveyBaseUrl: String = configuration.get[Service]("microservice.services.feedback-frontend").baseUrl
   val exitSurveyUrl: String             = s"$exitSurveyBaseUrl/feedback/$serviceName"

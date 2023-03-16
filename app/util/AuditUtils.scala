@@ -35,10 +35,8 @@ object AuditUtils {
                                     name: String,
                                     mainAddress: Address,
                                     submissionFromAgent: Boolean = false,
-                                    agentCode: Option[String] = None, // Omit if submissionFromAgent is false
                                     device: Option[String],
-                                    language: String = "en",
-                                    declareAccurateAndComplete: Boolean = true
+                                    language: String = "en"
                                   )
 
   object YourDetailsAuditEvent {
@@ -56,14 +54,15 @@ object AuditUtils {
   def getUserDevice(hc: HeaderCarrier): String = {
     val strUserAgent = hc.otherHeaders.toMap.getOrElse("User-Agent", "")
     if (strUserAgent.length > 0 && strUserAgent.contains(" ")) {
-      try{
-        val m = "(\\w+);\\s+([^\\)]*)".r.findAllIn(strUserAgent)
-        m.group(1) + ";" + m.group(2)
-      } catch {
-        case e:Exception => "not detected"
-      }
+      if(strUserAgent.contains("iPhone"))
+        "iOS"
+      else
+        if(strUserAgent.contains("Android"))
+          "Android"
+        else
+          ""
     }
-    else "not detected"
+    else ""
   }
 
   def getUserAgent(hc: HeaderCarrier): String = hc.otherHeaders.toMap.getOrElse("User-Agent", "")
@@ -103,7 +102,6 @@ object AuditUtils {
   def buildDetails(personDetails: PersonDetails, journeyId: String, hc: HeaderCarrier): YourDetailsAuditEvent = {
     val person = personDetails.person
     val mainAddress = getPersonAddress(personDetails)
-    val strUserAgent = getUserAgent(hc)
     val strLang = getLanguageFromCookieStr(hc)
     val strDevice = getUserDevice(hc)
 
@@ -113,7 +111,6 @@ object AuditUtils {
       person.nino.get.nino,
       name = person.fullName,
       mainAddress = mainAddress,
-      agentCode = Some(strUserAgent),
       device = Some(strDevice),
       language = strLang
     )

@@ -42,22 +42,9 @@ class ConfigDecorator @Inject()(configuration: Configuration, servicesConfig: Se
   lazy val trackingServiceUrl = s"$trackingHost/track"
   val enc = URLEncoder.encode(_: String, "UTF-8")
 
-  private def getExternalUrl(key: String): Option[String] =
-    configuration.getOptional[String](s"external-url.$key")
-
-  def feedbackUrl(implicit request: RequestHeader): String =
-    s"$contactHost/contact/beta-feedback?service=$serviceName&backUrl=${SafeRedirectUrl(host + request.uri).encodedUrl}"
-
-  def getFeedbackSurveyUrl(origin: Origin): String =
-    feedbackSurveyFrontendHost + "/feedback/" + enc(origin.origin)
-
-  def betaFeedbackUnauthenticatedUrl(aDeskproToken: String): String =
-    s"$contactHost/contact/beta-feedback-unauthenticated?service=$aDeskproToken"
-
-
-  val loginUrl: String                  = configuration.get[String]("urls.login")
-  val loginContinueUrl: String          = configuration.get[String]("urls.loginContinue")
-  val signOutUrl: String                = configuration.get[String]("urls.signOut")
+  val loginUrl: String = configuration.get[String]("urls.login")
+  val loginContinueUrl: String = configuration.get[String]("urls.loginContinue")
+  val signOutUrl: String = configuration.get[String]("urls.signOut")
   lazy val findMyNinoServiceUrl: String = servicesConfig.baseUrl("find-my-nino-add-to-wallet-service")
   lazy val citizenDetailsServiceUrl: String = servicesConfig.baseUrl("citizen-details-service")
 
@@ -67,11 +54,18 @@ class ConfigDecorator @Inject()(configuration: Configuration, servicesConfig: Se
   lazy val pertaxFrontendForAuthHost = getExternalUrl(s"pertax-frontend.auth-host").getOrElse("")
   lazy val feedbackSurveyFrontendHost = getExternalUrl(s"feedback-survey-frontend.host").getOrElse("")
   val defaultOrigin: Origin = Origin("STORE_MY_NINO")
+
+  private def getExternalUrl(key: String): Option[String] =
+    configuration.getOptional[String](s"external-url.$key")
+
+  def getFeedbackSurveyUrl(origin: Origin): String =
+    feedbackSurveyFrontendHost + "/feedback/" + enc(origin.origin)
+
+
   def getBasGatewayFrontendSignOutUrl(continueUrl: String): String =
     basGatewayFrontendHost + s"/bas-gateway/sign-out-without-state?continue=$continueUrl"
 
-  private val exitSurveyBaseUrl: String = configuration.get[Service]("microservice.services.feedback-frontend").baseUrl
-  val exitSurveyUrl: String             = s"$exitSurveyBaseUrl/feedback/$serviceName"
+  val exitSurveyUrl: String             = s"$feedbackSurveyFrontendHost/feedback/$serviceName"
 
   val languageTranslationEnabled: Boolean =
     configuration.get[Boolean]("features.welsh-translation")

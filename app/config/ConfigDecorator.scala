@@ -32,8 +32,7 @@ class ConfigDecorator @Inject()(configuration: Configuration, servicesConfig: Se
   val host: String    = configuration.get[String]("host")
   val appName: String = configuration.get[String]("appName")
 
-  private val contactHost = configuration.get[String]("contact-frontend.host")
-  val labelServiceName = configuration.get[String]("contact-frontend.host")
+
   val serviceName = "save-your-national-insurance-number"
   val serviceNamePTA = "Personal tax account"
 
@@ -49,10 +48,11 @@ class ConfigDecorator @Inject()(configuration: Configuration, servicesConfig: Se
   lazy val citizenDetailsServiceUrl: String = servicesConfig.baseUrl("citizen-details-service")
 
   lazy val basGatewayFrontendHost = getExternalUrl(s"bas-gateway-frontend.host").getOrElse("")
-  lazy val taxEnrolmentAssignmentFrontendHost = getExternalUrl(s"tax-enrolment-assignment-frontend.host").getOrElse("")
-  lazy val pertaxFrontendHost = getExternalUrl(s"pertax-frontend.host").getOrElse("")
-  lazy val pertaxFrontendForAuthHost = getExternalUrl(s"pertax-frontend.auth-host").getOrElse("")
-  lazy val feedbackSurveyFrontendHost = getExternalUrl(s"feedback-survey-frontend.host").getOrElse("")
+
+  //lazy val feedbackSurveyFrontendHost = getExternalUrl(s"feedback-survey-frontend.host").getOrElse("")
+  val feedbackSurveyFrontendHost = servicesConfig.baseUrl("feedback-frontend")
+
+
   val defaultOrigin: Origin = Origin("STORE_MY_NINO")
 
   private def getExternalUrl(key: String): Option[String] =
@@ -65,7 +65,8 @@ class ConfigDecorator @Inject()(configuration: Configuration, servicesConfig: Se
   def getBasGatewayFrontendSignOutUrl(continueUrl: String): String =
     basGatewayFrontendHost + s"/bas-gateway/sign-out-without-state?continue=$continueUrl"
 
-  val exitSurveyUrl: String             = s"$feedbackSurveyFrontendHost/feedback/$serviceName"
+  //val exitSurveyUrl: String             = s"$feedbackSurveyFrontendHost/feedback/$serviceName"
+  val exitSurveyUrl: String             = s"${servicesConfig.baseUrl("feedback-frontend")}/feedback/$serviceName"
 
   val languageTranslationEnabled: Boolean =
     configuration.get[Boolean]("features.welsh-translation")

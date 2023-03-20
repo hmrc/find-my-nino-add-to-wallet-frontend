@@ -26,14 +26,14 @@ storeMyNino.heading=Cadw eich rhif Yswiriant Gwladol
 storeMyNino.saveYourNino.yourNinoIs=Eich rhif Yswiriant Gwladol yw
 storeMyNino.saveYourNino.p1=Gallwch wneud y canlynol:
 storeMyNino.saveYourNino.list1.li1=cael y llythyr yn cadarnhau eich rhif Yswiriant Gwladol ar ffurf PDF a bwrw golwg drosto
-storeMyNino.saveYourNino.list1.li2=ychwanegu eich rhif i waled eich ffôn
+storeMyNino.saveYourNino.list1.li2.v2=ychwanegu eich rhif i waled eich ffôn
 storeMyNino.saveYourNino.p2=Os ydych yn cadw eich rhif Yswiriant Gwladol ar eich ffôn, sicrhewch fod ganddo osodiadau diogelwch megis dull adnabod wyneb (Face ID), patrwm neu god PIN wedi eu sefydlu. Mae hyn yn helpu diogelu eich manylion.
 storeMyNino.subHeading1=Cael llythyr sy’n cadarnhau eich rhif Yswiriant Gwladol ar ffurf PDF a bwrw golwg drosto
 storeMyNino.getYourNinoLetter.list1.li1=Gweld neu argraffu
 storeMyNino.getYourNinoLetter.list1.li2=Cadw fel PDF
-storeMyNino.subHeading2=Cadw’ch rhif ar eich ffôn
+storeMyNino.subHeading2.v2=Cadw’ch rhif ar eich ffôn
 storeMyNino.saveToPhone.p1=Byddai’ch rhif Yswiriant Gwladol:
-storeMyNino.saveToPhone.list1.li1=ar gael yn eich waled Apple neu Google ynghyd â’ch cardiau eraill – hyd yn oed pan na fyddwch ar-lein
+storeMyNino.saveToPhone.list1.li1.v2=ar gael yn eich waled Apple neu Google ynghyd â’ch cardiau eraill – hyd yn oed pan na fyddwch ar-lein
 storeMyNino.saveToPhone.list1.li2=yn cael ei ddiogelu gan osodiadau diogelwch eich ffôn
 storeMyNino.saveToPhone.list1.li3=dim ond yn cael ei rannu gyda darparwr y waled ac nid gydag unrhyw drydydd parti arall
 storeMyNino.saveToPhone.list1.li4=prin yn cymryd lle yng nghof eich ffôn
@@ -99,22 +99,13 @@ label.www_youtube_com_hmrcgovuk=www.youtube.com/HMRCgovuk
 label.information_is_available_in_large_print_audio_tape_and_braille_formats=Mae gwybodaeth ar gael ar sain, mewn print bras a Braille.
 label.text_relay_service_prefix_number_18001=I gael gwasanaeth Text Relay, gwasgwch 18001 yn gyntaf.
 label.hmrc_date=CThEF {0}
-label.page=Tudalen
 
 label.you_cannot_access_your_account=Ni allwn gael at eich manylion
 label.we_need_to_speak_to_you_about_an_mci_error_=Mae hyn oherwydd problem MCI. Mae’n golygu bod angen i ni wirio rhai manylion gyda chi, cyn i chi allu mewngofnodi eto
 label.how_to_contact_us=Gallwch ein ffonio
-
+label.resolve.mci.issue=er mwyn datrys y broblem MCI gyda help ymgynghorydd.
 
 label.sign_in=Mewngofnodi
 label.youve_been_signed_out=Er eich diogelwch, gwnaethom eich allgofnodi
 label.timeout_message=Ni wnaethom gadw’ch atebion.
 label.please_sign_in_again=Mewngofnodwch eto.
-label.timeout.dialog.title=Rydych ar fin cael eich allgofnodi
-label.timeout.dialog.message=Am resymau diogelwch, byddwch yn cael eich allgofnodi ymhen
-label.timeout.dialog.minutes=o funudau
-label.timeout.dialog.seconds=eiliad
-label.timeout.dialog.keepAlive.button=Parhau i fod wedi’ch mewngofnodi
-label.timeout.dialog.signout.button=Allgofnodi nawr
-
-label.resolve.mci.issue=er mwyn datrys y broblem MCI gyda help ymgynghorydd.

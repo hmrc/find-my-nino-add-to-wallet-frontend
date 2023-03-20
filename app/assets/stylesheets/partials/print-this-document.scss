@@ -200,6 +200,10 @@
     visibility: hidden;
   }
 
+ .print-hidden {
+    display: none !important;
+  }
+
   p.url,
   p.phone {
     margin-bottom: 5px;

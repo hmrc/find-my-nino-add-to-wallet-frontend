@@ -133,9 +133,9 @@ margin-bottom: 1em;
 }
 
 .js-enabled .govuk-back-link {
-    display: inline-block;
+    visibility: visible;
 }
 
 .govuk-back-link {
-    display: none;
+    visibility: hidden;
 }

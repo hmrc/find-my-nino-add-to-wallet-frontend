@@ -1,4 +1,4 @@
-service.name=Cadw eich rhif Yswiriant Gwladol
+service.name=Cyfrif treth personol
 site.back=Yn ôl
 site.change=Newid
 site.no=Na

@@ -97,9 +97,9 @@ class ConfigDecoratorSpec extends SpecBase with MockitoSugar{
       mockConfigDecorator.findMyNinoServiceUrl.isInstanceOf[String]
     }
 
-    "exitSurveyUrl" in {
+    /*"exitSurveyUrl" in {
       mockConfigDecorator.exitSurveyUrl.isInstanceOf[String]
-    }
+    }*/
 
     "loginContinueUrl" in {
       mockConfigDecorator.loginContinueUrl.isInstanceOf[String]

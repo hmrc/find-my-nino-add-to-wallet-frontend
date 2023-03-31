@@ -49,8 +49,8 @@ class ConfigDecorator @Inject()(configuration: Configuration, servicesConfig: Se
 
   lazy val basGatewayFrontendHost = getExternalUrl(s"bas-gateway-frontend.host").getOrElse("")
 
-  //lazy val feedbackSurveyFrontendHost = getExternalUrl(s"feedback-survey-frontend.host").getOrElse("")
-  val feedbackSurveyFrontendHost = servicesConfig.baseUrl("feedback-frontend")
+  lazy val feedbackSurveyFrontendHost = getExternalUrl(s"feedback-survey-frontend.host").getOrElse("")
+  //val feedbackSurveyFrontendHost = servicesConfig.baseUrl("feedback-survey-frontend")
 
 
   val defaultOrigin: Origin = Origin("STORE_MY_NINO")
@@ -66,7 +66,7 @@ class ConfigDecorator @Inject()(configuration: Configuration, servicesConfig: Se
     basGatewayFrontendHost + s"/bas-gateway/sign-out-without-state?continue=$continueUrl"
 
   //val exitSurveyUrl: String             = s"$feedbackSurveyFrontendHost/feedback/$serviceName"
-  val exitSurveyUrl: String             = s"${servicesConfig.baseUrl("feedback-frontend")}/feedback/$serviceName"
+  //val exitSurveyUrl: String             = s"${servicesConfig.baseUrl("feedback-frontend")}/feedback/$serviceName"
 
   val languageTranslationEnabled: Boolean =
     configuration.get[Boolean]("features.welsh-translation")

@@ -178,6 +178,9 @@
                                         <xsl:attribute name="external-destination">
                                             <xsl:value-of select="concat($https, $hmrc-link)"/>
                                         </xsl:attribute>
+                                        <xsl:attribute name="fox:alt-text">
+                                            <xsl:value-of select="scala:getMessagesText($translator, 'label.www_gov_uk_hmrc.alt')"/>
+                                        </xsl:attribute>
                                         <xsl:value-of select="$hmrc-link"/>
                                     </fo:basic-link>
                                 </fo:block>
@@ -370,6 +373,9 @@
                                         <xsl:attribute name="external-destination">
                                             <xsl:value-of select="concat($https, $child-trust-funds-link)"/>
                                         </xsl:attribute>
+                                        <xsl:attribute name="fox:alt-text">
+                                            <xsl:value-of select="$child-trust-funds-link"/>
+                                        </xsl:attribute>
                                         <xsl:value-of select="$child-trust-funds-link"/>
                                     </fo:basic-link>
                                 </fo:block>
@@ -405,6 +411,9 @@
                                                                    text-decoration="underline">
                                                         <xsl:attribute name="external-destination">
                                                             <xsl:value-of select='concat("mailto:", $email-link)'/>
+                                                        </xsl:attribute>
+                                                        <xsl:attribute name="fox:alt-text">
+                                                            <xsl:value-of select="$email-link"/>
                                                         </xsl:attribute>
                                                         <xsl:value-of select="$email-link"/>
                                                     </fo:basic-link>
@@ -466,6 +475,9 @@
                                                        text-decoration="underline">
                                             <xsl:attribute name="external-destination">
                                                 <xsl:value-of select="concat($https, $personal-tax-account-link)"/>
+                                            </xsl:attribute>
+                                            <xsl:attribute name="fox:alt-text">
+                                                <xsl:value-of select="$personal-tax-account-link"/>
                                             </xsl:attribute>
                                             <xsl:value-of select="$personal-tax-account-link"/>
                                         </fo:basic-link>
@@ -552,6 +564,9 @@
                                         <xsl:attribute name="external-destination">
                                             <xsl:value-of select="concat($https, $national-insurance-link)"/>
                                         </xsl:attribute>
+                                        <xsl:attribute name="fox:alt-text">
+                                            <xsl:value-of select="$national-insurance-link"/>
+                                        </xsl:attribute>
                                         <xsl:value-of select="$national-insurance-link"/>
                                     </fo:basic-link>
                                     <fo:block xsl:use-attribute-sets="small">
@@ -565,6 +580,9 @@
                                                    xsl:use-attribute-sets="small">
                                         <xsl:attribute name="external-destination">
                                             <xsl:value-of select="concat($https, $youtube-channel-link)"/>
+                                        </xsl:attribute>
+                                        <xsl:attribute name="fox:alt-text">
+                                            <xsl:value-of select="$youtube-channel-link"/>
                                         </xsl:attribute>
                                         <xsl:value-of select="$youtube-channel-link"/>
                                     </fo:basic-link>

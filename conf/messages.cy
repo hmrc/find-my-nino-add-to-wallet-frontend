@@ -61,6 +61,7 @@ label.nic_eo_hmrc_address.postcode=BX9 1ST
 label.phone_text=Rhif Ffôn
 label.contact_number=0300 200 1900
 label.www_gov_uk_hmrc=www.gov.uk/cymraeg
+label.www_gov_uk_hmrc.alt=Cynnwys yn yr iaith Gymraeg sydd ar gael ar GOV.UK
 label.your_national_insurance_number_is=Eich rhif Yswiriant Gwladol yw
 label.keep_this_number_in_a_safe_place_do_not_destroy_this_letter=Cadwch y rhif hwn mewn man diogel. Peidiwch â dinistrio’r llythyr hwn.
 label.about_your_national_insurance_number=Ynglŷn â’ch rhif Yswiriant Gwladol

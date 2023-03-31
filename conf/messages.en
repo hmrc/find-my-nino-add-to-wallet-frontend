@@ -77,6 +77,7 @@ label.nic_eo_hmrc_address.postcode=BX9 1AN
 label.phone_text=Phone
 label.contact_number=0300 200 3500
 label.www_gov_uk_hmrc=www.gov.uk/hmrc
+label.www_gov_uk_hmrc.alt=HM Revenue and Customs
 
 label.your_national_insurance_number_is=Your National Insurance number is
 

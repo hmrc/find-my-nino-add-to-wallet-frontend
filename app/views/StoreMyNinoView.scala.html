@@ -158,6 +158,13 @@
 
 @appleWalletContent = {
     <p class="govuk-body">@messages("storeMyNino.saveToPhone.appleWallet.p1")</p>
+    <ul class="govuk-list govuk-list--bullet">
+        <li>
+            <a class="govuk-link" href='/@configDecorator.serviceName/get-pass-card?passId=@{passId}'>@messages("storeMyNino.saveToPhone.appleWallet.list1.li1.part1")</a>
+            @messages("storeMyNino.saveToPhone.appleWallet.list1.li1.part2")
+        </li>
+        <li>@messages("storeMyNino.saveToPhone.appleWallet.list1.li2")</li>
+    </ul>
 }
 
 @qRCode = {

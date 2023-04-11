@@ -127,11 +127,9 @@ nino: String)(implicit request: Request[_], messages: play.api.i18n.Messages)
                             <p class="govuk-body list-paragraph welsh-info-text">@messages("label.to_continue_to_receive_a_welsh_language_service_")</p>
                             <ul class="govuk-list govuk-list--bullet">
                                 <li class="wrap-long-text">
-                                    @messages("label.email")&nbsp;
+                                    @messages("label.email")
                                     <span>
-                                        <a class="govuk-link" href='mailto:@messages("label.email_for_welsh_language")'>
-                                            @messages("label.email_for_welsh_language")
-                                        </a>
+                                        <a class="govuk-link" href='mailto:@messages("label.email_for_welsh_language")'>@messages("label.email_for_welsh_language")</a>
                                     </span>
                                 </li>
                                 <li>@messages("label.phone.number.for.welsh.language")</li>
@@ -149,9 +147,7 @@ nino: String)(implicit request: Request[_], messages: play.api.i18n.Messages)
                             <p class="govuk-body-s you-download-and-use" id="you-download">
                                 @messages("label.you_can_download_and_use_the_hmrc_app_or_go_online_to.text.part1")
                                 <span>
-                                    <a class="govuk-link govuk-body-s hide-for-print govuk-link--no-visited-state" href='https://@messages("label.you_can_download_and_use_the_hmrc_app_or_go_online_to.link")'>
-                                    @messages("label.you_can_download_and_use_the_hmrc_app_or_go_online_to.link")
-                                    </a>
+                                    <a class="govuk-link govuk-body-s hide-for-print govuk-link--no-visited-state" href='https://@messages("label.you_can_download_and_use_the_hmrc_app_or_go_online_to.link")'>@messages("label.you_can_download_and_use_the_hmrc_app_or_go_online_to.link")</a>
                                 </span>
                                 @messages("label.you_can_download_and_use_the_hmrc_app_or_go_online_to.text.part2")
                             </p>

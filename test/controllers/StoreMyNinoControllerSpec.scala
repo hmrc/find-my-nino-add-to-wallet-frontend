@@ -83,7 +83,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         status(result) mustEqual OK
-        contentAsString(result) mustEqual (view(passId, "AA 00 00 03 B", personDetailsId, false)(request, messages(application))).toString
+        contentAsString(result) mustEqual (view(passId, "AA 00 00 03 B", false)(request, messages(application))).toString
       }
     }
 

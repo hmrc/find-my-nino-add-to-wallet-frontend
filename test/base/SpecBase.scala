@@ -41,7 +41,7 @@ class SpecBase extends WireMockSupport with MockitoSugar with GuiceOneAppPerSuit
 
   implicit lazy val application: Application = applicationBuilder().build()
   implicit lazy val applicationWithConfig: Application = applicationBuilderWithConfig().build()
-
+  implicit val hc: HeaderCarrier         = HeaderCarrier()
   val userAnswersId: String = "id"
 
   def emptyUserAnswers : UserAnswers = UserAnswers(userAnswersId)

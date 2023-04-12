@@ -25,7 +25,6 @@
 @(
     passId:String,
     nino:String,
-    pdId:String,
     displayForMobile: Boolean
 )(implicit request: Request[_], messages: Messages)
 
@@ -71,8 +70,10 @@
     <!-- View and get a PDF of your National Insurance number on a letter -->
     <h2 class="govuk-heading-m">@messages("storeMyNino.subHeading1")</h2>
     <ul class="govuk-list govuk-list--bullet govuk-list--spaced">
-        <li><a class="govuk-link" href='/@configDecorator.serviceName/print-letter?pdId=@{pdId}'>@messages("storeMyNino.getYourNinoLetter.list1.li1")</a></li>
-        <li><a class="govuk-link" href='/@configDecorator.serviceName/print-letter/save-letter-as-pdf?pdId=@{pdId}' download="">@messages("storeMyNino.getYourNinoLetter.list1.li2")</a></li>
+
+        <li><a class="govuk-link" href='/@configDecorator.serviceName/print-letter'>@messages("storeMyNino.getYourNinoLetter.list1.li1")</a></li>
+        <li><a class="govuk-link" href='/@configDecorator.serviceName/print-letter/save-letter-as-pdf' download="">@messages("storeMyNino.getYourNinoLetter.list1.li2")</a></li>
+
     </ul>
 }
 

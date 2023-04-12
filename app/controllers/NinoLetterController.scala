@@ -43,6 +43,7 @@ class NinoLetterController @Inject()(
                                       applePassConnector: ApplePassConnector,
                                       auditService: AuditService,
                                       view: PrintNationalInsuranceNumberView,
+                                      getPersonDetailsAction: GetPersonDetailsAction,
                                       xmlFoToPDF: XmlFoToPDF,
                                       configDecorator: ConfigDecorator
                                     )(implicit config: Configuration,
@@ -54,44 +55,35 @@ class NinoLetterController @Inject()(
 
   implicit val loginContinueUrl: Call = routes.StoreMyNinoController.onPageLoad
 
-  def onPageLoad(pdId: String): Action[AnyContent] = Action async {
+  def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction) {
     implicit request => {
-      authorisedAsFMNUser { _ =>
-        for {
-          pd <- applePassConnector.getPersonDetails(pdId)
-        } yield {
-
-          val personDetails = Json.fromJson[PersonDetails](Json.parse(Json.parse(pd.get).asInstanceOf[JsString].value)).get
-          auditService.audit(AuditUtils.buildAuditEvent(personDetails,"ViewNinoLetter",configDecorator.appName))
-          Ok(view(
-            personDetails,
-            LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
-            true,
-            personDetails.person.nino.getOrElse(Nino("")).formatted, pdId))
-        }
-      }(routes.NinoLetterController.onPageLoad(pdId))
-
+      val personDetails: PersonDetails = request.personDetails.get
+      auditService.audit(AuditUtils.buildAuditEvent(personDetails, "ViewNinoLetter", configDecorator.appName))
+      Ok(view(
+        personDetails,
+        LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
+        true,
+        personDetails.person.nino.getOrElse(Nino("")).formatted))
     }
   }
 
-  def saveNationalInsuranceNumberAsPdf(pdId: String): Action[AnyContent] = Action async {
+
+  def saveNationalInsuranceNumberAsPdf: Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction) {
 
     implicit request => {
-      authorisedAsFMNUser { authContext =>
-        val pd = Await.result(applePassConnector.getPersonDetails(pdId), 10 seconds).getOrElse("")
-        val personDetails = Json.fromJson[PersonDetails](Json.parse(Json.parse(pd).asInstanceOf[JsString].value)).get
-        auditService.audit(AuditUtils.buildAuditEvent(personDetails,"DownloadNinoLetter", configDecorator.appName))
-        val pdf = xmlFoToPDF.createPDF(personDetails,
-          LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
-          messagesApi.preferred(request))
+      val personDetails: PersonDetails = request.personDetails.get
+      auditService.audit(AuditUtils.buildAuditEvent(personDetails, "DownloadNinoLetter", configDecorator.appName))
+      val pdf = xmlFoToPDF.createPDF(personDetails,
+        LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
+        messagesApi.preferred(request))
 
-        val filename = messagesApi.preferred(request).messages("label.your_national_insurance_number_letter")
+      val filename = messagesApi.preferred(request).messages("label.your_national_insurance_number_letter")
 
-        Future(Ok(pdf).as(MimeConstants.MIME_PDF)
-          .withHeaders(
-            CONTENT_TYPE -> "application/x-download",
-            CONTENT_DISPOSITION -> s"attachment; filename=${filename.replaceAll(" ", "-")}.pdf"))
-      }(routes.NinoLetterController.onPageLoad(pdId))
+      Ok(pdf).as(MimeConstants.MIME_PDF)
+        .withHeaders(
+          CONTENT_TYPE -> "application/x-download",
+          CONTENT_DISPOSITION -> s"attachment; filename=${filename.replaceAll(" ", "-")}.pdf")
     }
   }
 }
+

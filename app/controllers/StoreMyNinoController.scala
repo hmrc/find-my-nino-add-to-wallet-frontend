@@ -53,7 +53,6 @@ class StoreMyNinoController @Inject()(
     implicit request => {
       val pd: PersonDetails = request.personDetails.get
       auditService.audit(AuditUtils.buildAuditEvent(pd,"ViewNinoLanding", configDecorator.appName))
-      val pdId = Await.result(findMyNinoServiceConnector.createPersonDetailsRow(pd), 10 seconds).getOrElse("")
       val passId: String = Await.result(findMyNinoServiceConnector.createApplePass(pd.person.fullName, request.nino.get.nino), 10 seconds).getOrElse("")
 
       // Display wallet options differently on mobile to pc
@@ -70,7 +69,7 @@ class StoreMyNinoController @Inject()(
         case None => displayForMobile = false
       }
 
-      Ok(view(passId, request.nino.get.formatted, pdId, displayForMobile))
+      Ok(view(passId, request.nino.get.formatted, displayForMobile))
     }
   }
 

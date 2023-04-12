@@ -69,20 +69,7 @@ class NinoLetterControllerSpec extends SpecBase with CDFixtures with MockitoSuga
         val result = route(application, request).value
         status(result) mustEqual OK
 
-        val t = contentAsString(result).trim
-        val t2 =
-          view(
-            pd,
-            LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
-            true,
-          pd.person.nino.get.formatted)(request, messages(application)).toString().trim
 
-        /*contentAsString(result).trim mustEqual
-          (view(
-                    pd,
-                    LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
-                    true,
-                    pd.person.nino.get.formatted)(request,messages(application))).toString().trim*/
       }
     }
   }
@@ -105,7 +92,7 @@ class NinoLetterControllerSpec extends SpecBase with CDFixtures with MockitoSuga
 
         val result = route(application, request).value
         status(result) mustEqual OK
-        contentAsString(result).contains("national-insurance-letter.pdf").equals(true)
+
       }
     }
   }

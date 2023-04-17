@@ -18,7 +18,6 @@ package controllers
 
 import com.google.inject.Inject
 import config.ConfigDecorator
-import controllers.bindable.Origin
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import play.api.{Configuration, Environment}
@@ -34,26 +33,9 @@ class PublicController @Inject()(sessionTimeoutView: SessionTimeoutView,authConn
                                                                                                            env: Environment
 ) extends FMNBaseController(authConnector) with I18nSupport  {
 
-
-
   def sessionTimeout: Action[AnyContent] = Action.async { implicit request =>
     Future.successful {
       Ok(sessionTimeoutView())
     }
   }
-
-/*  def redirectToYourProfile(): Action[AnyContent] = Action.async { _ =>
-    Future.successful {
-      Ok("")
-      //Redirect(controllers.address.routes.PersonalDetailsController.onPageLoad)
-    }
-  }*/
-
-  def redirectToExitSurvey(origin: Origin): Action[AnyContent] = Action.async { _ =>
-    Future.successful {
-      Redirect(configDecorator.getFeedbackSurveyUrl(origin))
-    }
-  }
-
-
 }

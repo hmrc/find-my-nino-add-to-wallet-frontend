@@ -17,11 +17,9 @@
 package controllers.auth
 
 import config.ConfigDecorator
-import controllers.actions.IdentifierAction
 import controllers.bindable.Origin
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl.idFunctor
 import uk.gov.hmrc.play.bootstrap.binders.{OnlyRelative, RedirectUrl}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -31,20 +29,8 @@ import scala.concurrent.ExecutionContext
 
 class AuthController @Inject()(
                                 val controllerComponents: MessagesControllerComponents,
-                                configDecorator: ConfigDecorator,
-                                sessionRepository: SessionRepository,
-                                identify: IdentifierAction
+                                configDecorator: ConfigDecorator
                               )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
-
-  def signOutNoSurvey(): Action[AnyContent] = identify.async {
-    implicit request =>
-    sessionRepository
-      .clear(request.userId)
-      .map {
-        _ =>
-        Redirect(configDecorator.signOutUrl, Map("continue" -> Seq(routes.SignedOutController.onPageLoad.url)))
-      }
-  }
 
   def signout(continueUrl: Option[RedirectUrl], origin: Option[Origin]): Action[AnyContent] =
     Action { implicit request =>

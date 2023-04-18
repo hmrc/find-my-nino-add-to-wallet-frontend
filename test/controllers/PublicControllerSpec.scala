@@ -17,23 +17,12 @@
 package controllers
 
 import base.SpecBase
-import config.ConfigDecorator
-import controllers.bindable.Origin
-import play.api.{Configuration, Environment}
-import play.api.mvc.{MessagesControllerComponents, Session}
-import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.auth.core.AuthConnector
 import util.Fixtures.buildFakeRequestWithAuth
 import views.html.public.SessionTimeoutView
 
-import scala.concurrent.ExecutionContext
-
 class PublicControllerSpec extends SpecBase {
-
-
-
-
 
   private def controller = new PublicController(injected[SessionTimeoutView],injected[AuthConnector])(
     configDecorator,cc,config,env)
@@ -46,27 +35,4 @@ class PublicControllerSpec extends SpecBase {
       status(r) mustBe OK
     }
   }
-
-  "Calling PublicController.redirectToExitSurvey" - {
-
-    "return 303" in {
-
-      val r = controller.redirectToExitSurvey(Origin("save-your-national-insurance-number"))(buildFakeRequestWithAuth("GET"))
-      status(r) mustBe SEE_OTHER
-      redirectLocation(r) mustBe Some("http://localhost:9514/feedback/save-your-national-insurance-number")
-    }
-  }
-
-
-  /*"Calling PublicController.redirectToPersonalDetails" - {
-
-    "redirect to /profile-and-settings page" in {
-      val r = controller.redirectToYourProfile()(buildFakeRequestWithAuth("GET"))
-
-      status(r) mustBe SEE_OTHER
-      redirectLocation(r) mustBe Some("/save-your-national-insurance-number/profile-and-settings")
-    }
-  }*/
-
-
 }

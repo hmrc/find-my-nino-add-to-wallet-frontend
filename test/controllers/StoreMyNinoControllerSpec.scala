@@ -27,7 +27,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
 import util.CDFixtures
-import util.Stubs.userLoggedInFMNUser
+import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
 import util.TestData.NinoUser
 import views.html.StoreMyNinoView
 
@@ -122,6 +122,24 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
         val result = route(application, request).value
         status(result) mustEqual OK
         contentAsBytes(result) mustEqual Base64.getDecoder.decode(fakeBase64String)
+      }
+    }
+
+    "must fail to login user" in {
+      val application = applicationBuilderWithConfig()
+        .overrides(
+          inject.bind[SessionRepository].toInstance(mockSessionRepository),
+          inject.bind[ApplePassConnector].toInstance(mockApplePassConnector),
+          inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
+        )
+        .build()
+
+      running(application) {
+        userLoggedInIsNotFMNUser(NinoUser)
+        val request = FakeRequest(GET, routes.StoreMyNinoController.getQrCode(passId).url)
+          .withSession(("authToken", "Bearer 123"))
+        val result = route(application, request).value
+        status(result) mustEqual 500
       }
     }
 

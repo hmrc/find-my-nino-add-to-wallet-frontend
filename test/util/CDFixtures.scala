@@ -80,6 +80,40 @@ trait CDFixtures {
       Some(buildFakeCorrespondenceAddress)
     )
 
+  def buildPersonDetailsWithoutAddress: PersonDetails =
+    PersonDetails(
+      Person(
+        Some("Firstname"),
+        Some("Middlename"),
+        Some("Lastname"),
+        Some("FML"),
+        Some("Dr"),
+        Some("Phd."),
+        Some("M"),
+        Some(LocalDate.parse("1945-03-18")),
+        Some(Fixtures.fakeNino)
+      ),
+      None,
+      Some(buildFakeCorrespondenceAddress)
+    )
+
+  def buildPersonDetailsWithoutCorrespondenceAddress: PersonDetails =
+    PersonDetails(
+      Person(
+        Some("Firstname"),
+        Some("Middlename"),
+        Some("Lastname"),
+        Some("FML"),
+        Some("Dr"),
+        Some("Phd."),
+        Some("M"),
+        Some(LocalDate.parse("1945-03-18")),
+        Some(Fixtures.fakeNino)
+      ),
+      Some(buildFakeAddress),
+      None
+    )
+
   def buildFakeAddress: Address = Address(
     Some("1 Fake Street"),
     Some("Fake Town"),
@@ -95,7 +129,7 @@ trait CDFixtures {
   )
 
   def buildFakeCorrespondenceAddress: Address = Address(
-    Some("1 Fake Street"),
+    Some("2 Fake Street"),
     Some("Fake Town"),
     Some("Fake City"),
     Some("Fake Region"),

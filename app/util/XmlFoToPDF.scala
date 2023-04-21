@@ -127,15 +127,29 @@ trait XmlFoToPDF extends Logging{
   def getXMLSource(personDetails: PersonDetails, date: String): Array[Byte] = {
     val initialsNameXML = s"<initials-name>${personDetails.person.initialsName}</initials-name>"
     val fullNameXML = s"<full-name>${personDetails.person.fullName}</full-name>"
-    var addressXML = s"<address>"
-    for (addLine <- personDetails.address.get.lines) {
-      addressXML = addressXML + s"<address-line>${addLine}</address-line>"
+    var fullAddressXML = s""
+    fullAddressXML = personDetails.correspondenceAddress.map { correspondenceAddress =>
+      var xmlStr = s"<address>"
+      xmlStr = xmlStr + correspondenceAddress.lines.map {line =>
+        s"<address-line>${line}</address-line>"
+      }
+      xmlStr = xmlStr + s"</address>"
+      xmlStr = xmlStr + s"<postcode>${correspondenceAddress.postcode.get}</postcode>"
+      xmlStr
+    }.getOrElse {
+      personDetails.address.map { residentialAddress =>
+        var xmlStr = s"<address>"
+        xmlStr = xmlStr + residentialAddress.lines.map { line =>
+          s"<address-line>${line}</address-line>"
+        }
+        xmlStr = xmlStr + s"</address>"
+        xmlStr = xmlStr + s"<postcode>${residentialAddress.postcode.get}</postcode>"
+        xmlStr
+      }.getOrElse("")
     }
-    addressXML = addressXML + s"</address>"
-    val postcodeXML = s"<postcode>${personDetails.address.get.postcode.get}</postcode>"
     val ninoXML = s"<nino>${personDetails.person.nino.get.formatted}</nino>"
     val dateXML = s"<date>${date}</date>"
-    val xml = s"<root>" + initialsNameXML + fullNameXML + addressXML + postcodeXML + ninoXML + dateXML + s"</root>"
+    val xml = s"<root>" + initialsNameXML + fullNameXML + fullAddressXML + ninoXML + dateXML + s"</root>"
     xml.getBytes
   }
 

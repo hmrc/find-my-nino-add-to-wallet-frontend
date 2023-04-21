@@ -58,7 +58,7 @@ nino: String)(implicit request: Request[_], messages: play.api.i18n.Messages)
                         }
                         <span>@residentialAddress.postcode.map(_.toUpperCase)</span>
                     </address>
-                    }
+                }.getOrElse(<address></address>)
                 }
             </div>
 

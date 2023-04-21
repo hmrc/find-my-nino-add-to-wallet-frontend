@@ -21,11 +21,16 @@ import org.scalatestplus.mockito.MockitoSugar
 import play.api.i18n.MessagesApi
 import play.api.test.FakeRequest
 
+import java.nio.charset.StandardCharsets
+
 class XmlFoToPDFSpec extends SpecBase with MockitoSugar with CDFixtures {
   implicit val messagesApi: MessagesApi = app.injector.instanceOf[MessagesApi]
   implicit val request = FakeRequest()
   val messages = messagesApi.preferred(request)
   val pd = buildPersonDetails
+  val pdWithBothAddresses = buildPersonDetailsCorrespondenceAddress
+  val pdWithoutCorrespondenceAddress = buildPersonDetailsWithoutCorrespondenceAddress
+  val pdWithoutAddress = buildPersonDetailsWithoutAddress
 
   class Setup {
     val xmlFoToPDF: XmlFoToPDF = new XmlFoToPDF {
@@ -38,6 +43,21 @@ class XmlFoToPDFSpec extends SpecBase with MockitoSugar with CDFixtures {
     "return correct XML when passed in valid person details and a date" in new Setup {
       val result: Array[Byte] = xmlFoToPDF.getXMLSource(pd, "01/23")
       result.length > 0 mustBe true
+    }
+    "must use correspondence address by default" in new Setup {
+      val bytes: Array[Byte] = xmlFoToPDF.getXMLSource(pdWithBothAddresses, "01/23")
+      val result = new String(bytes, StandardCharsets.UTF_8)
+      result.contains("2 Fake Street") mustBe true
+    }
+    "must use correspondence address if no address" in new Setup {
+      val bytes: Array[Byte] = xmlFoToPDF.getXMLSource(pdWithoutAddress, "01/23")
+      val result = new String(bytes, StandardCharsets.UTF_8)
+      result.contains("2 Fake Street") mustBe true
+    }
+    "must use address if no correspondence address" in new Setup {
+      val bytes: Array[Byte] = xmlFoToPDF.getXMLSource(pdWithoutCorrespondenceAddress, "01/23")
+      val result = new String(bytes, StandardCharsets.UTF_8)
+      result.contains("1 Fake Street") mustBe true
     }
   }
   "XmlFoToPDF createPDF" - {

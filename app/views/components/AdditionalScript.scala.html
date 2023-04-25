@@ -14,16 +14,8 @@
  * limitations under the License.
  *@
 
-@this(
-    layout: templates.LayoutProvider,
-)
+@this()
+@()(implicit request: RequestHeader)
 
-@()(implicit request: Request[_], messages: Messages)
-
-@layout(
-    pageTitle = titleNoForm(messages("unauthorised.title")),
-    timeout   = false
-) {
-
-    <h1 class="govuk-heading-xl">@messages("unauthorised.heading")</h1>
-}
+<script src='@controllers.routes.Assets.versioned("javascripts/app.js")'></script>
+<script src="https://cdn.optimizely.com/js/8461600066.js"></script>

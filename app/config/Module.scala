@@ -18,12 +18,15 @@ package config
 
 import com.google.inject.AbstractModule
 import controllers.actions._
+import play.api.{Configuration, Environment}
 import util.{BaseResourceStreamResolver, DefaultFopURIResolver, DefaultResourceStreamResolver, DefaultStylesheetResourceStreamResolver, DefaultXmlFoToPDF, FopURIResolver, StylesheetResourceStreamResolver, XmlFoToPDF}
+import views.html.templates.{LayoutProvider, NewLayoutProvider, OldLayoutProvider}
 
 import java.time.{Clock, ZoneOffset}
 
-class Module extends AbstractModule {
+class Module(environment: Environment, config: Configuration) extends AbstractModule {
 
+  val SCAWrapperEnabled = config.getOptional[Boolean]("features.sca-wrapper-enabled").getOrElse(false)
   override def configure(): Unit = {
 
     bind(classOf[DataRetrievalAction]).to(classOf[DataRetrievalActionImpl]).asEagerSingleton()
@@ -38,6 +41,12 @@ class Module extends AbstractModule {
     bind(classOf[StylesheetResourceStreamResolver]).to(classOf[DefaultStylesheetResourceStreamResolver])
     bind(classOf[FopURIResolver]).to(classOf[DefaultFopURIResolver])
     bind(classOf[BaseResourceStreamResolver]).to(classOf[DefaultResourceStreamResolver])
+
+    if (SCAWrapperEnabled) {
+      bind(classOf[LayoutProvider]).to(classOf[NewLayoutProvider]).asEagerSingleton()
+    } else {
+      bind(classOf[LayoutProvider]).to(classOf[OldLayoutProvider]).asEagerSingleton()
+    }
 
   }
 }

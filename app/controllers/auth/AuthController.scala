@@ -23,23 +23,20 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl.idFunctor
 import uk.gov.hmrc.play.bootstrap.binders.{OnlyRelative, RedirectUrl}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import uk.gov.hmrc.sca.services.WrapperService
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
 class AuthController @Inject()(
                                 val controllerComponents: MessagesControllerComponents,
-                                configDecorator: ConfigDecorator
+                                configDecorator: ConfigDecorator,
+                                wrapperService: WrapperService
                               )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   def signout(continueUrl: Option[RedirectUrl], origin: Option[Origin]): Action[AnyContent] =
     Action { implicit request =>
-      val safeUrl = continueUrl.flatMap { redirectUrl =>
-        redirectUrl.getEither(OnlyRelative) match {
-          case Right(safeRedirectUrl) => Some(safeRedirectUrl.url)
-          case _ => Some(configDecorator.getFeedbackSurveyUrl(configDecorator.defaultOrigin))
-        }
-      }
+      val safeUrl = wrapperService.safeSignoutUrl()
       safeUrl
         .orElse(origin.map(configDecorator.getFeedbackSurveyUrl))
         .fold(BadRequest("Missing origin")) { url: String =>

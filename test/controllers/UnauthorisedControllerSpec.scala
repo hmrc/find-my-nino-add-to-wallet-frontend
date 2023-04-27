@@ -18,17 +18,26 @@ package controllers
 
 import base.SpecBase
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
+import org.mockito.Mockito.{reset, when}
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
+import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
+import uk.gov.hmrc.sca.models.{MenuItemConfig, PtaMinMenuConfig, WrapperDataResponse}
+import util.Keys
 import views.html.UnauthorisedView
 
 import scala.concurrent.Future
 
 class UnauthorisedControllerSpec extends SpecBase with MockitoSugar{
+  override protected def beforeEach(): Unit = {
+    reset(mockScaWrapperDataConnector)
+    when(mockScaWrapperDataConnector.wrapperData()(any(), any(), any()))
+      .thenReturn(Future.successful(wrapperDataResponse))
+    super.beforeEach()
+  }
 
   "Unauthorised Controller" - {
 
@@ -42,6 +51,7 @@ class UnauthorisedControllerSpec extends SpecBase with MockitoSugar{
           .overrides(
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
           )
+          .configure("features.sca-wrapper-enabled" -> false)
           .build()
 
       running(application) {
@@ -53,6 +63,32 @@ class UnauthorisedControllerSpec extends SpecBase with MockitoSugar{
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view()(request, messages(application)).toString
+      }
+    }
+
+    "must return OK and the correct view for a GET when using the wrapper" in {
+
+      val mockSessionRepository = mock[SessionRepository]
+      when(mockSessionRepository.get(any())) thenReturn Future.successful(Some(emptyUserAnswers))
+
+      val application =
+        applicationBuilder(userAnswers = Some(emptyUserAnswers))
+          .overrides(
+            inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector)
+          )
+          .configure("features.sca-wrapper-enabled" -> true)
+          .build()
+
+      running(application) {
+        val request = FakeRequest(GET, routes.UnauthorisedController.onPageLoad.url)
+
+        val result = route(application, request).value
+
+        val view = application.injector.instanceOf[UnauthorisedView]
+
+        status(result) mustEqual OK
+        contentAsString(result) mustEqual view()(request.addAttr(Keys.wrapperDataKey, wrapperDataResponse), messages(application)).toString
       }
     }
   }

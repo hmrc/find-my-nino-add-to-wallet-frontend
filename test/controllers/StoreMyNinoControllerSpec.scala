@@ -31,10 +31,12 @@ import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
 import util.{CDFixtures, Keys}
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
 import util.TestData.NinoUser
+import views.html.{StoreMyNinoView,ErrorTemplate}
+import util.googlepass.GooglePassUtil
+
 import java.util.Base64
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import views.html.{ErrorTemplate, StoreMyNinoView}
 
 class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSugar {
 
@@ -90,6 +92,8 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
   val mockIdentityVerificationFrontendConnector = mock[IdentityVerificationFrontendConnector]
 
   val fakeBase64String = "UEsDBBQACAgIABxqJlYAAAAAAA"
+  val fakeGooglePassSaveUrl = "testURL"
+  val mockGooglePassUtil = mock[GooglePassUtil]
 
   "StoreMyNino Controller" - {
 
@@ -121,6 +125,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
       reset(mockCitizenDetailsConnector)
     }
 
+    when(mockGooglePassUtil.createGooglePass(any, any)) thenReturn fakeGooglePassSaveUrl
 
     "must return OK and the correct view for a GET" in {
       val application =
@@ -128,7 +133,9 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .overrides(
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[ApplePassConnector].toInstance(mockApplePassConnector),
-            inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
+            inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector),
+            inject.bind[PayeIndividualDetailsConnector].toInstance(mockPayeIndividualDetailsConnector),
+            inject.bind[GooglePassUtil].toInstance(mockGooglePassUtil)
           )
           .configure("features.sca-wrapper-enabled" -> false)
           .build()
@@ -139,7 +146,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         status(result) mustEqual OK
-        contentAsString(result) mustEqual (view(passId, "AA 00 00 03 B", false)(request, messages(application))).toString
+        contentAsString(result) mustEqual (view(passId, fakeGooglePassSaveUrl, "AA 00 00 03 B", false)(request, messages(application))).toString
       }
     }
 

@@ -24,6 +24,7 @@
 
 @(
     passId:String,
+    googlePassSaveUrl: String,
     nino:String,
     displayForMobile: Boolean
 )(implicit request: Request[_], messages: Messages)
@@ -148,14 +149,14 @@
 @googleButton = {
     @if(displayForMobile) {
         <div class="govuk-!-padding-bottom-1">
-            <a href="service-wallet-android-1">
-                <img src="/@configDecorator.serviceName/assets/images/google-wallet.svg" alt='@messages("storeMyNino.saveToPhone.googleWallet.saveToWallet.alt")' class="add-wallet-android-mobile">
+            <a href='@googlePassSaveUrl'>
+                <img src="/@configDecorator.serviceName/assets/images/google-wallet-condensed.svg" alt='@messages("storeMyNino.saveToPhone.googleWallet.saveToWallet.alt")' class="add-wallet-android-mobile">
             </a>
         </div>
     } else {
         <div class="govuk-!-padding-bottom-6">
-            <a href="service-wallet-android-1">
-                <img src="/@configDecorator.serviceName/assets/images/google-wallet.svg" alt='@messages("storeMyNino.saveToPhone.googleWallet.saveToWallet.alt")' class="add-wallet-android-desktop">
+            <a href='@googlePassSaveUrl'>
+                <img src="/@configDecorator.serviceName/assets/images/google-wallet-primary.svg" alt='@messages("storeMyNino.saveToPhone.googleWallet.saveToWallet.alt")' class="add-wallet-android-desktop">
             </a>
         </div>
     }
@@ -209,5 +210,5 @@
 }
 
 @layout(pageTitle = titleNoForm(messages("storeMyNino.title")), stylesheets = Some(stylesheet)) {
-    @version2Content
+    @version3Content
 }

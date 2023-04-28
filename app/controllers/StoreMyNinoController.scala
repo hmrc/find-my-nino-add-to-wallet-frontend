@@ -20,10 +20,11 @@ import config.{ConfigDecorator, FrontendAppConfig}
 import connectors.{ApplePassConnector, CitizenDetailsConnector}
 import controllers.auth.requests.UserRequest
 import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
+import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents, Request}
 import play.api.{Configuration, Environment}
 import services.AuditService
 import uk.gov.hmrc.auth.core.AuthConnector
+import util.googlepass.GooglePassUtil
 import util.AuditUtils
 import views.html.{ StoreMyNinoView, ErrorTemplate }
 
@@ -38,7 +39,8 @@ class StoreMyNinoController @Inject()(
                                        override val messagesApi: MessagesApi,
                                        getPersonDetailsAction: GetPersonDetailsAction,
                                        view: StoreMyNinoView,
-                                       errorTemplate: ErrorTemplate
+                                       errorTemplate: ErrorTemplate,
+                                       googlePassUtil: GooglePassUtil
                                      )(implicit config: Configuration,
                                        configDecorator: ConfigDecorator,
                                        env: Environment,
@@ -58,7 +60,8 @@ class StoreMyNinoController @Inject()(
           auditService.audit(AuditUtils.buildAuditEvent(pd, "ViewNinoLanding", configDecorator.appName))
           for {
             pId: Some[String] <- findMyNinoServiceConnector.createApplePass(pd.person.fullName, request.nino.get.formatted)
-          } yield Ok(view(pId.value, request.nino.get.formatted, isMobileDisplay(request)))
+            googlePassSaveUrl: String = googlePassUtil.createGooglePass(pd.person.fullName, request.nino.get.nino)
+          } yield Ok(view(pId.value, googlePassSaveUrl, request.nino.get.formatted, isMobileDisplay(request)))
         case None =>
           Future(NotFound(errorTemplate("Details not found", "Your details were not found.", "Your details were not found, please try again later.")))
       }

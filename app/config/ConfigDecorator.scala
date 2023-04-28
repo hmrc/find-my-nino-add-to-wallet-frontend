@@ -93,4 +93,8 @@ class ConfigDecorator @Inject()(configuration: Configuration, servicesConfig: Se
   lazy val wrapperEnabled = configuration.getOptional[Boolean]("features.sca-wrapper-enabled").getOrElse(false)
 
 
+  val googleIssuerId: String = configuration.get[String]("googlePass.issuerId")
+  val googleKey: String = configuration.get[String]("googlePass.key")
+
+
 }

@@ -5,6 +5,7 @@ object AppDependencies {
   import play.core.PlayVersion
 
   private val playVersion = "play-28"
+  private val mongoVersion = "1.1.0"
 
   val compile = Seq(
     play.sbt.PlayImport.ws,
@@ -13,7 +14,7 @@ object AppDependencies {
     "uk.gov.hmrc"             %% "play-partials"                        %   s"8.3.0-$playVersion",
     "uk.gov.hmrc"             %% s"bootstrap-frontend-$playVersion"     %   s"7.3.0",
     "uk.gov.hmrc"             %% "domain"                               %   s"8.0.0-$playVersion",
-    "uk.gov.hmrc.mongo"       %% "hmrc-mongo-play-28"                   %   "1.1.0",
+    "uk.gov.hmrc.mongo"       %% "hmrc-mongo-play-28"                   %   mongoVersion,
     "org.apache.xmlgraphics"  % "fop"                                   %   "2.6",
     "org.typelevel"           %% "cats-core"                            %   "2.8.0",
 
@@ -30,7 +31,7 @@ object AppDependencies {
     "com.typesafe.play"       %% "play-test"                     % PlayVersion.current,
     "org.mockito"             %% "mockito-scala"                 % "1.16.42",
     "org.scalacheck"          %% "scalacheck"                    % "1.15.4",
-    "uk.gov.hmrc.mongo"       %% "hmrc-mongo-test-play-28"       % "0.71.0",
+    "uk.gov.hmrc.mongo"       %% "hmrc-mongo-test-play-28"       % mongoVersion,
     "com.vladsch.flexmark"    %  "flexmark-all"                  % "0.62.2",
     "io.github.wolfendale"    %%  "scalacheck-gen-regexp"        % "1.1.0",
     "com.github.tomakehurst"  % "wiremock-jre8"                  % "2.26.3"

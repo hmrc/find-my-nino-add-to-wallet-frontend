@@ -20,13 +20,14 @@ import base.SpecBase
 import connectors.{ApplePassConnector, CitizenDetailsConnector, PersonDetailsSuccessResponse}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
-import org.mockito.Mockito.when
+import org.mockito.Mockito.{reset, when}
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
-import util.CDFixtures
+import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
+import util.{CDFixtures, Keys}
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
 import util.TestData.NinoUser
 import views.html.StoreMyNinoView
@@ -36,6 +37,13 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSugar {
+
+  override protected def beforeEach(): Unit = {
+    reset(mockScaWrapperDataConnector)
+    when(mockScaWrapperDataConnector.wrapperData()(any(), any(), any()))
+      .thenReturn(Future.successful(wrapperDataResponse))
+    super.beforeEach()
+  }
 
   val passId = "applePassId"
   val notApplePassId = ""
@@ -75,6 +83,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
             inject.bind[ApplePassConnector].toInstance(mockApplePassConnector),
             inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
           )
+          .configure("features.sca-wrapper-enabled" -> false)
           .build()
 
       running(application) {
@@ -87,6 +96,28 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
       }
     }
 
+    "must return OK and the correct view for a GET when using the wrapper" in {
+      val application =
+        applicationBuilderWithConfig()
+          .overrides(
+            inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            inject.bind[ApplePassConnector].toInstance(mockApplePassConnector),
+            inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector),
+            inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector)
+          )
+          .configure("features.sca-wrapper-enabled" -> true)
+          .build()
+
+      running(application) {
+        userLoggedInFMNUser(NinoUser)
+        val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
+          .withSession(("authToken", "Bearer 123"))
+        val result = route(application, request).value
+        status(result) mustEqual OK
+        contentAsString(result) mustEqual (view(passId, "AA 00 00 03 B", false)(request.addAttr(Keys.wrapperDataKey, wrapperDataResponse), messages(application))).toString
+      }
+    }
+
     "must return apple pass" in {
 
       val application = applicationBuilderWithConfig().overrides(
@@ -94,7 +125,8 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
             inject.bind[ApplePassConnector].toInstance(mockApplePassConnector),
             inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
           )
-          .build()
+        .configure("features.sca-wrapper-enabled" -> false)
+        .build()
 
       running(application) {
         userLoggedInFMNUser(NinoUser)
@@ -113,7 +145,8 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
             inject.bind[ApplePassConnector].toInstance(mockApplePassConnector),
             inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
           )
-          .build()
+        .configure("features.sca-wrapper-enabled" -> false)
+        .build()
 
       running(application) {
         userLoggedInFMNUser(NinoUser)
@@ -132,6 +165,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           inject.bind[ApplePassConnector].toInstance(mockApplePassConnector),
           inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
         )
+        .configure("features.sca-wrapper-enabled" -> false)
         .build()
 
       running(application) {

@@ -32,6 +32,8 @@ import play.api.mvc.{MessagesControllerComponents, RequestHeader}
 import play.api.test.FakeRequest
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
+import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
+import uk.gov.hmrc.sca.models.{MenuItemConfig, PtaMinMenuConfig, WrapperDataResponse}
 import util.WireMockSupport
 
 import scala.concurrent.ExecutionContext
@@ -103,6 +105,11 @@ class SpecBase extends WireMockSupport with MockitoSugar with GuiceOneAppPerSuit
   implicit lazy val env = app.injector.instanceOf[Environment]
   def buildFakeRequestWithSessionId(method: String) =
     FakeRequest(method, "/save-your-national-insurance-number").withSession("sessionId" -> "FAKE_SESSION_ID")
+
+  val mockScaWrapperDataConnector = mock[ScaWrapperDataConnector]
+  val wrapperDataResponse = WrapperDataResponse(Seq(MenuItemConfig("sample-text", "sample-href", leftAligned = false,
+    position = 0, None, None)), PtaMinMenuConfig(menuName = "sample-menu", backName = "sample-back-name"))
+
 }
 
 

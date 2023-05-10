@@ -18,19 +18,27 @@ package controllers
 
 import base.SpecBase
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
+import org.mockito.Mockito.{reset, when}
 import org.scalatestplus.mockito.MockitoSugar
-import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.inject
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
+import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
+import util.Keys
 import views.html.{JourneyRecoveryContinueView, JourneyRecoveryStartAgainView}
 
 import scala.concurrent.Future
 
 class JourneyRecoveryControllerSpec extends SpecBase with MockitoSugar {
+
+  override protected def beforeEach(): Unit = {
+    reset(mockScaWrapperDataConnector)
+    when(mockScaWrapperDataConnector.wrapperData()(any(), any(), any()))
+      .thenReturn(Future.successful(wrapperDataResponse))
+    super.beforeEach()
+  }
 
   "JourneyRecovery Controller" - {
 
@@ -46,6 +54,7 @@ class JourneyRecoveryControllerSpec extends SpecBase with MockitoSugar {
             .overrides(
               inject.bind[SessionRepository].toInstance(mockSessionRepository),
             )
+            .configure("features.sca-wrapper-enabled" -> false)
             .build()
 
         running(application) {
@@ -58,6 +67,33 @@ class JourneyRecoveryControllerSpec extends SpecBase with MockitoSugar {
 
           status(result) mustEqual OK
           contentAsString(result) mustEqual continueView(continueUrl.unsafeValue)(request, messages(application)).toString
+        }
+      }
+
+      "must return OK and the continue view when using the wrapper" in {
+
+        val mockSessionRepository = mock[SessionRepository]
+        when(mockSessionRepository.get(any())) thenReturn Future.successful(None)
+
+        val application =
+          applicationBuilder(userAnswers = None)
+            .overrides(
+              inject.bind[SessionRepository].toInstance(mockSessionRepository),
+              inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector)
+            )
+            .configure("features.sca-wrapper-enabled" -> true)
+            .build()
+
+        running(application) {
+          val continueUrl = RedirectUrl("/foo")
+          val request = FakeRequest(GET, routes.JourneyRecoveryController.onPageLoad(Some(continueUrl)).url)
+
+          val result = route(application, request).value
+
+          val continueView = application.injector.instanceOf[JourneyRecoveryContinueView]
+
+          status(result) mustEqual OK
+          contentAsString(result) mustEqual continueView(continueUrl.unsafeValue)(request.addAttr(Keys.wrapperDataKey, wrapperDataResponse), messages(application)).toString
         }
       }
     }
@@ -74,6 +110,7 @@ class JourneyRecoveryControllerSpec extends SpecBase with MockitoSugar {
             .overrides(
               inject.bind[SessionRepository].toInstance(mockSessionRepository),
             )
+            .configure("features.sca-wrapper-enabled" -> false)
             .build()
 
         running(application) {
@@ -102,6 +139,7 @@ class JourneyRecoveryControllerSpec extends SpecBase with MockitoSugar {
             .overrides(
               inject.bind[SessionRepository].toInstance(mockSessionRepository),
             )
+            .configure("features.sca-wrapper-enabled" -> false)
             .build()
 
         running(application) {

@@ -18,17 +18,27 @@ package controllers
 
 import base.SpecBase
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
+import org.mockito.Mockito.{reset, when}
+import play.api.inject
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
+import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
+import util.Keys
 import viewmodels.govuk.SummaryListFluency
 import views.html.CheckYourAnswersView
 
 import scala.concurrent.Future
 
 class CheckYourAnswersControllerSpec extends SpecBase with SummaryListFluency {
+
+  override protected def beforeEach(): Unit = {
+    reset(mockScaWrapperDataConnector)
+    when(mockScaWrapperDataConnector.wrapperData()(any(), any(), any()))
+      .thenReturn(Future.successful(wrapperDataResponse))
+    super.beforeEach()
+  }
 
   "Check Your Answers Controller" - {
 
@@ -42,6 +52,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with SummaryListFluency {
           .overrides(
             bind[SessionRepository].toInstance(mockSessionRepository),
           )
+          .configure("features.sca-wrapper-enabled" -> false)
           .build()
 
       running(application) {
@@ -57,6 +68,33 @@ class CheckYourAnswersControllerSpec extends SpecBase with SummaryListFluency {
       }
     }
 
+    "must return OK and the correct view for a GET when using the wrapper" in {
+
+      val mockSessionRepository = mock[SessionRepository]
+      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+
+      val application =
+        applicationBuilder(userAnswers = Some(emptyUserAnswers))
+          .overrides(
+            bind[SessionRepository].toInstance(mockSessionRepository),
+            inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector)
+          )
+          .configure("features.sca-wrapper-enabled" -> true)
+          .build()
+
+      running(application) {
+        val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad.url)
+
+        val result = route(application, request).value
+
+        val view = application.injector.instanceOf[CheckYourAnswersView]
+        val list = SummaryListViewModel(Seq.empty)
+
+        status(result) mustEqual OK
+        contentAsString(result) mustEqual view(list)(request.addAttr(Keys.wrapperDataKey, wrapperDataResponse), messages(application)).toString
+      }
+    }
+
     "must redirect to Journey Recovery for a GET if no existing data is found" in {
 
       val mockSessionRepository = mock[SessionRepository]
@@ -67,6 +105,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with SummaryListFluency {
           .overrides(
             bind[SessionRepository].toInstance(mockSessionRepository),
           )
+          .configure("features.sca-wrapper-enabled" -> false)
           .build()
 
       running(application) {

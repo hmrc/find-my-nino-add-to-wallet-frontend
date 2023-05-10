@@ -14,16 +14,8 @@
  * limitations under the License.
  *@
 
-@this(
-    layout: templates.LayoutProvider,
-)
-
-@()(implicit request: Request[_], messages: Messages)
-
-@layout(
-    pageTitle = titleNoForm(messages("unauthorised.title")),
-    timeout   = false
-) {
-
-    <h1 class="govuk-heading-xl">@messages("unauthorised.heading")</h1>
-}
+@this()
+<link href='@routes.Assets.versioned("stylesheets/application.css")'
+      media="all"
+      rel="stylesheet"
+      type="text/css" />

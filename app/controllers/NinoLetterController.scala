@@ -34,8 +34,7 @@ import views.html.print.PrintNationalInsuranceNumberView
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
-import scala.concurrent.duration.DurationInt
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class NinoLetterController @Inject()(
                                       override val messagesApi: MessagesApi,

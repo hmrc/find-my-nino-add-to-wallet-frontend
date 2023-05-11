@@ -18,6 +18,7 @@ package controllers
 
 import config.{ConfigDecorator, FrontendAppConfig}
 import connectors.{ApplePassConnector, CitizenDetailsConnector}
+import controllers.auth.requests.UserRequest
 import models.PersonDetails
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
@@ -29,7 +30,7 @@ import views.html.StoreMyNinoView
 
 import javax.inject.Inject
 import scala.concurrent.duration.DurationInt
-import scala.concurrent.{Await, ExecutionContext}
+import scala.concurrent.ExecutionContext
 
 class StoreMyNinoController @Inject()(
                                        val citizenDetailsConnector: CitizenDetailsConnector,
@@ -49,27 +50,29 @@ class StoreMyNinoController @Inject()(
 
   implicit val loginContinueUrl: Call = routes.StoreMyNinoController.onPageLoad
 
-  def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction) {
+  def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction) async {
     implicit request => {
       val pd: PersonDetails = request.personDetails.get
       auditService.audit(AuditUtils.buildAuditEvent(pd,"ViewNinoLanding", configDecorator.appName))
-      val passId: String = Await.result(findMyNinoServiceConnector.createApplePass(pd.person.fullName, request.nino.get.nino), 10 seconds).getOrElse("")
-
-      // Display wallet options differently on mobile to pc
-      var displayForMobile: Boolean = false
-      var strUserAgent = ""
-      strUserAgent = request.headers.get("http_user_agent").getOrElse("")
-      if (strUserAgent.isEmpty) {
-        strUserAgent = request.headers.get("User-Agent").getOrElse("")
+      for {
+        pId <- findMyNinoServiceConnector.createApplePass(pd.person.fullName, request.nino.get.nino)
+      } yield {
+        Ok(view(pId.value, request.nino.get.formatted, isMobileDisplay(request)))
       }
-      // Include any kind of mobile device except iPad, and also include Apple Watch
-      val regexInclude = config.get[String]("mobileDeviceDetectionRegexStr").r
-      regexInclude.findFirstMatchIn(strUserAgent) match {
-        case Some(_) => displayForMobile = true
-        case None => displayForMobile = false
-      }
+    }
+  }
 
-      Ok(view(passId, request.nino.get.formatted, displayForMobile))
+
+  private def isMobileDisplay(request: UserRequest[AnyContent]): Boolean = {
+    // Display wallet options differently on mobile to pc
+    val strUserAgent = request.headers.get("http_user_agent")
+      .getOrElse(request.headers.get("User-Agent")
+        .getOrElse(""))
+
+    config.get[String]("mobileDeviceDetectionRegexStr").r
+      .findFirstMatchIn(strUserAgent) match {
+      case Some(_) => true
+      case None => false
     }
   }
 

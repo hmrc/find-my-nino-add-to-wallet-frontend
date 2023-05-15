@@ -156,11 +156,6 @@
                                 <fo:block role="P" xsl:use-attribute-sets="address-line">
                                     <xsl:value-of select="scala:getMessagesText($translator, 'label.nic_eo_hmrc_address.line2')"/>
                                 </fo:block>
-                                <xsl:if test="$language = 'cy'">
-                                    <fo:block role="P" xsl:use-attribute-sets="address-line">
-                                        <xsl:value-of select="scala:getMessagesText($translator, 'label.nic_eo_hmrc_address.line3')"/>
-                                    </fo:block>
-                                </xsl:if>
                                 <fo:block role="P" xsl:use-attribute-sets="address-line">
                                     <xsl:value-of select="scala:getMessagesText($translator, 'label.nic_eo_hmrc_address.postcode')"/>
                                 </fo:block>

@@ -1,6 +1,8 @@
+
 package base
 
 import base.WiremockHelper.wiremockPort
+import com.github.tomakehurst.wiremock.client.WireMock._
 import config.FrontendAppConfig
 import constants.BaseITConstants
 import org.scalatest._
@@ -11,6 +13,7 @@ import play.api.i18n.MessagesApi
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.{DefaultAwaitTimeout, FakeRequest}
 import play.api.{Application, Environment, Mode}
+import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
 
 import scala.concurrent.ExecutionContext
@@ -29,6 +32,62 @@ trait IntegrationSpecBase extends PlaySpec
     .configure(config)
     .build
 
+  val generatedNino = new Generator().nextNino
+
+  val authResponse =
+    s"""
+       |{
+       |    "confidenceLevel": 200,
+       |    "nino": "$generatedNino",
+       |    "name": {
+       |        "name": "John",
+       |        "lastName": "Smith"
+       |    },
+       |    "loginTimes": {
+       |        "currentLogin": "2021-06-07T10:52:02.594Z",
+       |        "previousLogin": null
+       |    },
+       |    "optionalCredentials": {
+       |        "providerId": "4911434741952698",
+       |        "providerType": "GovernmentGateway"
+       |    },
+       |    "authProviderId": {
+       |        "ggCredId": "xyz"
+       |    },
+       |    "externalId": "testExternalId",
+       |    "allEnrolments": [
+       |       {
+       |          "key":"HMRC-PT",
+       |          "identifiers": [
+       |             {
+       |                "key":"NINO",
+       |                "value": "$generatedNino"
+       |             }
+       |          ]
+       |       }
+       |    ],
+       |    "affinityGroup": "Individual",
+       |    "credentialStrength": "strong"
+       |}
+       |""".stripMargin
+
+  val citizenResponse =
+    s"""|
+       |{
+        |  "name": {
+        |    "current": {
+        |      "firstName": "John",
+        |      "lastName": "Smith"
+        |    },
+        |    "previous": []
+        |  },
+        |  "ids": {
+        |    "nino": "$generatedNino"
+        |  },
+        |  "dateOfBirth": "11121971"
+        |}
+        |""".stripMargin
+
   def config: Map[String, _] = Map(
     "play.filters.csrf.header.bypassHeaders.Csrf-Token" -> "nocheck",
     "play.http.router" -> "testOnlyDoNotUseInAppConf.Routes",
@@ -45,6 +104,10 @@ trait IntegrationSpecBase extends PlaySpec
 
   override def beforeEach(): Unit = {
     resetWiremock()
+
+    wireMockServer.stubFor(post(urlEqualTo("/auth/authorise")).willReturn(ok(authResponse)))
+    wireMockServer.stubFor(get(urlEqualTo(s"/citizen-details/nino/$generatedNino")).willReturn(ok(citizenResponse)))
+    wireMockServer.stubFor(get(urlMatching("/messages/count.*")).willReturn(ok("{}")))
   }
 
   override def beforeAll(): Unit = {

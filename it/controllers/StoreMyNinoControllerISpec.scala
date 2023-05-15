@@ -95,7 +95,7 @@ class StoreMyNinoControllerISpec extends IntegrationSpecBase {
 
     def main: Html =
       view(
-        passId = "",
+        passId = fakePassId,
         nino = testNino.nino,
         displayForMobile = false
       )(fakeRequest, messages)
@@ -138,16 +138,14 @@ class StoreMyNinoControllerISpec extends IntegrationSpecBase {
         assertContainsLink(doc, "Save as a PDF", "/print-letter/save-letter-as-pdf")
       }
 
-      //not working as intended
       "render the apple pass QR code" in new LocalSetup {
-        //wireMockServer.stubFor(get(s"${configDecorator.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-pass-card?passId=$fakePassId").willReturn(ok(fakeBase64String)))
-        //assertContainsQRCode(doc, s"/get-qr-code?passId=$fakePassId")
+        wireMockServer.stubFor(get(s"${configDecorator.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-pass-card?passId=$fakePassId").willReturn(ok(fakeBase64String)))
+        assertContainsQRCode(doc, s"/get-qr-code?passId=$fakePassId")
       }
 
-      //not working as intended
       "render the download your National Insurance number link" in new LocalSetup {
-        //wireMockServer.stubFor(get(s"${configDecorator.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-pass-card?passId=$fakePassId").willReturn(ok(fakeBase64String)))
-        //assertContainsLink(doc, "download your National Insurance number",s"/get-pass-card?passId=$fakePassId" )
+        wireMockServer.stubFor(get(s"${configDecorator.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-pass-card?passId=$fakePassId").willReturn(ok(fakeBase64String)))
+        assertContainsLink(doc, "download your National Insurance number",s"/get-pass-card?passId=$fakePassId" )
       }
 
     }

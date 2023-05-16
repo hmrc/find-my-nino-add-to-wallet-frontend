@@ -44,25 +44,29 @@
 }
 
 @youCanContentV1 = {
-    <div>
-        <p class="govuk-body">@messages("storeMyNino.saveYourNino.p1")</p>
-        <ul class="govuk-list govuk-list--bullet">
-            <li>@messages("storeMyNino.saveYourNino.list1.li1")</li>
-            <li>@messages("storeMyNino.saveYourNino.list1.li2.v1")</li>
-        </ul>
+    <div class="store-options">
+        <div>
+            <p class="govuk-body">@messages("storeMyNino.saveYourNino.p1")</p>
+            <ul class="govuk-list govuk-list--bullet">
+                <li>@messages("storeMyNino.saveYourNino.list1.li1")</li>
+                <li>@messages("storeMyNino.saveYourNino.list1.li2.v1")</li>
+            </ul>
+        </div>
+        <p class="govuk-body">@messages("storeMyNino.saveYourNino.p2")</p>
     </div>
-    <p class="govuk-body">@messages("storeMyNino.saveYourNino.p2")</p>
 }
 
 @youCanContentV2 = {
-    <div>
-        <p class="govuk-body">@messages("storeMyNino.saveYourNino.p1")</p>
-        <ul class="govuk-list govuk-list--bullet">
-            <li>@messages("storeMyNino.saveYourNino.list1.li1")</li>
-            <li>@messages("storeMyNino.saveYourNino.list1.li2.v2")</li>
-        </ul>
+    <div class="store-options">
+        <div>
+            <p class="govuk-body">@messages("storeMyNino.saveYourNino.p1")</p>
+            <ul class="govuk-list govuk-list--bullet">
+                <li>@messages("storeMyNino.saveYourNino.list1.li1")</li>
+                <li>@messages("storeMyNino.saveYourNino.list1.li2.v2")</li>
+            </ul>
+        </div>
+        <p class="govuk-body">@messages("storeMyNino.saveYourNino.p2")</p>
     </div>
-    <p class="govuk-body">@messages("storeMyNino.saveYourNino.p2")</p>
 }
 
 
@@ -79,46 +83,49 @@
 
 @saveToPhoneContentV1 = {
     <!-- Save your number to your Apple iPhone -->
-    <h2 class="govuk-heading-m">@messages("storeMyNino.subHeading2.v1")</h2>
+    <div class="save-to-phone">
+        <h2 class="govuk-heading-m">@messages("storeMyNino.subHeading2.v1")</h2>
 
-    <p class="govuk-body">@messages("storeMyNino.saveToPhone.p1")</p>
-    <ul class="govuk-list govuk-list--bullet">
-        <li>@messages("storeMyNino.saveToPhone.list1.li1.v1")</li>
-        <li>@messages("storeMyNino.saveToPhone.list1.li2")</li>
-        <li>@messages("storeMyNino.saveToPhone.list1.li3")</li>
-        <li>@messages("storeMyNino.saveToPhone.list1.li4")</li>
-    </ul>
+        <p class="govuk-body">@messages("storeMyNino.saveToPhone.p1")</p>
+        <ul class="govuk-list govuk-list--bullet">
+            <li>@messages("storeMyNino.saveToPhone.list1.li1.v1")</li>
+            <li>@messages("storeMyNino.saveToPhone.list1.li2")</li>
+            <li>@messages("storeMyNino.saveToPhone.list1.li3")</li>
+            <li>@messages("storeMyNino.saveToPhone.list1.li4")</li>
+        </ul>
 
-    @if(displayForMobile) {
+        @if(displayForMobile) {
         <div class="show-on-phones">
             @appleButton
         </div>
-    } else {
+        } else {
         <div class="hide-on-phones">
             @appleWalletContent
             @qRCode
         </div>
-    }
+        }
+    </div>
 }
 
 @saveToPhoneContentV2 = {
     <!-- Save your number to your phone -->
-    <h2 class="govuk-heading-m">@messages("storeMyNino.subHeading2.v2")</h2>
+    <div class="save-to-phone">
+        <h2 class="govuk-heading-m">@messages("storeMyNino.subHeading2.v2")</h2>
 
-    <p class="govuk-body">@messages("storeMyNino.saveToPhone.p1")</p>
-    <ul class="govuk-list govuk-list--bullet">
-        <li>@messages("storeMyNino.saveToPhone.list1.li1.v2")</li>
-        <li>@messages("storeMyNino.saveToPhone.list1.li2")</li>
-        <li>@messages("storeMyNino.saveToPhone.list1.li3")</li>
-        <li>@messages("storeMyNino.saveToPhone.list1.li4")</li>
-    </ul>
+        <p class="govuk-body">@messages("storeMyNino.saveToPhone.p1")</p>
+        <ul class="govuk-list govuk-list--bullet">
+            <li>@messages("storeMyNino.saveToPhone.list1.li1.v2")</li>
+            <li>@messages("storeMyNino.saveToPhone.list1.li2")</li>
+            <li>@messages("storeMyNino.saveToPhone.list1.li3")</li>
+            <li>@messages("storeMyNino.saveToPhone.list1.li4")</li>
+        </ul>
 
-    @if(displayForMobile) {
+        @if(displayForMobile) {
         <div class="show-on-phones">
             @googleButton
             @appleButton
         </div>
-    } else {
+        } else {
         <div class="hide-on-phones">
             @googleWalletHeading
             @googleButton
@@ -126,7 +133,8 @@
             @appleWalletContent
             @qRCode
         </div>
-    }
+        }
+    </div>
 }
 
 @appleButton = {

@@ -45,6 +45,8 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
     reset(mockScaWrapperDataConnector)
     when(mockScaWrapperDataConnector.wrapperData()(any(), any(), any()))
       .thenReturn(Future.successful(wrapperDataResponse))
+    when(mockScaWrapperDataConnector.messageData()(any(), any()))
+      .thenReturn(Future.successful(messageDataResponse))
 
     reset(mockApplePassConnector)
     when(mockApplePassConnector.getApplePass(eqTo(passId))(any(), any()))

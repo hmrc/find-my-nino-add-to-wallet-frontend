@@ -16,19 +16,14 @@ import play.api.test.FakeRequest
 import play.twirl.api.Html
 import uk.gov.hmrc.auth.core.retrieve.Name
 import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolment, Enrolments}
-import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
 import views.html.StoreMyNinoView
 
 import java.time.LocalDate
-import scala.util.Random
 
 class StoreMyNinoControllerISpec extends IntegrationSpecBase {
 
-
-  private val generator = new Generator(new Random())
-
-  private val testNino: Nino = generator.nextNino
 
 
   //generate fake details to provide for testing the functionality of the landing page and viewing the PDF
@@ -42,7 +37,7 @@ class StoreMyNinoControllerISpec extends IntegrationSpecBase {
       None,
       Some("M"),
       Some(LocalDate.parse("1975-12-03")),
-      Some(testNino)
+      Some(generatedNino)
     ),
     Some(
       Address(
@@ -74,7 +69,7 @@ class StoreMyNinoControllerISpec extends IntegrationSpecBase {
 
   trait LocalSetup {
     def buildUserRequest[A](
-                             nino: Option[Nino] = Some(testNino),
+                             nino: Option[Nino] = Some(generatedNino),
                              userName: Option[UserName] = Some(UserName(Name(Some("Firstname"), Some("Lastname")))),
                              confidenceLevel: ConfidenceLevel = ConfidenceLevel.L200,
                              personDetails: Option[PersonDetails] = Some(fakePersonDetails),
@@ -96,7 +91,7 @@ class StoreMyNinoControllerISpec extends IntegrationSpecBase {
     def main: Html =
       view(
         passId = fakePassId,
-        nino = testNino.nino,
+        nino = generatedNino.nino,
         displayForMobile = false
       )(fakeRequest, messages)
 
@@ -123,7 +118,7 @@ class StoreMyNinoControllerISpec extends IntegrationSpecBase {
 
     "rendering the view" must {
       "render the correct nino" in new LocalSetup {
-        assertContainsText(doc,testNino.nino)
+        assertContainsText(doc,generatedNino.nino)
       }
 
       "render the welsh language toggle" in new LocalSetup {
@@ -145,7 +140,7 @@ class StoreMyNinoControllerISpec extends IntegrationSpecBase {
 
       "render the download your National Insurance number link" in new LocalSetup {
         wireMockServer.stubFor(get(s"${configDecorator.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-pass-card?passId=$fakePassId").willReturn(ok(fakeBase64String)))
-        assertContainsLink(doc, "download your National Insurance number",s"/get-pass-card?passId=$fakePassId" )
+        assertContainsLink(doc, "download your National Insurance number",s"/get-pass-card?passId=$fakePassId")
       }
 
     }
@@ -177,6 +172,7 @@ class StoreMyNinoControllerISpec extends IntegrationSpecBase {
         assertContainsLink(doc, "Sign Out", href)
       }
     }
+
   }
 
 }

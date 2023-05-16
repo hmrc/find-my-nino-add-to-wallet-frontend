@@ -88,6 +88,21 @@ trait IntegrationSpecBase extends PlaySpec
         |}
         |""".stripMargin
 
+  val citizenResponseNoName =
+    s"""|
+       |{
+        |  "name": {
+        |    "current": []
+        |    "previous": []
+        |  },
+        |  "ids": {
+        |    "nino": "$generatedNino"
+        |  },
+        |  "dateOfBirth": "11121971"
+        |}
+        |""".stripMargin
+
+
   def config: Map[String, _] = Map(
     "play.filters.csrf.header.bypassHeaders.Csrf-Token" -> "nocheck",
     "play.http.router" -> "testOnlyDoNotUseInAppConf.Routes",

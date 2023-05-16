@@ -18,21 +18,24 @@ package config
 
 import play.api.http.{EnabledFilters, HttpFilters}
 import play.api.mvc.EssentialFilter
+import uk.gov.hmrc.sca.filters.WrapperDataFilter
 
 import javax.inject.{Inject, Singleton};
 
 @Singleton
-class Filters @Inject() (
-  defaultFilters: EnabledFilters,
-  allowListFilter: AllowlistFilter
-) extends HttpFilters {
+class Filters @Inject()(
+                         defaultFilters: EnabledFilters,
+                         allowListFilter: AllowlistFilter,
+                         wrapperDataFilter: WrapperDataFilter,
+                         appConfig: FrontendAppConfig
+                       ) extends HttpFilters {
 
   val allowListFilterEnabled: Boolean = allowListFilter.allowlist.nonEmpty
 
-  override val filters: Seq[EssentialFilter] =
-    if (allowListFilterEnabled) {
-      defaultFilters.filters :+ allowListFilter
-    } else {
-      defaultFilters.filters
-    }
+  override val filters: Seq[EssentialFilter] = {
+    val wrapperFilterOpt = if (appConfig.SCAWrapperEnabled) Seq(wrapperDataFilter) else Seq.empty
+    val allowListFilterOpt = if (allowListFilterEnabled) defaultFilters.filters :+ allowListFilter else defaultFilters.filters
+
+    wrapperFilterOpt ++ allowListFilterOpt
+  }
 }

@@ -1,13 +1,13 @@
 import base.IntegrationSpecBase
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, ok, urlEqualTo}
-import connectors.CitizenDetailsConnector
+import connectors.{CitizenDetailsConnector, PersonDetailsNotFoundResponse, PersonDetailsSuccessResponse}
 import models.{Address, Person, PersonDetails}
 import uk.gov.hmrc.domain.Nino
 
 import java.time.LocalDate
 
 class CitizenDetailsConnectorISpec extends IntegrationSpecBase {
-  private val testNino = Nino("SK604414C")
+  private val stubNino = Nino("SK604414C")
   private val happyDesignatoryDetailsJson =
     s"""{
        |"{
@@ -17,7 +17,7 @@ class CitizenDetailsConnectorISpec extends IntegrationSpecBase {
        |        "title": "Mrs",
        |        "sex": "F",
        |        "dateOfBirth": "1960-05-05",
-       |        "nino": "$testNino",
+       |        "nino": "$stubNino",
        |        "deceased": false
        |    },
        |    "address": {
@@ -36,22 +36,22 @@ class CitizenDetailsConnectorISpec extends IntegrationSpecBase {
       Some("ANNE"),
       None,
       Some("CASSIDY"),
-      Some("AC"),
+      None,
       Some("Mrs"),
       None,
       Some("F"),
       Some(LocalDate.parse("1960-05-05")),
-      Some(testNino)
+      Some(stubNino)
     ),
     Some(
       Address(
         Some("ST. LEONARDS HALL"),
         Some("WOODSTON"),
+        None,
+        None,
+        None,
         Some("BH8 8LP"),
-        None,
-        None,
-        Some("AA1 1AA"),
-        None,
+        Some("GREAT BRITAIN"),
         Some(LocalDate.of(2009, 11, 10)),
         None,
         Some("Residential"),
@@ -68,29 +68,30 @@ class CitizenDetailsConnectorISpec extends IntegrationSpecBase {
     "when a valid json is returned" must {
 
       "return the valid PersonDetails model" in {
-        wireMockServer.stubFor(get(urlEqualTo(s"/citizen-details/$testNino/designatory-details"))
+
+        wireMockServer.stubFor(get(urlEqualTo(s"/citizen-details/$stubNino/designatory-details"))
           .willReturn(ok(happyDesignatoryDetailsJson)))
 
-        val result = connector.personDetails(testNino).futureValue
+        val result = connector.personDetails(stubNino).futureValue
 
-        result mustEqual happyDesignatoryDetailsModel
+        result mustBe PersonDetailsSuccessResponse(happyDesignatoryDetailsModel)
 
       }
+    }
 
-      "when an error is returned" must {
+      "when an invalid nino is given" must {
 
-        "return a failed future" in {
+        "return a not found response" in {
 
           wireMockServer.stubFor(
-            get(urlEqualTo(s"/citizen-details/$testNino/designatory-details"))
-              .willReturn(aResponse().withStatus(500))
+            get(urlEqualTo(s"/citizen-details/$generatedNino/designatory-details"))
+              .willReturn(aResponse().withStatus(404))
           )
 
-          val result = connector.personDetails(testNino)
+          val result = connector.personDetails(generatedNino)
 
-          result.futureValue mustBe 500
+          result.futureValue mustBe PersonDetailsNotFoundResponse
         }
       }
     }
-  }
 }

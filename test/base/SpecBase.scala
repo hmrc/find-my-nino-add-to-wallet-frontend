@@ -24,29 +24,31 @@ import org.scalactic.source.Position
 import org.scalatest.Assertion
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.{Application, Configuration, Environment}
 import play.api.i18n.{Messages, MessagesApi}
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.mvc.{MessagesControllerComponents, RequestHeader}
+import play.api.libs.typedmap.TypedMap
+import play.api.mvc.request.{Cell, RequestAttrKey}
+import play.api.mvc.{Cookie, Cookies, MessagesControllerComponents, RequestHeader}
 import play.api.test.FakeRequest
+import play.api.{Application, Configuration, Environment}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
 import uk.gov.hmrc.sca.models.{MenuItemConfig, PtaMinMenuConfig, WrapperDataResponse}
+import uk.gov.hmrc.sca.utils.Keys
 import util.WireMockSupport
 
-import scala.concurrent.ExecutionContext
 import scala.reflect.ClassTag
 
 class SpecBase extends WireMockSupport with MockitoSugar with GuiceOneAppPerSuite {
 
   implicit lazy val application: Application = applicationBuilder().build()
   implicit lazy val applicationWithConfig: Application = applicationBuilderWithConfig().build()
-  implicit val hc: HeaderCarrier         = HeaderCarrier()
+  implicit val hc: HeaderCarrier = HeaderCarrier()
   val userAnswersId: String = "id"
 
-  def emptyUserAnswers : UserAnswers = UserAnswers(userAnswersId)
+  def emptyUserAnswers: UserAnswers = UserAnswers(userAnswersId)
 
   def messages(app: Application): Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
 
@@ -57,9 +59,9 @@ class SpecBase extends WireMockSupport with MockitoSugar with GuiceOneAppPerSuit
   protected implicit def hc(implicit rh: RequestHeader): HeaderCarrier =
     HeaderCarrierConverter.fromRequestAndSession(rh, rh.session)
 
-  protected def applicationBuilderWithConfig (
-                                    config:      Map[String, Any] = Map(),
-                                    userAnswers: Option[UserAnswers] = None): GuiceApplicationBuilder =
+  protected def applicationBuilderWithConfig(
+                                              config: Map[String, Any] = Map(),
+                                              userAnswers: Option[UserAnswers] = None): GuiceApplicationBuilder =
     new GuiceApplicationBuilder()
       .configure(
         config ++ Map(
@@ -103,13 +105,26 @@ class SpecBase extends WireMockSupport with MockitoSugar with GuiceOneAppPerSuit
   implicit lazy val cc = app.injector.instanceOf[MessagesControllerComponents]
 
   implicit lazy val env = app.injector.instanceOf[Environment]
+
   def buildFakeRequestWithSessionId(method: String) =
     FakeRequest(method, "/save-your-national-insurance-number").withSession("sessionId" -> "FAKE_SESSION_ID")
 
   val mockScaWrapperDataConnector = mock[ScaWrapperDataConnector]
-  val wrapperDataResponse = WrapperDataResponse(Seq(MenuItemConfig("sample-text", "sample-href", leftAligned = false,
-    position = 0, None, None)), PtaMinMenuConfig(menuName = "sample-menu", backName = "sample-back-name"))
 
+  val ptaMenuConfig: PtaMinMenuConfig = PtaMinMenuConfig(menuName = "Account menu", backName = "Back")
+  val menuItemConfig1: MenuItemConfig = MenuItemConfig("home", "Account home", "pertaxUrl", leftAligned = true, position = 0, Some("hmrc-account-icon hmrc-account-icon--home"), None)
+  val menuItemConfig2: MenuItemConfig = MenuItemConfig("messages", "Messages", "pertaxUrl-messages", leftAligned = false, position = 0, None, None)
+  val menuItemConfig3: MenuItemConfig = MenuItemConfig("progress", "Check progress", "trackingUrl-track", leftAligned = false, position = 1, None, None)
+  val menuItemConfig4: MenuItemConfig = MenuItemConfig("profile", "Profile and settings", "pertaxUrl-profile-and-settings", leftAligned = false, position = 2, None, None)
+  val menuItemConfig5: MenuItemConfig = MenuItemConfig("signout", "Sign out", "pertaxUrl-signout-feedback-PERTAX", leftAligned = false, position = 3, None, None)
+  val wrapperDataResponse: WrapperDataResponse = WrapperDataResponse(Seq(menuItemConfig1, menuItemConfig2, menuItemConfig3, menuItemConfig4, menuItemConfig5), ptaMenuConfig)
+
+  val messageDataResponse: Option[Int] = Some(2)
+
+  val requestAttributeMap: TypedMap = TypedMap(
+    Keys.wrapperDataKey -> wrapperDataResponse,
+    Keys.messageDataKey -> messageDataResponse,
+    RequestAttrKey.Cookies -> Cell(Cookies(Seq(Cookie("PLAY_LANG", "en")))))
 }
 
 

@@ -27,7 +27,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
 import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
-import util.{CDFixtures, Keys}
+import util.CDFixtures
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
 import util.TestData.NinoUser
 import views.html.StoreMyNinoView
@@ -42,6 +42,8 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
     reset(mockScaWrapperDataConnector)
     when(mockScaWrapperDataConnector.wrapperData()(any(), any(), any()))
       .thenReturn(Future.successful(wrapperDataResponse))
+    when(mockScaWrapperDataConnector.messageData()(any(), any()))
+      .thenReturn(Future.successful(messageDataResponse))
     super.beforeEach()
   }
 
@@ -57,18 +59,18 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
   val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
   val fakeBase64String = "UEsDBBQACAgIABxqJlYAAAAAAA"
 
-  when(mockApplePassConnector.getApplePass(eqTo(passId))(any(),any()))
+  when(mockApplePassConnector.getApplePass(eqTo(passId))(any(), any()))
     .thenReturn(Future(Some(Base64.getDecoder.decode(fakeBase64String))))
 
   when(mockSessionRepository.get(any())) thenReturn Future.successful(Some(emptyUserAnswers))
   when(mockSessionRepository.get(any())) thenReturn Future.successful(Some(emptyUserAnswers))
-  when(mockApplePassConnector.createApplePass(any(),any())(any(),any()))
+  when(mockApplePassConnector.createApplePass(any(), any())(any(), any()))
     .thenReturn(Future(Some(passId)))
-  when(mockApplePassConnector.createPersonDetailsRow(any())(any(),any()))
+  when(mockApplePassConnector.createPersonDetailsRow(any())(any(), any()))
     .thenReturn(Future(Some(personDetailsId)))
   when(mockCitizenDetailsConnector.personDetails(any())(any()))
     .thenReturn(Future(PersonDetailsSuccessResponse(pd)))
-  when(mockApplePassConnector.getQrCode(eqTo(passId))(any(),any()))
+  when(mockApplePassConnector.getQrCode(eqTo(passId))(any(), any()))
     .thenReturn(Future(Some(Base64.getDecoder.decode(fakeBase64String))))
 
   when(mockSessionRepository.get(any())) thenReturn Future.successful(Some(emptyUserAnswers))
@@ -114,17 +116,17 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         status(result) mustEqual OK
-        contentAsString(result) mustEqual (view(passId, "AA 00 00 03 B", false)(request.addAttr(Keys.wrapperDataKey, wrapperDataResponse), messages(application))).toString
+        contentAsString(result) mustEqual (view(passId, "AA 00 00 03 B", false)(request.withAttrs(requestAttributeMap), messages(application))).toString
       }
     }
 
     "must return apple pass" in {
 
       val application = applicationBuilderWithConfig().overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
-            inject.bind[ApplePassConnector].toInstance(mockApplePassConnector),
-            inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
-          )
+        inject.bind[SessionRepository].toInstance(mockSessionRepository),
+        inject.bind[ApplePassConnector].toInstance(mockApplePassConnector),
+        inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
+      )
         .configure("features.sca-wrapper-enabled" -> false)
         .build()
 
@@ -140,11 +142,11 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
 
     "must return QR code" in {
       val application = applicationBuilderWithConfig()
-          .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
-            inject.bind[ApplePassConnector].toInstance(mockApplePassConnector),
-            inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
-          )
+        .overrides(
+          inject.bind[SessionRepository].toInstance(mockSessionRepository),
+          inject.bind[ApplePassConnector].toInstance(mockApplePassConnector),
+          inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
+        )
         .configure("features.sca-wrapper-enabled" -> false)
         .build()
 

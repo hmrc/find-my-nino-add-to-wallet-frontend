@@ -21,9 +21,7 @@ import play.api.i18n.Messages
 import play.api.mvc.Request
 import play.twirl.api.{Html, HtmlFormat}
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
-import uk.gov.hmrc.sca.models.WrapperDataResponse
 import uk.gov.hmrc.sca.services.WrapperService
-import util.Keys
 import views.html.components.{AdditionalScript, HeadBlock}
 
 import javax.inject.Inject
@@ -57,23 +55,15 @@ class OldLayoutProvider @Inject()(layout: views.html.templates.Layout) extends L
   override def apply(pageTitle: String, showBackLink: Boolean, timeout: Boolean, showSignOut: Boolean,
                      stylesheets: Option[Html], fullWidth: Boolean, accountHome: Boolean, yourProfileActive: Boolean,
                      hideAccountMenu: Boolean, backLinkID: Boolean, backLinkUrl: String,
-                     disableSessionExpired: Boolean,sidebarContent: Option[Html],messagesActive: Boolean)(contentBlock: Html)
+                     disableSessionExpired: Boolean, sidebarContent: Option[Html], messagesActive: Boolean)(contentBlock: Html)
                     (implicit request: Request[_], messages: Messages): HtmlFormat.Appendable = {
     layout(pageTitle, showBackLink, timeout, showSignOut, stylesheets, fullWidth, accountHome, yourProfileActive,
-          hideAccountMenu, backLinkID, backLinkUrl, disableSessionExpired, sidebarContent, messagesActive)(contentBlock)
+      hideAccountMenu, backLinkID, backLinkUrl, disableSessionExpired, sidebarContent, messagesActive)(contentBlock)
   }
 }
 
-class NewLayoutProvider @Inject()(wrapperService: WrapperService, oldLayoutProvider: OldLayoutProvider,
-                                  additionalScript: AdditionalScript, headBlock: HeadBlock) extends LayoutProvider with Logging {
-
-  def getDataFromRequest(request: Request[_]): Option[WrapperDataResponse] = {
-    val result = request.attrs.get(Keys.wrapperDataKey)
-    if (result.isEmpty) {
-      logger.warn("Expecting Wrapper Data in the request but none was there")
-    }
-    result
-  }
+class NewLayoutProvider @Inject()(wrapperService: WrapperService, additionalScript: AdditionalScript,
+                                  headBlock: HeadBlock) extends LayoutProvider with Logging {
 
   //noinspection ScalaStyle
   override def apply(pageTitle: String, showBackLink: Boolean, timeout: Boolean, showSignOut: Boolean,
@@ -81,19 +71,15 @@ class NewLayoutProvider @Inject()(wrapperService: WrapperService, oldLayoutProvi
                      hideAccountMenu: Boolean, backLinkID: Boolean, backLinkUrl: String,
                      disableSessionExpired: Boolean, sidebarContent: Option[Html], messagesActive: Boolean)(contentBlock: Html)
                     (implicit request: Request[_], messages: Messages): HtmlFormat.Appendable = {
-    getDataFromRequest(request).fold(
-      oldLayoutProvider(pageTitle, showBackLink, timeout, showSignOut, stylesheets, fullWidth, accountHome, yourProfileActive,
-        hideAccountMenu, backLinkID, backLinkUrl, disableSessionExpired, sidebarContent, messagesActive)(contentBlock)
-    )(wd =>
-      wrapperService.layoutWithData(wd) (
+    wrapperService.layout(
       disableSessionExpired = !timeout,
       content = contentBlock,
       pageTitle = Some(pageTitle),
       showBackLinkJS = showBackLink,
-        serviceNameUrl =  Some("/personal-account"),
-        scripts = Seq(additionalScript()),
+      serviceNameUrl = Some("/personal-account"),
+      scripts = Seq(additionalScript()),
       styleSheets = stylesheets.toSeq :+ headBlock(),
       fullWidth = true
-    )(messages, HeaderCarrierConverter.fromRequest(request), request))
+    )(messages, HeaderCarrierConverter.fromRequest(request), request)
   }
 }

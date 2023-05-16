@@ -26,7 +26,6 @@ import play.api.test.Helpers._
 import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
 import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
-import util.Keys
 import views.html.{JourneyRecoveryContinueView, JourneyRecoveryStartAgainView}
 
 import scala.concurrent.Future
@@ -37,6 +36,8 @@ class JourneyRecoveryControllerSpec extends SpecBase with MockitoSugar {
     reset(mockScaWrapperDataConnector)
     when(mockScaWrapperDataConnector.wrapperData()(any(), any(), any()))
       .thenReturn(Future.successful(wrapperDataResponse))
+    when(mockScaWrapperDataConnector.messageData()(any(), any()))
+      .thenReturn(Future.successful(messageDataResponse))
     super.beforeEach()
   }
 
@@ -93,7 +94,7 @@ class JourneyRecoveryControllerSpec extends SpecBase with MockitoSugar {
           val continueView = application.injector.instanceOf[JourneyRecoveryContinueView]
 
           status(result) mustEqual OK
-          contentAsString(result) mustEqual continueView(continueUrl.unsafeValue)(request.addAttr(Keys.wrapperDataKey, wrapperDataResponse), messages(application)).toString
+          contentAsString(result) mustEqual continueView(continueUrl.unsafeValue)(request.withAttrs(requestAttributeMap), messages(application)).toString
         }
       }
     }

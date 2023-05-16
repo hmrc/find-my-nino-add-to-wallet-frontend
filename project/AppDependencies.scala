@@ -16,7 +16,7 @@ object AppDependencies {
     "uk.gov.hmrc.mongo"       %% "hmrc-mongo-play-28"                   %   mongoVersion,
     "org.apache.xmlgraphics"  % "fop"                                   %   "2.6",
     "org.typelevel"           %% "cats-core"                            %   "2.8.0",
-    "uk.gov.hmrc"             %% "sca-wrapper"                          % "1.0.31",
+    "uk.gov.hmrc"             %% "sca-wrapper"                          %   "1.0.0-SNAPSHOT",
 
   )
 

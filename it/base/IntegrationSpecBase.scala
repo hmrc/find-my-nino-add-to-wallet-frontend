@@ -4,7 +4,6 @@ package base
 import base.WiremockHelper.wiremockPort
 import com.github.tomakehurst.wiremock.client.WireMock._
 import config.FrontendAppConfig
-import constants.BaseITConstants
 import org.scalatest._
 import org.scalatest.concurrent.{Eventually, IntegrationPatience, ScalaFutures}
 import org.scalatestplus.play.PlaySpec
@@ -22,7 +21,7 @@ trait IntegrationSpecBase extends PlaySpec
   with GivenWhenThen with TestSuite with ScalaFutures with IntegrationPatience
   with WiremockHelper
   with GuiceOneServerPerSuite with TryValues
-  with BeforeAndAfterEach with BeforeAndAfterAll with Eventually with CreateRequestHelper with CustomMatchers with BaseITConstants with DefaultAwaitTimeout {
+  with BeforeAndAfterEach with BeforeAndAfterAll with Eventually with CreateRequestHelper with CustomMatchers with DefaultAwaitTimeout {
 
   implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
   implicit val hc: HeaderCarrier = HeaderCarrier()

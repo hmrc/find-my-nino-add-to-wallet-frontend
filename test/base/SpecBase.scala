@@ -24,19 +24,18 @@ import org.scalactic.source.Position
 import org.scalatest.Assertion
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.{Application, Configuration, Environment}
 import play.api.i18n.{Messages, MessagesApi}
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc.{MessagesControllerComponents, RequestHeader}
 import play.api.test.FakeRequest
+import play.api.{Application, Configuration, Environment}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
 import uk.gov.hmrc.sca.models.{MenuItemConfig, PtaMinMenuConfig, WrapperDataResponse}
 import util.WireMockSupport
 
-import scala.concurrent.ExecutionContext
 import scala.reflect.ClassTag
 
 class SpecBase extends WireMockSupport with MockitoSugar with GuiceOneAppPerSuite {
@@ -94,7 +93,7 @@ class SpecBase extends WireMockSupport with MockitoSugar with GuiceOneAppPerSuit
 
   def injected[T](implicit evidence: ClassTag[T]): T = app.injector.instanceOf[T]
 
-  implicit lazy val ec = app.injector.instanceOf[ExecutionContext]
+  //implicit lazy val ec = app.injector.instanceOf[ExecutionContext]
 
   lazy val configDecorator = app.injector.instanceOf[ConfigDecorator]
 

@@ -1,3 +1,0 @@
-package constants
-trait BaseITConstants {
-}

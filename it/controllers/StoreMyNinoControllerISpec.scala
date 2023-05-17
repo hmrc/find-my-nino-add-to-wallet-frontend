@@ -24,8 +24,6 @@ import java.time.LocalDate
 
 class StoreMyNinoControllerISpec extends IntegrationSpecBase {
 
-
-
   //generate fake details to provide for testing the functionality of the landing page and viewing the PDF
   val fakePersonDetails: PersonDetails = PersonDetails(
     Person(

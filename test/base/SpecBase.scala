@@ -94,7 +94,7 @@ class SpecBase extends WireMockSupport with MockitoSugar with GuiceOneAppPerSuit
 
   def injected[T](implicit evidence: ClassTag[T]): T = app.injector.instanceOf[T]
 
-  //implicit lazy val ec = app.injector.instanceOf[ExecutionContext]
+  implicit lazy val ec = app.injector.instanceOf[ExecutionContext]
 
   lazy val configDecorator = app.injector.instanceOf[ConfigDecorator]
 

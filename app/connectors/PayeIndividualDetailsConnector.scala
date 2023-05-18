@@ -45,32 +45,32 @@ class PayeIndividualDetailsConnector @Inject()(
                                                 config: ConfigDecorator
                                               ) extends Logging {
 
-  def IndividualDetails(nino: Nino)(implicit hc: HeaderCarrier): Future[IndividualDetailsResponse] =
-    {
+  def individualDetails(nino: Nino)(implicit hc: HeaderCarrier): Future[IndividualDetailsResponse] = {
     simpleHttp.get[IndividualDetailsResponse](s"${config.api1303ServiceUrl}/pay-as-you-earn/02.00.00/individuals/$nino")(
       onComplete = {
         case response if response.status >= 200 && response.status < 300 =>
           IndividualDetailsSuccessResponse(response.body)
         case response if response.status == LOCKED =>
-          logger.warn("Personal details record in citizen-details was hidden")
+          logger.warn("indvidual details record was hidden")
           IndividualDetailsHiddenResponse
         case response if response.status == NOT_FOUND =>
-          logger.warn("Unable to find personal details record in citizen-details")
+          logger.warn("Unable to find indvidual details record")
           IndividualDetailsNotFoundResponse
         case response =>
           if (response.status >= INTERNAL_SERVER_ERROR) {
             logger.warn(
-              s"Unexpected ${response.status} response getting personal details record from citizen-details"
+              s"Unexpected ${response.status} indvidual details"
             )
           }
           IndividualDetailsUnexpectedResponse(response)
       },
       onError = { e =>
-        logger.warn("Error getting personal details record from citizen-details", e)
+        logger.warn("Error getting individual details from API 1303", e)
         IndividualDetailsErrorResponse(e)
       }
     )
   }
+
 }
 
 

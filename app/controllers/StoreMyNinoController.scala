@@ -73,7 +73,7 @@ class StoreMyNinoController @Inject()(
 
   private def getAccountStatus(nino: uk.gov.hmrc.domain.Nino)(implicit hc: HeaderCarrier) = {
       for {
-        individualDetailsResponse <- payeIndividualDetailsConnector.IndividualDetails(nino)
+        individualDetailsResponse <- payeIndividualDetailsConnector.individualDetails(nino)
       }  yield {
         individualDetailsResponse.asInstanceOf[IndividualDetailsSuccessResponse]
         Json.parse(individualDetailsResponse.asInstanceOf[IndividualDetailsSuccessResponse].str)

@@ -27,6 +27,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
 import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
+import util.Fixtures.individualRespJson
 import util.{CDFixtures, Keys}
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
 import util.TestData.NinoUser
@@ -38,12 +39,19 @@ import scala.concurrent.Future
 
 class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSugar {
 
+
+
+
   override protected def beforeEach(): Unit = {
     reset(mockScaWrapperDataConnector)
     when(mockScaWrapperDataConnector.wrapperData()(any(), any(), any()))
       .thenReturn(Future.successful(wrapperDataResponse))
     super.beforeEach()
   }
+
+
+
+
 
   val passId = "applePassId"
   val notApplePassId = ""
@@ -72,7 +80,8 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
     .thenReturn(Future(PersonDetailsSuccessResponse(pd)))
   when(mockApplePassConnector.getQrCode(eqTo(passId))(any(),any()))
     .thenReturn(Future(Some(Base64.getDecoder.decode(fakeBase64String))))
-  when(mockPayeIndividualDetailsConnector.individualDetails(any())).thenReturn(Future(("").asInstanceOf[IndividualDetailsSuccessResponse]))
+  when(mockPayeIndividualDetailsConnector.individualDetails(any())(any()))
+    .thenReturn(Future(IndividualDetailsSuccessResponse.apply(individualRespJson)))
   when(mockSessionRepository.get(any())) thenReturn Future.successful(Some(emptyUserAnswers))
 
   "StoreMyNino Controller" - {

@@ -239,7 +239,62 @@ object Fixtures extends CDFixtures  {
     FakeRequest(method, uri).withSession(session.toList: _*)
   }
 
-
+  val individualRespJson =
+    """
+      |{
+      |    "nino": "AA000003",
+      |    "ninoSuffix": "B",
+      |    "names": {
+      |        "1": {
+      |            "sequenceNumber": 3,
+      |            "title": 2,
+      |            "firstForenameOrInitial": "BOB",
+      |            "surname": "JONES",
+      |            "startDate": "2016-04-06"
+      |        }
+      |    },
+      |    "sex": "F",
+      |    "dateOfBirth": "1962-09-08",
+      |    "dateOfBirthStatus": 0,
+      |    "deceased": false,
+      |    "dateOfDeathStatus": 0,
+      |    "addresses": {
+      |        "1": {
+      |            "sequenceNumber": 3,
+      |            "countryCode": 1,
+      |            "line1": "11 Test Street",
+      |            "line2": "Testtown",
+      |            "postcode": "FX97 4TU",
+      |            "startDate": "2016-04-06",
+      |            "lastConfirmedDate": "2002-07-08"
+      |        },
+      |        "2": {
+      |            "sequenceNumber": 3,
+      |            "countryCode": 1,
+      |            "line1": "11 Test Street",
+      |            "line2": "Testtown",
+      |            "postcode": "FX97 4TU",
+      |            "startDate": "2012-07-05",
+      |            "lastConfirmedDate": "2012-07-08"
+      |        }
+      |    },
+      |    "phoneNumbers": {
+      |        "3": {
+      |            "telephoneType": 3,
+      |            "telephoneNumber": "3984425669.02115"
+      |        }
+      |    },
+      |    "accountStatus": 0,
+      |    "manualCorrespondenceInd": false,
+      |    "dateOfEntry": "1978-09-08",
+      |    "hasSelfAssessmentAccount": false,
+      |    "utr": "1097133333",
+      |    "audioOutputRequired": false,
+      |    "brailleOutputRequired": false,
+      |    "largePrintOutputRequired": false,
+      |    "welshOutputRequired": true
+      |}
+      |""".stripMargin
 
   /*def buildFakePersonDetails: PersonDetails = PersonDetails(buildFakePerson, None, None)
 

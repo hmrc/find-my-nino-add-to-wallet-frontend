@@ -54,6 +54,7 @@ class StoreMyNinoController @Inject()(
 
   implicit val loginContinueUrl: Call = routes.StoreMyNinoController.onPageLoad
 
+  val accountStatusUnused = 11
   def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction) async {
     implicit request => {
       getAccountStatus(request.nino.get).flatMap {
@@ -75,9 +76,18 @@ class StoreMyNinoController @Inject()(
       for {
         individualDetailsResponse <- payeIndividualDetailsConnector.individualDetails(nino)
       }  yield {
-        val resp = individualDetailsResponse.asInstanceOf[IndividualDetailsSuccessResponse]
-        Json.parse(resp.str)
-          .asInstanceOf[JsObject].value("accountStatus").asInstanceOf[JsNumber].value.toInt
+        individualDetailsResponse match {
+          case value => {
+            if (value.isInstanceOf[IndividualDetailsSuccessResponse]){
+              Json.parse(value.asInstanceOf[IndividualDetailsSuccessResponse].str)
+                .asInstanceOf[JsObject].value("accountStatus").asInstanceOf[JsNumber].value.toInt
+            }else{
+              accountStatusUnused
+            }
+          }
+          case _ => accountStatusUnused
+        }
+
       }
   }
 

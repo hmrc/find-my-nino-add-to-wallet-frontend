@@ -17,31 +17,35 @@
 package controllers
 
 import config.{ConfigDecorator, FrontendAppConfig}
-import connectors.{ApplePassConnector, CitizenDetailsConnector}
+import connectors.{ApplePassConnector, CitizenDetailsConnector, IndividualDetailsResponse, IndividualDetailsSuccessResponse, PayeIndividualDetailsConnector}
 import controllers.auth.requests.UserRequest
 import models.PersonDetails
 import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
+import play.api.libs.json.{JsNumber, JsObject, Json}
+import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents, Result}
 import play.api.{Configuration, Environment}
 import services.AuditService
 import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.http.HeaderCarrier
 import util.AuditUtils
-import views.html.StoreMyNinoView
+import views.html.{RedirectToPostalFormView, StoreMyNinoView}
 
 import javax.inject.Inject
 import scala.concurrent.duration.DurationInt
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{Await, ExecutionContext, Future}
 
 class StoreMyNinoController @Inject()(
                                        val citizenDetailsConnector: CitizenDetailsConnector,
                                        findMyNinoServiceConnector: ApplePassConnector,
+                                       payeIndividualDetailsConnector: PayeIndividualDetailsConnector,
                                        authConnector: AuthConnector,
                                        auditService: AuditService,
                                        override val messagesApi: MessagesApi,
                                        getPersonDetailsAction: GetPersonDetailsAction,
-                                       configDecorator: ConfigDecorator,
-                                       view: StoreMyNinoView
+                                       view: StoreMyNinoView,
+                                       redirectView: RedirectToPostalFormView
                                      )(implicit config: Configuration,
+                                       configDecorator: ConfigDecorator,
                                        env: Environment,
                                        ec: ExecutionContext,
                                        cc: MessagesControllerComponents,
@@ -50,18 +54,42 @@ class StoreMyNinoController @Inject()(
 
   implicit val loginContinueUrl: Call = routes.StoreMyNinoController.onPageLoad
 
+  val accountStatusUnused = 11
   def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction) async {
     implicit request => {
-      val pd: PersonDetails = request.personDetails.get
-      auditService.audit(AuditUtils.buildAuditEvent(pd,"ViewNinoLanding", configDecorator.appName))
-      for {
-        pId <- findMyNinoServiceConnector.createApplePass(pd.person.fullName, request.nino.get.nino)
-      } yield {
-        Ok(view(pId.value, request.nino.get.formatted, isMobileDisplay(request)))
+      getAccountStatus(request.nino.get).flatMap {
+          v =>
+            if (v > 0) {
+              Future(Ok(redirectView()))
+            } else {
+              val pd: PersonDetails = request.personDetails.get
+              auditService.audit(AuditUtils.buildAuditEvent(pd, "ViewNinoLanding", configDecorator.appName))
+              for {
+                pId: Some[String] <- findMyNinoServiceConnector.createApplePass(pd.person.fullName, request.nino.get.nino)
+              } yield Ok(view(pId.value, request.nino.get.formatted, isMobileDisplay(request)))
+            }
+        }
       }
-    }
   }
 
+  private def getAccountStatus(nino: uk.gov.hmrc.domain.Nino)(implicit hc: HeaderCarrier) = {
+      for {
+        individualDetailsResponse <- payeIndividualDetailsConnector.individualDetails(nino)
+      }  yield {
+        individualDetailsResponse match {
+          case value => {
+            if (value.isInstanceOf[IndividualDetailsSuccessResponse]){
+              Json.parse(value.asInstanceOf[IndividualDetailsSuccessResponse].str)
+                .asInstanceOf[JsObject].value("accountStatus").asInstanceOf[JsNumber].value.toInt
+            }else{
+              accountStatusUnused
+            }
+          }
+          case _ => accountStatusUnused
+        }
+
+      }
+  }
 
   private def isMobileDisplay(request: UserRequest[AnyContent]): Boolean = {
     // Display wallet options differently on mobile to pc

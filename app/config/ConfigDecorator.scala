@@ -46,6 +46,7 @@ class ConfigDecorator @Inject()(configuration: Configuration, servicesConfig: Se
   val signOutUrl: String = configuration.get[String]("urls.signOut")
   lazy val findMyNinoServiceUrl: String = servicesConfig.baseUrl("find-my-nino-add-to-wallet-service")
   lazy val citizenDetailsServiceUrl: String = servicesConfig.baseUrl("citizen-details-service")
+  lazy val api1303ServiceUrl: String = servicesConfig.baseUrl("paye-individual-details-service")
 
   lazy val basGatewayFrontendHost = getExternalUrl(s"bas-gateway-frontend.host").getOrElse("")
 

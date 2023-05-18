@@ -17,7 +17,7 @@
 package controllers
 
 import base.SpecBase
-import connectors.{ApplePassConnector, CitizenDetailsConnector, PersonDetailsSuccessResponse}
+import connectors.{ApplePassConnector, CitizenDetailsConnector, IndividualDetailsSuccessResponse, PayeIndividualDetailsConnector, PersonDetailsSuccessResponse}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.{reset, when}
@@ -55,6 +55,8 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
   val mockSessionRepository = mock[SessionRepository]
   val mockApplePassConnector = mock[ApplePassConnector]
   val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
+  val mockPayeIndividualDetailsConnector = mock[PayeIndividualDetailsConnector]
+
   val fakeBase64String = "UEsDBBQACAgIABxqJlYAAAAAAA"
 
   when(mockApplePassConnector.getApplePass(eqTo(passId))(any(),any()))
@@ -70,7 +72,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
     .thenReturn(Future(PersonDetailsSuccessResponse(pd)))
   when(mockApplePassConnector.getQrCode(eqTo(passId))(any(),any()))
     .thenReturn(Future(Some(Base64.getDecoder.decode(fakeBase64String))))
-
+  when(mockPayeIndividualDetailsConnector.individualDetails(any())).thenReturn(Future(("").asInstanceOf[IndividualDetailsSuccessResponse]))
   when(mockSessionRepository.get(any())) thenReturn Future.successful(Some(emptyUserAnswers))
 
   "StoreMyNino Controller" - {
@@ -81,7 +83,8 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .overrides(
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[ApplePassConnector].toInstance(mockApplePassConnector),
-            inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
+            inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector),
+            inject.bind[PayeIndividualDetailsConnector].toInstance(mockPayeIndividualDetailsConnector)
           )
           .configure("features.sca-wrapper-enabled" -> false)
           .build()

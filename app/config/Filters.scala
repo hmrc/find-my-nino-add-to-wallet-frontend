@@ -33,9 +33,8 @@ class Filters @Inject()(
   val allowListFilterEnabled: Boolean = allowListFilter.allowlist.nonEmpty
 
   override val filters: Seq[EssentialFilter] = {
-    val wrapperFilterOpt = if (appConfig.SCAWrapperEnabled) Seq(wrapperDataFilter) else Seq.empty
-    val allowListFilterOpt = if (allowListFilterEnabled) defaultFilters.filters :+ allowListFilter else defaultFilters.filters
-
-    wrapperFilterOpt ++ allowListFilterOpt
+    defaultFilters.filters ++
+      Option.when(appConfig.SCAWrapperEnabled)(wrapperDataFilter) ++
+      Option.when(allowListFilterEnabled)(allowListFilter)
   }
 }

@@ -115,7 +115,8 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[ApplePassConnector].toInstance(mockApplePassConnector),
             inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector),
-            inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector)
+            inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),
+            inject.bind[PayeIndividualDetailsConnector].toInstance(mockPayeIndividualDetailsConnector)
           )
           .configure("features.sca-wrapper-enabled" -> true)
           .build()

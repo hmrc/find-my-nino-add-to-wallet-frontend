@@ -75,8 +75,8 @@ class StoreMyNinoController @Inject()(
       for {
         individualDetailsResponse <- payeIndividualDetailsConnector.individualDetails(nino)
       }  yield {
-        individualDetailsResponse.asInstanceOf[IndividualDetailsSuccessResponse]
-        Json.parse(individualDetailsResponse.asInstanceOf[IndividualDetailsSuccessResponse].str)
+        val resp = individualDetailsResponse.asInstanceOf[IndividualDetailsSuccessResponse]
+        Json.parse(resp.str)
           .asInstanceOf[JsObject].value("accountStatus").asInstanceOf[JsNumber].value.toInt
       }
   }

@@ -50,9 +50,6 @@ class PayeIndividualDetailsConnector @Inject()(
       onComplete = {
         case response if response.status >= 200 && response.status < 300 =>
           IndividualDetailsSuccessResponse(response.body)
-        case response if response.status == LOCKED =>
-          logger.warn("indvidual details record was hidden")
-          IndividualDetailsHiddenResponse
         case response if response.status == NOT_FOUND =>
           logger.warn("Unable to find indvidual details record")
           IndividualDetailsNotFoundResponse

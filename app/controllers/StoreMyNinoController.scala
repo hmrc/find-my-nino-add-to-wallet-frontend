@@ -17,33 +17,28 @@
 package controllers
 
 import config.{ConfigDecorator, FrontendAppConfig}
-import connectors.{ApplePassConnector, CitizenDetailsConnector, IndividualDetailsResponse, IndividualDetailsSuccessResponse, PayeIndividualDetailsConnector}
+import connectors.{ApplePassConnector, CitizenDetailsConnector, PayeIndividualDetailsConnector}
 import controllers.auth.requests.UserRequest
 import models.PersonDetails
 import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.libs.json.{JsNumber, JsObject, Json}
-import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents, Result}
+import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
 import play.api.{Configuration, Environment}
 import services.AuditService
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.http.HeaderCarrier
 import util.AuditUtils
-import views.html.{RedirectToPostalFormView, StoreMyNinoView}
+import views.html.StoreMyNinoView
 
 import javax.inject.Inject
-import scala.concurrent.duration.DurationInt
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class StoreMyNinoController @Inject()(
                                        val citizenDetailsConnector: CitizenDetailsConnector,
                                        findMyNinoServiceConnector: ApplePassConnector,
-                                       payeIndividualDetailsConnector: PayeIndividualDetailsConnector,
                                        authConnector: AuthConnector,
                                        auditService: AuditService,
                                        override val messagesApi: MessagesApi,
                                        getPersonDetailsAction: GetPersonDetailsAction,
-                                       view: StoreMyNinoView,
-                                       redirectView: RedirectToPostalFormView
+                                       view: StoreMyNinoView
                                      )(implicit config: Configuration,
                                        configDecorator: ConfigDecorator,
                                        env: Environment,
@@ -54,18 +49,15 @@ class StoreMyNinoController @Inject()(
 
   implicit val loginContinueUrl: Call = routes.StoreMyNinoController.onPageLoad
 
-  val accountStatusUnused = 11
 
   def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction) async {
     implicit request => {
-
-            val pd: PersonDetails = request.personDetails.get
-            auditService.audit(AuditUtils.buildAuditEvent(pd, "ViewNinoLanding", configDecorator.appName))
-            for {
-              pId: Some[String] <- findMyNinoServiceConnector.createApplePass(pd.person.fullName, request.nino.get.nino)
-            } yield Ok(view(pId.value, request.nino.get.formatted, isMobileDisplay(request)))
-          }
-
+      val pd: PersonDetails = request.personDetails.get
+      auditService.audit(AuditUtils.buildAuditEvent(pd, "ViewNinoLanding", configDecorator.appName))
+      for {
+        pId: Some[String] <- findMyNinoServiceConnector.createApplePass(pd.person.fullName, request.nino.get.nino)
+      } yield Ok(view(pId.value, request.nino.get.formatted, isMobileDisplay(request)))
+    }
   }
 
 

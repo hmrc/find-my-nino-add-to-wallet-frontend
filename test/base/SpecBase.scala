@@ -109,7 +109,7 @@ class SpecBase extends WireMockSupport with MockitoSugar with GuiceOneAppPerSuit
   def buildFakeRequestWithSessionId(method: String) =
     FakeRequest(method, "/save-your-national-insurance-number").withSession("sessionId" -> "FAKE_SESSION_ID")
 
-  val mockScaWrapperDataConnector = mock[ScaWrapperDataConnector]
+  val mockScaWrapperDataConnector: ScaWrapperDataConnector = mock[ScaWrapperDataConnector]
 
   val ptaMenuConfig: PtaMinMenuConfig = PtaMinMenuConfig(menuName = "Account menu", backName = "Back")
   val menuItemConfig1: MenuItemConfig = MenuItemConfig("home", "Account home", "pertaxUrl", leftAligned = true, position = 0, Some("hmrc-account-icon hmrc-account-icon--home"), None)

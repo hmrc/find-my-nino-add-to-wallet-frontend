@@ -51,9 +51,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
   val notApplePassId = ""
   val personDetailsId = "pdId"
   val pd = buildPersonDetails
-  val controller = applicationWithConfig.injector.instanceOf[StoreMyNinoController]
 
-  lazy val view = applicationWithConfig.injector.instanceOf[StoreMyNinoView]
   val mockSessionRepository = mock[SessionRepository]
   val mockApplePassConnector = mock[ApplePassConnector]
   val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
@@ -88,13 +86,15 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .configure("features.sca-wrapper-enabled" -> false)
           .build()
 
+      val view = application.injector.instanceOf[StoreMyNinoView]
+
       running(application) {
         userLoggedInFMNUser(NinoUser)
         val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         status(result) mustEqual OK
-        contentAsString(result) mustEqual (view(passId, "AA 00 00 03 B", false)(request, messages(application))).toString
+        contentAsString(result) mustEqual view(passId, "AA 00 00 03 B", false)(request, messages(application)).toString
       }
     }
 
@@ -110,13 +110,15 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .configure("features.sca-wrapper-enabled" -> true)
           .build()
 
+      val view = application.injector.instanceOf[StoreMyNinoView]
+
       running(application) {
         userLoggedInFMNUser(NinoUser)
         val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         status(result) mustEqual OK
-        contentAsString(result) mustEqual (view(passId, "AA 00 00 03 B", false)(request.withAttrs(requestAttributeMap), messages(application))).toString
+        contentAsString(result) mustEqual view(passId, "AA 00 00 03 B", false)(request.withAttrs(requestAttributeMap), messages(application)).toString
       }
     }
 

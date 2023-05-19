@@ -1,0 +1,85 @@
+@*
+ * Copyright 2023 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import config.ConfigDecorator
+@import controllers.auth.requests.UserRequest
+@import scala.concurrent.ExecutionContext
+@import components.{H1, P, Link}
+
+@this(
+    layout: templates.Layout,
+    govukButton: GovukButton,
+    govukWarningText: GovukWarningText,
+    configDecorator: ConfigDecorator
+)
+@()(implicit request: UserRequest[_], configDecorator: ConfigDecorator, messages: play.api.i18n.Messages, ec: ExecutionContext)
+
+@stylesheet = {
+<link rel="stylesheet" href='@routes.AssetsController.versioned("stylesheets/partials/save-your-nino.css")'>
+}
+
+@heading1 = {
+<!-- Save your National Insurance number -->
+<h1 class="govuk-heading-l">@messages("storeMyNino.heading")</h1>
+}
+
+@layout(pageTitle = titleNoForm(messages("storeMyNino.title")), stylesheets = Some(stylesheet)) {
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column">
+
+        <h1 class="govuk-heading-xl">You need to confirm your National Insurance number</h1>
+
+        <p>There are two ways to confirm:</p>
+
+        <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-6">
+            <li>
+                <p>call 0300 200 3500 to speak to an advisor and confirm your National Insurance number with them.</p>
+            </li>
+            <li>
+                <p>
+                    <a href="https://public-online.hmrc.gov.uk/lc/content/xfaforms/profiles/forms.html?contentRoot=repository:///Applications/NICs_iForms/1.0/CA5403&amp;&amp;template=CA5403.xdp">fill out a CA5403 form online</a>
+                    then print it, and send it to:</p>
+                <p>National Insurance contributions and Employers Office<br>HM Revenue and Customs<br>BX9 1AN</p>
+
+            </li>
+
+        </ul>
+
+        <p>If you are filling out a CA5403 form, you may need to prove your identity with certain documents. The online form will tell you which documents you need.</p>
+
+        <p>Your National Insurance number should arrive within 15&nbsp;days of you contacting us.</p>
+
+        <div class="govuk-!-padding-bottom-5"></div>
+        <!-- Needs finishing off -->
+        <!--<p class="govuk-body-s"><a href="#" class="govuk-back-link gethelp">Get help with this page</a></p>-->
+        <div class="govuk-phase-banner">
+            <p class="govuk-phase-banner__content">
+                <strong class="govuk-tag govuk-phase-banner__content__tag">
+                    beta
+                </strong>
+                <span class="govuk-phase-banner__text">
+                        This is a new service – your <a class="govuk-link govuk-link--no-visited-state" href="../contact/beta-feedback-unauthenticated">feedback</a> will help us to improve it.
+                </span>
+            </p>
+        </div>
+
+    </div>
+</div>
+
+}
+
+
+

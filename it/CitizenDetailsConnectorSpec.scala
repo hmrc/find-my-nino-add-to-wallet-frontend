@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package controllers
-
 import com.kenshoo.play.metrics.Metrics
 import config.ConfigDecorator
 import connectors.{CitizenDetailsConnector, PersonDetailsNotFoundResponse, PersonDetailsSuccessResponse}
+import controllers.ConnectorSpec
 import models._
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.Application
@@ -26,7 +25,6 @@ import play.api.libs.json.Json
 import play.api.test.{DefaultAwaitTimeout, Injecting}
 import services.http.SimpleHttp
 import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import util.Fixtures.buildPersonDetails
 import util.WireMockHelper
 
@@ -73,6 +71,8 @@ class CitizenDetailsConnectorSpec
       new CitizenDetailsConnector(httpClient, metrics, configDecorator)
     }
   }
+
+
 
   "Calling personDetails" must {
 

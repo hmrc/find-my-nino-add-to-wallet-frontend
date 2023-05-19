@@ -15,7 +15,6 @@
  *@
 
 @import config.ConfigDecorator
-@import controllers.auth.requests.UserRequest
 @import scala.concurrent.ExecutionContext
 @import components.{H1, P, Link}
 
@@ -23,9 +22,8 @@
     layout: templates.Layout,
     govukButton: GovukButton,
     govukWarningText: GovukWarningText,
-    configDecorator: ConfigDecorator
 )
-@()(implicit request: UserRequest[_], configDecorator: ConfigDecorator, messages: play.api.i18n.Messages, ec: ExecutionContext)
+@()(implicit request: Request[_], configDecorator: ConfigDecorator, messages: play.api.i18n.Messages)
 
 @stylesheet = {
 <link rel="stylesheet" href='@routes.AssetsController.versioned("stylesheets/partials/save-your-nino.css")'>
@@ -42,7 +40,7 @@
 
         <h1 class="govuk-heading-xl">You need to confirm your National Insurance number</h1>
 
-        <p>There are two ways to confirm:</p>
+        <p class="govuk-body">There are two ways to confirm:</p>
 
         <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-6">
             <li>
@@ -58,23 +56,23 @@
 
         </ul>
 
-        <p>If you are filling out a CA5403 form, you may need to prove your identity with certain documents. The online form will tell you which documents you need.</p>
+        <p class="govuk-body">If you are filling out a CA5403 form, you may need to prove your identity with certain documents. The online form will tell you which documents you need.</p>
 
-        <p>Your National Insurance number should arrive within 15&nbsp;days of you contacting us.</p>
+        <p class="govuk-body">Your National Insurance number should arrive within 15&nbsp;days of you contacting us.</p>
 
         <div class="govuk-!-padding-bottom-5"></div>
         <!-- Needs finishing off -->
         <!--<p class="govuk-body-s"><a href="#" class="govuk-back-link gethelp">Get help with this page</a></p>-->
-        <div class="govuk-phase-banner">
+        <!--<div class="govuk-phase-banner">
             <p class="govuk-phase-banner__content">
                 <strong class="govuk-tag govuk-phase-banner__content__tag">
                     beta
                 </strong>
                 <span class="govuk-phase-banner__text">
-                        This is a new service – your <a class="govuk-link govuk-link--no-visited-state" href="../contact/beta-feedback-unauthenticated">feedback</a> will help us to improve it.
+                        This is a new service – your <a class="govuk-link govuk-link&#45;&#45;no-visited-state" href="../contact/beta-feedback-unauthenticated">feedback</a> will help us to improve it.
                 </span>
             </p>
-        </div>
+        </div>-->
 
     </div>
 </div>

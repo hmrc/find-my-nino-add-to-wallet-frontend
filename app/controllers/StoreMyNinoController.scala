@@ -55,41 +55,19 @@ class StoreMyNinoController @Inject()(
   implicit val loginContinueUrl: Call = routes.StoreMyNinoController.onPageLoad
 
   val accountStatusUnused = 11
+
   def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction) async {
     implicit request => {
-      getAccountStatus(request.nino.get).flatMap {
-          v =>
-            if (v > 0) {
-              Future(Ok(redirectView()))
-            } else {
-              val pd: PersonDetails = request.personDetails.get
-              auditService.audit(AuditUtils.buildAuditEvent(pd, "ViewNinoLanding", configDecorator.appName))
-              for {
-                pId: Some[String] <- findMyNinoServiceConnector.createApplePass(pd.person.fullName, request.nino.get.nino)
-              } yield Ok(view(pId.value, request.nino.get.formatted, isMobileDisplay(request)))
-            }
-        }
-      }
-  }
 
-  private def getAccountStatus(nino: uk.gov.hmrc.domain.Nino)(implicit hc: HeaderCarrier) = {
-      for {
-        individualDetailsResponse <- payeIndividualDetailsConnector.individualDetails(nino)
-      }  yield {
-        individualDetailsResponse match {
-          case value => {
-            if (value.isInstanceOf[IndividualDetailsSuccessResponse]){
-              Json.parse(value.asInstanceOf[IndividualDetailsSuccessResponse].str)
-                .asInstanceOf[JsObject].value("accountStatus").asInstanceOf[JsNumber].value.toInt
-            }else{
-              accountStatusUnused
-            }
+            val pd: PersonDetails = request.personDetails.get
+            auditService.audit(AuditUtils.buildAuditEvent(pd, "ViewNinoLanding", configDecorator.appName))
+            for {
+              pId: Some[String] <- findMyNinoServiceConnector.createApplePass(pd.person.fullName, request.nino.get.nino)
+            } yield Ok(view(pId.value, request.nino.get.formatted, isMobileDisplay(request)))
           }
-          case _ => accountStatusUnused
-        }
 
-      }
   }
+
 
   private def isMobileDisplay(request: UserRequest[AnyContent]): Boolean = {
     // Display wallet options differently on mobile to pc

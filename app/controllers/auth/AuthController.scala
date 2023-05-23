@@ -38,7 +38,7 @@ class AuthController @Inject()(
     Action { implicit request =>
       val safeUrl = wrapperService.safeSignoutUrl()
       safeUrl
-        .orElse(origin.map(configDecorator.getFeedbackSurveyUrl))
+        .orElse(Some(configDecorator.getFeedbackSurveyUrl(configDecorator.defaultOrigin)))
         .fold(BadRequest("Missing origin")) { url: String =>
           Redirect(configDecorator.getBasGatewayFrontendSignOutUrl(url))
         }

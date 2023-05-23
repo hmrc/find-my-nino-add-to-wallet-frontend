@@ -55,7 +55,7 @@ class StoreMyNinoController @Inject()(
       val pd: PersonDetails = request.personDetails.get
       auditService.audit(AuditUtils.buildAuditEvent(pd, "ViewNinoLanding", configDecorator.appName))
       for {
-        pId: Some[String] <- findMyNinoServiceConnector.createApplePass(pd.person.fullName, request.nino.get.nino)
+        pId: Some[String] <- findMyNinoServiceConnector.createApplePass(pd.person.fullName, request.nino.get.formatted)
       } yield Ok(view(pId.value, request.nino.get.formatted, isMobileDisplay(request)))
     }
   }

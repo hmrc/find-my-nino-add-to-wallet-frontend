@@ -134,7 +134,7 @@ trait XmlFoToPDF extends Logging{
         s"<address-line>${line}</address-line>"
       }
       xmlStr = xmlStr + s"</address>"
-      xmlStr = xmlStr + s"<postcode>${correspondenceAddress.postcode.get}</postcode>"
+      xmlStr = xmlStr + s"<postcode>${correspondenceAddress.postcode.getOrElse("")}</postcode>"
       xmlStr
     }.getOrElse {
       personDetails.address.map { residentialAddress =>
@@ -143,7 +143,7 @@ trait XmlFoToPDF extends Logging{
           s"<address-line>${line}</address-line>"
         }
         xmlStr = xmlStr + s"</address>"
-        xmlStr = xmlStr + s"<postcode>${residentialAddress.postcode.get}</postcode>"
+        xmlStr = xmlStr + s"<postcode>${residentialAddress.postcode.getOrElse("")}</postcode>"
         xmlStr
       }.getOrElse("")
     }

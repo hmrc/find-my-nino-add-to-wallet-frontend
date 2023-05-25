@@ -122,9 +122,9 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
 object FMNAuth {
   def toContinueUrl(call: Call)(implicit rh: RequestHeader): String = {
     if (call.absoluteURL.contains("://localhost")) {
-      call.absoluteURL() + rh.uri.replace("/", "")
+      call.absoluteURL() + rh.uri.replaceFirst("/", "")
     } else {
-      call.url + "save-your-national-insurance-number"
+      call.url + rh.uri.replaceFirst("/", "")
     }
   }
 }

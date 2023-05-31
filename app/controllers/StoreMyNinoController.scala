@@ -49,7 +49,7 @@ class StoreMyNinoController @Inject()(
 
   implicit val loginContinueUrl: Call = routes.StoreMyNinoController.onPageLoad
 
-  private val passFileName = "National-Insurance-Number-pass.pkpass"
+  private val passFileName = "National-Insurance-number-card.pkpass"
 
   def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction) async {
     implicit request => {

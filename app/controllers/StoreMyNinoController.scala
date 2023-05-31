@@ -49,6 +49,7 @@ class StoreMyNinoController @Inject()(
 
   implicit val loginContinueUrl: Call = routes.StoreMyNinoController.onPageLoad
 
+  private val passFileName = "National-Insurance-Number-pass.pkpass"
 
   def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction) async {
     implicit request => {
@@ -86,7 +87,7 @@ class StoreMyNinoController @Inject()(
               case _ => auditService.audit(AuditUtils.buildAuditEvent(request.personDetails.get,
                 "AddNinoToWallet", configDecorator.appName))
             }
-            Ok(data).withHeaders("Content-Disposition" -> "attachment; filename=NinoPass.pkpass")
+            Ok(data).withHeaders("Content-Disposition" -> s"attachment; filename=$passFileName")
           case _ => NotFound
         }
       }(loginContinueUrl)
@@ -99,7 +100,7 @@ class StoreMyNinoController @Inject()(
         findMyNinoServiceConnector.getQrCode(passId).map {
           case Some(data) =>
             auditService.audit(AuditUtils.buildAuditEvent(request.personDetails.get,"DisplayQRCode",configDecorator.appName))
-            Ok(data).withHeaders("Content-Disposition" -> "attachment; filename=NinoPass.pkpass")
+            Ok(data).withHeaders("Content-Disposition" -> s"attachment; filename=$passFileName")
           case _ => NotFound
         }
       }(loginContinueUrl)

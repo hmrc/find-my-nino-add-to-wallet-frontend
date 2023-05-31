@@ -194,6 +194,11 @@
   .print-document {
     border: none;
     box-shadow: none;
+
+    .print-header h1 {
+        text-align: right;
+        margin: 2em 0 0;
+    }
   }
 
   .govuk-template__body {

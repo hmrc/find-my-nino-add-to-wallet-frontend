@@ -68,7 +68,7 @@ class GetPersonDetailsAction @Inject()(
 
     implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
     authContext.nino.nino match {
-      case nino =>
+      case nino:String =>
         citizenDetailsConnector.personDetails(Nino(nino)).map {
           case PersonDetailsSuccessResponse(pd) => Right(Some(pd))
           case PersonDetailsNotFoundResponse =>

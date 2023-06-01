@@ -18,30 +18,28 @@ package controllers.auth.requests
 
 import models._
 import play.api.mvc.{Request, WrappedRequest}
-import uk.gov.hmrc.auth.core.retrieve.Credentials
-import uk.gov.hmrc.auth.core.retrieve.v2.TrustedHelper
-import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolment, Enrolments}
+import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolments}
 import uk.gov.hmrc.domain.Nino
 
 final case class UserRequest[A](
-  nino: Option[Nino],
-  retrievedName: Option[UserName],
-  //saUserType: SelfAssessmentUserType,
-  //credentials: Credentials,
-  confidenceLevel: ConfidenceLevel,
-  personDetails: Option[PersonDetails],
-  //trustedHelper: Option[TrustedHelper],
-  enrolments: Enrolments,
-  //profile: Option[String],
-  //unreadMessageCount: Option[Int] = None,
-  //breadcrumb: Option[Breadcrumb] = None,
-  request: Request[A]
-) extends WrappedRequest[A](request) {
+                                 nino: Option[Nino],
+                                 retrievedName: Option[UserName],
+                                 //saUserType: SelfAssessmentUserType,
+                                 //credentials: Credentials,
+                                 confidenceLevel: ConfidenceLevel,
+                                 personDetails: Option[PersonDetails],
+                                 //trustedHelper: Option[TrustedHelper],
+                                 enrolments: Enrolments,
+                                 //profile: Option[String],
+                                 //unreadMessageCount: Option[Int] = None,
+                                 //breadcrumb: Option[Breadcrumb] = None,
+                                 request: Request[A]
+                               ) extends WrappedRequest[A](request) {
 
   // $COVERAGE-OFF$
   def name: Option[String] = personDetails match {
     case Some(personDetails) => personDetails.person.shortName
-    case _                   => retrievedName.map(_.toString)
+    case _ => retrievedName.map(_.toString)
   }
   // $COVERAGE-ON$
   //def isSa: Boolean = saUserType != NonFilerSelfAssessmentUser

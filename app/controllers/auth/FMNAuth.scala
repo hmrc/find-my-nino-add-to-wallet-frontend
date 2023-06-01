@@ -20,7 +20,7 @@ import config.FrontendAppConfig
 import controllers.auth.FMNAuth.toContinueUrl
 import models.NationalInsuranceNumber
 import play.api.Logging
-import play.api.mvc.{ActionBuilder, AnyContent, BodyParser, Call, ControllerComponents, Request, RequestHeader, Result, WrappedRequest}
+import play.api.mvc.{ActionBuilder, AnyContent, BodyParser, Call, ControllerComponents, Request, RequestHeader, Result}
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.auth.core.retrieve.{Name, ~}

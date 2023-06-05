@@ -49,7 +49,7 @@ trait XmlFoToPDF extends Logging{
       person = personDetails.person.copy(
         firstName = Some(StringEscapeUtils.escapeXml11(personDetails.person.firstName.getOrElse(""))),
         lastName = Some(StringEscapeUtils.escapeXml11(personDetails.person.lastName.getOrElse(""))),
-        nino = Some(Nino(StringEscapeUtils.escapeXml11(personDetails.person.nino.getOrElse(Nino("")).nino))),
+        nino = Some(Nino(StringEscapeUtils.escapeXml11(personDetails.person.nino.getOrElse(Nino("")).nino)))
       ),
       address = personDetails.address.map(address => address.copy(
         line1 = Some(StringEscapeUtils.escapeXml11(address.line1.getOrElse(""))),
@@ -57,7 +57,7 @@ trait XmlFoToPDF extends Logging{
         line3 = Some(StringEscapeUtils.escapeXml11(address.line3.getOrElse(""))),
         line4 = Some(StringEscapeUtils.escapeXml11(address.line4.getOrElse(""))),
         line5 = Some(StringEscapeUtils.escapeXml11(address.line5.getOrElse(""))),
-        postcode = Some(StringEscapeUtils.escapeXml11(address.postcode.getOrElse(""))),
+        postcode = Some(StringEscapeUtils.escapeXml11(address.postcode.getOrElse("")))
       )),
       correspondenceAddress = personDetails.correspondenceAddress.map(address => address.copy(
         line1 = Some(StringEscapeUtils.escapeXml11(address.line1.getOrElse(""))),

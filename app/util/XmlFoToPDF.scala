@@ -65,10 +65,11 @@ trait XmlFoToPDF extends Logging{
         line3 = Some(StringEscapeUtils.escapeXml11(address.line3.getOrElse(""))),
         line4 = Some(StringEscapeUtils.escapeXml11(address.line4.getOrElse(""))),
         line5 = Some(StringEscapeUtils.escapeXml11(address.line5.getOrElse(""))),
-        postcode = Some(StringEscapeUtils.escapeXml11(address.postcode.getOrElse(""))),
+        postcode = Some(StringEscapeUtils.escapeXml11(address.postcode.getOrElse("")))
       ))
     )
   }
+
 
 
   def createPDF(personDetails: PersonDetails, date: String, messages: Messages): Array[Byte] = {

@@ -16,9 +16,7 @@
 
 package util
 
-
 import models.PersonDetails
-
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, File}
 import javax.inject.{Inject, Singleton}
 import javax.xml.transform.sax.SAXResult
@@ -30,6 +28,8 @@ import org.apache.fop.events.{Event, EventFormatter, EventListener}
 import org.apache.fop.events.model.EventSeverity
 import play.api.Logging
 import play.api.i18n.Messages
+import play.twirl.api.utils.StringEscapeUtils
+import uk.gov.hmrc.domain.Nino
 
 @Singleton
 class DefaultXmlFoToPDF @Inject()(val stylesheetResourceStreamResolver: StylesheetResourceStreamResolver,
@@ -44,9 +44,40 @@ trait XmlFoToPDF extends Logging{
   private val fopConfigFilePath = "pdf/fop.xconf"
   private val niLetterXSLFilePath = "pdf/niLetterXSL.xsl"
 
+  private def escapeHTMLEntitiesForPersonDetails(personDetails: PersonDetails): PersonDetails = {
+    personDetails.copy(
+      person = personDetails.person.copy(
+        firstName = Some(StringEscapeUtils.escapeXml11(personDetails.person.firstName.getOrElse(""))),
+        lastName = Some(StringEscapeUtils.escapeXml11(personDetails.person.lastName.getOrElse(""))),
+        nino = Some(Nino(StringEscapeUtils.escapeXml11(personDetails.person.nino.getOrElse(Nino("")).nino)))
+      ),
+      address = personDetails.address.map(address => address.copy(
+        line1 = Some(StringEscapeUtils.escapeXml11(address.line1.getOrElse(""))),
+        line2 = Some(StringEscapeUtils.escapeXml11(address.line2.getOrElse(""))),
+        line3 = Some(StringEscapeUtils.escapeXml11(address.line3.getOrElse(""))),
+        line4 = Some(StringEscapeUtils.escapeXml11(address.line4.getOrElse(""))),
+        line5 = Some(StringEscapeUtils.escapeXml11(address.line5.getOrElse(""))),
+        postcode = Some(StringEscapeUtils.escapeXml11(address.postcode.getOrElse("")))
+      )),
+      correspondenceAddress = personDetails.correspondenceAddress.map(address => address.copy(
+        line1 = Some(StringEscapeUtils.escapeXml11(address.line1.getOrElse(""))),
+        line2 = Some(StringEscapeUtils.escapeXml11(address.line2.getOrElse(""))),
+        line3 = Some(StringEscapeUtils.escapeXml11(address.line3.getOrElse(""))),
+        line4 = Some(StringEscapeUtils.escapeXml11(address.line4.getOrElse(""))),
+        line5 = Some(StringEscapeUtils.escapeXml11(address.line5.getOrElse(""))),
+        postcode = Some(StringEscapeUtils.escapeXml11(address.postcode.getOrElse("")))
+      ))
+    )
+  }
+
+
+
   def createPDF(personDetails: PersonDetails, date: String, messages: Messages): Array[Byte] = {
+    //html escape personDetails to avoid xss  attack in pdf
+    val escapedPersonDetails = escapeHTMLEntitiesForPersonDetails(personDetails)
+
     val xmlStream: StreamSource = new StreamSource(
-      new ByteArrayInputStream(getXMLSource(personDetails, date))
+      new ByteArrayInputStream(getXMLSource(escapedPersonDetails, date))
     )
     val pdfOutStream = new ByteArrayOutputStream()
     createTransformer(messages).transform(xmlStream, new SAXResult(fop(pdfOutStream).getDefaultHandler))

@@ -34,7 +34,7 @@ class AuthControllerSpec extends SpecBase with MockitoSugar {
 
   "signOut" - {
 
-    "must clear user answers and redirect to sign out, specifying the exit survey as the continue URL" in {
+    "must clear user answers and redirect to sign out, specifying the exit survey as the continue URL when the sca wrapper is enabled" in {
 
       val mockSessionRepository = mock[SessionRepository]
       when(mockSessionRepository.clear(any())) thenReturn Future.successful(true)
@@ -42,12 +42,61 @@ class AuthControllerSpec extends SpecBase with MockitoSugar {
       val application =
         applicationBuilder(None)
           .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
+          .configure("features.sca-wrapper-enabled" -> true)
           .build()
 
       running(application) {
 
         val sentLocation = "http://example.com&origin=STORE_MY_NINO"
         val request   = FakeRequest(GET, routes.AuthController.signout(Some(RedirectUrl(sentLocation)),Some(Origin("STORE_MY_NINO"))).url)
+
+        val result = route(application, request).value
+
+
+        status(result) mustEqual SEE_OTHER
+
+      }
+    }
+
+    "must clear user answers and redirect to sign out, specifying the exit survey as the continue URL when the sca wrapper is disabled" in {
+
+      val mockSessionRepository = mock[SessionRepository]
+      when(mockSessionRepository.clear(any())) thenReturn Future.successful(true)
+
+      val application =
+        applicationBuilder(None)
+          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
+          .configure("features.sca-wrapper-enabled" -> false)
+          .build()
+
+      running(application) {
+
+        val sentLocation = "http://example.com&origin=STORE_MY_NINO"
+        val request = FakeRequest(GET, routes.AuthController.signout(Some(RedirectUrl(sentLocation)), Some(Origin("STORE_MY_NINO"))).url)
+
+        val result = route(application, request).value
+
+
+        status(result) mustEqual SEE_OTHER
+
+      }
+    }
+
+    "must not redirect when origin is missing" in {
+
+      val mockSessionRepository = mock[SessionRepository]
+      when(mockSessionRepository.clear(any())) thenReturn Future.successful(true)
+
+      val application =
+        applicationBuilder(None)
+          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
+          .configure("features.sca-wrapper-enabled" -> false)
+          .build()
+
+      running(application) {
+
+        val sentLocation = "http://example.com&origin=STORE_MY_NINO"
+        val request = FakeRequest(GET, routes.AuthController.signout(Some(RedirectUrl(sentLocation)), None).url)
 
         val result = route(application, request).value
 

@@ -59,7 +59,7 @@ class ConfigDecorator @Inject()(configuration: Configuration, servicesConfig: Se
     configuration.getOptional[String](s"external-url.$key")
 
   def getFeedbackSurveyUrl(origin: Origin): String =
-    feedbackSurveyFrontendHost + "/feedback/" + enc(origin.origin)
+    feedbackSurveyFrontendHost + "/feedback/" + enc(origin.origin) + "/nino"
 
 
   def getBasGatewayFrontendSignOutUrl(continueUrl: String): String =
@@ -89,6 +89,8 @@ class ConfigDecorator @Inject()(configuration: Configuration, servicesConfig: Se
 
   def accessibilityStatementUrl(referrer: String) =
     s"$accessibilityBaseUrl/accessibility-statement$accessibilityRedirectUrl?referrerUrl=${SafeRedirectUrl(accessibilityBaseUrl + referrer).encodedUrl}"
+
+  lazy val wrapperEnabled = configuration.getOptional[Boolean]("features.sca-wrapper-enabled").getOrElse(false)
 
 
 }

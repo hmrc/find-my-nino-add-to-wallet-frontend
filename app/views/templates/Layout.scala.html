@@ -86,7 +86,7 @@
 @accountMenu = @{
     hmrcAccountMenu(
         AccountMenu(
-            signOut = SignOut(href = controllers.auth.routes.AuthController.signout(Some(RedirectUrl(configDecorator.getFeedbackSurveyUrl(configDecorator.defaultOrigin))), None).url),
+            signOut = SignOut(href = controllers.auth.routes.AuthController.signout(Some(RedirectUrl(configDecorator.getFeedbackSurveyUrl(configDecorator.defaultOrigin))), Some(configDecorator.defaultOrigin)).url),
             language = if(messages.lang.code == "cy") Cy else En,
             accountHome = AccountHome(active = accountHome),
             messages = AccountMessages(active = messagesActive, messageCount = Some(0)),

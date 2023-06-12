@@ -56,6 +56,10 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
     Retrievals.allEnrolments and
     Retrievals.name
 
+  private val pertaxHomePageRoute = "/personal-account"
+  private val PTAKey = "HMRC-PT"
+  private val minCLevel = 200
+
   def authorisedAsFMNUser(body: FMNAction[Any])(loginContinueUrl: Call)
                          (implicit ec: ExecutionContext,
                           hc: HeaderCarrier,
@@ -91,13 +95,17 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
     authorised(AuthPredicate)
       .retrieve(FMNRetrievals) {
         case Some(nino) ~ Some(User) ~ Some(internalId) ~ confidenceLevel ~ Some(affinityGroup) ~ allEnrolments ~ Some(name) =>
-          //logger.debug("user is authorised: executing action block")
-          block(AuthContext(NationalInsuranceNumber(nino), isUser = true, internalId, confidenceLevel, affinityGroup, allEnrolments, name, request))
+          //have to check access creds again as we need to redirect to pertax home page
+          if (affinityGroup != AffinityGroup.Individual) {
+            Future successful Redirect(controllers.routes.UnauthorisedController.onPageLoad)
+          } else if(confidenceLevel.level < minCLevel || allEnrolments.getEnrolment(PTAKey).isEmpty) {
+            //logger.warn("redirecting to PTA home page: " + config.ptaUrl + pertaxHomePageRoute)
+            Future successful Redirect(Call("GET", config.pertaxFrontendHost + pertaxHomePageRoute))
+          } else {
+            block(AuthContext(NationalInsuranceNumber(nino), isUser = true, internalId, confidenceLevel, affinityGroup, allEnrolments, name, request))
+          }
         case _ =>
-          //logger.warn("user could not be authorised: redirecting")
-          Future successful Redirect(
-            controllers.routes.UnauthorisedController.onPageLoad
-          )
+          Future successful Redirect(controllers.routes.UnauthorisedController.onPageLoad)
       }
       .recover {
         handleFailure(toContinueUrl(loginContinueUrl))
@@ -127,4 +135,5 @@ object FMNAuth {
       call.url + rh.uri.replaceFirst("/", "")
     }
   }
+
 }

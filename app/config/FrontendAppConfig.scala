@@ -69,11 +69,11 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
   lazy val basGatewayFrontendHost: String     = getExternalUrl(s"bas-gateway-frontend.host").getOrElse("")
   lazy val multiFactorAuthenticationUpliftUrl = s"$basGatewayFrontendHost/bas-gateway/uplift-mfa"
 
-  lazy val origin: String = configuration.getOptional[String]("sosOrigin")
-    .orElse(Some(appName))
-    .getOrElse("undefined")
+  lazy val origin: String = configuration.getOptional[String]("sosOrigin").orElse(Some(appName)).getOrElse("undefined")
 
   lazy val personalAccount = "/personal-account"
-
+  private lazy val identityVerificationHost: String = getExternalUrl(s"identity-verification.host").getOrElse("")
+  private lazy val identityVerificationPrefix: String = getExternalUrl(s"identity-verification.prefix").getOrElse("mdtp")
+  lazy val identityVerificationUpliftUrl = s"$identityVerificationHost/$identityVerificationPrefix/uplift"
 
 }

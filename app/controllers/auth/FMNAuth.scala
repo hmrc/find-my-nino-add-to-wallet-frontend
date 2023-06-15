@@ -21,7 +21,7 @@ import controllers.auth.FMNAuth.toContinueUrl
 import models.NationalInsuranceNumber
 import play.api.Logging
 import play.api.mvc.{ActionBuilder, AnyContent, BodyParser, Call, ControllerComponents, Request, RequestHeader, Result}
-import uk.gov.hmrc.auth.core.AffinityGroup.Individual
+import uk.gov.hmrc.auth.core.AffinityGroup.{Agent, Individual, Organisation}
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.auth.core.retrieve.{Name, ~}
@@ -50,28 +50,6 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
   this: FrontendController =>
   protected type FMNAction[A] = AuthContext[A] => Future[Result]
   private val AuthPredicate = AuthProviders(GovernmentGateway)
-  private val FMNRetrievals =
-    Retrievals.nino and
-    Retrievals.affinityGroup and
-    Retrievals.allEnrolments and
-    Retrievals.credentials and
-    Retrievals.credentialStrength and
-    Retrievals.confidenceLevel and
-    Retrievals.name and
-    Retrievals.trustedHelper and
-    Retrievals.profile and
-    Retrievals.internalId and
-    Retrievals.credentialRole
-
-  /*
-    private val FMNRetrievals = Retrievals.nino and
-    Retrievals.credentialRole and
-    Retrievals.internalId and
-    Retrievals.confidenceLevel and
-    Retrievals.affinityGroup and
-    Retrievals.allEnrolments and
-    Retrievals.name
-   */
 
   private val pertaxHomePageRoute = "/personal-account"
   private val PTAKey = "HMRC-PT"
@@ -102,20 +80,20 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
       }
     }
 
-  private def upliftConfidenceLevel(request: Request[_]): Future[Result] =
+  private def upliftConfidenceLevel(request: Request[_])(implicit config: FrontendAppConfig): Future[Result] =
     Future.successful(
       Redirect(
-        configDecorator.identityVerificationUpliftUrl,
+        config.identityVerificationUpliftUrl,
         Map(
           "origin"          -> Seq(config.origin),
           "confidenceLevel" -> Seq(ConfidenceLevel.L200.toString),
-          "completionURL"   -> Seq(config.pertaxFrontendHost),
-          "failureURL"      -> Seq(config.pertaxFrontendHost)
+          "completionURL"   -> Seq(config.pertaxFrontendHost), // TODO:  half config is missing
+          "failureURL"      -> Seq(config.pertaxFrontendHost)  // TODO:  half config is missing
         )
       )
     )
 
-  private def upliftCredentialStrength: Future[Result] =
+  private def upliftCredentialStrength()(implicit config: FrontendAppConfig): Future[Result] =
     Future.successful(
       Redirect(
         config.multiFactorAuthenticationUpliftUrl,
@@ -125,6 +103,20 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
         )
       )
     )
+
+  private object LT200 {
+    def unapply(confLevel: ConfidenceLevel): Option[ConfidenceLevel] =
+      if (confLevel.level < ConfidenceLevel.L200.level) Some(confLevel) else None
+  }
+
+  private val FMNRetrievals =
+    Retrievals.nino and Retrievals.affinityGroup and Retrievals.allEnrolments and Retrievals.credentials and Retrievals.credentialStrength and
+      Retrievals.confidenceLevel and Retrievals.name and Retrievals.trustedHelper and Retrievals.profile and
+      Retrievals.internalId and Retrievals.credentialRole
+  /*
+    private val FMNRetrievals = Retrievals.nino and Retrievals.credentialRole and Retrievals.internalId and
+    Retrievals.confidenceLevel and Retrievals.affinityGroup and Retrievals.allEnrolments and Retrievals.name
+   */
 
   private def authorisedUser[A](loginContinueUrl: Call, block: FMNAction[A])
                                (implicit
@@ -141,7 +133,17 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
         case _ ~ Some(Individual) ~ _ ~ _ ~ _ ~ LT200(_) ~ _ ~ _ ~ _~ _ ~ _ =>
           upliftConfidenceLevel(request)
 
-        case Some(nino) ~ Some(User) ~ Some(internalId) ~ confidenceLevel ~ Some(affinityGroup) ~ allEnrolments ~ Some(name) =>
+          // TODO: not sure we have Organisation and Agent users
+        case _ ~ Some(Organisation | Agent) ~ _ ~ _ ~ _ ~ LT200(_) ~ _ ~ _ ~ _~ _ ~ _ =>
+          upliftConfidenceLevel(request)
+
+        case _ ~ Some(Organisation | Agent) ~ _ ~ _ ~ (Some(CredentialStrength.weak) | None) ~ _ ~ _ ~ _ ~ _ ~ _ ~ _ =>
+          upliftCredentialStrength
+
+       // case Some(nino) ~ Some(affinityGroup) ~ allEnrolments ~ Some(credentials) ~ Some(credentialStrength) ~ confidenceLevel ~ Some(name)
+       //   ~ Some(trustedHelper) ~ Some(profile) ~ Some(internalId)  ~ Some(credentialRole) =>
+
+        case Some(nino) ~ Some(affinityGroup) ~ allEnrolments ~ _ ~ _ ~ confidenceLevel ~ Some(name) ~ _ ~ _ ~ Some(internalId)  ~ _ =>
           //have to check access creds again as we need to redirect to pertax home page
           if (affinityGroup != AffinityGroup.Individual) {
             Future successful Redirect(controllers.routes.UnauthorisedController.onPageLoad)

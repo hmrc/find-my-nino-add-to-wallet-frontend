@@ -66,4 +66,14 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
 
   lazy val SCAWrapperEnabled = configuration.getOptional[Boolean]("features.sca-wrapper-enabled").getOrElse(false)
 
+  lazy val basGatewayFrontendHost: String     = getExternalUrl(s"bas-gateway-frontend.host").getOrElse("")
+  lazy val multiFactorAuthenticationUpliftUrl = s"$basGatewayFrontendHost/bas-gateway/uplift-mfa"
+
+  lazy val origin: String = configuration.getOptional[String]("sosOrigin")
+    .orElse(Some(appName))
+    .getOrElse("undefined")
+
+  lazy val personalAccount = "/personal-account"
+
+
 }

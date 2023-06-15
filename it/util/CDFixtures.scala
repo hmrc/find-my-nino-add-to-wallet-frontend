@@ -42,7 +42,6 @@ import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
 
-
 trait CDFixtures {
   def buildPersonDetails: PersonDetails =
     PersonDetails(

@@ -31,7 +31,6 @@ class ConfigDecorator @Inject()(configuration: Configuration, servicesConfig: Se
   val host: String    = configuration.get[String]("host")
   val appName: String = configuration.get[String]("appName")
 
-
   val serviceName = "save-your-national-insurance-number"
   val serviceNamePTA = "Personal tax account"
 

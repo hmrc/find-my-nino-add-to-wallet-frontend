@@ -141,7 +141,7 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
           if (affinityGroup == AffinityGroup.Agent) {
             Future successful Redirect(controllers.routes.UnauthorisedController.onPageLoad)
           } else if(confidenceLevel.level < minCLevel) {
-            Future successful Redirect(Call("GET", config.pertaxFrontendHost + pertaxHomePageRoute))
+            Future successful Redirect(controllers.routes.UnauthorisedController.onPageLoad)
           } else if (!allEnrolments.getEnrolment(PTAKey).isDefined) {
             Future successful Redirect(controllers.routes.UnauthorisedController.onPageLoad)
           }

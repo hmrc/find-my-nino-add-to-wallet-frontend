@@ -138,7 +138,7 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
 
         case Some(nino) ~ Some(affinityGroup) ~ allEnrolments ~ _ ~ _ ~ confidenceLevel ~ Some(name) ~ _ ~ _ ~ Some(internalId)  ~ _ =>
           //have to check access creds again as we need to redirect to pertax home page
-          if (affinityGroup != AffinityGroup.Individual) {
+          if (affinityGroup == AffinityGroup.Agent) {
             Future successful Redirect(controllers.routes.UnauthorisedController.onPageLoad)
           } else if(confidenceLevel.level < minCLevel || allEnrolments.getEnrolment(PTAKey).isEmpty) {
             //logger.warn("redirecting to PTA home page: " + config.ptaUrl + pertaxHomePageRoute)

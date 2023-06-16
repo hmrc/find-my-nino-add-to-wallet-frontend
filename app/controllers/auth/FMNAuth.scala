@@ -51,7 +51,7 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
   protected type FMNAction[A] = AuthContext[A] => Future[Result]
   private val AuthPredicate = AuthProviders(GovernmentGateway)
 
-  private val pertaxHomePageRoute = "/personal-account"
+  //private val pertaxHomePageRoute = "/personal-account"
   private val PTAKey = "HMRC-PT"
   private val minCLevel = 200
 
@@ -87,8 +87,8 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
         Map(
           "origin"          -> Seq(config.origin),
           "confidenceLevel" -> Seq(ConfidenceLevel.L200.toString),
-          "completionURL"   -> Seq(config.pertaxFrontendHost), // TODO:  half config is missing
-          "failureURL"      -> Seq(config.pertaxFrontendHost)  // TODO:  half config is missing
+          "completionURL"   -> Seq("http://localhost:14006/save-your-national-insurance-number"),
+          "failureURL"      -> Seq(config.pertaxFrontendAuthHost + config.personalAccount)
         )
       )
     )
@@ -99,7 +99,7 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
         config.multiFactorAuthenticationUpliftUrl,
         Map(
           "origin"      -> Seq(config.origin),
-          "continueUrl" -> Seq(config.pertaxFrontendHost + config.personalAccount)
+          "continueUrl" -> Seq(config.pertaxFrontendAuthHost + config.personalAccount)
         )
       )
     )
@@ -140,16 +140,13 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
         case _ ~ Some(Organisation | Agent) ~ _ ~ _ ~ (Some(CredentialStrength.weak) | None) ~ _ ~ _ ~ _ ~ _ ~ _ ~ _ =>
           upliftCredentialStrength
 
-       // case Some(nino) ~ Some(affinityGroup) ~ allEnrolments ~ Some(credentials) ~ Some(credentialStrength) ~ confidenceLevel ~ Some(name)
-       //   ~ Some(trustedHelper) ~ Some(profile) ~ Some(internalId)  ~ Some(credentialRole) =>
-
         case Some(nino) ~ Some(affinityGroup) ~ allEnrolments ~ _ ~ _ ~ confidenceLevel ~ Some(name) ~ _ ~ _ ~ Some(internalId)  ~ _ =>
           //have to check access creds again as we need to redirect to pertax home page
           if (affinityGroup != AffinityGroup.Individual) {
             Future successful Redirect(controllers.routes.UnauthorisedController.onPageLoad)
           } else if(confidenceLevel.level < minCLevel || allEnrolments.getEnrolment(PTAKey).isEmpty) {
             //logger.warn("redirecting to PTA home page: " + config.ptaUrl + pertaxHomePageRoute)
-            Future successful Redirect(Call("GET", config.pertaxFrontendHost + pertaxHomePageRoute))
+            Future successful Redirect(Call("GET", config.pertaxFrontendAuthHost + config.personalAccount))
           } else {
             block(AuthContext(NationalInsuranceNumber(nino), isUser = true, internalId, confidenceLevel, affinityGroup, allEnrolments, name, request))
           }

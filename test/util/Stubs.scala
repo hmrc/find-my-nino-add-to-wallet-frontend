@@ -27,10 +27,9 @@ object Stubs {
       |	"authorise": [{
       |		"authProviders": ["GovernmentGateway"]
       |	}],
-      |	"retrieve": ["nino", "credentialRole", "internalId", "confidenceLevel","affinityGroup", "allEnrolments", "optionalName" ]
+      |	"retrieve": ["nino", "affinityGroup", "allEnrolments", "optionalCredentials", "credentialStrength", "confidenceLevel", "optionalName", "trustedHelper", "profile", "internalId", "credentialRole" ]
       |}
       |""".stripMargin
-
 
   def userLoggedInFMNUser(testUserJson: String): StubMapping =
     stubFor(

@@ -140,10 +140,12 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
           //have to check access creds again as we need to redirect to pertax home page
           if (affinityGroup == AffinityGroup.Agent) {
             Future successful Redirect(controllers.routes.UnauthorisedController.onPageLoad)
-          } else if(confidenceLevel.level < minCLevel || allEnrolments.getEnrolment(PTAKey).isEmpty) {
-            //logger.warn("redirecting to PTA home page: " + config.ptaUrl + pertaxHomePageRoute)
-            Future successful Redirect(Call("GET", config.pertaxFrontendAuthHost + config.personalAccount))
-          } else {
+          } else if(confidenceLevel.level < minCLevel) {
+            Future successful Redirect(Call("GET", config.pertaxFrontendHost + pertaxHomePageRoute))
+          } else if (!allEnrolments.getEnrolment(PTAKey).isDefined) {
+            Future successful Redirect(controllers.routes.UnauthorisedController.onPageLoad)
+          }
+          else {
             block(AuthContext(NationalInsuranceNumber(nino), isUser = true, internalId, confidenceLevel, affinityGroup, allEnrolments, name, request))
           }
         case _ =>

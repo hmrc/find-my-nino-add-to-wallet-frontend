@@ -46,7 +46,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
   val signOutUrl: String                = configuration.get[String]("urls.signOut")
   lazy val findMyNinoServiceUrl: String = servicesConfig.baseUrl("find-my-nino-add-to-wallet-service")
 
-  lazy val pertaxFrontendHost: String = getExternalUrl("pertax-frontend.host").getOrElse("")
+  lazy val pertaxFrontendAuthHost: String = getExternalUrl("pertax-frontend.auth-host").getOrElse("")
 
   private val exitSurveyBaseUrl: String = getExternalUrl(s"feedback-survey-frontend.host").getOrElse("")
   val exitSurveyUrl: String             = s"$exitSurveyBaseUrl/feedback/save-your-national-insurance-number"

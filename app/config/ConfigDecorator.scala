@@ -51,6 +51,7 @@ class ConfigDecorator @Inject()(configuration: Configuration, servicesConfig: Se
   lazy val feedbackSurveyFrontendHost = getExternalUrl(s"feedback-survey-frontend.host").getOrElse("")
   //val feedbackSurveyFrontendHost = servicesConfig.baseUrl("feedback-survey-frontend")
 
+  lazy val generalQueriesUrl     = "https://www.gov.uk/contact-hmrc"
 
   val defaultOrigin: Origin = Origin("STORE_MY_NINO")
 

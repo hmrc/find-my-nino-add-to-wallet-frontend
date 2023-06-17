@@ -16,8 +16,9 @@
 
 package controllers.auth
 
-import config.FrontendAppConfig
+import config.{ConfigDecorator, FrontendAppConfig}
 import controllers.auth.FMNAuth.toContinueUrl
+import controllers.routes
 import models.NationalInsuranceNumber
 import play.api.Logging
 import play.api.mvc.{ActionBuilder, AnyContent, BodyParser, Call, ControllerComponents, Request, RequestHeader, Result}
@@ -31,7 +32,6 @@ import uk.gov.hmrc.play.bootstrap.binders.SafeRedirectUrl
 import uk.gov.hmrc.play.bootstrap.config.AuthRedirects
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
-
 import scala.concurrent.{ExecutionContext, Future}
 
 
@@ -80,26 +80,27 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
       }
     }
 
-  private def upliftConfidenceLevel(request: Request[_])(implicit config: FrontendAppConfig): Future[Result] =
+  private def upliftConfidenceLevel(request: Request[_])(implicit config: FrontendAppConfig): Future[Result] = {
     Future.successful(
       Redirect(
         config.identityVerificationUpliftUrl,
         Map(
-          "origin"          -> Seq(config.origin),
+          "origin"          -> Seq(config.defaultOrigin.origin),
           "confidenceLevel" -> Seq(ConfidenceLevel.L200.toString),
-          "completionURL"   -> Seq("http://localhost:14006/save-your-national-insurance-number"),
-          "failureURL"      -> Seq(config.pertaxFrontendAuthHost + config.personalAccount)
+          "completionURL"   -> Seq(config.saveYourNationalNumberFrontendHost + routes.ApplicationController.showUpliftJourneyOutcome(Some(SafeRedirectUrl(request.uri)))),
+          "failureURL"      -> Seq(config.saveYourNationalNumberFrontendHost + routes.ApplicationController.showUpliftJourneyOutcome(Some(SafeRedirectUrl(request.uri))))
         )
       )
     )
+  }
 
   private def upliftCredentialStrength()(implicit config: FrontendAppConfig): Future[Result] =
     Future.successful(
       Redirect(
         config.multiFactorAuthenticationUpliftUrl,
         Map(
-          "origin"      -> Seq(config.origin),
-          "continueUrl" -> Seq(config.pertaxFrontendAuthHost + config.personalAccount)
+          "origin"      -> Seq(config.defaultOrigin.origin),
+          "continueUrl" -> Seq(config.saveYourNationalNumberFrontendHost + "/save-your-national-insurance-number")
         )
       )
     )
@@ -117,6 +118,9 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
     private val FMNRetrievals = Retrievals.nino and Retrievals.credentialRole and Retrievals.internalId and
     Retrievals.confidenceLevel and Retrievals.affinityGroup and Retrievals.allEnrolments and Retrievals.name
    */
+
+
+
 
   private def authorisedUser[A](loginContinueUrl: Call, block: FMNAction[A])
                                (implicit

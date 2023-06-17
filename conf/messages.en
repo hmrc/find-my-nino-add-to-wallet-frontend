@@ -136,3 +136,15 @@ label.sign_in=Sign in
 label.youve_been_signed_out=For your security, we signed you out
 label.timeout_message=We did not save your answers.
 label.please_sign_in_again=Please sign in again.
+
+label.service_unavailable=Service unavailable
+label.sorry_we_are_currently_experiencing_technical_issues=Sorry, we are currently experiencing technical issues.
+label.you_can=You can:
+label.try_confirm_identity_again=try to confirm your identity again
+label.contact_hm_revenues_and_customs_for_help=contact HM Revenue and Customs for help
+label.we_cannot_confirm_your_identity=We cannot confirm your identity
+label.you_have_tried_to_confirm_your_identity_=You have tried to confirm your identity too many times.
+label.try_again_in_24_hours=Try again in 24 hours.
+label.we_have_confirmed_your_identity=We have confirmed your identity
+label.you_can_sign_in_to_your_personal_tax_account=You can now sign in to your personal tax account
+global.label.continue_button=Continue

@@ -17,8 +17,7 @@
 package controllers
 
 import base.SpecBase
-import connectors.{ApplePassConnector, CitizenDetailsConnector, IndividualDetailsSuccessResponse,
-  PayeIndividualDetailsConnector, PersonDetailsSuccessResponse, PersonDetailsErrorResponse}
+import connectors.{ApplePassConnector, CitizenDetailsConnector, IdentityVerificationFrontendConnector, IndividualDetailsSuccessResponse, PayeIndividualDetailsConnector, PersonDetailsErrorResponse, PersonDetailsSuccessResponse}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.{reset, when}
@@ -27,12 +26,14 @@ import play.api.inject
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
+import services.Success
+import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
 import util.Fixtures.individualRespJson
 import util.CDFixtures
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
 import util.TestData.NinoUser
-import views.html.{StoreMyNinoView,ErrorTemplate}
+import views.html.{ErrorTemplate, StoreMyNinoView}
 
 import java.util.Base64
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -62,9 +63,14 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
     when(mockCitizenDetailsConnector.personDetails(any())(any()))
       .thenReturn(Future(PersonDetailsSuccessResponse(pd)))
 
-    reset(mockPayeIndividualDetailsConnector)
-    when(mockPayeIndividualDetailsConnector.individualDetails(any())(any()))
-      .thenReturn(Future(IndividualDetailsSuccessResponse.apply(individualRespJson)))
+    reset(mockIdentityVerificationFrontendConnector)
+    when(mockIdentityVerificationFrontendConnector.getIVJourneyStatus(any())(any(), any()))
+      .thenReturn(cats.data.EitherT.right[UpstreamErrorResponse](Future.successful(HttpResponse(OK, ""))))
+
+
+
+
+
 
     when(mockScaWrapperDataConnector.messageData()(any(), any()))
       .thenReturn(Future.successful(messageDataResponse))
@@ -82,7 +88,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
   val mockSessionRepository = mock[SessionRepository]
   val mockApplePassConnector = mock[ApplePassConnector]
   val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
-  val mockPayeIndividualDetailsConnector = mock[PayeIndividualDetailsConnector]
+  val mockIdentityVerificationFrontendConnector = mock[IdentityVerificationFrontendConnector]
 
   val fakeBase64String = "UEsDBBQACAgIABxqJlYAAAAAAA"
 
@@ -95,19 +101,21 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[ApplePassConnector].toInstance(mockApplePassConnector),
             inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector),
-            inject.bind[PayeIndividualDetailsConnector].toInstance(mockPayeIndividualDetailsConnector)
+            inject.bind[IdentityVerificationFrontendConnector].toInstance(mockIdentityVerificationFrontendConnector)
           )
           .configure("features.sca-wrapper-enabled" -> false)
           .build()
 
       when(mockCitizenDetailsConnector.personDetails(any())(any()))
         .thenReturn(Future(PersonDetailsErrorResponse(new RuntimeException("error"))))
+
       running(application) {
         userLoggedInFMNUser(NinoUser)
         val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         status(result) mustEqual NOT_FOUND
+
         contentAsString(result) mustEqual (errview("Details not found",
           "Your details were not found.", "Your details were not found, please try again later.")(request, messages(application))).toString
       }
@@ -121,8 +129,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .overrides(
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[ApplePassConnector].toInstance(mockApplePassConnector),
-            inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector),
-            inject.bind[PayeIndividualDetailsConnector].toInstance(mockPayeIndividualDetailsConnector)
+            inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
           )
           .configure("features.sca-wrapper-enabled" -> false)
           .build()
@@ -146,8 +153,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[ApplePassConnector].toInstance(mockApplePassConnector),
             inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector),
-            inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),
-            inject.bind[PayeIndividualDetailsConnector].toInstance(mockPayeIndividualDetailsConnector)
+            inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector)
           )
           .configure("features.sca-wrapper-enabled" -> true)
           .build()

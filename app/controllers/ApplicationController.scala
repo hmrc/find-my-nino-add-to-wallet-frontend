@@ -31,7 +31,6 @@ import java.time.LocalDate
 import scala.concurrent.{ExecutionContext, Future}
 import views.html.identity._
 
-
 class ApplicationController @Inject()(
   val identityVerificationFrontendService: IdentityVerificationFrontendService,
   authConnector: AuthConnector,
@@ -49,12 +48,8 @@ class ApplicationController @Inject()(
   frontendAppConfig: FrontendAppConfig)
   extends FMNBaseController(authConnector) with I18nSupport {
 
-
-
-
   def uplift(redirectUrl: Option[SafeRedirectUrl]): Action[AnyContent] = Action.async {
     Future.successful(Redirect(redirectUrl.map(_.url).getOrElse(routes.StoreMyNinoController.onPageLoad.url)))
-
   }
 
   def showUpliftJourneyOutcome(continueUrl: Option[SafeRedirectUrl]): Action[AnyContent] =

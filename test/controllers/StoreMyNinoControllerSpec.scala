@@ -150,7 +150,9 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[ApplePassConnector].toInstance(mockApplePassConnector),
             inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector),
-            inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector)
+            inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),
+            inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),
+            inject.bind[GooglePassUtil].toInstance(mockGooglePassUtil)
           )
           .configure("features.sca-wrapper-enabled" -> true)
           .build()
@@ -161,7 +163,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         status(result) mustEqual OK
-        contentAsString(result) mustEqual (view(passId, "AA 00 00 03 B", false)(request.addAttr(Keys.wrapperDataKey, wrapperDataResponse), messages(application))).toString
+        contentAsString(result) mustEqual (view(passId, fakeGooglePassSaveUrl, "AA 00 00 03 B", false)(request.addAttr(Keys.wrapperDataKey, wrapperDataResponse), messages(application))).toString
       }
     }
 

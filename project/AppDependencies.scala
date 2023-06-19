@@ -16,11 +16,11 @@ object AppDependencies {
     "uk.gov.hmrc.mongo"             %% "hmrc-mongo-play-28"                   %   mongoVersion,
     "org.apache.xmlgraphics"        % "fop"                                   %   "2.6",
     "org.typelevel"                 %% "cats-core"                            %   "2.8.0",
-    "uk.gov.hmrc"                   %% "sca-wrapper"                          % "1.0.31",
-    "com.google.auth"               % "google-auth-library-oauth2-http"       % "1.16.0",
-    "com.auth0"                     % "java-jwt"                              % "4.4.0",
-    "com.fasterxml.jackson.module"  %% "jackson-module-scala"                 % "2.14.2",
-    "com.google.api-client"         % "google-api-client"
+    "uk.gov.hmrc"                   %% "sca-wrapper"                          %   "1.0.31",
+    "com.google.auth"               % "google-auth-library-oauth2-http"       %   "1.16.0",
+    "com.auth0"                     % "java-jwt"                              %   "4.4.0",
+    "com.fasterxml.jackson.module"  %% "jackson-module-scala"                 %   "2.14.2",
+    "com.google.api-client"         % "google-api-client"                     %   "2.2.0"
   )
 
   val test = Seq(

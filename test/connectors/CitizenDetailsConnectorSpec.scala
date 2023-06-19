@@ -16,8 +16,25 @@
 
 package connectors
 
+/*
+ * Copyright 2023 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import com.kenshoo.play.metrics.Metrics
-import config.{ConfigDecorator, FrontendAppConfig}
+import config.ConfigDecorator
+import controllers.ConnectorSpec
 import models._
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.Application
@@ -25,6 +42,7 @@ import play.api.libs.json.Json
 import play.api.test.{DefaultAwaitTimeout, Injecting}
 import services.http.SimpleHttp
 import uk.gov.hmrc.domain.{Generator, Nino}
+import util.Fixtures.buildPersonDetails
 import util.WireMockHelper
 
 import java.time.LocalDate
@@ -47,38 +65,7 @@ class CitizenDetailsConnectorSpec
 
     def url: String
 
-    val fakeNino = Nino(new Generator(new Random()).nextNino.nino)
-
-    def buildFakeAddress: Address = Address(
-      Some("1 Fake Street"),
-      Some("Fake Town"),
-      Some("Fake City"),
-      Some("Fake Region"),
-      None,
-      Some("AA1 1AA"),
-      None,
-      Some(LocalDate.of(2015, 3, 15)),
-      None,
-      Some("Residential"),
-      false
-    )
-
-    val personDetails: PersonDetails =
-      PersonDetails(
-        Person(
-          Some("Firstname"),
-          Some("Middlename"),
-          Some("Lastname"),
-          Some("FML"),
-          Some("Dr"),
-          Some("Phd."),
-          Some("M"),
-          Some(LocalDate.parse("1945-03-18")),
-          Some(fakeNino)
-        ),
-        Some(buildFakeAddress),
-        None
-      )
+    val personDetails: PersonDetails = buildPersonDetails
 
     val address: Address = Address(
       line1 = Some("1 Fake Street"),
@@ -97,15 +84,18 @@ class CitizenDetailsConnectorSpec
     lazy val connector = {
       val httpClient = app.injector.instanceOf[SimpleHttp]
       val metrics = app.injector.instanceOf[Metrics]
-      val config = app.injector.instanceOf[FrontendAppConfig]
-      new CitizenDetailsConnector(httpClient, metrics, mock[ConfigDecorator])
+      val configDecorator = app.injector.instanceOf[ConfigDecorator]
+      new CitizenDetailsConnector(httpClient, metrics, configDecorator)
     }
   }
+
+
 
   "Calling personDetails" must {
 
     trait LocalSetup extends SpecSetup {
       val metricId = "get-person-details"
+
       def url: String = s"/citizen-details/$nino/designatory-details"
     }
 
@@ -119,8 +109,8 @@ class CitizenDetailsConnectorSpec
       stubGet(url, NOT_FOUND, None)
       val result = connector.personDetails(nino).futureValue
       result mustBe PersonDetailsNotFoundResponse
+
     }
 
-  }
 
-}
+  }}

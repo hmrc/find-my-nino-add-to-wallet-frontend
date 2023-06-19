@@ -16,24 +16,22 @@
 
 package connectors
 
-import com.google.inject.Inject
 import com.kenshoo.play.metrics.Metrics
 import config.ConfigDecorator
+import org.mockito.ArgumentMatchers.any
 import org.scalatestplus.mockito.MockitoSugar
-import org.scalatestplus.mockito.MockitoSugar.mock
-import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import play.api.Application
-import play.api.test.Helpers._
-import play.api.test.Helpers.await
 import play.api.test.{DefaultAwaitTimeout, Injecting}
 import services.http.SimpleHttp
 import uk.gov.hmrc.domain.{Generator, Nino}
-import util.{CDFixtures, WireMockHelper}
+import util.WireMockHelper
 
 import scala.util.Random
 
-class PayeIndividualDetailsConnectorSpec extends ConnectorSpec
+class PayeIndividualDetailsConnectorSpec
+  extends ConnectorSpec
   with WireMockHelper
+  with MockitoSugar
   with DefaultAwaitTimeout
   with Injecting {
 
@@ -41,28 +39,47 @@ class PayeIndividualDetailsConnectorSpec extends ConnectorSpec
     Map("microservice.services.identity-verification-frontend.port" -> server.port())
   )
 
-  val nino: Nino = Nino(new Generator(new Random()).nextNino.nino)
+  trait SpecSetup {
+    def url: String
 
-  val connector = new PayeIndividualDetailsConnector(mock[SimpleHttp], mock[Metrics], mock[ConfigDecorator])
+    lazy val connector = {
+      val httpClient = app.injector.instanceOf[SimpleHttp]
+      val metrics = app.injector.instanceOf[Metrics]
+      val configDecorator = app.injector.instanceOf[ConfigDecorator]
+      new PayeIndividualDetailsConnector(httpClient, metrics, configDecorator)
+    }
+  }
+
+  val nino: Nino = Nino(new Generator(new Random()).nextNino.nino)
 
   "PayeIndividualDetailsConnector" must {
 
+    trait LocalSetup extends SpecSetup {
+      val metricId = "individual-details"
+      def url: String = s"/pay-as-you-earn/02.00.00/individuals/$nino"
+    }
+
     "the getPersonalDetails method" must {
 
-
-      "return pay personal details for a successful nino" in {
-        val result = connector.individualDetails(nino)
-
+      "return 200 for a successful nino" ignore new LocalSetup {
+        stubGet(url, OK, None)
+        val result = connector.individualDetails(nino).futureValue
+        result mustBe IndividualDetailsSuccessResponse(any())
       }
 
-      "return 500 status when call to DES fails" in {
-        val result = connector.individualDetails(nino)
+      "return 404 status when call to DES fails" in new LocalSetup {
+        stubGet(url, NOT_FOUND, None)
+        val result = connector.individualDetails(nino).futureValue
+        result mustBe IndividualDetailsNotFoundResponse
+      }
 
-
+      "return 500 for a successful nino" ignore new LocalSetup {
+        stubGet(url, INTERNAL_SERVER_ERROR, None)
+        val result = connector.individualDetails(nino).futureValue
+        result mustBe IndividualDetailsSuccessResponse
       }
 
     }
-
   }
 
 }

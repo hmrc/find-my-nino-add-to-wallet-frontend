@@ -109,6 +109,7 @@ class SpecBase extends WireMockSupport with MockitoSugar with GuiceOneAppPerSuit
   val wrapperDataResponse = WrapperDataResponse(Seq(MenuItemConfig("sample-text", "sample-href", leftAligned = false,
     position = 0, None, None)), PtaMinMenuConfig(menuName = "sample-menu", backName = "sample-back-name"))
 
+
 }
 
 

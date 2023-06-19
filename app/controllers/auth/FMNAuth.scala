@@ -34,7 +34,6 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import scala.concurrent.{ExecutionContext, Future}
 
-
 final case class AuthContext[A](
                                  nino: NationalInsuranceNumber,
                                  isUser: Boolean,
@@ -114,13 +113,6 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
     Retrievals.nino and Retrievals.affinityGroup and Retrievals.allEnrolments and Retrievals.credentials and Retrievals.credentialStrength and
       Retrievals.confidenceLevel and Retrievals.name and Retrievals.trustedHelper and Retrievals.profile and
       Retrievals.internalId and Retrievals.credentialRole
-  /*
-    private val FMNRetrievals = Retrievals.nino and Retrievals.credentialRole and Retrievals.internalId and
-    Retrievals.confidenceLevel and Retrievals.affinityGroup and Retrievals.allEnrolments and Retrievals.name
-   */
-
-
-
 
   private def authorisedUser[A](loginContinueUrl: Call, block: FMNAction[A])
                                (implicit

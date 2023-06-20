@@ -19,21 +19,19 @@ package controllers.auth
 import base.SpecBase
 import config.{ConfigDecorator, FrontendAppConfig}
 import controllers.ApplicationController
+import org.mockito.ArgumentMatchers.any
 import org.mockito.MockitoSugar.when
-import play.api.Application
-import play.api.http.Status.SEE_OTHER
+import play.api.http.Status.{INTERNAL_SERVER_ERROR, SEE_OTHER}
 import play.api.mvc.MessagesControllerComponents
-import play.api.test.{FakeRequest, Helpers}
-import services.IdentityVerificationFrontendService
+import play.api.test.FakeRequest
+import services.{IdentityVerificationFrontendService, Success}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HttpVerbs.GET
 import views.html.identity.{CannotConfirmIdentityView, FailedIvIncompleteView, LockedOutView, SuccessView, TechnicalIssuesView, TimeOutView}
 
-import scala.concurrent.ExecutionContext
-import org.scalatestplus.mockito.MockitoSugar
+import scala.concurrent.{ExecutionContext, Future}
 import play.api.test.Helpers.{defaultAwaitTimeout, redirectLocation, status}
-
-
+import uk.gov.hmrc.play.bootstrap.binders.SafeRedirectUrl
 
 class FMNAuthTest extends SpecBase {
 
@@ -59,24 +57,31 @@ class FMNAuthTest extends SpecBase {
       injected[TechnicalIssuesView]
     )(config, mock[ConfigDecorator], env, ec, injected[MessagesControllerComponents], mock[FrontendAppConfig])
 
-
   "Methods tests" - {
-
-
 
     "return a Redirect with the correct parameters" in {
       val fakeRequest = FakeRequest(GET, "/path/to/resource")
       val result = controller.uplift(None)(fakeRequest)
       status(result) mustBe SEE_OTHER
       redirectLocation(result) mustBe Some("/save-your-national-insurance-number")
-      /*val params = queryString(redirectLocation(result).get)
-      params("origin") mustBe Seq("http://example.com")
-      params("confidenceLevel") mustBe Seq("L200")
-      params("completionURL") mustBe Seq("http://example.com/path/to/success")
-      params("failureURL") mustBe Seq("http://example.com/path/to/failure")*/
     }
+
+    "showUpliftJourneyOutcome" in {
+      val fakeRequest = FakeRequest(GET, "/path/to/resource")
+      val result = controller.showUpliftJourneyOutcome(None)(fakeRequest)
+      status(result) mustBe INTERNAL_SERVER_ERROR
+    }
+
+    "showUpliftJourneyOutcome 2" in {
+      val fakeRequest = FakeRequest(GET, "/save-your-national-insurance-number")
+      val url = SafeRedirectUrl("/save-your-national-insurance-number")
+      //when(mockIdentityVerificationFrontendService.getIVJourneyStatus("Success")).thenReturn(Future.successful(Success))
+
+      //when(fakeRequest.getQueryString("Success")).thenReturn(Success)
+      val result = controller.showUpliftJourneyOutcome(Some(url))(fakeRequest)
+      status(result) mustBe INTERNAL_SERVER_ERROR
+    }
+
   }
-
-
 
 }

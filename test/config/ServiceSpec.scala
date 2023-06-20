@@ -14,24 +14,21 @@
  * limitations under the License.
  */
 
-package queries
+package config
 
-import models.UserAnswers
-import play.api.libs.json.JsPath
+import base.SpecBase
+import config.Service.convertToString
+import org.scalatestplus.mockito.MockitoSugar
 
-import scala.util.{Success, Try}
+class ServiceSpec extends SpecBase with MockitoSugar{
+   "Service" - {
 
-// $COVERAGE-OFF$
-sealed trait Query {
+     "test baseUrl value" in {
+       val service = Service("localhost", "1111", "http")
+       service.baseUrl mustBe  "http://localhost:1111"
+       service.toString mustBe  "http://localhost:1111"
+       convertToString(service) mustBe  "http://localhost:1111"
+     }
 
-  def path: JsPath
+   }
 }
-
-trait Gettable[A] extends Query
-
-trait Settable[A] extends Query {
-
-  def cleanup(value: Option[A], userAnswers: UserAnswers): Try[UserAnswers] =
-    Success(userAnswers)
-}
-// $COVERAGE-ON$

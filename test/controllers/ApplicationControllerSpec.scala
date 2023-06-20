@@ -29,7 +29,7 @@ import play.api.mvc.{AnyContentAsEmpty, MessagesControllerComponents, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
-import services.{FailedMatching, IdentityVerificationFrontendService, IdentityVerificationResponse, Incomplete, LockedOut, PrecondFailed, Success, TechnicalIssue, Timeout, UserAborted}
+import services.{FailedMatching, IdentityVerificationFrontendService, IdentityVerificationResponse, Incomplete, InsufficientEvidence, LockedOut, PrecondFailed, Success, TechnicalIssue, Timeout, UserAborted}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.UpstreamErrorResponse
 import uk.gov.hmrc.http.HttpResponse
@@ -232,6 +232,19 @@ class ApplicationControllerSpec extends SpecBase with CDFixtures with MockitoSug
           val result = controller.showUpliftJourneyOutcome(None)(request)
 
           assert(status(result) == UNAUTHORIZED)
+        }
+      }
+
+      "showUpliftJourneyOutcome should return Unauthorized when IV journey status is InsufficientEvidence" in new LocalSetup {
+
+        running(application) {
+          when(mockIdentityVerificationFrontendService.getIVJourneyStatus(any())(any(), any()))
+            .thenReturn(EitherT[Future, UpstreamErrorResponse, IdentityVerificationResponse](Future.successful(Right(InsufficientEvidence))))
+
+          val request = FakeRequest(GET, "?journeyId=XXXXX&token=XXXXXX")
+          val result = controller.showUpliftJourneyOutcome(None)(request)
+
+          assert(status(result) == SEE_OTHER)
         }
       }
 

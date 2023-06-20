@@ -244,7 +244,7 @@ class ApplicationControllerSpec extends SpecBase with CDFixtures with MockitoSug
           val request = FakeRequest(GET, "?journeyId=XXXXX&token=XXXXXX")
           val result = controller.showUpliftJourneyOutcome(None)(request)
 
-          assert(status(result) == SEE_OTHER)
+          assert(status(result) == UNAUTHORIZED)
         }
       }
 

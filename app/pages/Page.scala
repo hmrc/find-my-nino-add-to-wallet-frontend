@@ -20,7 +20,7 @@ import models.{UserAnswers}
 import play.api.mvc.Call
 
 import scala.language.implicitConversions
-
+// $COVERAGE-OFF$
 trait Page {
   def route(): Call
   def nextPageNormalMode(answers: UserAnswers): Page
@@ -30,3 +30,4 @@ object Page {
   implicit def toString(page: Page): String =
     page.toString
 }
+// $COVERAGE-ON$

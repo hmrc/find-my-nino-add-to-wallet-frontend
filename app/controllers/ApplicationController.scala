@@ -19,7 +19,7 @@ package controllers
 import com.google.inject.Inject
 import config.{ConfigDecorator, FrontendAppConfig}
 import controllers.bindable.Origin
-import play.api.{Configuration, Environment, Logger}
+import play.api.{Configuration, Environment}
 import play.api.i18n.I18nSupport
 import play.api.mvc._
 import services.{IdentityVerificationFrontendService, InsufficientEvidence, Success, UserAborted, _}
@@ -27,7 +27,6 @@ import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl.idFunctor
 import uk.gov.hmrc.play.bootstrap.binders.{OnlyRelative, RedirectUrl, SafeRedirectUrl}
 
-import java.time.LocalDate
 import scala.concurrent.{ExecutionContext, Future}
 import views.html.identity._
 

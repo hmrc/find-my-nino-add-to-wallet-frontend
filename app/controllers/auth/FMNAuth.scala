@@ -16,7 +16,7 @@
 
 package controllers.auth
 
-import config.{ConfigDecorator, FrontendAppConfig}
+import config.FrontendAppConfig
 import controllers.auth.FMNAuth.toContinueUrl
 import controllers.routes
 import models.NationalInsuranceNumber

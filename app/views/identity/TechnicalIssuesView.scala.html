@@ -19,7 +19,7 @@
 @import components.{H1, P, Link}
 
 @this(
-    main: UnauthenticatedMainView,
+    layout: templates.Layout,
     h1: H1,
     p: P,
     link: Link
@@ -27,8 +27,10 @@
 
 @(retryUrl: String)(implicit request: Request[_], configDecorator: ConfigDecorator, messages: play.api.i18n.Messages)
 
-@main(
-    pageTitle = messages("label.service_unavailable")
+@layout(
+    pageTitle = messages("label.service_unavailable"),
+    showBackLink = false,
+    hideAccountMenu = true
 ) {
 
     @h1("label.service_unavailable")

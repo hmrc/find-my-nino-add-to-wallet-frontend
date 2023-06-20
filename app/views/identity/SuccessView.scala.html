@@ -19,7 +19,7 @@
 @import components.{H1, P, Button}
 
 @this(
-    main: UnauthenticatedMainView,
+    layout: templates.Layout,
     h1: H1,
     p: P,
     button: Button
@@ -27,8 +27,10 @@
 
 @(continueUrl: String)(implicit request: Request[_], messages: play.api.i18n.Messages)
 
-@main(
-    pageTitle = messages("label.we_have_confirmed_your_identity")
+@layout(
+    pageTitle = messages("label.we_have_confirmed_your_identity"),
+    showBackLink = false,
+    hideAccountMenu = true
 ) {
 
     @h1("label.we_have_confirmed_your_identity")

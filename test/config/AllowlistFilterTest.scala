@@ -41,7 +41,7 @@ class AllowlistFilterTest extends SpecBase with BeforeAndAfterEach {
             FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad.url)
               .withHeaders("True-Client-IP" -> "192.1.2.3")
 
-          val result                                                = route(application, request).value
+          val result = route(application, request).value
           status(result) mustEqual OK
         }
       }
@@ -58,7 +58,7 @@ class AllowlistFilterTest extends SpecBase with BeforeAndAfterEach {
             FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad.url)
               .withHeaders("True-Client-IP" -> "192.1.2.6")
 
-          val result                                                = route(application, request).value
+          val result  = route(application, request).value
 
           status(result) mustEqual SEE_OTHER
           redirectLocation(result) mustEqual Some("https://www.gov.uk")
@@ -81,7 +81,7 @@ class AllowlistFilterTest extends SpecBase with BeforeAndAfterEach {
             FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad.url)
               .withHeaders("True-Client-IP" -> "192.1.2.6")
 
-          val result                                                = route(application, request).value
+          val result = route(application, request).value
           status(result) mustEqual OK
         }
       }

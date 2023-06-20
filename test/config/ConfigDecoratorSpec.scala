@@ -18,16 +18,8 @@ package config
 
 import base.SpecBase
 import org.mockito.MockitoSugar.when
-import org.mockito.WhenMacro
-import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.i18n.Lang
-import play.api.inject.NewInstanceInjector.instanceOf
-import org.scalatest.BeforeAndAfter
-import play.api.Configuration
-import uk.gov.hmrc.http.HeaderCarrier.Config
-import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-
 
 class ConfigDecoratorSpec extends SpecBase with MockitoSugar{
   val mockConfigDecorator = mock[ConfigDecorator]

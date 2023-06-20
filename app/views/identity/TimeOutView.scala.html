@@ -1,4 +1,4 @@
-/*
+@*
  * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,22 +12,28 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ *@
 
-package pages
+@import scala.concurrent.ExecutionContext
+@import components.{H1, P, Button}
 
-import models.{UserAnswers}
-import play.api.mvc.Call
+@this(
+    layout: templates.Layout,
+    h1: H1,
+    p: P,
+    button: Button
+)
 
-import scala.language.implicitConversions
-// $COVERAGE-OFF$
-trait Page {
-  def route(): Call
-  def nextPageNormalMode(answers: UserAnswers): Page
+@(retryUrl: String)(implicit request: Request[_], messages: play.api.i18n.Messages)
+
+@layout(
+    pageTitle = messages("label.you_have_been_signed_out"),
+    showBackLink = false,
+    hideAccountMenu = true,
+    disableSessionExpired = true
+) {
+
+    @h1("label.youve_been_signed_out")
+    @p(Text(messages("label.timeout_message")))
+    @button("label.sign_in", href=Some(controllers.routes.StoreMyNinoController.onPageLoad.url))
 }
-
-object Page {
-  implicit def toString(page: Page): String =
-    page.toString
-}
-// $COVERAGE-ON$

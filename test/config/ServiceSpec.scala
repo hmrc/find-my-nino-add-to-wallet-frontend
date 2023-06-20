@@ -14,20 +14,21 @@
  * limitations under the License.
  */
 
-package pages
+package config
 
-import models.{UserAnswers}
-import play.api.mvc.Call
+import base.SpecBase
+import config.Service.convertToString
+import org.scalatestplus.mockito.MockitoSugar
 
-import scala.language.implicitConversions
-// $COVERAGE-OFF$
-trait Page {
-  def route(): Call
-  def nextPageNormalMode(answers: UserAnswers): Page
+class ServiceSpec extends SpecBase with MockitoSugar{
+   "Service" - {
+
+     "test baseUrl value" in {
+       val service = Service("localhost", "1111", "http")
+       service.baseUrl mustBe  "http://localhost:1111"
+       service.toString mustBe  "http://localhost:1111"
+       convertToString(service) mustBe  "http://localhost:1111"
+     }
+
+   }
 }
-
-object Page {
-  implicit def toString(page: Page): String =
-    page.toString
-}
-// $COVERAGE-ON$

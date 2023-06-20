@@ -184,7 +184,6 @@ trait XmlFoToPDF extends Logging{
     xml.getBytes
   }
 
-
 }
 
 

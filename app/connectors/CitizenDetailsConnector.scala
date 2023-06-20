@@ -35,16 +35,12 @@ case object PersonDetailsHiddenResponse extends PersonDetailsResponse
 case class PersonDetailsUnexpectedResponse(r: HttpResponse) extends PersonDetailsResponse
 case class PersonDetailsErrorResponse(cause: Exception) extends PersonDetailsResponse
 
-
-
 @Singleton
 class CitizenDetailsConnector @Inject() (
   val simpleHttp: SimpleHttp,
   val metrics: Metrics,
   config: ConfigDecorator
 ) extends  Logging {
-
-
 
   def personDetails(nino: Nino)(implicit hc: HeaderCarrier): Future[PersonDetailsResponse] =
      {

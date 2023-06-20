@@ -14,21 +14,19 @@
  * limitations under the License.
  */
 
-package controllers
+package connectors
 
 import config.ConfigDecorator
-import connectors.{ApplePassConnector, ApplePassDetails}
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.Application
 import play.api.libs.json.{Json, Writes}
 import play.api.mvc.Results.InternalServerError
 import play.api.test.{DefaultAwaitTimeout, Injecting}
-import uk.gov.hmrc.http.{HttpClient, HttpException, UpstreamErrorResponse}
+import uk.gov.hmrc.http.HttpClient
 import util.Fixtures.buildPersonDetails
 import util.WireMockHelper
 
 import java.util.Base64
-
 
 class ApplePassConnectorSpec extends ConnectorSpec
   with WireMockHelper

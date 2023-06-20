@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-package controllers
+package connectors
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.http.Fault
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
-import util.UserRequestFixture.buildUserRequest
 import controllers.auth.requests.UserRequest
 import models.SelfAssessmentUserType
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
@@ -33,16 +32,17 @@ import play.api.http.{HeaderNames, MimeTypes, Status}
 import play.api.inject.guice.{GuiceApplicationBuilder, GuiceableModule}
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
-import uk.gov.hmrc.auth.core.{Enrolment, Enrolments}
+import uk.gov.hmrc.auth.core.{Enrolment, EnrolmentIdentifier, Enrolments}
 import uk.gov.hmrc.auth.core.retrieve.Credentials
+import uk.gov.hmrc.domain.SaUtrGenerator
 import uk.gov.hmrc.http.HeaderCarrier
 import util.UserDetails
+import util.UserRequestFixture.buildUserRequest
 
 import scala.concurrent.ExecutionContext
-import scala.language.implicitConversions
 
 trait ConnectorSpec
-    extends AnyWordSpec
+  extends AnyWordSpec
     with GuiceOneAppPerSuite
     with Status
     with HeaderNames
@@ -50,8 +50,6 @@ trait ConnectorSpec
     with Matchers
     with ScalaFutures
     with IntegrationPatience {
-
-
 
   implicit val hc: HeaderCarrier         = HeaderCarrier()
   implicit lazy val ec: ExecutionContext =
@@ -66,7 +64,13 @@ trait ConnectorSpec
       .build()
 
   def userRequest(saUserType: SelfAssessmentUserType, providerId: String): UserRequest[AnyContentAsEmpty.type] =
-    buildUserRequest(request = FakeRequest(), enrolments = Enrolments.apply(Set[Enrolment]()))
+    buildUserRequest(
+      request = FakeRequest(),
+      enrolments = Enrolments(Set(
+          Enrolment("IR-SA", Seq(EnrolmentIdentifier("UTR", new SaUtrGenerator().nextSaUtr.utr)), "Activated")
+        ))
+    )
+
   def stubGet(url: String, responseStatus: Int, responseBody: Option[String]): StubMapping = server.stubFor {
     val baseResponse = aResponse().withStatus(responseStatus).withHeader(CONTENT_TYPE, JSON)
     val response     = responseBody.fold(baseResponse)(body => baseResponse.withBody(body))
@@ -75,11 +79,11 @@ trait ConnectorSpec
   }
 
   def stubPost(
-    url: String,
-    responseStatus: Int,
-    requestBody: Option[String],
-    responseBody: Option[String]
-  ): StubMapping = server.stubFor {
+                url: String,
+                responseStatus: Int,
+                requestBody: Option[String],
+                responseBody: Option[String]
+              ): StubMapping = server.stubFor {
     val baseResponse = aResponse().withStatus(responseStatus).withHeader(CONTENT_TYPE, JSON)
     val response     = responseBody.fold(baseResponse)(body => baseResponse.withBody(body))
 
@@ -97,12 +101,12 @@ trait ConnectorSpec
   }
 
   def stubWithDelay(
-    url: String,
-    responseStatus: Int,
-    requestBody: Option[String],
-    responseBody: Option[String],
-    delay: Int
-  ): StubMapping = server.stubFor {
+                     url: String,
+                     responseStatus: Int,
+                     requestBody: Option[String],
+                     responseBody: Option[String],
+                     delay: Int
+                   ): StubMapping = server.stubFor {
     val baseResponse = aResponse().withStatus(responseStatus).withHeader(CONTENT_TYPE, JSON).withFixedDelay(delay)
     val response     = responseBody.fold(baseResponse)(body => baseResponse.withBody(body))
 
@@ -118,8 +122,5 @@ trait ConnectorSpec
         matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")
       )
     )
-
-
-
 
 }

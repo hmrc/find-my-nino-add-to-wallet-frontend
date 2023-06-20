@@ -18,20 +18,21 @@ package controllers.auth
 
 import config.FrontendAppConfig
 import controllers.auth.FMNAuth.toContinueUrl
+import controllers.routes
 import models.NationalInsuranceNumber
 import play.api.Logging
 import play.api.mvc.{ActionBuilder, AnyContent, BodyParser, Call, ControllerComponents, Request, RequestHeader, Result}
+import uk.gov.hmrc.auth.core.AffinityGroup.{Agent, Individual, Organisation}
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.auth.core.retrieve.{Name, ~}
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.bootstrap.binders.SafeRedirectUrl
 import uk.gov.hmrc.play.bootstrap.config.AuthRedirects
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
-
 import scala.concurrent.{ExecutionContext, Future}
-
 
 final case class AuthContext[A](
                                  nino: NationalInsuranceNumber,
@@ -48,15 +49,8 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
   this: FrontendController =>
   protected type FMNAction[A] = AuthContext[A] => Future[Result]
   private val AuthPredicate = AuthProviders(GovernmentGateway)
-  private val FMNRetrievals = Retrievals.nino and
-    Retrievals.credentialRole and
-    Retrievals.internalId and
-    Retrievals.confidenceLevel and
-    Retrievals.affinityGroup and
-    Retrievals.allEnrolments and
-    Retrievals.name
 
-  private val pertaxHomePageRoute = "/personal-account"
+  //private val pertaxHomePageRoute = "/personal-account"
   private val PTAKey = "HMRC-PT"
   private val minCLevel = 200
 
@@ -69,7 +63,7 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
 
   def authorisedAsFMNUser(implicit
                           ec: ExecutionContext,
-                         config: FrontendAppConfig,
+                          config: FrontendAppConfig,
                           cc: ControllerComponents,
                           loginContinueUrl: Call
                          ): ActionBuilder[AuthContext, AnyContent] =
@@ -85,6 +79,41 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
       }
     }
 
+  private def upliftConfidenceLevel(request: Request[_])(implicit config: FrontendAppConfig): Future[Result] = {
+    Future.successful(
+      Redirect(
+        config.identityVerificationUpliftUrl,
+        Map(
+          "origin"          -> Seq(config.defaultOrigin.origin),
+          "confidenceLevel" -> Seq(ConfidenceLevel.L200.toString),
+          "completionURL"   -> Seq(config.saveYourNationalNumberFrontendHost + routes.ApplicationController.showUpliftJourneyOutcome(Some(SafeRedirectUrl(request.uri)))),
+          "failureURL"      -> Seq(config.saveYourNationalNumberFrontendHost + routes.ApplicationController.showUpliftJourneyOutcome(Some(SafeRedirectUrl(request.uri))))
+        )
+      )
+    )
+  }
+
+  private def upliftCredentialStrength()(implicit config: FrontendAppConfig): Future[Result] =
+    Future.successful(
+      Redirect(
+        config.multiFactorAuthenticationUpliftUrl,
+        Map(
+          "origin"      -> Seq(config.defaultOrigin.origin),
+          "continueUrl" -> Seq(config.saveYourNationalNumberFrontendHost + "/save-your-national-insurance-number")
+        )
+      )
+    )
+
+  private object LT200 {
+    def unapply(confLevel: ConfidenceLevel): Option[ConfidenceLevel] =
+      if (confLevel.level < ConfidenceLevel.L200.level) Some(confLevel) else None
+  }
+
+  private val FMNRetrievals =
+    Retrievals.nino and Retrievals.affinityGroup and Retrievals.allEnrolments and Retrievals.credentials and Retrievals.credentialStrength and
+      Retrievals.confidenceLevel and Retrievals.name and Retrievals.trustedHelper and Retrievals.profile and
+      Retrievals.internalId and Retrievals.credentialRole
+
   private def authorisedUser[A](loginContinueUrl: Call, block: FMNAction[A])
                                (implicit
                                 ec: ExecutionContext,
@@ -94,7 +123,20 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
                                ) = {
     authorised(AuthPredicate)
       .retrieve(FMNRetrievals) {
-        case Some(nino) ~ Some(User) ~ Some(internalId) ~ confidenceLevel ~ Some(affinityGroup) ~ allEnrolments ~ Some(name) =>
+        case _ ~ Some(Individual) ~ _ ~ _ ~ (Some(CredentialStrength.weak) | None) ~ _ ~ _ ~ _ ~ _ ~ _ ~ _ =>
+          upliftCredentialStrength
+
+        case _ ~ Some(Individual) ~ _ ~ _ ~ _ ~ LT200(_) ~ _ ~ _ ~ _~ _ ~ _ =>
+          upliftConfidenceLevel(request)
+
+          // TODO: not sure we have Organisation and Agent users
+        case _ ~ Some(Organisation | Agent) ~ _ ~ _ ~ _ ~ LT200(_) ~ _ ~ _ ~ _~ _ ~ _ =>
+          upliftConfidenceLevel(request)
+
+        case _ ~ Some(Organisation | Agent) ~ _ ~ _ ~ (Some(CredentialStrength.weak) | None) ~ _ ~ _ ~ _ ~ _ ~ _ ~ _ =>
+          upliftCredentialStrength
+
+        case Some(nino) ~ Some(affinityGroup) ~ allEnrolments ~ _ ~ _ ~ confidenceLevel ~ Some(name) ~ _ ~ _ ~ Some(internalId)  ~ _ =>
           //have to check access creds again as we need to redirect to pertax home page
           if (affinityGroup == AffinityGroup.Agent) {
             Future successful Redirect(controllers.routes.UnauthorisedController.onPageLoad)

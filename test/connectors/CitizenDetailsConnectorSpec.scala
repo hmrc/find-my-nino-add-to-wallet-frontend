@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
+package connectors
+
 import com.kenshoo.play.metrics.Metrics
 import config.ConfigDecorator
-import connectors.{CitizenDetailsConnector, PersonDetailsNotFoundResponse, PersonDetailsSuccessResponse}
-import controllers.ConnectorSpec
 import models._
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.Application
@@ -72,8 +72,6 @@ class CitizenDetailsConnectorSpec
     }
   }
 
-
-
   "Calling personDetails" must {
 
     trait LocalSetup extends SpecSetup {
@@ -95,6 +93,5 @@ class CitizenDetailsConnectorSpec
 
     }
 
-
-
-  }}
+  }
+}

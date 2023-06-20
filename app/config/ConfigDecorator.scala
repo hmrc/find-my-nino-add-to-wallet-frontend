@@ -31,7 +31,6 @@ class ConfigDecorator @Inject()(configuration: Configuration, servicesConfig: Se
   val host: String    = configuration.get[String]("host")
   val appName: String = configuration.get[String]("appName")
 
-
   val serviceName = "save-your-national-insurance-number"
   val serviceNamePTA = "Personal tax account"
 
@@ -52,6 +51,7 @@ class ConfigDecorator @Inject()(configuration: Configuration, servicesConfig: Se
   lazy val feedbackSurveyFrontendHost = getExternalUrl(s"feedback-survey-frontend.host").getOrElse("")
   //val feedbackSurveyFrontendHost = servicesConfig.baseUrl("feedback-survey-frontend")
 
+  lazy val generalQueriesUrl     = "https://www.gov.uk/contact-hmrc"
 
   val defaultOrigin: Origin = Origin("STORE_MY_NINO")
 

@@ -34,6 +34,7 @@ object TestData {
       |{
       |	"nino": "AA000003B",
       |	"credentialRole": "User",
+      | "credentialStrength": "strong",
       |	"internalId": "Int-8612ba91-5581-411d-9d32-fb2de937a565",
       | "confidenceLevel": 200,
       | "affinityGroup": "Individual",

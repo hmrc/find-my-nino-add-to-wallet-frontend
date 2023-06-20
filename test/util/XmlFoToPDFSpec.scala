@@ -20,6 +20,8 @@ import base.SpecBase
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.i18n.MessagesApi
 import play.api.test.FakeRequest
+import scala.xml.Utility.trim
+import scala.xml.XML
 
 import java.nio.charset.StandardCharsets
 
@@ -32,6 +34,20 @@ class XmlFoToPDFSpec extends SpecBase with MockitoSugar with CDFixtures {
   val pdWithoutCorrespondenceAddress = buildPersonDetailsWithoutCorrespondenceAddress
   val pdWithoutAddress = buildPersonDetailsWithoutAddress
 
+  val expectedXML = <root>
+    <initials-name>FML</initials-name>
+    <full-name>Dr Firstname Middlename Lastname Phd.</full-name>
+    <address>
+      <address-line>1 Fake Street</address-line>
+      <address-line>Fake Town</address-line>
+      <address-line>Fake City</address-line>
+      <address-line>Fake Region</address-line>
+    </address>
+    <postcode>AA1 1AA</postcode>
+    <nino>{pd.person.nino.get.formatted}</nino>
+    <date>01/23</date>
+  </root>
+
   class Setup {
     val xmlFoToPDF: XmlFoToPDF = new XmlFoToPDF {
       override val resourceStreamResolver: BaseResourceStreamResolver = application.injector.instanceOf[BaseResourceStreamResolver]
@@ -40,9 +56,11 @@ class XmlFoToPDFSpec extends SpecBase with MockitoSugar with CDFixtures {
     }
   }
   "XmlFoToPDF getXMLSource" - {
-    "return correct XML when passed in valid person details and a date" in new Setup {
-      val result: Array[Byte] = xmlFoToPDF.getXMLSource(pd, "01/23")
-      result.length > 0 mustBe true
+    "return expected XML when passed in valid person details and a date" in new Setup {
+      val bytes: Array[Byte] = xmlFoToPDF.getXMLSource(pd, "01/23")
+      val result = new String(bytes, StandardCharsets.UTF_8)
+      val xmlResult = XML.loadString(result)
+      trim(xmlResult).must(equal(trim(expectedXML)))
     }
     "must use correspondence address by default" in new Setup {
       val bytes: Array[Byte] = xmlFoToPDF.getXMLSource(pdWithBothAddresses, "01/23")
@@ -58,6 +76,12 @@ class XmlFoToPDFSpec extends SpecBase with MockitoSugar with CDFixtures {
       val bytes: Array[Byte] = xmlFoToPDF.getXMLSource(pdWithoutCorrespondenceAddress, "01/23")
       val result = new String(bytes, StandardCharsets.UTF_8)
       result.contains("1 Fake Street") mustBe true
+    }
+    "must escape xml entities correctly" in new Setup {
+      val bytes: Array[Byte] = xmlFoToPDF.getXMLSource(pd.copy(person = pd.person.copy(Some("<temp></temp>"))), "01/23")
+      val result = new String(bytes, StandardCharsets.UTF_8)
+      result.must(include("&lt;temp&gt;&lt;/temp&gt;"))
+      result.must(not(include("<temp></temp>")))
     }
   }
   "XmlFoToPDF createPDF" - {

@@ -29,7 +29,7 @@ import play.api.mvc.{AnyContentAsEmpty, MessagesControllerComponents, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
-import services.{IdentityVerificationFrontendService, IdentityVerificationResponse, LockedOut, Success, TechnicalIssue, Timeout, UserAborted}
+import services.{FailedMatching, IdentityVerificationFrontendService, IdentityVerificationResponse, Incomplete, LockedOut, PrecondFailed, Success, TechnicalIssue, Timeout, UserAborted}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.UpstreamErrorResponse
 import uk.gov.hmrc.http.HttpResponse
@@ -208,6 +208,47 @@ class ApplicationControllerSpec extends SpecBase with CDFixtures with MockitoSug
         }
       }
 
+      "showUpliftJourneyOutcome should return Unauthorized when IV journey status is Incomplete" in new LocalSetup {
+
+        running(application) {
+          when(mockIdentityVerificationFrontendService.getIVJourneyStatus(any())(any(), any()))
+            .thenReturn(EitherT[Future, UpstreamErrorResponse, IdentityVerificationResponse](Future.successful(Right(Incomplete))))
+
+          val request = FakeRequest(GET, "?journeyId=XXXXX&token=XXXXXX")
+          val result = controller.showUpliftJourneyOutcome(None)(request)
+
+          assert(status(result) == UNAUTHORIZED)
+        }
+      }
+
+
+      "showUpliftJourneyOutcome should return Unauthorized when IV journey status is PrecondFailed" in new LocalSetup {
+
+        running(application) {
+          when(mockIdentityVerificationFrontendService.getIVJourneyStatus(any())(any(), any()))
+            .thenReturn(EitherT[Future, UpstreamErrorResponse, IdentityVerificationResponse](Future.successful(Right(PrecondFailed))))
+
+          val request = FakeRequest(GET, "?journeyId=XXXXX&token=XXXXXX")
+          val result = controller.showUpliftJourneyOutcome(None)(request)
+
+          assert(status(result) == UNAUTHORIZED)
+        }
+      }
+
+      "showUpliftJourneyOutcome should return Unauthorized when IV journey status is FailedMatching" in new LocalSetup {
+
+        running(application) {
+          when(mockIdentityVerificationFrontendService.getIVJourneyStatus(any())(any(), any()))
+            .thenReturn(EitherT[Future, UpstreamErrorResponse, IdentityVerificationResponse](Future.successful(Right(FailedMatching))))
+
+          val request = FakeRequest(GET, "?journeyId=XXXXX&token=XXXXXX")
+          val result = controller.showUpliftJourneyOutcome(None)(request)
+
+          assert(status(result) == UNAUTHORIZED)
+        }
+      }
+
+
       "showUpliftJourneyOutcome should return TechnicalIssue(500) when IV journey outcome was TechnicalIssues" in new LocalSetup {
 
         override lazy val getIVJourneyStatusResponse
@@ -222,6 +263,9 @@ class ApplicationControllerSpec extends SpecBase with CDFixtures with MockitoSug
         }
 
       }
+
+
+
 
       "showUpliftJourneyOutcome should return Timeout when IV journey status is UserAborted" in new LocalSetup {
 

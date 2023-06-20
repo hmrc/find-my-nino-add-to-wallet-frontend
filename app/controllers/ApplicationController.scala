@@ -68,7 +68,7 @@ class ApplicationController @Inject()(
                 Ok(successView(continueUrl.map(_.url).getOrElse(routes.StoreMyNinoController.onPageLoad.url)))
 
               case InsufficientEvidence =>
-                Redirect("routes.SelfAssessmentController.ivExemptLandingPage(continueUrl)")
+                Unauthorized(cannotConfirmIdentityView(retryUrl))
 
               case UserAborted =>
                 logErrorMessage(UserAborted.toString)

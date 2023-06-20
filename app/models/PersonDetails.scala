@@ -16,9 +16,6 @@
 
 package models
 
-//import play.api.libs.json.Json
-
-
 import play.api.libs.json._
 
 case class PersonDetails(

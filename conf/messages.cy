@@ -122,3 +122,14 @@ label.try_again_in_24_hours=Rhowch gynnig arall arni mewn 24 awr.
 label.we_have_confirmed_your_identity=Rydym wedi cadarnhau pwy ydych
 label.you_can_sign_in_to_your_personal_tax_account=Gallwch bellach fewngofnodi i’ch cyfrif treth personol.
 global.label.continue_button=Continue
+
+label.confirmNINO.heading = Mae angen i chi gadarnhau’ch rhif Yswiriant Gwladol
+label.confirmNINO.p1 = Mae dwy ffordd y gallwch ei gadarnhau:
+label.confirmNINO.l1.li1 = ffoniwch 0300 200 1900 i siarad ag ymgynghorydd a chadarnhau’ch rhif Yswiriant Gwladol gydag ef
+label.confirmNINO.l1.li2.part1 = llenwch ffurflen CA5403 ar-lein,
+label.confirmNINO.l1.li2.part2 = ei hargraffu a’i hanfon i:
+label.confirmNINO.l1.li2.part3.address.line1 = Gwasanaeth Cwsmeriaid Cymraeg CThEF
+label.confirmNINO.l1.li2.part3.address.line2 = HMRC
+label.confirmNINO.l1.li2.part3.address.line3 = BX9 1ST
+label.confirmNINO.p2 = Os ydych yn llenwi ffurflen CA5403, mae’n bosibl y bydd angen i chi gadarnhau pwy ydych drwy ddefnyddio dogfennau penodol. Bydd y ffurflen ar-lein yn rhoi gwybod i chi pa ddogfennau y bydd eu hangen arnoch.
+label.confirmNINO.p3 = Dylai’ch rhif Yswiriant Gwladol eich cyrraedd cyn pen 15 diwrnod ar ôl i chi gysylltu â ni.

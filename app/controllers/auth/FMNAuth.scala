@@ -22,7 +22,7 @@ import controllers.routes
 import models.NationalInsuranceNumber
 import play.api.Logging
 import play.api.mvc.{ActionBuilder, AnyContent, BodyParser, Call, ControllerComponents, Request, RequestHeader, Result}
-import uk.gov.hmrc.auth.core.AffinityGroup.{Agent, Individual, Organisation}
+import uk.gov.hmrc.auth.core.AffinityGroup.{Individual, Organisation}
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.auth.core.retrieve.{Name, ~}
@@ -47,10 +47,9 @@ final case class AuthContext[A](
 
 trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
   this: FrontendController =>
+
   protected type FMNAction[A] = AuthContext[A] => Future[Result]
   private val AuthPredicate = AuthProviders(GovernmentGateway)
-
-  private val minCLevel = 200
 
   def authorisedAsFMNUser(body: FMNAction[Any])(loginContinueUrl: Call)
                          (implicit ec: ExecutionContext,
@@ -84,8 +83,11 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
         Map(
           "origin"          -> Seq(config.defaultOrigin.origin),
           "confidenceLevel" -> Seq(ConfidenceLevel.L200.toString),
-          "completionURL"   -> Seq(config.saveYourNationalNumberFrontendHost + routes.ApplicationController.showUpliftJourneyOutcome(Some(SafeRedirectUrl(request.uri)))),
-          "failureURL"      -> Seq(config.saveYourNationalNumberFrontendHost + routes.ApplicationController.showUpliftJourneyOutcome(Some(SafeRedirectUrl(request.uri))))
+          "completionURL"   -> Seq(config.saveYourNationalNumberFrontendHost +
+              routes.ApplicationController.showUpliftJourneyOutcome(Some(SafeRedirectUrl(request.uri)))
+          ),
+          "failureURL"      -> Seq(config.saveYourNationalNumberFrontendHost +
+            routes.ApplicationController.showUpliftJourneyOutcome(Some(SafeRedirectUrl(request.uri))))
         )
       )
     )
@@ -121,24 +123,15 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
                                ): Future[Result] = {
     authorised(AuthPredicate)
       .retrieve(FMNRetrievals) {
-        case _ ~ Some(Individual) ~ _ ~ _ ~ (Some(CredentialStrength.weak) | None) ~ _ ~ _ ~ _ ~ _ ~ _ ~ _ =>
+        case _ ~ Some(Individual | Organisation) ~ _ ~ _ ~ (Some(CredentialStrength.weak) | None) ~ _ ~ _ ~ _ ~ _ ~ _ ~ _ =>
           upliftCredentialStrength
 
-        case _ ~ Some(Individual) ~ _ ~ _ ~ _ ~ LT200(_) ~ _ ~ _ ~ _~ _ ~ _ =>
+        case _ ~ Some(Individual | Organisation) ~ _ ~ _ ~ _ ~ LT200(_) ~ _ ~ _ ~ _~ _ ~ _ =>
           upliftConfidenceLevel(request)
-
-        case _ ~ Some(Organisation) ~ _ ~ _ ~ _ ~ LT200(_) ~ _ ~ _ ~ _~ _ ~ _ =>
-          upliftConfidenceLevel(request)
-
-        case _ ~ Some(Organisation) ~ _ ~ _ ~ (Some(CredentialStrength.weak) | None) ~ _ ~ _ ~ _ ~ _ ~ _ ~ _ =>
-          upliftCredentialStrength
 
         case Some(nino) ~ Some(affinityGroup) ~ allEnrolments ~ _ ~ _ ~ confidenceLevel ~ Some(name) ~ _ ~ _ ~ Some(internalId)  ~ _ =>
           if (affinityGroup == AffinityGroup.Agent) {
             logger.warn("Agent affinity group encountered whilst attempting to authorise user")
-            Future successful Redirect(controllers.routes.UnauthorisedController.onPageLoad)
-          } else if(confidenceLevel.level < minCLevel) {
-            logger.warn("Insufficient confidence level encountered whilst attempting to authorise user")
             Future successful Redirect(controllers.routes.UnauthorisedController.onPageLoad)
           } else {
             block(AuthContext(NationalInsuranceNumber(nino), isUser = true, internalId, confidenceLevel, affinityGroup, allEnrolments, name, request))

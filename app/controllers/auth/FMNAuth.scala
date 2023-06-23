@@ -50,8 +50,6 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
   protected type FMNAction[A] = AuthContext[A] => Future[Result]
   private val AuthPredicate = AuthProviders(GovernmentGateway)
 
-  //private val pertaxHomePageRoute = "/personal-account"
-  private val PTAKey = "HMRC-PT"
   private val minCLevel = 200
 
   def authorisedAsFMNUser(body: FMNAction[Any])(loginContinueUrl: Call)
@@ -120,7 +118,7 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
                                 hc: HeaderCarrier,
                                 config: FrontendAppConfig,
                                 request: Request[A]
-                               ) = {
+                               ): Future[Result] = {
     authorised(AuthPredicate)
       .retrieve(FMNRetrievals) {
         case _ ~ Some(Individual) ~ _ ~ _ ~ (Some(CredentialStrength.weak) | None) ~ _ ~ _ ~ _ ~ _ ~ _ ~ _ =>
@@ -129,26 +127,24 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
         case _ ~ Some(Individual) ~ _ ~ _ ~ _ ~ LT200(_) ~ _ ~ _ ~ _~ _ ~ _ =>
           upliftConfidenceLevel(request)
 
-          // TODO: not sure we have Organisation and Agent users
-        case _ ~ Some(Organisation | Agent) ~ _ ~ _ ~ _ ~ LT200(_) ~ _ ~ _ ~ _~ _ ~ _ =>
+        case _ ~ Some(Organisation) ~ _ ~ _ ~ _ ~ LT200(_) ~ _ ~ _ ~ _~ _ ~ _ =>
           upliftConfidenceLevel(request)
 
-        case _ ~ Some(Organisation | Agent) ~ _ ~ _ ~ (Some(CredentialStrength.weak) | None) ~ _ ~ _ ~ _ ~ _ ~ _ ~ _ =>
+        case _ ~ Some(Organisation) ~ _ ~ _ ~ (Some(CredentialStrength.weak) | None) ~ _ ~ _ ~ _ ~ _ ~ _ ~ _ =>
           upliftCredentialStrength
 
         case Some(nino) ~ Some(affinityGroup) ~ allEnrolments ~ _ ~ _ ~ confidenceLevel ~ Some(name) ~ _ ~ _ ~ Some(internalId)  ~ _ =>
-          //have to check access creds again as we need to redirect to pertax home page
           if (affinityGroup == AffinityGroup.Agent) {
+            logger.warn("Agent affinity group encountered whilst attempting to authorise user")
             Future successful Redirect(controllers.routes.UnauthorisedController.onPageLoad)
           } else if(confidenceLevel.level < minCLevel) {
+            logger.warn("Insufficient confidence level encountered whilst attempting to authorise user")
             Future successful Redirect(controllers.routes.UnauthorisedController.onPageLoad)
-          } else if (!allEnrolments.getEnrolment(PTAKey).isDefined) {
-            Future successful Redirect(controllers.routes.UnauthorisedController.onPageLoad)
-          }
-          else {
+          } else {
             block(AuthContext(NationalInsuranceNumber(nino), isUser = true, internalId, confidenceLevel, affinityGroup, allEnrolments, name, request))
           }
         case _ =>
+          logger.warn("All authorize checks failed whilst attempting to authorise user")
           Future successful Redirect(controllers.routes.UnauthorisedController.onPageLoad)
       }
       .recover {
@@ -162,7 +158,7 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
       Redirect(config.loginUrl, Map("continue" -> Seq(loginContinueUrl), "origin" -> Seq(config.appName)))
 
     case IncorrectNino =>
-      logger.warn("incorrect none encountered whilst attempting to authorise user")
+      logger.warn("incorrect NINO encountered whilst attempting to authorise user")
       Redirect(controllers.routes.UnauthorisedController.onPageLoad)
 
     case ex: AuthorisationException ⇒

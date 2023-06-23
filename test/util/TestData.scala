@@ -16,9 +16,6 @@
 
 package util
 
-import play.api.libs.json.{JsObject, Json}
-import uk.gov.hmrc.auth.core.Enrolment
-
 object TestData {
 
   val allEnrolments = """

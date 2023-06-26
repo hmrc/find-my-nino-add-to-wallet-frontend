@@ -39,5 +39,5 @@ class PublicController @Inject()(sessionTimeoutView: SessionTimeoutView,
       Ok(sessionTimeoutView())
     }
   }
-  
+
 }

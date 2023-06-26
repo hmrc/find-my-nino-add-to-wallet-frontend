@@ -123,7 +123,7 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
                                ): Future[Result] = {
     authorised(AuthPredicate)
       .retrieve(FMNRetrievals) {
-        case _ ~ Some(Individual | Organisation) ~ _ ~ _ ~ (Some(CredentialStrength.weak) | None) ~ _ ~ _ ~ _ ~ _ ~ _ ~ _ =>
+        case _ ~ Some(Individual | Organisation) ~ _ ~ _ ~ (Some(CredentialStrength.weak) | Some("none")) ~ _ ~ _ ~ _ ~ _ ~ _ ~ _ =>
           upliftCredentialStrength
 
         case _ ~ Some(Individual | Organisation) ~ _ ~ _ ~ _ ~ LT200(_) ~ _ ~ _ ~ _~ _ ~ _ =>

@@ -28,8 +28,7 @@ import org.apache.fop.events.{Event, EventFormatter, EventListener}
 import org.apache.fop.events.model.EventSeverity
 import play.api.Logging
 import play.api.i18n.Messages
-import play.twirl.api.utils.StringEscapeUtils
-import uk.gov.hmrc.domain.Nino
+import scala.xml.PrettyPrinter
 
 @Singleton
 class DefaultXmlFoToPDF @Inject()(val stylesheetResourceStreamResolver: StylesheetResourceStreamResolver,
@@ -44,40 +43,9 @@ trait XmlFoToPDF extends Logging{
   private val fopConfigFilePath = "pdf/fop.xconf"
   private val niLetterXSLFilePath = "pdf/niLetterXSL.xsl"
 
-  private def escapeHTMLEntitiesForPersonDetails(personDetails: PersonDetails): PersonDetails = {
-    personDetails.copy(
-      person = personDetails.person.copy(
-        firstName = Some(StringEscapeUtils.escapeXml11(personDetails.person.firstName.getOrElse(""))),
-        lastName = Some(StringEscapeUtils.escapeXml11(personDetails.person.lastName.getOrElse(""))),
-        nino = Some(Nino(StringEscapeUtils.escapeXml11(personDetails.person.nino.getOrElse(Nino("")).nino)))
-      ),
-      address = personDetails.address.map(address => address.copy(
-        line1 = Some(StringEscapeUtils.escapeXml11(address.line1.getOrElse(""))),
-        line2 = Some(StringEscapeUtils.escapeXml11(address.line2.getOrElse(""))),
-        line3 = Some(StringEscapeUtils.escapeXml11(address.line3.getOrElse(""))),
-        line4 = Some(StringEscapeUtils.escapeXml11(address.line4.getOrElse(""))),
-        line5 = Some(StringEscapeUtils.escapeXml11(address.line5.getOrElse(""))),
-        postcode = Some(StringEscapeUtils.escapeXml11(address.postcode.getOrElse("")))
-      )),
-      correspondenceAddress = personDetails.correspondenceAddress.map(address => address.copy(
-        line1 = Some(StringEscapeUtils.escapeXml11(address.line1.getOrElse(""))),
-        line2 = Some(StringEscapeUtils.escapeXml11(address.line2.getOrElse(""))),
-        line3 = Some(StringEscapeUtils.escapeXml11(address.line3.getOrElse(""))),
-        line4 = Some(StringEscapeUtils.escapeXml11(address.line4.getOrElse(""))),
-        line5 = Some(StringEscapeUtils.escapeXml11(address.line5.getOrElse(""))),
-        postcode = Some(StringEscapeUtils.escapeXml11(address.postcode.getOrElse("")))
-      ))
-    )
-  }
-
-
-
   def createPDF(personDetails: PersonDetails, date: String, messages: Messages): Array[Byte] = {
-    //html escape personDetails to avoid xss  attack in pdf
-    val escapedPersonDetails = escapeHTMLEntitiesForPersonDetails(personDetails)
-
     val xmlStream: StreamSource = new StreamSource(
-      new ByteArrayInputStream(getXMLSource(escapedPersonDetails, date))
+      new ByteArrayInputStream(getXMLSource(personDetails, date))
     )
     val pdfOutStream = new ByteArrayOutputStream()
     createTransformer(messages).transform(xmlStream, new SAXResult(fop(pdfOutStream).getDefaultHandler))
@@ -156,34 +124,39 @@ trait XmlFoToPDF extends Logging{
   }
 
   def getXMLSource(personDetails: PersonDetails, date: String): Array[Byte] = {
-    val initialsNameXML = s"<initials-name>${personDetails.person.initialsName}</initials-name>"
-    val fullNameXML = s"<full-name>${personDetails.person.fullName}</full-name>"
-    var fullAddressXML = s""
-    fullAddressXML = personDetails.correspondenceAddress.map { correspondenceAddress =>
-      var xmlStr = s"<address>"
-      xmlStr = xmlStr + correspondenceAddress.lines.map {line =>
-        s"<address-line>${line}</address-line>"
-      }
-      xmlStr = xmlStr + s"</address>"
-      xmlStr = xmlStr + s"<postcode>${correspondenceAddress.postcode.getOrElse("")}</postcode>"
-      xmlStr
+    val addressElem =
+      personDetails.correspondenceAddress.map { correspondenceAddress =>
+        <address>
+          {
+          correspondenceAddress.lines.map { line =>
+          <address-line>{line}</address-line>
+        }}
+      </address>
+      <postcode>{correspondenceAddress.postcode.getOrElse("")}</postcode>
     }.getOrElse {
-      personDetails.address.map { residentialAddress =>
-        var xmlStr = s"<address>"
-        xmlStr = xmlStr + residentialAddress.lines.map { line =>
-          s"<address-line>${line}</address-line>"
-        }
-        xmlStr = xmlStr + s"</address>"
-        xmlStr = xmlStr + s"<postcode>${residentialAddress.postcode.getOrElse("")}</postcode>"
-        xmlStr
-      }.getOrElse("")
-    }
-    val ninoXML = s"<nino>${personDetails.person.nino.get.formatted}</nino>"
-    val dateXML = s"<date>${date}</date>"
-    val xml = s"<root>" + initialsNameXML + fullNameXML + fullAddressXML + ninoXML + dateXML + s"</root>"
-    xml.getBytes
-  }
+        personDetails.address.map { residentialAddress =>
+          <address>
+          {residentialAddress.lines.map { line =>
+            <address-line>{line}</address-line>
+          }}
+          </address>
+          <postcode>{residentialAddress.postcode.getOrElse("")}</postcode>
+        }.getOrElse("")
+      }
 
+    val xmlElem = <root>
+      <initials-name>{personDetails.person.initialsName}</initials-name>
+      <full-name>{personDetails.person.fullName}</full-name>
+      {addressElem}
+      <nino>{personDetails.person.nino.map(_.formatted).getOrElse("")}</nino>
+      <date>{date}</date>
+    </root>
+    val maxWidth = 80
+    val tabSize = 2
+    val p = new PrettyPrinter(maxWidth, tabSize)
+    val xmlElemString = p.format(xmlElem)
+    xmlElemString.getBytes()
+  }
 }
 
 

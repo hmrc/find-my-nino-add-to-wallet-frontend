@@ -18,9 +18,9 @@ package util.googlepass
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
-import com.google.api.services.walletobjects.model._
 import com.google.auth.oauth2.{GoogleCredentials, ServiceAccountCredentials}
 import models.{GooglePassCard, GooglePassTextRow}
+import googleModels.{GenericPrivatePass, Image, ImageUri, LocalizedString, TextModuleData, TranslatedString}
 
 import java.io._
 import java.security.interfaces.RSAPrivateKey
@@ -86,7 +86,7 @@ class CreateGenericPrivatePass{
         .setHeader(row.header.getOrElse(""))
     }
 
-    val translatedTitleString = new TranslatedString()
+    val translatedTitleString: TranslatedString = new TranslatedString()
       .setValue(googlePassCard.title)
       .setLanguage(googlePassCard.language)
     val title = new LocalizedString()

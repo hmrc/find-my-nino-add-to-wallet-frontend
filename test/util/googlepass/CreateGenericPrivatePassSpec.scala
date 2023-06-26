@@ -17,7 +17,7 @@
 package util.googlepass
 
 import base.SpecBase
-import models.{GooglePassCard, GooglePassTextRow}
+import googleModels.{GooglePassCard, GooglePassTextRow}
 import org.scalatestplus.mockito.MockitoSugar
 
 class CreateGenericPrivatePassSpec extends SpecBase with MockitoSugar{

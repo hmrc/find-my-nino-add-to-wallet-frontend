@@ -29,7 +29,7 @@ import java.util._
 import scala.jdk.CollectionConverters._
 import collection.mutable._
 
-
+// $COVERAGE-OFF$
 class CreateGenericPrivatePass{
 
   val logoImageUrl = "https://raw.githubusercontent.com/hmrc/find-my-nino-add-to-wallet-frontend/main/public/images/hmrc-logo-google-pass.png"
@@ -136,3 +136,4 @@ class CreateGenericPrivatePass{
     JWT.create.withPayload(claims).sign(algorithm)
   }
 }
+// $COVERAGE-ON$

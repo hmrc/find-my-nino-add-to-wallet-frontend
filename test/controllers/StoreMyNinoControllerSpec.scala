@@ -17,7 +17,7 @@
 package controllers
 
 import base.SpecBase
-import connectors.{ApplePassConnector, CitizenDetailsConnector, IdentityVerificationFrontendConnector, PersonDetailsErrorResponse, PersonDetailsSuccessResponse}
+import connectors.{ApplePassConnector, CitizenDetailsConnector, IdentityVerificationFrontendConnector, PayeIndividualDetailsConnector, PersonDetailsErrorResponse, PersonDetailsSuccessResponse}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.{reset, when}
@@ -31,7 +31,7 @@ import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
 import util.{CDFixtures, Keys}
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
 import util.TestData.NinoUser
-import views.html.{StoreMyNinoView,ErrorTemplate}
+import views.html.{ErrorTemplate, StoreMyNinoView}
 import util.googlepass.GooglePassUtil
 
 import java.util.Base64
@@ -82,6 +82,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
   val mockApplePassConnector = mock[ApplePassConnector]
   val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
   val mockIdentityVerificationFrontendConnector = mock[IdentityVerificationFrontendConnector]
+  val mockPayeIndividualDetailsConnector = mock[PayeIndividualDetailsConnector]
 
   val fakeBase64String = "UEsDBBQACAgIABxqJlYAAAAAAA"
   val fakeGooglePassSaveUrl = "testURL"

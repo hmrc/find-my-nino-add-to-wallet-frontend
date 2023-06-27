@@ -104,6 +104,11 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
       )
     )
 
+  private object GTOE200 {
+    def unapply(confLevel: ConfidenceLevel): Option[ConfidenceLevel] =
+      if (confLevel.level >= ConfidenceLevel.L200.level) Some(confLevel) else None
+  }
+
   private object LT200 {
     def unapply(confLevel: ConfidenceLevel): Option[ConfidenceLevel] =
       if (confLevel.level < ConfidenceLevel.L200.level) Some(confLevel) else None
@@ -129,7 +134,17 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
         case _ ~ Some(Individual | Organisation) ~ _ ~ _ ~ _ ~ LT200(_) ~ _ ~ _ ~ _~ _ ~ _ =>
           upliftConfidenceLevel(request)
 
-        case Some(nino) ~ Some(affinityGroup) ~ allEnrolments ~ _ ~ _ ~ confidenceLevel ~ Some(name) ~ _ ~ _ ~ Some(internalId)  ~ _ =>
+        case Some(nino) ~
+          Some(affinityGroup) ~
+          allEnrolments ~
+          credentials ~
+          Some(CredentialStrength.strong) ~
+          GTOE200(confidenceLevel) ~
+          Some(name) ~
+          trustedHelper ~
+          profile ~
+          Some(internalId)  ~ _ =>
+        //case Some(nino) ~ Some(affinityGroup) ~ allEnrolments ~ _ ~ _ ~ confidenceLevel ~ Some(name) ~ _ ~ _ ~ Some(internalId)  ~ _ =>
           if (affinityGroup == AffinityGroup.Agent) {
             logger.warn("Agent affinity group encountered whilst attempting to authorise user")
             Future successful Redirect(controllers.routes.UnauthorisedController.onPageLoad)

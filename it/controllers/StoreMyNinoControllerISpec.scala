@@ -90,7 +90,8 @@ class StoreMyNinoControllerISpec extends IntegrationSpecBase {
       view(
         passId = fakePassId,
         nino = generatedNino.nino,
-        displayForMobile = false
+        displayForMobile = false,
+        googlePassSaveUrl = ""
       )(fakeRequest, messages)
 
     def doc: Document = Jsoup.parse(main.toString)
@@ -106,7 +107,7 @@ class StoreMyNinoControllerISpec extends IntegrationSpecBase {
 
     def assertContainsQRCode(doc: Document, text: String): Unit = {
       assert(
-        doc.getElementsByTag("img").get(0).attr("src").contains(text),
+        doc.getElementById("apple-qr-code").attr("src").contains(text),
         s"\n\nQR Code linking to " + text + " was not rendered on the page. \n"
       )
     }

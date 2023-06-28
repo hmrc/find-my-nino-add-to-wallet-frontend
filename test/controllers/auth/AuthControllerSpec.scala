@@ -17,7 +17,6 @@
 package controllers.auth
 
 import base.SpecBase
-import config.ConfigDecorator
 import controllers.bindable.Origin
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when

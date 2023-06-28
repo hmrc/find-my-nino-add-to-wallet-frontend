@@ -19,17 +19,16 @@ package controllers.auth
 import base.SpecBase
 import config.{ConfigDecorator, FrontendAppConfig}
 import controllers.ApplicationController
-import org.mockito.ArgumentMatchers.any
 import org.mockito.MockitoSugar.when
 import play.api.http.Status.{INTERNAL_SERVER_ERROR, SEE_OTHER}
 import play.api.mvc.MessagesControllerComponents
 import play.api.test.FakeRequest
-import services.{IdentityVerificationFrontendService, Success}
+import services.{IdentityVerificationFrontendService}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HttpVerbs.GET
 import views.html.identity.{CannotConfirmIdentityView, FailedIvIncompleteView, LockedOutView, SuccessView, TechnicalIssuesView, TimeOutView}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext}
 import play.api.test.Helpers.{defaultAwaitTimeout, redirectLocation, status}
 import uk.gov.hmrc.play.bootstrap.binders.SafeRedirectUrl
 

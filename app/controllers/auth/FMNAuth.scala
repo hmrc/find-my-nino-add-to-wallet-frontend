@@ -22,7 +22,7 @@ import controllers.routes
 import models.NationalInsuranceNumber
 import play.api.Logging
 import play.api.mvc.{ActionBuilder, AnyContent, BodyParser, Call, ControllerComponents, Request, RequestHeader, Result}
-import uk.gov.hmrc.auth.core.AffinityGroup.{Agent, Individual, Organisation}
+import uk.gov.hmrc.auth.core.AffinityGroup.{Individual, Organisation}
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.auth.core.retrieve.{Name, ~}
@@ -47,12 +47,9 @@ final case class AuthContext[A](
 
 trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
   this: FrontendController =>
+
   protected type FMNAction[A] = AuthContext[A] => Future[Result]
   private val AuthPredicate = AuthProviders(GovernmentGateway)
-
-  //private val pertaxHomePageRoute = "/personal-account"
-  private val PTAKey = "HMRC-PT"
-  private val minCLevel = 200
 
   def authorisedAsFMNUser(body: FMNAction[Any])(loginContinueUrl: Call)
                          (implicit ec: ExecutionContext,
@@ -78,7 +75,7 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
         authorisedUser(loginContinueUrl, block)
       }
     }
-
+  // $COVERAGE-OFF$
   private def upliftConfidenceLevel(request: Request[_])(implicit config: FrontendAppConfig): Future[Result] = {
     Future.successful(
       Redirect(
@@ -86,8 +83,11 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
         Map(
           "origin"          -> Seq(config.defaultOrigin.origin),
           "confidenceLevel" -> Seq(ConfidenceLevel.L200.toString),
-          "completionURL"   -> Seq(config.saveYourNationalNumberFrontendHost + routes.ApplicationController.showUpliftJourneyOutcome(Some(SafeRedirectUrl(request.uri)))),
-          "failureURL"      -> Seq(config.saveYourNationalNumberFrontendHost + routes.ApplicationController.showUpliftJourneyOutcome(Some(SafeRedirectUrl(request.uri))))
+          "completionURL"   -> Seq(config.saveYourNationalNumberFrontendHost +
+              routes.ApplicationController.showUpliftJourneyOutcome(Some(SafeRedirectUrl(request.uri)))
+          ),
+          "failureURL"      -> Seq(config.saveYourNationalNumberFrontendHost +
+            routes.ApplicationController.showUpliftJourneyOutcome(Some(SafeRedirectUrl(request.uri))))
         )
       )
     )
@@ -103,6 +103,11 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
         )
       )
     )
+  // $COVERAGE-ON$
+  private object GTOE200 {
+    def unapply(confLevel: ConfidenceLevel): Option[ConfidenceLevel] =
+      if (confLevel.level >= ConfidenceLevel.L200.level) Some(confLevel) else None
+  }
 
   private object LT200 {
     def unapply(confLevel: ConfidenceLevel): Option[ConfidenceLevel] =
@@ -120,35 +125,34 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
                                 hc: HeaderCarrier,
                                 config: FrontendAppConfig,
                                 request: Request[A]
-                               ) = {
+                               ): Future[Result] = {
     authorised(AuthPredicate)
       .retrieve(FMNRetrievals) {
-        case _ ~ Some(Individual) ~ _ ~ _ ~ (Some(CredentialStrength.weak) | None) ~ _ ~ _ ~ _ ~ _ ~ _ ~ _ =>
+        case _ ~ Some(Individual | Organisation) ~ _ ~ _ ~ (Some(CredentialStrength.weak) | Some("none")) ~ _ ~ _ ~ _ ~ _ ~ _ ~ _ =>
           upliftCredentialStrength
 
-        case _ ~ Some(Individual) ~ _ ~ _ ~ _ ~ LT200(_) ~ _ ~ _ ~ _~ _ ~ _ =>
+        case _ ~ Some(Individual | Organisation) ~ _ ~ _ ~ _ ~ LT200(_) ~ _ ~ _ ~ _~ _ ~ _ =>
           upliftConfidenceLevel(request)
 
-          // TODO: not sure we have Organisation and Agent users
-        case _ ~ Some(Organisation | Agent) ~ _ ~ _ ~ _ ~ LT200(_) ~ _ ~ _ ~ _~ _ ~ _ =>
-          upliftConfidenceLevel(request)
+        case Some(nino) ~
+          Some(affinityGroup) ~
+          allEnrolments ~
+          credentials ~
+          Some(CredentialStrength.strong) ~
+          GTOE200(confidenceLevel) ~
+          Some(name) ~
+          trustedHelper ~
+          profile ~
+          Some(internalId)  ~ _ =>
 
-        case _ ~ Some(Organisation | Agent) ~ _ ~ _ ~ (Some(CredentialStrength.weak) | None) ~ _ ~ _ ~ _ ~ _ ~ _ ~ _ =>
-          upliftCredentialStrength
-
-        case Some(nino) ~ Some(affinityGroup) ~ allEnrolments ~ _ ~ _ ~ confidenceLevel ~ Some(name) ~ _ ~ _ ~ Some(internalId)  ~ _ =>
-          //have to check access creds again as we need to redirect to pertax home page
           if (affinityGroup == AffinityGroup.Agent) {
+            logger.warn("Agent affinity group encountered whilst attempting to authorise user")
             Future successful Redirect(controllers.routes.UnauthorisedController.onPageLoad)
-          } else if(confidenceLevel.level < minCLevel) {
-            Future successful Redirect(controllers.routes.UnauthorisedController.onPageLoad)
-          } else if (!allEnrolments.getEnrolment(PTAKey).isDefined) {
-            Future successful Redirect(controllers.routes.UnauthorisedController.onPageLoad)
-          }
-          else {
+          } else {
             block(AuthContext(NationalInsuranceNumber(nino), isUser = true, internalId, confidenceLevel, affinityGroup, allEnrolments, name, request))
           }
         case _ =>
+          logger.warn("All authorize checks failed whilst attempting to authorise user")
           Future successful Redirect(controllers.routes.UnauthorisedController.onPageLoad)
       }
       .recover {
@@ -162,7 +166,7 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
       Redirect(config.loginUrl, Map("continue" -> Seq(loginContinueUrl), "origin" -> Seq(config.appName)))
 
     case IncorrectNino =>
-      logger.warn("incorrect none encountered whilst attempting to authorise user")
+      logger.warn("incorrect NINO encountered whilst attempting to authorise user")
       Redirect(controllers.routes.UnauthorisedController.onPageLoad)
 
     case ex: AuthorisationException ⇒

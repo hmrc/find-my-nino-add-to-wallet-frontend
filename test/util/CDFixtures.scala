@@ -16,7 +16,6 @@
 
 package util
 
-import config.ConfigDecorator
 import controllers.auth.requests.UserRequest
 import models._
 import org.mockito.ArgumentMatchers.any
@@ -41,9 +40,7 @@ import uk.gov.hmrc.play.partials.FormPartialRetriever
 import java.time.LocalDate
 import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
-import scala.reflect.ClassTag
 import scala.util.Random
-
 
 trait CDFixtures {
   def buildPersonDetails: PersonDetails =

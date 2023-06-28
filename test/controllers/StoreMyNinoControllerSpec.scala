@@ -30,16 +30,14 @@ import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
 import util.{CDFixtures, Keys}
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
-import util.TestData.NinoUser
+import util.TestData.{NinoUser, NinoUser_With_CL50}
+
 import java.util.Base64
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import views.html.{ErrorTemplate, StoreMyNinoView}
 
 class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSugar {
-
-
-
 
   override protected def beforeEach(): Unit = {
     reset(mockScaWrapperDataConnector)
@@ -66,11 +64,6 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
     reset(mockIdentityVerificationFrontendConnector)
     when(mockIdentityVerificationFrontendConnector.getIVJourneyStatus(any())(any(), any()))
       .thenReturn(cats.data.EitherT.right[UpstreamErrorResponse](Future.successful(HttpResponse(OK, ""))))
-
-
-
-
-
 
     super.beforeEach()
   }
@@ -217,6 +210,25 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
 
       running(application) {
         userLoggedInIsNotFMNUser(NinoUser)
+        val request = FakeRequest(GET, routes.StoreMyNinoController.getQrCode(passId).url)
+          .withSession(("authToken", "Bearer 123"))
+        val result = route(application, request).value
+        status(result) mustEqual 500
+      }
+    }
+
+    "must fail to login user2" in {
+      val application = applicationBuilderWithConfig()
+        .overrides(
+          inject.bind[SessionRepository].toInstance(mockSessionRepository),
+          inject.bind[ApplePassConnector].toInstance(mockApplePassConnector),
+          inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
+        )
+        .configure("features.sca-wrapper-enabled" -> false)
+        .build()
+
+      running(application) {
+        userLoggedInIsNotFMNUser(NinoUser_With_CL50)
         val request = FakeRequest(GET, routes.StoreMyNinoController.getQrCode(passId).url)
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value

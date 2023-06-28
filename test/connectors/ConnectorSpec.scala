@@ -33,10 +33,8 @@ import play.api.inject.guice.{GuiceApplicationBuilder, GuiceableModule}
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import uk.gov.hmrc.auth.core.{Enrolment, EnrolmentIdentifier, Enrolments}
-import uk.gov.hmrc.auth.core.retrieve.Credentials
 import uk.gov.hmrc.domain.SaUtrGenerator
 import uk.gov.hmrc.http.HeaderCarrier
-import util.UserDetails
 import util.UserRequestFixture.buildUserRequest
 
 import scala.concurrent.ExecutionContext

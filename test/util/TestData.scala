@@ -16,9 +16,6 @@
 
 package util
 
-import play.api.libs.json.{JsObject, Json}
-import uk.gov.hmrc.auth.core.Enrolment
-
 object TestData {
 
   val allEnrolments = """
@@ -29,19 +26,33 @@ object TestData {
     |   }]
     |""".stripMargin
 
-  val NinoUser: String =
+  val NinoUser_With_CL50: String =
     s"""
       |{
       |	"nino": "AA000003B",
       |	"credentialRole": "User",
       | "credentialStrength": "strong",
       |	"internalId": "Int-8612ba91-5581-411d-9d32-fb2de937a565",
-      | "confidenceLevel": 200,
+      | "confidenceLevel": 50,
       | "affinityGroup": "Individual",
       | $allEnrolments,
       | "optionalName" : {"name": "somename"}
       |}
       |""".stripMargin
+
+  val NinoUser: String =
+    s"""
+       |{
+       |	"nino": "AA000003B",
+       |	"credentialRole": "User",
+       | "credentialStrength": "strong",
+       |	"internalId": "Int-8612ba91-5581-411d-9d32-fb2de937a565",
+       | "confidenceLevel": 200,
+       | "affinityGroup": "Individual",
+       | $allEnrolments,
+       | "optionalName" : {"name": "somename"}
+       |}
+       |""".stripMargin
 
   val NotFoundAccountError: String =
     """

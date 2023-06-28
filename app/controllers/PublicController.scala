@@ -26,16 +26,18 @@ import views.html.public.SessionTimeoutView
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
-class PublicController @Inject()(sessionTimeoutView: SessionTimeoutView,authConnector: AuthConnector)(implicit
-                                                                                                           configDecorator: ConfigDecorator,
-                                                                                                           cc: MessagesControllerComponents,
-                                                                                                           config: Configuration,
-                                                                                                           env: Environment
-) extends FMNBaseController(authConnector) with I18nSupport  {
+
+class PublicController @Inject()(sessionTimeoutView: SessionTimeoutView,
+                                 authConnector: AuthConnector
+                                )(implicit configDecorator: ConfigDecorator,
+                                           cc: MessagesControllerComponents,
+                                           config: Configuration,
+                                           env: Environment) extends FMNBaseController(authConnector) with I18nSupport  {
 
   def sessionTimeout: Action[AnyContent] = Action.async { implicit request =>
     Future.successful {
       Ok(sessionTimeoutView())
     }
   }
+
 }

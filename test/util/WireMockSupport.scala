@@ -16,7 +16,7 @@
 
 package util
 
-import base.{SBase, SpecBase}
+import base.SBase
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig

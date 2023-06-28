@@ -75,7 +75,7 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
         authorisedUser(loginContinueUrl, block)
       }
     }
-
+  // $COVERAGE-OFF$
   private def upliftConfidenceLevel(request: Request[_])(implicit config: FrontendAppConfig): Future[Result] = {
     Future.successful(
       Redirect(
@@ -103,7 +103,7 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
         )
       )
     )
-
+  // $COVERAGE-ON$
   private object GTOE200 {
     def unapply(confLevel: ConfidenceLevel): Option[ConfidenceLevel] =
       if (confLevel.level >= ConfidenceLevel.L200.level) Some(confLevel) else None
@@ -144,7 +144,7 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
           trustedHelper ~
           profile ~
           Some(internalId)  ~ _ =>
-        //case Some(nino) ~ Some(affinityGroup) ~ allEnrolments ~ _ ~ _ ~ confidenceLevel ~ Some(name) ~ _ ~ _ ~ Some(internalId)  ~ _ =>
+
           if (affinityGroup == AffinityGroup.Agent) {
             logger.warn("Agent affinity group encountered whilst attempting to authorise user")
             Future successful Redirect(controllers.routes.UnauthorisedController.onPageLoad)

@@ -277,9 +277,6 @@ class ApplicationControllerSpec extends SpecBase with CDFixtures with MockitoSug
 
       }
 
-
-
-
       "showUpliftJourneyOutcome should return Timeout when IV journey status is UserAborted" in new LocalSetup {
 
         running(application) {

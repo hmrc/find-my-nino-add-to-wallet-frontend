@@ -99,7 +99,7 @@ object AuditUtils {
     )
   }
 
-  def buildDetails(personDetails: PersonDetails, journeyId: String, hc: HeaderCarrier): YourDetailsAuditEvent = {
+  private def buildDetails(personDetails: PersonDetails, journeyId: String, hc: HeaderCarrier): YourDetailsAuditEvent = {
     val person = personDetails.person
     val mainAddress = getPersonAddress(personDetails)
     val strLang = getLanguageFromCookieStr(hc)

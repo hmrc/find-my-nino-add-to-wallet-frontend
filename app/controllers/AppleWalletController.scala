@@ -56,8 +56,8 @@ class AppleWalletController @Inject()(val citizenDetailsConnector: CitizenDetail
         case Some(pd) =>
           auditService.audit(AuditUtils.buildAuditEvent(pd, "ViewAppleWalletPage", configDecorator.appName))
           for {
-            pId: Some[String] <- findMyNinoServiceConnector.createApplePass(pd.person.fullName, request.nino.get.formatted)
-          } yield Ok(view(pId.value, request.nino.get.formatted, isMobileDisplay(request)))
+            pId: Some[String] <- findMyNinoServiceConnector.createApplePass(pd.person.fullName, request.nino.map(_.formatted).getOrElse(""))
+          } yield Ok(view(pId.value, isMobileDisplay(request)))
         case None =>
           Future(NotFound(errorTemplate("Details not found", "Your details were not found.", "Your details were not found, please try again later.")))
       }

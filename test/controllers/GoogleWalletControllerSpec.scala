@@ -17,9 +17,8 @@
 package controllers
 
 import base.SpecBase
-import connectors.{ApplePassConnector, CitizenDetailsConnector, IdentityVerificationFrontendConnector, PersonDetailsErrorResponse, PersonDetailsSuccessResponse}
+import connectors.{CitizenDetailsConnector, IdentityVerificationFrontendConnector, PersonDetailsErrorResponse, PersonDetailsSuccessResponse}
 import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.{reset, when}
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject
@@ -31,27 +30,20 @@ import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
 import util.{CDFixtures, Keys}
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
 import util.TestData.NinoUser
-import java.util.Base64
+import util.googlepass.GooglePassUtil
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import views.html.{ErrorTemplate, AppleWalletView}
+import views.html.{ErrorTemplate, GoogleWalletView}
 
-class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSugar {
+class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSugar {
 
   override protected def beforeEach(): Unit = {
     reset(mockScaWrapperDataConnector)
     when(mockScaWrapperDataConnector.wrapperData()(any(), any(), any()))
       .thenReturn(Future.successful(wrapperDataResponse))
 
-    reset(mockApplePassConnector)
-    when(mockApplePassConnector.getApplePass(eqTo(passId))(any(), any()))
-      .thenReturn(Future(Some(Base64.getDecoder.decode(fakeBase64String))))
-    when(mockApplePassConnector.createApplePass(any(), any())(any(), any()))
-      .thenReturn(Future(Some(passId)))
-    when(mockApplePassConnector.createPersonDetailsRow(any())(any(), any()))
-      .thenReturn(Future(Some(personDetailsId)))
-    when(mockApplePassConnector.getQrCode(eqTo(passId))(any(), any()))
-      .thenReturn(Future(Some(Base64.getDecoder.decode(fakeBase64String))))
+    reset(mockGooglePassUtil)
+    when(mockGooglePassUtil.createGooglePass(any, any)) thenReturn fakeGooglePassSaveUrl
 
     reset(mockSessionRepository)
     when(mockSessionRepository.get(any())) thenReturn Future.successful(Some(emptyUserAnswers))
@@ -67,30 +59,27 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
     super.beforeEach()
   }
 
-  val passId = "applePassId"
-  val notApplePassId = ""
-  val personDetailsId = "pdId"
   val pd = buildPersonDetails
-  val controller = applicationWithConfig.injector.instanceOf[AppleWalletController]
+  val controller = applicationWithConfig.injector.instanceOf[GoogleWalletController]
 
-  lazy val view = applicationWithConfig.injector.instanceOf[AppleWalletView]
+  lazy val view = applicationWithConfig.injector.instanceOf[GoogleWalletView]
   lazy val errview = applicationWithConfig.injector.instanceOf[ErrorTemplate]
 
   val mockSessionRepository = mock[SessionRepository]
-  val mockApplePassConnector = mock[ApplePassConnector]
   val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
   val mockIdentityVerificationFrontendConnector = mock[IdentityVerificationFrontendConnector]
 
   val fakeBase64String = "UEsDBBQACAgIABxqJlYAAAAAAA"
+  val fakeGooglePassSaveUrl = "testURL"
+  val mockGooglePassUtil = mock[GooglePassUtil]
 
-  "Apple Wallet Controller" - {
+  "Google Wallet Controller" - {
 
     "must return ErrorView and the correct view for a GET" in {
       val application =
         applicationBuilderWithConfig()
           .overrides(
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
-            inject.bind[ApplePassConnector].toInstance(mockApplePassConnector),
             inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector),
             inject.bind[IdentityVerificationFrontendConnector].toInstance(mockIdentityVerificationFrontendConnector)
           )
@@ -102,7 +91,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
 
       running(application) {
         userLoggedInFMNUser(NinoUser)
-        val request = FakeRequest(GET, routes.AppleWalletController.onPageLoad.url)
+        val request = FakeRequest(GET, routes.GoogleWalletController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         status(result) mustEqual NOT_FOUND
@@ -119,7 +108,6 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
         applicationBuilderWithConfig()
           .overrides(
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
-            inject.bind[ApplePassConnector].toInstance(mockApplePassConnector),
             inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
           )
           .configure("features.sca-wrapper-enabled" -> false)
@@ -127,11 +115,11 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
 
       running(application) {
         userLoggedInFMNUser(NinoUser)
-        val request = FakeRequest(GET, routes.AppleWalletController.onPageLoad.url)
+        val request = FakeRequest(GET, routes.GoogleWalletController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         status(result) mustEqual OK
-        contentAsString(result) mustEqual (view(passId, false)(request, messages(application))).toString
+        contentAsString(result) mustEqual (view(fakeGooglePassSaveUrl, false)(request, messages(application))).toString
       }
     }
 
@@ -140,7 +128,6 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
         applicationBuilderWithConfig()
           .overrides(
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
-            inject.bind[ApplePassConnector].toInstance(mockApplePassConnector),
             inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector),
             inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector)
           )
@@ -149,51 +136,11 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
 
       running(application) {
         userLoggedInFMNUser(NinoUser)
-        val request = FakeRequest(GET, routes.AppleWalletController.onPageLoad.url)
+        val request = FakeRequest(GET, routes.GoogleWalletController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         status(result) mustEqual OK
-        contentAsString(result) mustEqual (view(passId, false)(request.addAttr(Keys.wrapperDataKey, wrapperDataResponse), messages(application))).toString
-      }
-    }
-
-    "must return apple pass" in {
-
-      val application = applicationBuilderWithConfig().overrides(
-        inject.bind[SessionRepository].toInstance(mockSessionRepository),
-        inject.bind[ApplePassConnector].toInstance(mockApplePassConnector),
-        inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
-      )
-        .configure("features.sca-wrapper-enabled" -> false)
-        .build()
-
-      running(application) {
-        userLoggedInFMNUser(NinoUser)
-        val request = FakeRequest(GET, routes.AppleWalletController.getPassCard(passId).url)
-          .withSession(("authToken", "Bearer 123"))
-        val result = route(application, request).value
-        status(result) mustEqual OK
-        contentAsBytes(result) mustEqual Base64.getDecoder.decode(fakeBase64String)
-      }
-    }
-
-    "must return QR code" in {
-      val application = applicationBuilderWithConfig()
-        .overrides(
-          inject.bind[SessionRepository].toInstance(mockSessionRepository),
-          inject.bind[ApplePassConnector].toInstance(mockApplePassConnector),
-          inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
-        )
-        .configure("features.sca-wrapper-enabled" -> false)
-        .build()
-
-      running(application) {
-        userLoggedInFMNUser(NinoUser)
-        val request = FakeRequest(GET, routes.AppleWalletController.getQrCode(passId).url)
-          .withSession(("authToken", "Bearer 123"))
-        val result = route(application, request).value
-        status(result) mustEqual OK
-        contentAsBytes(result) mustEqual Base64.getDecoder.decode(fakeBase64String)
+        contentAsString(result) mustEqual (view(fakeGooglePassSaveUrl, false)(request.addAttr(Keys.wrapperDataKey, wrapperDataResponse), messages(application))).toString
       }
     }
 
@@ -201,7 +148,6 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
       val application = applicationBuilderWithConfig()
         .overrides(
           inject.bind[SessionRepository].toInstance(mockSessionRepository),
-          inject.bind[ApplePassConnector].toInstance(mockApplePassConnector),
           inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
         )
         .configure("features.sca-wrapper-enabled" -> false)

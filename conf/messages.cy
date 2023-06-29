@@ -149,4 +149,16 @@ appleWallet.saveAndSendToPhone.p1.part2 = ac yna ei anfon i’ch iPhone — er e
 appleWallet.scanQRCodeToAdd.heading = Sganiwch y cod QR i ychwanegu eich rhif Yswiriant Gwladol at waled eich ffôn
 appleWallet.scanQRCodeToAdd.p1 = Defnyddio’ch iPhone i sganio’r cod QR ac yna mewngofnodi i Borth y Llywodraeth.
 appleWallet.addToWallet.alt = Ychwanegu at y waled Apple
-appleWallet.addToWallet.QRCode.alt = Cod QR i gadw mewn waled Apple
+appleWallet.addToWallet.QRCode.alt = Cod QR
+
+googleWallet.title = Ychwanegwch eich rhif Yswiriant Gwladol at eich Google Wallet
+googleWallet.heading = Ychwanegwch eich rhif Yswiriant Gwladol at eich Google Wallet
+googleWallet.p1 = Byddai’ch rhif Yswiriant Gwladol:
+googleWallet.l1.li1 = ar gael yn waled eich ffôn ynghyd â’ch cardiau eraill – hyd yn oed pan na fyddwch ar-lein
+googleWallet.l1.li2 = yn cael ei ddiogelu gan osodiadau diogelwch eich ffôn
+googleWallet.l1.li3 = dim ond yn cael ei rannu gyda darparwr y waled ac nid gydag unrhyw drydydd parti arall
+googleWallet.l1.li4 = prin yn cymryd lle yng nghof eich ffôn
+googleWallet.p2 = Os ydych yn cadw eich rhif Yswiriant Gwladol ar eich ffôn, sicrhewch fod ganddo osodiadau diogelwch megis dull adnabod wyneb (Face ID), patrwm neu god PIN wedi eu sefydlu. Mae hyn yn helpu i ddiogelu’ch manylion.
+googleWallet.scanQRCode.heading = Sganiwch y cod QR i ychwanegu eich rhif Yswiriant Gwladol at waled eich ffôn
+googleWallet.addToWallet.alt = Ychwanegu at y waled Google
+googleWallet.addToWallet.QRCode.alt = Cod QR

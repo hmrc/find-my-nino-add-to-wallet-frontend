@@ -32,3 +32,7 @@ GET         /do-uplift                                                controller
 GET         /full                                                     controllers.ApplicationController.uplift(redirectUrl: Option[SafeRedirectUrl])
 GET         /identity-check-complete                                  controllers.ApplicationController.showUpliftJourneyOutcome(continueUrl: Option[SafeRedirectUrl])
 GET         /identity-check-failed                                    controllers.ApplicationController.showUpliftJourneyOutcome(continueUrl: Option[SafeRedirectUrl])
+
+GET         /apple-wallet                               controllers.AppleWalletController.onPageLoad()
+GET         /get-pass-card                              controllers.AppleWalletController.getPassCard(passId: String)
+GET         /get-qr-code                                controllers.AppleWalletController.getQrCode(passId: String)

@@ -15,8 +15,6 @@ GET         /check-your-answers                          controllers.CheckYourAn
 GET         /unauthorised                                controllers.UnauthorisedController.onPageLoad
 
 GET         /                                            controllers.StoreMyNinoController.onPageLoad
-GET         /get-pass-card                               controllers.StoreMyNinoController.getPassCard(passId: String)
-GET         /get-qr-code                                 controllers.StoreMyNinoController.getQrCode(passId: String)
 GET         /print-letter                                controllers.NinoLetterController.onPageLoad
 GET         /print-letter/save-letter-as-pdf             controllers.NinoLetterController.saveNationalInsuranceNumberAsPdf
 

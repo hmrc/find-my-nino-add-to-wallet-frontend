@@ -46,16 +46,6 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
     when(mockScaWrapperDataConnector.wrapperData()(any(), any(), any()))
       .thenReturn(Future.successful(wrapperDataResponse))
 
-    reset(mockApplePassConnector)
-    when(mockApplePassConnector.getApplePass(eqTo(passId))(any(), any()))
-      .thenReturn(Future(Some(Base64.getDecoder.decode(fakeBase64String))))
-    when(mockApplePassConnector.createApplePass(any(), any())(any(), any()))
-      .thenReturn(Future(Some(passId)))
-    when(mockApplePassConnector.createPersonDetailsRow(any())(any(), any()))
-      .thenReturn(Future(Some(personDetailsId)))
-    when(mockApplePassConnector.getQrCode(eqTo(passId))(any(), any()))
-      .thenReturn(Future(Some(Base64.getDecoder.decode(fakeBase64String))))
-
     reset(mockSessionRepository)
     when(mockSessionRepository.get(any())) thenReturn Future.successful(Some(emptyUserAnswers))
 
@@ -70,9 +60,6 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
     super.beforeEach()
   }
 
-  val passId = "applePassId"
-  val notApplePassId = ""
-  val personDetailsId = "pdId"
   val pd = buildPersonDetails
   val controller = applicationWithConfig.injector.instanceOf[StoreMyNinoController]
 
@@ -80,14 +67,9 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
   lazy val errview = applicationWithConfig.injector.instanceOf[ErrorTemplate]
 
   val mockSessionRepository = mock[SessionRepository]
-  val mockApplePassConnector = mock[ApplePassConnector]
   val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
   val mockIdentityVerificationFrontendConnector = mock[IdentityVerificationFrontendConnector]
   val mockPayeIndividualDetailsConnector = mock[PayeIndividualDetailsConnector]
-
-  val fakeBase64String = "UEsDBBQACAgIABxqJlYAAAAAAA"
-  val fakeGooglePassSaveUrl = "testURL"
-  val mockGooglePassUtil = mock[GooglePassUtil]
 
   "StoreMyNino Controller" - {
 
@@ -96,7 +78,6 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
         applicationBuilderWithConfig()
           .overrides(
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
-            inject.bind[ApplePassConnector].toInstance(mockApplePassConnector),
             inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector),
             inject.bind[IdentityVerificationFrontendConnector].toInstance(mockIdentityVerificationFrontendConnector)
           )
@@ -119,17 +100,13 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
       reset(mockCitizenDetailsConnector)
     }
 
-    when(mockGooglePassUtil.createGooglePass(any, any)) thenReturn fakeGooglePassSaveUrl
-
     "must return OK and the correct view for a GET" in {
       val application =
         applicationBuilderWithConfig()
           .overrides(
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
-            inject.bind[ApplePassConnector].toInstance(mockApplePassConnector),
             inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector),
             inject.bind[PayeIndividualDetailsConnector].toInstance(mockPayeIndividualDetailsConnector),
-            inject.bind[GooglePassUtil].toInstance(mockGooglePassUtil)
           )
           .configure("features.sca-wrapper-enabled" -> false)
           .build()
@@ -140,7 +117,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         status(result) mustEqual OK
-        contentAsString(result) mustEqual (view(passId, fakeGooglePassSaveUrl, "AA 00 00 03 B", false)(request, messages(application))).toString
+        contentAsString(result) mustEqual (view("AA 00 00 03 B")(request, messages(application))).toString
       }
     }
 
@@ -149,10 +126,8 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
         applicationBuilderWithConfig()
           .overrides(
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
-            inject.bind[ApplePassConnector].toInstance(mockApplePassConnector),
             inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector),
             inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),
-            inject.bind[GooglePassUtil].toInstance(mockGooglePassUtil)
           )
           .configure("features.sca-wrapper-enabled" -> true)
           .build()
@@ -163,47 +138,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         status(result) mustEqual OK
-        contentAsString(result) mustEqual (view(passId, fakeGooglePassSaveUrl, "AA 00 00 03 B", false)(request.addAttr(Keys.wrapperDataKey, wrapperDataResponse), messages(application))).toString
-      }
-    }
-
-    "must return apple pass" in {
-
-      val application = applicationBuilderWithConfig().overrides(
-        inject.bind[SessionRepository].toInstance(mockSessionRepository),
-        inject.bind[ApplePassConnector].toInstance(mockApplePassConnector),
-        inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
-      )
-        .configure("features.sca-wrapper-enabled" -> false)
-        .build()
-
-      running(application) {
-        userLoggedInFMNUser(NinoUser)
-        val request = FakeRequest(GET, routes.StoreMyNinoController.getPassCard(passId).url)
-          .withSession(("authToken", "Bearer 123"))
-        val result = route(application, request).value
-        status(result) mustEqual OK
-        contentAsBytes(result) mustEqual Base64.getDecoder.decode(fakeBase64String)
-      }
-    }
-
-    "must return QR code" in {
-      val application = applicationBuilderWithConfig()
-        .overrides(
-          inject.bind[SessionRepository].toInstance(mockSessionRepository),
-          inject.bind[ApplePassConnector].toInstance(mockApplePassConnector),
-          inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
-        )
-        .configure("features.sca-wrapper-enabled" -> false)
-        .build()
-
-      running(application) {
-        userLoggedInFMNUser(NinoUser)
-        val request = FakeRequest(GET, routes.StoreMyNinoController.getQrCode(passId).url)
-          .withSession(("authToken", "Bearer 123"))
-        val result = route(application, request).value
-        status(result) mustEqual OK
-        contentAsBytes(result) mustEqual Base64.getDecoder.decode(fakeBase64String)
+        contentAsString(result) mustEqual (view("AA 00 00 03 B")(request.addAttr(Keys.wrapperDataKey, wrapperDataResponse), messages(application))).toString
       }
     }
 
@@ -211,7 +146,6 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
       val application = applicationBuilderWithConfig()
         .overrides(
           inject.bind[SessionRepository].toInstance(mockSessionRepository),
-          inject.bind[ApplePassConnector].toInstance(mockApplePassConnector),
           inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
         )
         .configure("features.sca-wrapper-enabled" -> false)
@@ -219,7 +153,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
 
       running(application) {
         userLoggedInIsNotFMNUser(NinoUser)
-        val request = FakeRequest(GET, routes.StoreMyNinoController.getQrCode(passId).url)
+        val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         status(result) mustEqual 500

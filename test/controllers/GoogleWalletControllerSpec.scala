@@ -155,7 +155,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
 
       running(application) {
         userLoggedInIsNotFMNUser(NinoUser)
-        val request = FakeRequest(GET, routes.AppleWalletController.getQrCode(passId).url)
+        val request = FakeRequest(GET, routes.AppleWalletController.onPageLoad().url)
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         status(result) mustEqual 500

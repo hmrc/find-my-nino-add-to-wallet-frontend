@@ -58,58 +58,10 @@ class StoreMyNinoController @Inject()(
       request.personDetails match {
         case Some(pd) =>
           auditService.audit(AuditUtils.buildAuditEvent(pd, "ViewNinoLanding", configDecorator.appName))
-          for {
-            pId: Some[String] <- findMyNinoServiceConnector.createApplePass(pd.person.fullName, request.nino.get.formatted)
-            googlePassSaveUrl: String = googlePassUtil.createGooglePass(pd.person.fullName, request.nino.get.nino)
-          } yield Ok(view(pId.value, googlePassSaveUrl, request.nino.get.formatted, isMobileDisplay(request)))
+          Future(Ok(view(request.nino.map(_.formatted).getOrElse(""))))
         case None =>
           Future(NotFound(errorTemplate("Details not found", "Your details were not found.", "Your details were not found, please try again later.")))
       }
-    }
-  }
-
-  private def isMobileDisplay(request: UserRequest[AnyContent]): Boolean = {
-    // Display wallet options differently on mobile to pc
-    val strUserAgent = request.headers.get("http_user_agent")
-      .getOrElse(request.headers.get("User-Agent")
-        .getOrElse(""))
-
-    config.get[String]("mobileDeviceDetectionRegexStr").r
-      .findFirstMatchIn(strUserAgent) match {
-      case Some(_) => true
-      case None => false
-    }
-  }
-
-
-  def getPassCard(passId: String): Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction).async {
-    implicit request => {
-      authorisedAsFMNUser { _ =>
-        findMyNinoServiceConnector.getApplePass(passId).map {
-          case Some(data) =>
-            request.getQueryString("qr-code") match {
-              case Some("true") => auditService.audit(AuditUtils.buildAuditEvent(request.personDetails.get,
-                "AddNinoToWalletFromQRCode", configDecorator.appName))
-              case _ => auditService.audit(AuditUtils.buildAuditEvent(request.personDetails.get,
-                "AddNinoToWallet", configDecorator.appName))
-            }
-            Ok(data).withHeaders("Content-Disposition" -> s"attachment; filename=$passFileName")
-          case _ => NotFound
-        }
-      }(loginContinueUrl)
-    }
-  }
-
-  def getQrCode(passId: String): Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction).async {
-    implicit request => {
-      authorisedAsFMNUser { _ =>
-        findMyNinoServiceConnector.getQrCode(passId).map {
-          case Some(data) =>
-            auditService.audit(AuditUtils.buildAuditEvent(request.personDetails.get,"DisplayQRCode",configDecorator.appName))
-            Ok(data).withHeaders("Content-Disposition" -> s"attachment; filename=$passFileName")
-          case _ => NotFound
-        }
-      }(loginContinueUrl)
     }
   }
 }

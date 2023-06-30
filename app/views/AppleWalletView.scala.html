@@ -18,7 +18,7 @@
 @import config.ConfigDecorator
 
 @this(
-    layout: templates.Layout,
+    layout: templates.LayoutProvider,
     h1: H1,
     h2: H2,
     p: P,
@@ -65,7 +65,7 @@
             </p>
             @h2("appleWallet.scanQRCodeToAdd.heading")
             @p("appleWallet.scanQRCodeToAdd.p1")
-            <img src='/@configDecorator.serviceName/get-qr-code?passId=@{passId}' width="200" height="200" alt='@messages("appleWallet.addToWallet.QRCode.alt")'>
+            <img id="apple-qr-code" src='/@configDecorator.serviceName/get-qr-code?passId=@{passId}' width="200" height="200" alt='@messages("appleWallet.addToWallet.QRCode.alt")'>
         </div>
     }
 }

@@ -18,13 +18,13 @@ import uk.gov.hmrc.auth.core.retrieve.Name
 import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolment, Enrolments}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
-import views.html.StoreMyNinoView
+import views.html.GoogleWalletView
 
 import java.time.LocalDate
 
-class StoreMyNinoControllerISpec extends IntegrationSpecBase {
+class GoogleWalletControllerISpec extends IntegrationSpecBase {
 
-  //generate fake details to provide for testing the functionality of the landing page and viewing the PDF
+  //generate fake details to provide for testing the functionality of the google wallet page
   val fakePersonDetails: PersonDetails = PersonDetails(
     Person(
       Some("John"),
@@ -55,7 +55,12 @@ class StoreMyNinoControllerISpec extends IntegrationSpecBase {
     None
   )
 
+  val fakePassId = "applePassId"
+  val fakeBase64String = "UEsDBBQACAgIABxqJlYAAAAAAA"
+
+
   override lazy val messagesApi: MessagesApi = app.injector.instanceOf[MessagesApi]
+
 
   implicit lazy val configDecorator: ConfigDecorator = app.injector.instanceOf[ConfigDecorator]
   implicit lazy val messages: Messages = MessagesImpl(Lang("en"), messagesApi).messages
@@ -79,11 +84,12 @@ class StoreMyNinoControllerISpec extends IntegrationSpecBase {
 
     implicit val userRequest: UserRequest[AnyContentAsEmpty.type] = buildUserRequest()
 
-    def view: StoreMyNinoView = app.injector.instanceOf[StoreMyNinoView]
+    def view: GoogleWalletView = app.injector.instanceOf[GoogleWalletView]
 
     def main: Html =
       view(
-        nino = generatedNino.nino
+        displayForMobile = false,
+        googlePassSaveUrl = ""
       )(fakeRequest, messages)
 
     def doc: Document = Jsoup.parse(main.toString)
@@ -96,25 +102,20 @@ class StoreMyNinoControllerISpec extends IntegrationSpecBase {
         doc.getElementsContainingText(text).attr("href").contains(href),
         s"\n\nLink $href was not rendered on the page\n"
       )
+
+    def assertContainsQRCode(doc: Document, text: String): Unit = {
+      assert(
+        doc.getElementById("google-qr-code").attr("src").contains(text),
+        s"\n\nQR Code linking to " + text + " was not rendered on the page. \n"
+      )
+    }
   }
 
   "Main" when {
 
     "rendering the view" must {
-      "render the correct nino" in new LocalSetup {
-        assertContainsText(doc,generatedNino.nino)
-      }
-
       "render the welsh language toggle" in new LocalSetup {
         assertContainsLink(doc, "Cymraeg", "/hmrc-frontend/language/cy")
-      }
-
-      "render the view or print letter link" in new LocalSetup {
-        assertContainsLink(doc, "View or print", "/print-letter")
-      }
-
-      "render the save as a PDF link" in new LocalSetup {
-        assertContainsLink(doc, "Save as a PDF", "/print-letter/save-letter-as-pdf")
       }
     }
 

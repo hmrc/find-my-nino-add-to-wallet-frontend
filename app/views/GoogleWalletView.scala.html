@@ -18,7 +18,7 @@
 @import config.ConfigDecorator
 
 @this(
-    layout: templates.Layout,
+    layout: templates.LayoutProvider,
     h1: H1,
     h2: H2,
     p: P,
@@ -58,7 +58,7 @@
     } else {
         <div class="hide-on-phones">
             @h2("googleWallet.scanQRCodeToAdd.heading")
-            <img src='#' width="200" height="200" alt='@messages("googleWallet.addToWallet.QRCode.alt")'>
+            <img id="google-qr-code" src='#' width="200" height="200" alt='@messages("googleWallet.addToWallet.QRCode.alt")'>
         </div>
     }
 }

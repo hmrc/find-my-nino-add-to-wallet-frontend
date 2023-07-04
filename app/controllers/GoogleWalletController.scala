@@ -17,7 +17,7 @@
 package controllers
 
 import config.{ConfigDecorator, FrontendAppConfig}
-import connectors.CitizenDetailsConnector
+import connectors.{ApplePassConnector, CitizenDetailsConnector}
 import controllers.auth.requests.UserRequest
 import play.api.{Configuration, Environment}
 
@@ -28,7 +28,6 @@ import services.AuditService
 import uk.gov.hmrc.auth.core.AuthConnector
 import util.AuditUtils
 import views.html.{ErrorTemplate, GoogleWalletView}
-import util.googlepass.GooglePassUtil
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -36,7 +35,7 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
                                        override val messagesApi: MessagesApi,
                                        authConnector: AuthConnector,
                                        view: GoogleWalletView,
-                                       googlePassUtil: GooglePassUtil,
+                                       findMyNinoServiceConnector: ApplePassConnector,
                                        errorTemplate: ErrorTemplate,
                                        getPersonDetailsAction: GetPersonDetailsAction,
                                        auditService: AuditService,
@@ -54,8 +53,10 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
       request.personDetails match {
         case Some(pd) =>
           auditService.audit(AuditUtils.buildAuditEvent(pd, "ViewGoogleWalletPage", configDecorator.appName))
-          val googlePassSaveUrl: String = googlePassUtil.createGooglePass(pd.person.fullName, request.nino.map(_.formatted).getOrElse(""))
-          Future(Ok(view(googlePassSaveUrl, isMobileDisplay(request))))
+          for {
+            pId: Some[String] <- findMyNinoServiceConnector.createGooglePass(pd.person.fullName, request.nino.map(_.formatted).getOrElse(""))
+            url: Option[String] <- findMyNinoServiceConnector.getGooglePassUrl(pId.value)
+          } yield Ok(view(pId.value, isMobileDisplay(request), url.getOrElse("")))
         case None =>
           Future(NotFound(errorTemplate("Details not found", "Your details were not found.", "Your details were not found, please try again later.")))
       }
@@ -72,6 +73,19 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
       .findFirstMatchIn(strUserAgent) match {
       case Some(_) => true
       case None => false
+    }
+  }
+
+  def getGooglePassQrCode(passId: String): Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction).async {
+    implicit request => {
+      authorisedAsFMNUser { _ =>
+        findMyNinoServiceConnector.getGooglePassQrCode(passId).map {
+          case Some(data) =>
+            auditService.audit(AuditUtils.buildAuditEvent(request.personDetails.get, "DisplayQRCode", configDecorator.appName))
+            Ok(data)
+          case _ => NotFound
+        }
+      }(loginContinueUrl)
     }
   }
 }

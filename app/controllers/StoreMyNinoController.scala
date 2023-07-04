@@ -24,7 +24,6 @@ import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents, Req
 import play.api.{Configuration, Environment}
 import services.AuditService
 import uk.gov.hmrc.auth.core.AuthConnector
-import util.googlepass.GooglePassUtil
 import util.AuditUtils
 import views.html.{ StoreMyNinoView, ErrorTemplate }
 
@@ -39,8 +38,7 @@ class StoreMyNinoController @Inject()(
                                        override val messagesApi: MessagesApi,
                                        getPersonDetailsAction: GetPersonDetailsAction,
                                        view: StoreMyNinoView,
-                                       errorTemplate: ErrorTemplate,
-                                       googlePassUtil: GooglePassUtil
+                                       errorTemplate: ErrorTemplate
                                      )(implicit config: Configuration,
                                        configDecorator: ConfigDecorator,
                                        env: Environment,

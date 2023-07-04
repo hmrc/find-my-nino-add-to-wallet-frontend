@@ -28,8 +28,9 @@
 )
 
 @(
-    googlePassSaveUrl: String,
-    displayForMobile: Boolean
+    googlePassId: String,
+    displayForMobile: Boolean,
+    googlePassSaveUrl: String
 )(implicit request: Request[_], messages: Messages)
 
 @stylesheet = {
@@ -58,7 +59,7 @@
     } else {
         <div class="hide-on-phones">
             @h2("googleWallet.scanQRCodeToAdd.heading")
-            <img id="google-qr-code" src='#' width="200" height="200" alt='@messages("googleWallet.addToWallet.QRCode.alt")'>
+            <img id="google-qr-code" src='/@configDecorator.serviceName/get-google-qr-code?passId=@{googlePassId}' width="200" height="200" alt='@messages("googleWallet.addToWallet.QRCode.alt")'>
         </div>
     }
 }

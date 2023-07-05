@@ -36,4 +36,5 @@ GET         /get-pass-card                              controllers.AppleWalletC
 GET         /get-qr-code                                controllers.AppleWalletController.getQrCode(passId: String)
 
 GET         /google-wallet                             controllers.GoogleWalletController.onPageLoad()
+GET         /get-google-pass                           controllers.GoogleWalletController.getGooglePass(passId: String)
 GET         /get-google-qr-code                        controllers.GoogleWalletController.getGooglePassQrCode(passId: String)

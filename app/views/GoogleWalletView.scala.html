@@ -52,7 +52,7 @@
     @if(displayForMobile) {
         <div class="show-on-phones">
             @h2("googleWallet.tapToAdd.heading")
-            <a href='@googlePassSaveUrl'>
+            <a href='/@configDecorator.serviceName/get-google-pass?passId=@{googlePassId}'>
                 <img src="/@configDecorator.serviceName/assets/images/google-wallet-condensed.svg" alt='@messages("googleWallet.addToWallet.alt")' class="add-wallet-android-mobile">
             </a>
         </div>

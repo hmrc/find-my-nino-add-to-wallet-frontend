@@ -55,7 +55,7 @@ class GoogleWalletControllerISpec extends IntegrationSpecBase {
     None
   )
 
-  val fakePassId = "applePassId"
+  val fakePassId = "googlePassId"
   val fakeBase64String = "UEsDBBQACAgIABxqJlYAAAAAAA"
 
 
@@ -88,11 +88,19 @@ class GoogleWalletControllerISpec extends IntegrationSpecBase {
 
     def main: Html =
       view(
-        displayForMobile = false,
-        googlePassSaveUrl = ""
+        googlePassId = fakePassId,
+        displayForMobile = false
       )(fakeRequest, messages)
 
     def doc: Document = Jsoup.parse(main.toString)
+
+    def mainMobile: Html =
+      view(
+        googlePassId = fakePassId,
+        displayForMobile = true
+      )(fakeRequest, messages)
+
+    def docMobile: Document = Jsoup.parse(mainMobile.toString)
 
     def assertContainsText(doc: Document, text: String): Assertion =
       assert(doc.toString.contains(text), "\n\ntext " + text + " was not rendered on the page.\n")
@@ -100,6 +108,12 @@ class GoogleWalletControllerISpec extends IntegrationSpecBase {
     def assertContainsLink(doc: Document, text: String, href: String): Assertion =
       assert(
         doc.getElementsContainingText(text).attr("href").contains(href),
+        s"\n\nLink $href was not rendered on the page\n"
+      )
+
+    def assertContainsLinkByContainingClass(doc: Document, href: String): Assertion =
+      assert(
+        doc.getElementsByClass("show-on-phones").select("a[href]").attr("href").contains(href),
         s"\n\nLink $href was not rendered on the page\n"
       )
 
@@ -116,6 +130,16 @@ class GoogleWalletControllerISpec extends IntegrationSpecBase {
     "rendering the view" must {
       "render the welsh language toggle" in new LocalSetup {
         assertContainsLink(doc, "Cymraeg", "/hmrc-frontend/language/cy")
+      }
+
+      "render the google pass QR code on desktop" in new LocalSetup {
+        wireMockServer.stubFor(get(s"${configDecorator.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-google-pass?passId=$fakePassId").willReturn(ok(fakeBase64String)))
+        assertContainsQRCode(doc, s"/get-google-qr-code?passId=$fakePassId")
+      }
+
+      "render the save to Google Wallet link on mobile" in new LocalSetup {
+        wireMockServer.stubFor(get(s"${configDecorator.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-pass-card?passId=$fakePassId").willReturn(ok(fakeBase64String)))
+        assertContainsLinkByContainingClass(docMobile, s"/get-google-pass?passId=$fakePassId")
       }
     }
 

@@ -55,8 +55,7 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
           auditService.audit(AuditUtils.buildAuditEvent(pd, "ViewGoogleWalletPage", configDecorator.appName))
           for {
             pId: Some[String] <- findMyNinoServiceConnector.createGooglePass(pd.person.fullName, request.nino.map(_.formatted).getOrElse(""))
-            url: Option[String] <- findMyNinoServiceConnector.getGooglePassUrl(pId.value)
-          } yield Ok(view(pId.value, isMobileDisplay(request), url.getOrElse("")))
+          } yield Ok(view(pId.value, isMobileDisplay(request)))
         case None =>
           Future(NotFound(errorTemplate("Details not found", "Your details were not found.", "Your details were not found, please try again later.")))
       }
@@ -83,9 +82,9 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
           case Some(data) =>
             request.getQueryString("qr-code") match {
               case Some("true") => auditService.audit(AuditUtils.buildAuditEvent(request.personDetails.get,
-                "AddNinoToWalletFromQRCode", configDecorator.appName))
+                "AddNinoToGoogleWalletFromQRCode", configDecorator.appName))
               case _ => auditService.audit(AuditUtils.buildAuditEvent(request.personDetails.get,
-                "AddNinoToWallet", configDecorator.appName))
+                "AddNinoToGoogleWallet", configDecorator.appName))
             }
             Redirect(data)
           case _ => NotFound
@@ -99,7 +98,7 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
       authorisedAsFMNUser { _ =>
         findMyNinoServiceConnector.getGooglePassQrCode(passId).map {
           case Some(data) =>
-            auditService.audit(AuditUtils.buildAuditEvent(request.personDetails.get, "DisplayQRCode", configDecorator.appName))
+            auditService.audit(AuditUtils.buildAuditEvent(request.personDetails.get, "DisplayGoogleQRCode", configDecorator.appName))
             Ok(data)
           case _ => NotFound
         }

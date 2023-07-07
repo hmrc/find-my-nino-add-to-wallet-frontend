@@ -17,7 +17,7 @@
 package controllers
 
 import base.SpecBase
-import connectors.{ApplePassConnector, CitizenDetailsConnector, IdentityVerificationFrontendConnector, PersonDetailsErrorResponse, PersonDetailsSuccessResponse}
+import connectors.{StoreMyNinoConnector, CitizenDetailsConnector, IdentityVerificationFrontendConnector, PersonDetailsErrorResponse, PersonDetailsSuccessResponse}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.{reset, when}
@@ -77,7 +77,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
   lazy val errview = applicationWithConfig.injector.instanceOf[ErrorTemplate]
 
   val mockSessionRepository = mock[SessionRepository]
-  val mockApplePassConnector = mock[ApplePassConnector]
+  val mockApplePassConnector = mock[StoreMyNinoConnector]
   val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
   val mockIdentityVerificationFrontendConnector = mock[IdentityVerificationFrontendConnector]
 
@@ -90,7 +90,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
         applicationBuilderWithConfig()
           .overrides(
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
-            inject.bind[ApplePassConnector].toInstance(mockApplePassConnector),
+            inject.bind[StoreMyNinoConnector].toInstance(mockApplePassConnector),
             inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector),
             inject.bind[IdentityVerificationFrontendConnector].toInstance(mockIdentityVerificationFrontendConnector)
           )
@@ -119,7 +119,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
         applicationBuilderWithConfig()
           .overrides(
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
-            inject.bind[ApplePassConnector].toInstance(mockApplePassConnector),
+            inject.bind[StoreMyNinoConnector].toInstance(mockApplePassConnector),
             inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
           )
           .configure("features.sca-wrapper-enabled" -> false)
@@ -140,7 +140,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
         applicationBuilderWithConfig()
           .overrides(
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
-            inject.bind[ApplePassConnector].toInstance(mockApplePassConnector),
+            inject.bind[StoreMyNinoConnector].toInstance(mockApplePassConnector),
             inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector),
             inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector)
           )
@@ -161,7 +161,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
 
       val application = applicationBuilderWithConfig().overrides(
         inject.bind[SessionRepository].toInstance(mockSessionRepository),
-        inject.bind[ApplePassConnector].toInstance(mockApplePassConnector),
+        inject.bind[StoreMyNinoConnector].toInstance(mockApplePassConnector),
         inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
       )
         .configure("features.sca-wrapper-enabled" -> false)
@@ -181,7 +181,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
       val application = applicationBuilderWithConfig()
         .overrides(
           inject.bind[SessionRepository].toInstance(mockSessionRepository),
-          inject.bind[ApplePassConnector].toInstance(mockApplePassConnector),
+          inject.bind[StoreMyNinoConnector].toInstance(mockApplePassConnector),
           inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
         )
         .configure("features.sca-wrapper-enabled" -> false)
@@ -201,7 +201,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
       val application = applicationBuilderWithConfig()
         .overrides(
           inject.bind[SessionRepository].toInstance(mockSessionRepository),
-          inject.bind[ApplePassConnector].toInstance(mockApplePassConnector),
+          inject.bind[StoreMyNinoConnector].toInstance(mockApplePassConnector),
           inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
         )
         .configure("features.sca-wrapper-enabled" -> false)

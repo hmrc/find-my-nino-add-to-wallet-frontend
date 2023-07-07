@@ -19,7 +19,7 @@ package controllers
 import base.SpecBase
 import cats.data.EitherT
 import config.{ConfigDecorator, FrontendAppConfig}
-import connectors.{ApplePassConnector, CitizenDetailsConnector, IdentityVerificationFrontendConnector, PersonDetailsSuccessResponse}
+import connectors.{StoreMyNinoConnector, CitizenDetailsConnector, IdentityVerificationFrontendConnector, PersonDetailsSuccessResponse}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.MockitoSugar.{reset, when}
@@ -74,7 +74,7 @@ class ApplicationControllerSpec extends SpecBase with CDFixtures with MockitoSug
   }
 
   val mockSessionRepository: SessionRepository = mock[SessionRepository]
-  val mockApplePassConnector: ApplePassConnector = mock[ApplePassConnector]
+  val mockApplePassConnector: StoreMyNinoConnector = mock[StoreMyNinoConnector]
   val mockCitizenDetailsConnector: CitizenDetailsConnector = mock[CitizenDetailsConnector]
   val mockIdentityVerificationFrontendConnector: IdentityVerificationFrontendConnector = mock[IdentityVerificationFrontendConnector]
   val mockIdentityVerificationFrontendService: IdentityVerificationFrontendService = mock[IdentityVerificationFrontendService]
@@ -103,7 +103,7 @@ class ApplicationControllerSpec extends SpecBase with CDFixtures with MockitoSug
     lazy val application = applicationBuilderWithConfig()
       .overrides(
         inject.bind[SessionRepository].toInstance(mockSessionRepository),
-        inject.bind[ApplePassConnector].toInstance(mockApplePassConnector),
+        inject.bind[StoreMyNinoConnector].toInstance(mockApplePassConnector),
         inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector),
         inject.bind[IdentityVerificationFrontendConnector].toInstance(mockIdentityVerificationFrontendConnector)
       )

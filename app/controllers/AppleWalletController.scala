@@ -17,7 +17,7 @@
 package controllers
 
 import config.{ConfigDecorator, FrontendAppConfig}
-import connectors.{ApplePassConnector, CitizenDetailsConnector}
+import connectors.{StoreMyNinoConnector, CitizenDetailsConnector}
 import controllers.auth.requests.UserRequest
 import play.api.Configuration
 
@@ -33,13 +33,13 @@ import util.AuditUtils
 import scala.concurrent.{ExecutionContext, Future}
 
 class AppleWalletController @Inject()(val citizenDetailsConnector: CitizenDetailsConnector,
-                                        findMyNinoServiceConnector: ApplePassConnector,
-                                        override val messagesApi: MessagesApi,
-                                        authConnector: AuthConnector,
-                                        auditService: AuditService,
-                                        view: AppleWalletView,
-                                        errorTemplate: ErrorTemplate,
-                                        getPersonDetailsAction: GetPersonDetailsAction,
+                                      findMyNinoServiceConnector: StoreMyNinoConnector,
+                                      override val messagesApi: MessagesApi,
+                                      authConnector: AuthConnector,
+                                      auditService: AuditService,
+                                      view: AppleWalletView,
+                                      errorTemplate: ErrorTemplate,
+                                      getPersonDetailsAction: GetPersonDetailsAction,
                                       )(implicit config: Configuration,
                                         configDecorator: ConfigDecorator,
                                         env: Environment,

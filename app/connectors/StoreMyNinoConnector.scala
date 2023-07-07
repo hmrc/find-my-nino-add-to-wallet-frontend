@@ -30,7 +30,7 @@ import scala.concurrent.{ExecutionContext, Future}
 case class ApplePassDetails(fullName: String, nino: String)
 case class GooglePassDetails(fullName: String, nino: String)
 
-class ApplePassConnector @Inject()(config: ConfigDecorator, http: HttpClient) {
+class StoreMyNinoConnector @Inject()(config: ConfigDecorator, http: HttpClient) {
 
   private val headers: Seq[(String, String)] = Seq("Content-Type" -> "application/json")
   implicit val writes: Writes[ApplePassDetails] = Json.writes[ApplePassDetails]
@@ -162,21 +162,6 @@ class ApplePassConnector @Inject()(config: ConfigDecorator, http: HttpClient) {
         response.status match {
           case OK =>
             Some(response.body)
-          case _ => throw new HttpException(response.body, response.status)
-        }
-      }
-  }
-
-  def getGooglePassUrlByNameAndNino(fullName: String, nino: String)
-                               (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Option[String]] = {
-
-    val url = s"${config.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-google-pass-details-by-name-and-nino?fullName=$fullName&nino=$nino"
-    val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
-
-    http.GET[HttpResponse](url)(implicitly, hc, implicitly)
-      .map { response =>
-        response.status match {
-          case OK => Some(response.body)
           case _ => throw new HttpException(response.body, response.status)
         }
       }

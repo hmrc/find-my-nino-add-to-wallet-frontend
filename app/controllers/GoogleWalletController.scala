@@ -17,7 +17,7 @@
 package controllers
 
 import config.{ConfigDecorator, FrontendAppConfig}
-import connectors.{ApplePassConnector, CitizenDetailsConnector}
+import connectors.{StoreMyNinoConnector, CitizenDetailsConnector}
 import controllers.auth.requests.UserRequest
 import play.api.{Configuration, Environment}
 
@@ -35,7 +35,7 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
                                        override val messagesApi: MessagesApi,
                                        authConnector: AuthConnector,
                                        view: GoogleWalletView,
-                                       findMyNinoServiceConnector: ApplePassConnector,
+                                       findMyNinoServiceConnector: StoreMyNinoConnector,
                                        errorTemplate: ErrorTemplate,
                                        getPersonDetailsAction: GetPersonDetailsAction,
                                        auditService: AuditService,

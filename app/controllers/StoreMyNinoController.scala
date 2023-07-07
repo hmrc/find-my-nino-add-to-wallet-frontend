@@ -17,7 +17,7 @@
 package controllers
 
 import config.{ConfigDecorator, FrontendAppConfig}
-import connectors.{ApplePassConnector, CitizenDetailsConnector}
+import connectors.{StoreMyNinoConnector, CitizenDetailsConnector}
 import controllers.auth.requests.UserRequest
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents, Request}
@@ -32,7 +32,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class StoreMyNinoController @Inject()(
                                        val citizenDetailsConnector: CitizenDetailsConnector,
-                                       findMyNinoServiceConnector: ApplePassConnector,
+                                       findMyNinoServiceConnector: StoreMyNinoConnector,
                                        authConnector: AuthConnector,
                                        auditService: AuditService,
                                        override val messagesApi: MessagesApi,

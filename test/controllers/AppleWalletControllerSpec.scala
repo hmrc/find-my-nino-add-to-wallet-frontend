@@ -17,7 +17,7 @@
 package controllers
 
 import base.SpecBase
-import connectors.{StoreMyNinoConnector, CitizenDetailsConnector, IdentityVerificationFrontendConnector, PersonDetailsErrorResponse, PersonDetailsSuccessResponse}
+import connectors.{CitizenDetailsConnector, IdentityVerificationFrontendConnector, PersonDetailsErrorResponse, PersonDetailsSuccessResponse, StoreMyNinoConnector}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.{reset, when}
@@ -30,11 +30,12 @@ import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
 import util.{CDFixtures, Keys}
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
-import util.TestData.NinoUser
+import util.TestData.{NinoUser, NinoUser_With_CL50}
+
 import java.util.Base64
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import views.html.{ErrorTemplate, AppleWalletView}
+import views.html.{AppleWalletView, ErrorTemplate}
 
 class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSugar {
 
@@ -209,6 +210,25 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
 
       running(application) {
         userLoggedInIsNotFMNUser(NinoUser)
+        val request = FakeRequest(GET, routes.AppleWalletController.getQrCode(passId).url)
+          .withSession(("authToken", "Bearer 123"))
+        val result = route(application, request).value
+        status(result) mustEqual 500
+      }
+    }
+
+    "must fail to login user2" in {
+      val application = applicationBuilderWithConfig()
+        .overrides(
+          inject.bind[SessionRepository].toInstance(mockSessionRepository),
+          inject.bind[StoreMyNinoConnector].toInstance(mockApplePassConnector),
+          inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
+        )
+        .configure("features.sca-wrapper-enabled" -> false)
+        .build()
+
+      running(application) {
+        userLoggedInIsNotFMNUser(NinoUser_With_CL50)
         val request = FakeRequest(GET, routes.AppleWalletController.getQrCode(passId).url)
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value

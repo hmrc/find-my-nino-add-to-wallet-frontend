@@ -38,7 +38,7 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
                                        findMyNinoServiceConnector: StoreMyNinoConnector,
                                        errorTemplate: ErrorTemplate,
                                        getPersonDetailsAction: GetPersonDetailsAction,
-                                       auditService: AuditService,
+                                       auditService: AuditService
                                      )(implicit config: Configuration,
                                        configDecorator: ConfigDecorator,
                                        env: Environment,

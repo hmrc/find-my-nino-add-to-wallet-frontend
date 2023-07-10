@@ -39,7 +39,7 @@ class AppleWalletController @Inject()(val citizenDetailsConnector: CitizenDetail
                                       auditService: AuditService,
                                       view: AppleWalletView,
                                       errorTemplate: ErrorTemplate,
-                                      getPersonDetailsAction: GetPersonDetailsAction,
+                                      getPersonDetailsAction: GetPersonDetailsAction
                                       )(implicit config: Configuration,
                                         configDecorator: ConfigDecorator,
                                         env: Environment,

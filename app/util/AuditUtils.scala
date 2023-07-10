@@ -34,7 +34,6 @@ object AuditUtils {
                                     nino: String,
                                     name: String,
                                     mainAddress: Address,
-                                    submissionFromAgent: Boolean = false,
                                     device: Option[String],
                                     language: String = "en"
                                   )

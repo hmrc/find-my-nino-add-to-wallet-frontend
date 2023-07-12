@@ -17,7 +17,7 @@
 package controllers
 
 import base.SpecBase
-import connectors.{StoreMyNinoConnector, CitizenDetailsConnector, IdentityVerificationFrontendConnector, PersonDetailsErrorResponse, PersonDetailsSuccessResponse}
+import connectors.{CitizenDetailsConnector, IdentityVerificationFrontendConnector, PersonDetailsErrorResponse, PersonDetailsSuccessResponse, StoreMyNinoConnector}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.{reset, when}
@@ -28,12 +28,14 @@ import play.api.test.Helpers._
 import repositories.SessionRepository
 import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
-import util.{CDFixtures, Keys}
+import util.{CDFixtures, GoogleCredentialsHelper, Keys}
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
 import util.TestData.NinoUser
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import views.html.{ErrorTemplate, GoogleWalletView}
+
 import java.util.Base64
 
 class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSugar {
@@ -64,6 +66,11 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
     when(mockIdentityVerificationFrontendConnector.getIVJourneyStatus(any())(any(), any()))
       .thenReturn(cats.data.EitherT.right[UpstreamErrorResponse](Future.successful(HttpResponse(OK, ""))))
 
+
+    reset(mockGoogleCredentialsHelper)
+    when(mockGoogleCredentialsHelper.createGoogleCredentials(any()))
+      .thenReturn(passId)
+
     super.beforeEach()
   }
 
@@ -79,6 +86,8 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
   val mockApplePassConnector = mock[StoreMyNinoConnector]
   val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
   val mockIdentityVerificationFrontendConnector = mock[IdentityVerificationFrontendConnector]
+  val mockGoogleCredentialsHelper = mock[GoogleCredentialsHelper]
+
 
   val fakeBase64String = "UEsDBBQACAgIABxqJlYAAAAAAA"
   val fakeGooglePassSaveUrl = "testURL"
@@ -120,14 +129,15 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           .overrides(
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[StoreMyNinoConnector].toInstance(mockApplePassConnector),
-            inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
+            inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector),
+            inject.bind[GoogleCredentialsHelper].toInstance(mockGoogleCredentialsHelper)
           )
           .configure("features.sca-wrapper-enabled" -> false)
           .build()
 
       running(application) {
         userLoggedInFMNUser(NinoUser)
-        val request = FakeRequest(GET, routes.GoogleWalletController.onPageLoad.url)
+        val request = FakeRequest(GET, routes.GoogleWalletController.onPageLoad().url)
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         status(result) mustEqual OK
@@ -142,7 +152,8 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[StoreMyNinoConnector].toInstance(mockApplePassConnector),
             inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector),
-            inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector)
+            inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),
+            inject.bind[GoogleCredentialsHelper].toInstance(mockGoogleCredentialsHelper)
           )
           .configure("features.sca-wrapper-enabled" -> true)
           .build()

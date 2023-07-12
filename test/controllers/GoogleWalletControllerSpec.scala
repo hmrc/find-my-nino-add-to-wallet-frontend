@@ -46,7 +46,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
     reset(mockApplePassConnector)
     when(mockApplePassConnector.getGooglePassUrl(eqTo(passId))(any(), any()))
       .thenReturn(Future(Some(fakeGooglePassSaveUrl)))
-    when(mockApplePassConnector.createGooglePass(any(), any())(any(), any()))
+    when(mockApplePassConnector.createGooglePassWithCredentials(any(), any(), any())(any(), any()))
       .thenReturn(Future(Some(passId)))
     when(mockApplePassConnector.createPersonDetailsRow(any())(any(), any()))
       .thenReturn(Future(Some(personDetailsId)))

@@ -16,8 +16,9 @@
 
 package controllers
 
+import com.google.auth.oauth2.GoogleCredentials
 import config.{ConfigDecorator, FrontendAppConfig}
-import connectors.{StoreMyNinoConnector, CitizenDetailsConnector}
+import connectors.{CitizenDetailsConnector, StoreMyNinoConnector}
 import controllers.auth.requests.UserRequest
 import play.api.{Configuration, Environment}
 
@@ -26,9 +27,11 @@ import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
 import services.AuditService
 import uk.gov.hmrc.auth.core.AuthConnector
-import util.AuditUtils
+import util.{AuditUtils, GoogleCredentialsSerializer}
 import views.html.{ErrorTemplate, GoogleWalletView}
 
+import java.io.ByteArrayInputStream
+import java.util.{Base64, Collections}
 import scala.concurrent.{ExecutionContext, Future}
 
 class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetailsConnector,
@@ -54,12 +57,23 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
         case Some(pd) =>
           auditService.audit(AuditUtils.buildAuditEvent(pd, "ViewGoogleWalletPage", configDecorator.appName))
           for {
-            pId: Some[String] <- findMyNinoServiceConnector.createGooglePass(pd.person.fullName, request.nino.map(_.formatted).getOrElse(""))
+            pId: Some[String] <- findMyNinoServiceConnector.createGooglePassWithCredentials(
+              pd.person.fullName,
+              request.nino.map(_.formatted).getOrElse(""),
+              createGoogleCredentials(configDecorator.googleKey))
           } yield Ok(view(pId.value, isMobileDisplay(request)))
         case None =>
           Future(NotFound(errorTemplate("Details not found", "Your details were not found.", "Your details were not found, please try again later.")))
       }
     }
+  }
+
+  def createGoogleCredentials(key: String): String = {
+    val scope = "https://www.googleapis.com/auth/wallet_object.issuer"
+    val keyAsStream = new ByteArrayInputStream(Base64.getDecoder.decode(key))
+    val credentials: GoogleCredentials = GoogleCredentials.fromStream(keyAsStream).createScoped(Collections.singletonList(scope))
+    credentials.refresh()
+    GoogleCredentialsSerializer.serializeToBase64String(credentials)
   }
 
   private def isMobileDisplay(request: UserRequest[AnyContent]): Boolean = {

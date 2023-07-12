@@ -42,7 +42,7 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
                                        errorTemplate: ErrorTemplate,
                                        getPersonDetailsAction: GetPersonDetailsAction,
                                        auditService: AuditService,
-                                       googleCredentialsHelper: GoogleCredentialsHelper,
+                                       googleCredentialsHelper: GoogleCredentialsHelper
                                       )(implicit config: Configuration,
                                         configDecorator: ConfigDecorator,
                                         env: Environment,

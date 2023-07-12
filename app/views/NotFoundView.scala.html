@@ -25,15 +25,10 @@
     p: P,
     link: Link
 )
-@()(implicit request: UserRequest[_], configDecorator: ConfigDecorator, messages: play.api.i18n.Messages, ec: ExecutionContext)
+@(response: String)(implicit request: UserRequest[_], configDecorator: ConfigDecorator, messages: play.api.i18n.Messages, ec: ExecutionContext)
 
 @main(
-    pageTitle = messages("page not found")
+    pageTitle = messages(s"apple.${response}.notfound")
 ) {
-
-    @h1("page not found")
-
-
-
-
+    @h1(messages(s"apple.${response}.notfound"))
 }

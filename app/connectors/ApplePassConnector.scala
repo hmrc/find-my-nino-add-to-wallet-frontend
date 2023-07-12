@@ -21,6 +21,7 @@ import config.ConfigDecorator
 import models.PersonDetails
 import play.api.http.Status._
 import play.api.libs.json._
+import play.api.mvc.Results.NotFound
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http._
 
@@ -94,6 +95,7 @@ class ApplePassConnector @Inject()(config: ConfigDecorator, http: HttpClient) {
       .map { response =>
         response.status match {
           case OK => Some(Base64.getDecoder.decode(response.body))
+          case NOT_FOUND => None
           case _ => throw new HttpException(response.body, response.status)
         }
       }
@@ -125,6 +127,7 @@ class ApplePassConnector @Inject()(config: ConfigDecorator, http: HttpClient) {
       .map { response =>
         response.status match {
           case OK => Some(Base64.getDecoder.decode(response.body))
+          case NOT_FOUND => None
           case _ => throw new HttpException(response.body, response.status)
         }
       }

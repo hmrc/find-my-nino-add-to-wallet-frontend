@@ -68,7 +68,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
 
 
     reset(mockGoogleCredentialsHelper)
-    when(mockGoogleCredentialsHelper.createGoogleCredentials(any()))
+    when(mockGoogleCredentialsHelper.createGoogleCredentials(any(), any()))
       .thenReturn(passId)
 
     super.beforeEach()

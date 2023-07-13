@@ -61,7 +61,7 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
             pId: Some[String] <- findMyNinoServiceConnector.createGooglePassWithCredentials(
               pd.person.fullName,
               request.nino.map(_.formatted).getOrElse(""),
-              googleCredentialsHelper.createGoogleCredentials(configDecorator.googleKey, refresh(request.domain)))
+              googleCredentialsHelper.createGoogleCredentials(configDecorator.googleKey, refresh(env)))
           } yield Ok(view(pId.value, isMobileDisplay(request)))
         case None =>
           Future(NotFound(errorTemplate("Details not found", "Your details were not found.", "Your details were not found, please try again later.")))
@@ -69,8 +69,7 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
     }
   }
 
-  def refresh(str:String): Boolean = if (str.toLowerCase.contains("staging.tax") ||
-    str.toLowerCase.contains("development.tax") || str.toLowerCase.contains("qa.tax")) false else true
+  def refresh(env: Environment): Boolean = if (env.mode.toString.toLowerCase.contains("test")) false else true
 
 
   private def isMobileDisplay(request: UserRequest[AnyContent]): Boolean = {

@@ -22,7 +22,7 @@ import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.{reset, when}
 import org.scalatestplus.mockito.MockitoSugar
-import play.api.inject
+import play.api.{Environment, Mode, inject}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
@@ -225,6 +225,16 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
         val result = route(application, request).value
         status(result) mustEqual 500
       }
+    }
+
+    "must only trigger refresh if local or prod" in {
+      val envDev = Environment.simple(mode = Mode.Dev)
+      val envTest = Environment.simple(mode = Mode.Test)
+      val envProd = Environment.simple(mode = Mode.Prod)
+
+      controller.refresh(envDev) mustEqual(true)
+      controller.refresh(envTest) mustEqual(false)
+      controller.refresh(envProd) mustEqual(true)
     }
   }
 }

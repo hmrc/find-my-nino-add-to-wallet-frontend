@@ -69,7 +69,13 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
     }
   }
 
-  def refresh(env: Environment): Boolean = if (env.mode.toString.toLowerCase.contains("test")) false else true
+  def refresh(env: Environment): Boolean = {
+    logger.info(env.mode.toString.toLowerCase)
+    if (env.mode.toString.toLowerCase.contains("test"))
+    false
+  else
+    true
+  }
 
 
   private def isMobileDisplay(request: UserRequest[AnyContent]): Boolean = {

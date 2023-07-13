@@ -68,7 +68,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
 
 
     reset(mockGoogleCredentialsHelper)
-    when(mockGoogleCredentialsHelper.createGoogleCredentials(any(), any()))
+    when(mockGoogleCredentialsHelper.createGoogleCredentials(any()))
       .thenReturn(passId)
 
     super.beforeEach()
@@ -225,16 +225,6 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
         val result = route(application, request).value
         status(result) mustEqual 500
       }
-    }
-
-    "must only trigger refresh if local or prod" in {
-      val envDev = Environment.simple(mode = Mode.Dev)
-      val envTest = Environment.simple(mode = Mode.Test)
-      val envProd = Environment.simple(mode = Mode.Prod)
-
-      controller.refresh(envDev) mustEqual(true)
-      controller.refresh(envTest) mustEqual(false)
-      controller.refresh(envProd) mustEqual(true)
     }
   }
 }

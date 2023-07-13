@@ -23,11 +23,10 @@ import java.util.{Base64, Collections}
 
 
 class GoogleCredentialsHelper {
-  def createGoogleCredentials(key: String, refresh: Boolean): String = {
+  def createGoogleCredentials(key: String): String = {
     val scope = "https://www.googleapis.com/auth/wallet_object.issuer"
     val keyAsStream = new ByteArrayInputStream(Base64.getDecoder.decode(key))
     val credentials: GoogleCredentials = GoogleCredentials.fromStream(keyAsStream).createScoped(Collections.singletonList(scope))
-    if(refresh) credentials.refresh()
     GoogleCredentialsSerializer.serializeToBase64String(credentials)
   }
 }

@@ -61,20 +61,12 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
             pId: Some[String] <- findMyNinoServiceConnector.createGooglePassWithCredentials(
               pd.person.fullName,
               request.nino.map(_.formatted).getOrElse(""),
-              googleCredentialsHelper.createGoogleCredentials(configDecorator.googleKey, refresh(env)))
+              googleCredentialsHelper.createGoogleCredentials(configDecorator.googleKey))
           } yield Ok(view(pId.value, isMobileDisplay(request)))
         case None =>
           Future(NotFound(errorTemplate("Details not found", "Your details were not found.", "Your details were not found, please try again later.")))
       }
     }
-  }
-
-  def refresh(env: Environment): Boolean = {
-    logger.info(env.mode.toString.toLowerCase)
-    if (env.mode.toString.toLowerCase.contains("test"))
-    false
-  else
-    true
   }
 
 

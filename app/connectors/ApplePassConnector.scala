@@ -21,7 +21,6 @@ import config.ConfigDecorator
 import models.PersonDetails
 import play.api.http.Status._
 import play.api.libs.json._
-import play.api.mvc.Results.NotFound
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http._
 
@@ -34,8 +33,6 @@ class ApplePassConnector @Inject()(config: ConfigDecorator, http: HttpClient) {
 
   private val headers: Seq[(String, String)] = Seq("Content-Type" -> "application/json")
   implicit val writes: Writes[ApplePassDetails] = Json.writes[ApplePassDetails]
-
-
 
   def createPersonDetailsRow(personDetails:PersonDetails)
                            (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Some[String]] = {
@@ -66,7 +63,6 @@ class ApplePassConnector @Inject()(config: ConfigDecorator, http: HttpClient) {
       }
   }
 
-
   def createApplePass(fullName: String, nino: String)
                      (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Some[String]] = {
 
@@ -83,7 +79,6 @@ class ApplePassConnector @Inject()(config: ConfigDecorator, http: HttpClient) {
         }
       }
   }
-
 
   def getApplePass(passId: String)
                   (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Option[Array[Byte]]] = {
@@ -116,7 +111,6 @@ class ApplePassConnector @Inject()(config: ConfigDecorator, http: HttpClient) {
       }
   }
 
-
   def getQrCode(passId: String)
                (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Option[Array[Byte]]] = {
 
@@ -132,6 +126,5 @@ class ApplePassConnector @Inject()(config: ConfigDecorator, http: HttpClient) {
         }
       }
   }
+
 }
-
-

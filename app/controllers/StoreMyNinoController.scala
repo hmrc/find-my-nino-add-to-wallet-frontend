@@ -25,7 +25,7 @@ import play.api.{Configuration, Environment}
 import services.AuditService
 import uk.gov.hmrc.auth.core.AuthConnector
 import util.AuditUtils
-import views.html.{ StoreMyNinoView, ErrorTemplate, NotFoundView }
+import views.html.{ StoreMyNinoView, ErrorTemplate, PassIdNotFoundView, QRCodeNotFoundView}
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -37,7 +37,8 @@ class StoreMyNinoController @Inject()(
                                        override val messagesApi: MessagesApi,
                                        getPersonDetailsAction: GetPersonDetailsAction,
                                        view: StoreMyNinoView,
-                                       notFoundView: NotFoundView,
+                                       passIdNotFoundView: PassIdNotFoundView,
+                                       qrCodeNotFoundView: QRCodeNotFoundView,
                                        errorTemplate: ErrorTemplate
                                      )(implicit config: Configuration,
                                        configDecorator: ConfigDecorator,
@@ -78,7 +79,6 @@ class StoreMyNinoController @Inject()(
     }
   }
 
-
   def getPassCard(passId: String): Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction).async {
     implicit request => {
       authorisedAsFMNUser { _ =>
@@ -91,7 +91,7 @@ class StoreMyNinoController @Inject()(
                 "AddNinoToWallet", configDecorator.appName))
             }
             Ok(data).withHeaders("Content-Disposition" -> s"attachment; filename=$passFileName")
-          case None => NotFound(notFoundView("passcard"))
+          case None => NotFound(passIdNotFoundView())
           case _ => InternalServerError
         }
       }(loginContinueUrl)
@@ -105,7 +105,7 @@ class StoreMyNinoController @Inject()(
           case Some(data) =>
             auditService.audit(AuditUtils.buildAuditEvent(request.personDetails.get,"DisplayQRCode",configDecorator.appName))
             Ok(data).withHeaders("Content-Disposition" -> s"attachment; filename=$passFileName")
-          case None => NotFound(notFoundView("qrcode"))
+          case None => NotFound(qrCodeNotFoundView())
           case _ => InternalServerError
         }
       }(loginContinueUrl)

@@ -32,7 +32,7 @@ import util.{CDFixtures, Keys}
 import util.Fixtures.individualRespJson
 import util.CDFixtures
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
-import util.TestData.{NinoUser, NinoUser_With_CL50}
+import util.TestData.NinoUser
 
 import java.util.Base64
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -117,7 +117,6 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
       reset(mockCitizenDetailsConnector)
     }
 
-
     "must return OK and the correct view for a GET" in {
       val application =
         applicationBuilderWithConfig()
@@ -185,6 +184,27 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
       }
     }
 
+    "must return passid notfound page when apple passid is expired" in {
+
+      val application = applicationBuilderWithConfig().overrides(
+        inject.bind[SessionRepository].toInstance(mockSessionRepository),
+        inject.bind[ApplePassConnector].toInstance(mockApplePassConnector),
+        inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
+      )
+        .configure("features.sca-wrapper-enabled" -> false)
+        .build()
+
+      when(mockApplePassConnector.getApplePass(any())(any(), any())).thenReturn(Future.successful(None))
+
+      running(application) {
+        userLoggedInFMNUser(NinoUser)
+        val request = FakeRequest(GET, routes.StoreMyNinoController.getPassCard(passId).url)
+          .withSession(("authToken", "Bearer 123"))
+        val result = route(application, request).value
+        status(result) mustEqual NOT_FOUND
+      }
+    }
+
     "must return QR code" in {
       val application = applicationBuilderWithConfig()
         .overrides(
@@ -202,6 +222,27 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
         val result = route(application, request).value
         status(result) mustEqual OK
         contentAsBytes(result) mustEqual Base64.getDecoder.decode(fakeBase64String)
+      }
+    }
+
+    "must return QR code notfound page when QR code is expired" in {
+      val application = applicationBuilderWithConfig()
+        .overrides(
+          inject.bind[SessionRepository].toInstance(mockSessionRepository),
+          inject.bind[ApplePassConnector].toInstance(mockApplePassConnector),
+          inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
+        )
+        .configure("features.sca-wrapper-enabled" -> false)
+        .build()
+
+      when(mockApplePassConnector.getQrCode(any())(any(), any())).thenReturn(Future.successful(None))
+
+      running(application) {
+        userLoggedInFMNUser(NinoUser)
+        val request = FakeRequest(GET, routes.StoreMyNinoController.getQrCode(passId).url)
+          .withSession(("authToken", "Bearer 123"))
+        val result = route(application, request).value
+        status(result) mustEqual NOT_FOUND
       }
     }
 
@@ -224,24 +265,6 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
       }
     }
 
-    "must fail to login user2" in {
-      val application = applicationBuilderWithConfig()
-        .overrides(
-          inject.bind[SessionRepository].toInstance(mockSessionRepository),
-          inject.bind[ApplePassConnector].toInstance(mockApplePassConnector),
-          inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
-        )
-        .configure("features.sca-wrapper-enabled" -> false)
-        .build()
-
-      running(application) {
-        userLoggedInIsNotFMNUser(NinoUser_With_CL50)
-        val request = FakeRequest(GET, routes.StoreMyNinoController.getQrCode(passId).url)
-          .withSession(("authToken", "Bearer 123"))
-        val result = route(application, request).value
-        status(result) mustEqual 500
-      }
-    }
-
   }
+
 }

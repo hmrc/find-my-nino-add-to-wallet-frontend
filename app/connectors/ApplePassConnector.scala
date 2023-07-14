@@ -34,8 +34,6 @@ class ApplePassConnector @Inject()(config: ConfigDecorator, http: HttpClient) {
   private val headers: Seq[(String, String)] = Seq("Content-Type" -> "application/json")
   implicit val writes: Writes[ApplePassDetails] = Json.writes[ApplePassDetails]
 
-
-
   def createPersonDetailsRow(personDetails:PersonDetails)
                            (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Some[String]] = {
     val url = s"${config.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/create-person-details"
@@ -65,7 +63,6 @@ class ApplePassConnector @Inject()(config: ConfigDecorator, http: HttpClient) {
       }
   }
 
-
   def createApplePass(fullName: String, nino: String)
                      (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Some[String]] = {
 
@@ -83,7 +80,6 @@ class ApplePassConnector @Inject()(config: ConfigDecorator, http: HttpClient) {
       }
   }
 
-
   def getApplePass(passId: String)
                   (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Option[Array[Byte]]] = {
 
@@ -94,6 +90,7 @@ class ApplePassConnector @Inject()(config: ConfigDecorator, http: HttpClient) {
       .map { response =>
         response.status match {
           case OK => Some(Base64.getDecoder.decode(response.body))
+          case NOT_FOUND => None
           case _ => throw new HttpException(response.body, response.status)
         }
       }
@@ -114,7 +111,6 @@ class ApplePassConnector @Inject()(config: ConfigDecorator, http: HttpClient) {
       }
   }
 
-
   def getQrCode(passId: String)
                (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Option[Array[Byte]]] = {
 
@@ -125,10 +121,10 @@ class ApplePassConnector @Inject()(config: ConfigDecorator, http: HttpClient) {
       .map { response =>
         response.status match {
           case OK => Some(Base64.getDecoder.decode(response.body))
+          case NOT_FOUND => None
           case _ => throw new HttpException(response.body, response.status)
         }
       }
   }
+
 }
-
-

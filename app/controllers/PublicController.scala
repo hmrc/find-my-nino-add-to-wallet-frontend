@@ -25,6 +25,7 @@ import uk.gov.hmrc.auth.core.AuthConnector
 import views.html.public.SessionTimeoutView
 
 import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class PublicController @Inject()(sessionTimeoutView: SessionTimeoutView,
                                  authConnector: AuthConnector

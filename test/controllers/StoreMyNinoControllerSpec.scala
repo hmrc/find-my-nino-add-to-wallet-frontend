@@ -28,9 +28,8 @@ import play.api.test.Helpers._
 import repositories.SessionRepository
 import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
-import util.{CDFixtures, Keys}
-import util.Fixtures.individualRespJson
 import util.CDFixtures
+import util.Fixtures.individualRespJson
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
 import util.TestData.NinoUser
 

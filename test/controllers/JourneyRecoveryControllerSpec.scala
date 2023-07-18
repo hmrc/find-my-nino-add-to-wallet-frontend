@@ -87,7 +87,7 @@ class JourneyRecoveryControllerSpec extends SpecBase with MockitoSugar {
 
         running(application) {
           val continueUrl = RedirectUrl("/foo")
-          val request = FakeRequest(GET, routes.JourneyRecoveryController.onPageLoad(Some(continueUrl)).url)
+          val request = FakeRequest(GET, routes.JourneyRecoveryController.onPageLoad(Some(continueUrl)).url).withSession("authToken" -> "123abc")
 
           val result = route(application, request).value
 

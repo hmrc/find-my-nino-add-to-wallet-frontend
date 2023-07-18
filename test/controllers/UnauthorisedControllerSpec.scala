@@ -81,7 +81,7 @@ class UnauthorisedControllerSpec extends SpecBase with MockitoSugar {
           .build()
 
       running(application) {
-        val request = FakeRequest(GET, routes.UnauthorisedController.onPageLoad.url)
+        val request = FakeRequest(GET, routes.UnauthorisedController.onPageLoad.url).withSession("authToken" -> "123abc")
 
         val result = route(application, request).value
 

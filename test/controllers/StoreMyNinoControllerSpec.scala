@@ -46,7 +46,6 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
       .thenReturn(Future.successful(wrapperDataResponse))
     when(mockScaWrapperDataConnector.messageData()(any(), any()))
       .thenReturn(Future.successful(messageDataResponse))
-
     reset(mockApplePassConnector)
     when(mockApplePassConnector.getApplePass(eqTo(passId))(any(), any()))
       .thenReturn(Future(Some(Base64.getDecoder.decode(fakeBase64String))))
@@ -67,9 +66,6 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
     reset(mockIdentityVerificationFrontendConnector)
     when(mockIdentityVerificationFrontendConnector.getIVJourneyStatus(any())(any(), any()))
       .thenReturn(cats.data.EitherT.right[UpstreamErrorResponse](Future.successful(HttpResponse(OK, ""))))
-
-    when(mockScaWrapperDataConnector.messageData()(any(), any()))
-      .thenReturn(Future.successful(messageDataResponse))
     super.beforeEach()
   }
 

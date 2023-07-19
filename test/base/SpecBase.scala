@@ -120,6 +120,7 @@ class SpecBase extends WireMockSupport with MockitoSugar with GuiceOneAppPerSuit
   val wrapperDataResponse: WrapperDataResponse = WrapperDataResponse(Seq(menuItemConfig1, menuItemConfig2, menuItemConfig3, menuItemConfig4, menuItemConfig5), ptaMenuConfig)
 
 
+
   val messageDataResponse: Option[Int] = Some(2)
 
   val requestAttributeMap: TypedMap = TypedMap(

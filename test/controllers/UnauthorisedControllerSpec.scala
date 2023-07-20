@@ -25,16 +25,17 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
 import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
-import util.Keys
 import views.html.UnauthorisedView
 
 import scala.concurrent.Future
 
-class UnauthorisedControllerSpec extends SpecBase with MockitoSugar{
+class UnauthorisedControllerSpec extends SpecBase with MockitoSugar {
   override protected def beforeEach(): Unit = {
     reset(mockScaWrapperDataConnector)
     when(mockScaWrapperDataConnector.wrapperData()(any(), any(), any()))
       .thenReturn(Future.successful(wrapperDataResponse))
+    when(mockScaWrapperDataConnector.messageData()(any(), any()))
+      .thenReturn(Future.successful(messageDataResponse))
     super.beforeEach()
   }
 
@@ -80,14 +81,14 @@ class UnauthorisedControllerSpec extends SpecBase with MockitoSugar{
           .build()
 
       running(application) {
-        val request = FakeRequest(GET, routes.UnauthorisedController.onPageLoad.url)
+        val request = FakeRequest(GET, routes.UnauthorisedController.onPageLoad.url).withSession("authToken" -> "123abc")
 
         val result = route(application, request).value
 
         val view = application.injector.instanceOf[UnauthorisedView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view()(request.addAttr(Keys.wrapperDataKey, wrapperDataResponse), messages(application)).toString
+        contentAsString(result) mustEqual view()(request.withAttrs(requestAttributeMap), messages(application)).toString
       }
     }
   }

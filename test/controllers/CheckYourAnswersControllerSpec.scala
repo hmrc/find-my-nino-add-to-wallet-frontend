@@ -25,7 +25,6 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
 import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
-import util.Keys
 import viewmodels.govuk.SummaryListFluency
 import views.html.CheckYourAnswersView
 
@@ -37,6 +36,8 @@ class CheckYourAnswersControllerSpec extends SpecBase with SummaryListFluency {
     reset(mockScaWrapperDataConnector)
     when(mockScaWrapperDataConnector.wrapperData()(any(), any(), any()))
       .thenReturn(Future.successful(wrapperDataResponse))
+    when(mockScaWrapperDataConnector.messageData()(any(), any()))
+      .thenReturn(Future.successful(messageDataResponse))
     super.beforeEach()
   }
 
@@ -83,7 +84,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with SummaryListFluency {
           .build()
 
       running(application) {
-        val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad.url)
+        val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad.url).withSession("authToken" -> "123abc")
 
         val result = route(application, request).value
 
@@ -91,7 +92,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with SummaryListFluency {
         val list = SummaryListViewModel(Seq.empty)
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(list)(request.addAttr(Keys.wrapperDataKey, wrapperDataResponse), messages(application)).toString
+        contentAsString(result) mustEqual view(list)(request.withAttrs(requestAttributeMap), messages(application)).toString
       }
     }
 

@@ -35,19 +35,11 @@ class AuthController @Inject()(
 
   def signout(continueUrl: Option[RedirectUrl], origin: Option[Origin]): Action[AnyContent] =
     Action { implicit request =>
-      if (configDecorator.wrapperEnabled) {
-        val safeUrl = wrapperService.safeSignoutUrl()
-        safeUrl
-          .orElse(origin.map(configDecorator.getFeedbackSurveyUrl))
-          .fold(BadRequest("Missing origin")) { url: String =>
-            Redirect(configDecorator.getBasGatewayFrontendSignOutUrl(url))
-          }
-      }
-      else {
-        origin.map(configDecorator.getFeedbackSurveyUrl)
-          .fold(BadRequest("Missing origin")) { url: String =>
-            Redirect(configDecorator.getBasGatewayFrontendSignOutUrl(url))
-          }
-      }
+      val safeUrl = wrapperService.safeSignoutUrl()
+      safeUrl
+        .orElse(origin.map(configDecorator.getFeedbackSurveyUrl))
+        .fold(BadRequest("Missing origin")) { url: String =>
+          Redirect(configDecorator.getBasGatewayFrontendSignOutUrl(url))
+        }
     }
 }

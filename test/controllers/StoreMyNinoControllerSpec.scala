@@ -28,7 +28,8 @@ import play.api.test.Helpers._
 import repositories.SessionRepository
 import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
-import util.{CDFixtures, Keys}
+import util.CDFixtures
+import util.Fixtures.individualRespJson
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
 import util.TestData.NinoUser
 
@@ -43,7 +44,8 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
     reset(mockScaWrapperDataConnector)
     when(mockScaWrapperDataConnector.wrapperData()(any(), any(), any()))
       .thenReturn(Future.successful(wrapperDataResponse))
-
+    when(mockScaWrapperDataConnector.messageData()(any(), any()))
+      .thenReturn(Future.successful(messageDataResponse))
     reset(mockApplePassConnector)
     when(mockApplePassConnector.getApplePass(eqTo(passId))(any(), any()))
       .thenReturn(Future(Some(Base64.getDecoder.decode(fakeBase64String))))
@@ -64,7 +66,6 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
     reset(mockIdentityVerificationFrontendConnector)
     when(mockIdentityVerificationFrontendConnector.getIVJourneyStatus(any())(any(), any()))
       .thenReturn(cats.data.EitherT.right[UpstreamErrorResponse](Future.successful(HttpResponse(OK, ""))))
-
     super.beforeEach()
   }
 
@@ -72,7 +73,6 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
   val notApplePassId = ""
   val personDetailsId = "pdId"
   val pd = buildPersonDetails
-  val controller = applicationWithConfig.injector.instanceOf[StoreMyNinoController]
 
   lazy val view = applicationWithConfig.injector.instanceOf[StoreMyNinoView]
   lazy val errview = applicationWithConfig.injector.instanceOf[ErrorTemplate]
@@ -125,13 +125,15 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .configure("features.sca-wrapper-enabled" -> false)
           .build()
 
+      val view = application.injector.instanceOf[StoreMyNinoView]
+
       running(application) {
         userLoggedInFMNUser(NinoUser)
         val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         status(result) mustEqual OK
-        contentAsString(result) mustEqual (view(passId, "AA 00 00 03 B", false)(request, messages(application))).toString
+        contentAsString(result) mustEqual view(passId, "AA 00 00 03 B", false)(request, messages(application)).toString
       }
     }
 
@@ -147,13 +149,15 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .configure("features.sca-wrapper-enabled" -> true)
           .build()
 
+      val view = application.injector.instanceOf[StoreMyNinoView]
+
       running(application) {
         userLoggedInFMNUser(NinoUser)
         val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         status(result) mustEqual OK
-        contentAsString(result) mustEqual (view(passId, "AA 00 00 03 B", false)(request.addAttr(Keys.wrapperDataKey, wrapperDataResponse), messages(application))).toString
+        contentAsString(result) mustEqual view(passId, "AA 00 00 03 B", false)(request.withAttrs(requestAttributeMap), messages(application)).toString
       }
     }
 

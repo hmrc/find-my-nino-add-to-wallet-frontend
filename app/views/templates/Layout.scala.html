@@ -68,7 +68,7 @@
 
     @if(!disableSessionExpired){
         @hmrcTimeoutDialogHelper(
-            signOutUrl = controllers.routes.SessionManagementController.timeOut.url,
+            signOutUrl = controllers.auth.routes.AuthController.signout(Some(RedirectUrl(configDecorator.getFeedbackSurveyUrl(configDecorator.defaultOrigin))), Some(configDecorator.defaultOrigin)).url,
             keepAliveUrl = Some(controllers.routes.SessionManagementController.keepAlive.url),
             timeout = Some(configDecorator.timeout),
             countdown = Some(configDecorator.countdown)

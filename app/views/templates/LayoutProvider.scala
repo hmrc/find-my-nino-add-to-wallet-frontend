@@ -79,7 +79,7 @@ class NewLayoutProvider @Inject()(wrapperService: WrapperService, additionalScri
       serviceNameUrl = Some("/personal-account"),
       scripts = Seq(additionalScript()),
       styleSheets = stylesheets.toSeq :+ headBlock(),
-      fullWidth = true
+      fullWidth = fullWidth
     )(messages, HeaderCarrierConverter.fromRequest(request), request)
   }
 }

@@ -28,7 +28,7 @@ import play.api.test.Helpers._
 import repositories.SessionRepository
 import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
-import util.{CDFixtures, GoogleCredentialsHelper, Keys}
+import util.{CDFixtures, GoogleCredentialsHelper}
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
 import util.TestData.NinoUser
 
@@ -44,6 +44,8 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
     reset(mockScaWrapperDataConnector)
     when(mockScaWrapperDataConnector.wrapperData()(any(), any(), any()))
       .thenReturn(Future.successful(wrapperDataResponse))
+    when(mockScaWrapperDataConnector.messageData()(any(), any()))
+      .thenReturn(Future.successful(messageDataResponse))
 
     reset(mockApplePassConnector)
     when(mockApplePassConnector.getGooglePassUrl(eqTo(passId))(any(), any()))
@@ -158,13 +160,15 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           .configure("features.sca-wrapper-enabled" -> true)
           .build()
 
+      val view = application.injector.instanceOf[GoogleWalletView]
+
       running(application) {
         userLoggedInFMNUser(NinoUser)
         val request = FakeRequest(GET, routes.GoogleWalletController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         status(result) mustEqual OK
-        contentAsString(result) mustEqual (view(passId, false)(request.addAttr(Keys.wrapperDataKey, wrapperDataResponse), messages(application))).toString
+        contentAsString(result) mustEqual (view(passId, false)(request.withAttrs(requestAttributeMap), messages(application))).toString
       }
     }
 

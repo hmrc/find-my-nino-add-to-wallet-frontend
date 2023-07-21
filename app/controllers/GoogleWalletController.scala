@@ -28,7 +28,7 @@ import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
 import services.AuditService
 import uk.gov.hmrc.auth.core.AuthConnector
 import util.{AuditUtils, GoogleCredentialsHelper, GoogleCredentialsSerializer}
-import views.html.{ErrorTemplate, GoogleWalletView}
+import views.html.{ErrorTemplate, GoogleWalletView, PassIdNotFoundView, QRCodeNotFoundView}
 
 import java.io.ByteArrayInputStream
 import java.util.{Base64, Collections}
@@ -42,7 +42,9 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
                                        errorTemplate: ErrorTemplate,
                                        getPersonDetailsAction: GetPersonDetailsAction,
                                        auditService: AuditService,
-                                       googleCredentialsHelper: GoogleCredentialsHelper
+                                       googleCredentialsHelper: GoogleCredentialsHelper,
+                                       passIdNotFoundView: PassIdNotFoundView,
+                                       qrCodeNotFoundView: QRCodeNotFoundView
                                       )(implicit config: Configuration,
                                         configDecorator: ConfigDecorator,
                                         env: Environment,
@@ -95,7 +97,7 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
                 "AddNinoToGoogleWallet", configDecorator.appName))
             }
             Redirect(data)
-          case _ => NotFound
+          case _ => NotFound(passIdNotFoundView())
         }
       }(loginContinueUrl)
     }
@@ -108,7 +110,7 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
           case Some(data) =>
             auditService.audit(AuditUtils.buildAuditEvent(request.personDetails.get, "DisplayGoogleQRCode", configDecorator.appName))
             Ok(data)
-          case _ => NotFound
+          case _ => NotFound(qrCodeNotFoundView())
         }
       }(loginContinueUrl)
     }

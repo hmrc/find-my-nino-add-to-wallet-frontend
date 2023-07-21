@@ -17,7 +17,7 @@
 package controllers
 
 import config.{ConfigDecorator, FrontendAppConfig}
-import connectors.{StoreMyNinoConnector, CitizenDetailsConnector}
+import connectors.{CitizenDetailsConnector, StoreMyNinoConnector}
 import controllers.auth.requests.UserRequest
 import play.api.Configuration
 
@@ -26,7 +26,7 @@ import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
 import services.AuditService
 import uk.gov.hmrc.auth.core.AuthConnector
-import views.html.{AppleWalletView, ErrorTemplate}
+import views.html.{AppleWalletView, ErrorTemplate, PassIdNotFoundView, QRCodeNotFoundView}
 import play.api.Environment
 import util.AuditUtils
 
@@ -39,7 +39,9 @@ class AppleWalletController @Inject()(val citizenDetailsConnector: CitizenDetail
                                       auditService: AuditService,
                                       view: AppleWalletView,
                                       errorTemplate: ErrorTemplate,
-                                      getPersonDetailsAction: GetPersonDetailsAction
+                                      getPersonDetailsAction: GetPersonDetailsAction,
+                                      passIdNotFoundView: PassIdNotFoundView,
+                                      qrCodeNotFoundView: QRCodeNotFoundView
                                       )(implicit config: Configuration,
                                         configDecorator: ConfigDecorator,
                                         env: Environment,
@@ -89,7 +91,7 @@ class AppleWalletController @Inject()(val citizenDetailsConnector: CitizenDetail
                 "AddNinoToWallet", configDecorator.appName))
             }
             Ok(data).withHeaders("Content-Disposition" -> s"attachment; filename=$passFileName")
-          case _ => NotFound
+          case _ => NotFound(passIdNotFoundView())
         }
       }(loginContinueUrl)
     }
@@ -102,7 +104,7 @@ class AppleWalletController @Inject()(val citizenDetailsConnector: CitizenDetail
           case Some(data) =>
             auditService.audit(AuditUtils.buildAuditEvent(request.personDetails.get, "DisplayQRCode", configDecorator.appName))
             Ok(data).withHeaders("Content-Disposition" -> s"attachment; filename=$passFileName")
-          case _ => NotFound
+          case _ => NotFound(qrCodeNotFoundView())
         }
       }(loginContinueUrl)
     }

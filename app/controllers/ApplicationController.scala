@@ -95,7 +95,7 @@ class ApplicationController @Inject()(
 
               case TechnicalIssue =>
                 logger.warn(s"TechnicalIssue response from identityVerificationFrontendService")
-                InternalServerError(technicalIssuesView(retryUrl))
+                FailedDependency(technicalIssuesView(retryUrl))
 
               case _ =>
                 InternalServerError(technicalIssuesView(retryUrl))

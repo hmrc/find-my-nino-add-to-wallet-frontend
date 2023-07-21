@@ -262,7 +262,7 @@ class ApplicationControllerSpec extends SpecBase with CDFixtures with MockitoSug
       }
 
 
-      "showUpliftJourneyOutcome should return TechnicalIssue(500) when IV journey outcome was TechnicalIssues" in new LocalSetup {
+      "showUpliftJourneyOutcome should return TechnicalIssue(424) when IV journey outcome was TechnicalIssues(500)" in new LocalSetup {
 
         override lazy val getIVJourneyStatusResponse
         : EitherT[Future, UpstreamErrorResponse, IdentityVerificationResponse] =
@@ -272,7 +272,7 @@ class ApplicationControllerSpec extends SpecBase with CDFixtures with MockitoSug
             .thenReturn(EitherT[Future, UpstreamErrorResponse, IdentityVerificationResponse](Future.successful(Right(TechnicalIssue))))
 
           val result = controller.showUpliftJourneyOutcome(None)(buildFakeRequestWithAuth("GET", "/?journeyId=XXXXX"))
-          status(result) mustBe INTERNAL_SERVER_ERROR
+          status(result) mustBe FAILED_DEPENDENCY
         }
 
       }

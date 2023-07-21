@@ -138,6 +138,14 @@ label.confirmNINO.l1.li2.part3.address.line3 = BX9 1AN
 label.confirmNINO.p2 = If you are filling out a CA5403 form, you may need to prove your identity with certain documents. The online form will tell you which documents you need.
 label.confirmNINO.p3 = Your National Insurance number should arrive within 15 days of you contacting us.
 
+apple.passid.notfound = The link has expired
+apple.passid.startagain = Go back and try again
+
+apple.qrcode.notfound = This QR code has expired
+apple.qrcode.p1 = To try again:
+apple.qrcode.li1 = refresh the page with the QR code on
+apple.qrcode.li2 = scan the code again
+
 appleWallet.title = Add your National Insurance number to your Apple Wallet
 appleWallet.heading = Add your National Insurance number to your Apple Wallet
 appleWallet.p1 = Your National Insurance number would:

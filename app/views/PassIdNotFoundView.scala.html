@@ -14,21 +14,28 @@
  * limitations under the License.
  *@
 
+@import config.ConfigDecorator
+@import controllers.auth.requests.UserRequest
+@import scala.concurrent.ExecutionContext
+@import components.{H1, P, Link}
+
 @this(
-    layout: templates.LayoutProvider,
+    main: MainView,
+    h1: H1,
+    p: P,
+    link: Link,
     govukButton: GovukButton
 )
+@()(implicit request: UserRequest[_], configDecorator: ConfigDecorator, messages: play.api.i18n.Messages, ec: ExecutionContext)
 
-@(continueUrl: String)(implicit request: Request[_], messages: Messages)
-
-@layout(pageTitle = titleNoForm(messages("journeyRecovery.continue.title")), fullWidth = false) {
-
-    <h1 class="govuk-heading-xl">@messages("journeyRecovery.continue.heading")</h1>
+@main(
+    pageTitle = messages(s"apple.passid.notfound")
+) {
+    @h1(messages(s"apple.passid.notfound"))
 
     <p class="govuk-body">
         @govukButton(
-            ButtonViewModel(messages("site.continue"))
-                .asLink(continueUrl)
+            ButtonViewModel(messages("apple.passid.startagain")).asLink(routes.StoreMyNinoController.onPageLoad.url)
         )
     </p>
 }

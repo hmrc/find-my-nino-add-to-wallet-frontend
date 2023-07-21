@@ -26,7 +26,7 @@ import java.time.{Clock, ZoneOffset}
 
 class Module(environment: Environment, config: Configuration) extends AbstractModule {
 
-  val SCAWrapperEnabled = config.getOptional[Boolean]("features.sca-wrapper-enabled").getOrElse(false)
+  private val scaWrapperEnabled = config.getOptional[Boolean]("features.sca-wrapper-enabled").getOrElse(false)
   override def configure(): Unit = {
 
     bind(classOf[DataRetrievalAction]).to(classOf[DataRetrievalActionImpl]).asEagerSingleton()
@@ -42,7 +42,7 @@ class Module(environment: Environment, config: Configuration) extends AbstractMo
     bind(classOf[FopURIResolver]).to(classOf[DefaultFopURIResolver])
     bind(classOf[BaseResourceStreamResolver]).to(classOf[DefaultResourceStreamResolver])
 
-    if (SCAWrapperEnabled) {
+    if (scaWrapperEnabled) {
       bind(classOf[LayoutProvider]).to(classOf[NewLayoutProvider]).asEagerSingleton()
     } else {
       bind(classOf[LayoutProvider]).to(classOf[OldLayoutProvider]).asEagerSingleton()

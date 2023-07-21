@@ -37,6 +37,7 @@ class StoreMyNinoConnector @Inject()(config: ConfigDecorator, http: HttpClient) 
 
   private val headers: Seq[(String, String)] = Seq("Content-Type" -> "application/json")
   implicit val writes: Writes[ApplePassDetails] = Json.writes[ApplePassDetails]
+
   implicit val googleWrites: Writes[GooglePassDetails] = Json.writes[GooglePassDetails]
   implicit val googleWritesWithCredentials: Writes[GooglePassDetailsWithCredentials] = Json.writes[GooglePassDetailsWithCredentials]
 
@@ -88,7 +89,6 @@ class StoreMyNinoConnector @Inject()(config: ConfigDecorator, http: HttpClient) 
       }
   }
 
-
   def getApplePass(passId: String)
                   (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Option[Array[Byte]]] = {
 
@@ -99,6 +99,7 @@ class StoreMyNinoConnector @Inject()(config: ConfigDecorator, http: HttpClient) 
       .map { response =>
         response.status match {
           case OK => Some(Base64.getDecoder.decode(response.body))
+          case NOT_FOUND => None
           case _ => throw new HttpException(response.body, response.status)
         }
       }
@@ -119,7 +120,6 @@ class StoreMyNinoConnector @Inject()(config: ConfigDecorator, http: HttpClient) 
       }
   }
 
-
   def getQrCode(passId: String)
                (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Option[Array[Byte]]] = {
 
@@ -130,13 +130,14 @@ class StoreMyNinoConnector @Inject()(config: ConfigDecorator, http: HttpClient) 
       .map { response =>
         response.status match {
           case OK => Some(Base64.getDecoder.decode(response.body))
+          case NOT_FOUND => None
           case _ => throw new HttpException(response.body, response.status)
         }
       }
   }
 
-def createGooglePassWithCredentials(fullName: String, nino: String, credentials: String)
-                     (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Some[String]] = {
+  def createGooglePassWithCredentials(fullName: String, nino: String, credentials: String)
+                                     (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Some[String]] = {
 
     val url = s"${config.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/create-google-pass-with-credentials"
     val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
@@ -154,7 +155,7 @@ def createGooglePassWithCredentials(fullName: String, nino: String, credentials:
 
 
   def getGooglePassUrl(passId: String)
-                  (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Option[String]] = {
+                      (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Option[String]] = {
 
     val url = s"${config.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-google-pass-url?passId=$passId"
     val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
@@ -171,7 +172,7 @@ def createGooglePassWithCredentials(fullName: String, nino: String, credentials:
 
 
   def getGooglePassQrCode(passId: String)
-               (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Option[Array[Byte]]] = {
+                         (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Option[Array[Byte]]] = {
 
     val url = s"${config.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-google-qr-code?passId=$passId"
     val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
@@ -185,5 +186,3 @@ def createGooglePassWithCredentials(fullName: String, nino: String, credentials:
       }
   }
 }
-
-

@@ -221,7 +221,6 @@ class ApplicationControllerSpec extends SpecBase with CDFixtures with MockitoSug
         }
       }
 
-
       "showUpliftJourneyOutcome should return Unauthorized when IV journey status is PrecondFailed" in new LocalSetup {
 
         running(application) {
@@ -260,7 +259,6 @@ class ApplicationControllerSpec extends SpecBase with CDFixtures with MockitoSug
           assert(status(result) == UNAUTHORIZED)
         }
       }
-
 
       "showUpliftJourneyOutcome should return TechnicalIssue(424) when IV journey outcome was TechnicalIssues(500)" in new LocalSetup {
 

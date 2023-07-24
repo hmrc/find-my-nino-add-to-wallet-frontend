@@ -94,16 +94,17 @@ class ApplicationController @Inject()(
                 Unauthorized(timeOutView(retryUrl))
 
               case TechnicalIssue =>
-                logger.warn(s"TechnicalIssue response from identityVerificationFrontendService")
-                InternalServerError(technicalIssuesView(retryUrl))
+                logErrorMessage(s"TechnicalIssue response from IdentityVerificationFrontendService")
+                FailedDependency(technicalIssuesView(retryUrl))
 
               case _ =>
-                InternalServerError(technicalIssuesView(retryUrl))
+                logErrorMessage("unknown status from IdentityVerificationFrontendService")
+                FailedDependency(technicalIssuesView(retryUrl))
             }
             .getOrElse(BadRequest(technicalIssuesView(retryUrl)))
         case _         =>
-          logger.error("journeyId missing or incorect")
-          Future.successful(InternalServerError(technicalIssuesView(retryUrl)))
+          logErrorMessage("journeyId missing or incorect")
+          Future.successful(FailedDependency(technicalIssuesView(retryUrl)))
       }
     }
 

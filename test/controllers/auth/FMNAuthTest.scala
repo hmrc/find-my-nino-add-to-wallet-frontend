@@ -20,7 +20,7 @@ import base.SpecBase
 import config.{ConfigDecorator, FrontendAppConfig}
 import controllers.ApplicationController
 import org.mockito.MockitoSugar.when
-import play.api.http.Status.{INTERNAL_SERVER_ERROR, SEE_OTHER}
+import play.api.http.Status.{INTERNAL_SERVER_ERROR, SEE_OTHER, FAILED_DEPENDENCY}
 import play.api.mvc.MessagesControllerComponents
 import play.api.test.FakeRequest
 import services.{IdentityVerificationFrontendService}
@@ -68,17 +68,14 @@ class FMNAuthTest extends SpecBase {
     "showUpliftJourneyOutcome" in {
       val fakeRequest = FakeRequest(GET, "/path/to/resource")
       val result = controller.showUpliftJourneyOutcome(None)(fakeRequest)
-      status(result) mustBe INTERNAL_SERVER_ERROR
+      status(result) mustBe FAILED_DEPENDENCY
     }
 
     "showUpliftJourneyOutcome 2" in {
       val fakeRequest = FakeRequest(GET, "/save-your-national-insurance-number")
       val url = SafeRedirectUrl("/save-your-national-insurance-number")
-      //when(mockIdentityVerificationFrontendService.getIVJourneyStatus("Success")).thenReturn(Future.successful(Success))
-
-      //when(fakeRequest.getQueryString("Success")).thenReturn(Success)
       val result = controller.showUpliftJourneyOutcome(Some(url))(fakeRequest)
-      status(result) mustBe INTERNAL_SERVER_ERROR
+      status(result) mustBe FAILED_DEPENDENCY
     }
 
   }

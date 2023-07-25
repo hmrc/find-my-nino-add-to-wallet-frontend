@@ -28,13 +28,14 @@ import util.WireMockHelper
 
 import java.util.Base64
 
-class ApplePassConnectorSpec extends ConnectorSpec
+class StoreMyNinoConnectorSpec extends ConnectorSpec
   with WireMockHelper
   with MockitoSugar
   with DefaultAwaitTimeout
   with Injecting {
 
   implicit val writes: Writes[ApplePassDetails] = Json.writes[ApplePassDetails]
+  implicit val googleWrites: Writes[GooglePassDetailsWithCredentials] = Json.writes[GooglePassDetailsWithCredentials]
 
   override implicit lazy val app: Application = app(
     Map("microservice.services.find-my-nino-add-to-wallet-service.port" -> server.port())
@@ -51,6 +52,11 @@ class ApplePassConnectorSpec extends ConnectorSpec
   val fakeName: String = "fakeName"
   val fakeNino:String = "fakeNino"
   val createApplePassDetails = ApplePassDetails(fakeName, fakeNino)
+  val googlePassUrl = " https://pay.google.com/gp/v/save/eyJhbGci6IkpXVCJ9"
+  val createGooglePassDetails = GooglePassDetails(fakeName, fakeNino)
+  val createGooglePassDetailsWithCredentials = GooglePassDetailsWithCredentials(fakeName, fakeNino, "xxxx")
+  val googlePassCardBytes: Array[Byte] = Array(99, 71, 86, 121, 99, 50, 57, 117, 82, 71, 86, 48, 89, 87, 108, 115, 99, 49, 78, 48, 99, 109, 108, 117, 90, 119, 61, 61)
+  val googlePassUrlImage = Base64.getEncoder.encodeToString(googlePassCardBytes)
 
   val errMsg = Json.obj(
     "status" -> "500",
@@ -65,7 +71,7 @@ class ApplePassConnectorSpec extends ConnectorSpec
     lazy val connector = {
       val httpClient = app.injector.instanceOf[HttpClient]
       val config = app.injector.instanceOf[ConfigDecorator]
-      new ApplePassConnector(config,httpClient)
+      new StoreMyNinoConnector(config,httpClient)
     }
   }
 
@@ -187,4 +193,67 @@ class ApplePassConnectorSpec extends ConnectorSpec
         .value.getOrElse(InternalServerError(Json.toJson(errMsg)))
       result mustBe InternalServerError(Json.toJson(errMsg))
     }
-}}
+}
+
+  /* Google Pass */
+  "Calling get pass url by pass Id" must {
+
+    trait LocalSetup extends SpecSetup {
+      def url: String = s"/find-my-nino-add-to-wallet/get-google-pass-url?passId=$passId"
+    }
+
+    "return Google pass when called with an existing pass Id" in new LocalSetup {
+      stubGet(url, OK, Some(googlePassUrl))
+      val result = connector.getGooglePassUrl(passId).futureValue.get
+      result mustBe googlePassUrl
+    }
+
+    "return empty when called with an unknown passId" in new LocalSetup {
+      stubGet(url, OK, None)
+      val result = connector.getGooglePassUrl(passId).futureValue.get
+      result mustBe ""
+
+    }
+  }
+
+  "Calling get google qr code by pass Id" must {
+
+    trait LocalSetup extends SpecSetup {
+      def url: String = s"/find-my-nino-add-to-wallet/get-google-qr-code?passId=$passId"
+    }
+
+    "return Google pass when called with an existing pass Id" in new LocalSetup {
+      stubGet(url, OK, Some(googlePassUrlImage))
+      val result = connector.getGooglePassQrCode(passId).futureValue.get
+      result mustBe googlePassCardBytes
+    }
+
+    "return empty Array when called with an unknown passId" in new LocalSetup {
+      stubGet(url, OK, None)
+      val result = connector.getGooglePassQrCode(passId).futureValue.get
+      result mustBe Array()
+
+    }
+  }
+
+  "Calling create google pass" must {
+
+    trait LocalSetup extends SpecSetup {
+      def url: String = s"/find-my-nino-add-to-wallet/create-google-pass-with-credentials"
+    }
+
+    "return OK when called create google pass" in new LocalSetup {
+      stubPost(url, OK, Some(Json.toJson(createGooglePassDetailsWithCredentials).toString()), Some(personDetailsId))
+      val result: String = connector.createGooglePassWithCredentials(createGooglePassDetails.fullName, createGooglePassDetails.nino, "xxxx").futureValue.get
+      result mustBe personDetailsId
+    }
+
+    "return error when called create google pass " in new LocalSetup {
+      stubWithDelay(url, INTERNAL_SERVER_ERROR, Some(Json.toJson(createGooglePassDetailsWithCredentials).toString()), None, delay)
+      val result = connector.createGooglePassWithCredentials(createGooglePassDetails.fullName, createGooglePassDetails.nino, "xxxx")
+        .value.getOrElse(InternalServerError(Json.toJson(errMsg)))
+      result mustBe InternalServerError(Json.toJson(errMsg))
+    }
+  }
+
+}

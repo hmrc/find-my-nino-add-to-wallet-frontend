@@ -17,7 +17,7 @@
 package controllers
 
 import config.{ConfigDecorator, FrontendAppConfig}
-import connectors.ApplePassConnector
+import connectors.StoreMyNinoConnector
 import models.PersonDetails
 import org.apache.xmlgraphics.util.MimeConstants
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -38,7 +38,7 @@ import scala.concurrent.ExecutionContext
 class NinoLetterController @Inject()(
                                       override val messagesApi: MessagesApi,
                                       authConnector: AuthConnector,
-                                      applePassConnector: ApplePassConnector,
+                                      applePassConnector: StoreMyNinoConnector,
                                       auditService: AuditService,
                                       view: PrintNationalInsuranceNumberView,
                                       getPersonDetailsAction: GetPersonDetailsAction,

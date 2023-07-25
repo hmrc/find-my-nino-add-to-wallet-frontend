@@ -15,8 +15,6 @@ GET         /check-your-answers                          controllers.CheckYourAn
 GET         /unauthorised                                controllers.UnauthorisedController.onPageLoad
 
 GET         /                                            controllers.StoreMyNinoController.onPageLoad
-GET         /get-pass-card                               controllers.StoreMyNinoController.getPassCard(passId: String)
-GET         /get-qr-code                                 controllers.StoreMyNinoController.getQrCode(passId: String)
 GET         /print-letter                                controllers.NinoLetterController.onPageLoad
 GET         /print-letter/save-letter-as-pdf             controllers.NinoLetterController.saveNationalInsuranceNumberAsPdf
 
@@ -32,3 +30,11 @@ GET         /do-uplift                                   controllers.Application
 GET         /full                                        controllers.ApplicationController.uplift(redirectUrl: Option[SafeRedirectUrl])
 GET         /identity-check-complete                     controllers.ApplicationController.showUpliftJourneyOutcome(continueUrl: Option[SafeRedirectUrl])
 GET         /identity-check-failed                       controllers.ApplicationController.showUpliftJourneyOutcome(continueUrl: Option[SafeRedirectUrl])
+
+GET         /apple-wallet                               controllers.AppleWalletController.onPageLoad()
+GET         /get-pass-card                              controllers.AppleWalletController.getPassCard(passId: String)
+GET         /get-qr-code                                controllers.AppleWalletController.getQrCode(passId: String)
+
+GET         /google-wallet                             controllers.GoogleWalletController.onPageLoad()
+GET         /get-google-pass                           controllers.GoogleWalletController.getGooglePass(passId: String)
+GET         /get-google-qr-code                        controllers.GoogleWalletController.getGooglePassQrCode(passId: String)

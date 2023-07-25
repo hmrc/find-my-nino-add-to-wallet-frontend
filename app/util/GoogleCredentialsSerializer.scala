@@ -1,4 +1,4 @@
-@*
+/*
  * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,11 +12,20 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *@
+ */
 
-@this()
+package util
 
-@(msg: String, classes: Option[String] = None, elmId: Option[String] = None, headerMarginZero: Boolean = false)(implicit messages: Messages)
-<div class="hmrc-page-heading @if(headerMarginZero){govuk-!-margin-top-0}">
-    <h1 id=@elmId.getOrElse("pageHeading") class='@classes.getOrElse("govuk-heading-l") govuk-!-margin-bottom-3'>@Html(messages(msg))</h1>
-</div>
+import com.google.auth.oauth2.GoogleCredentials
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectOutputStream}
+import java.util.Base64
+
+object GoogleCredentialsSerializer {
+  def serializeToBase64String(credentials: GoogleCredentials): String = {
+    val outputStream = new ByteArrayOutputStream()
+    val objectOutputStream = new ObjectOutputStream(outputStream)
+    objectOutputStream.writeObject(credentials)
+    objectOutputStream.flush()
+    Base64.getEncoder.encodeToString(outputStream.toByteArray)
+  }
+}

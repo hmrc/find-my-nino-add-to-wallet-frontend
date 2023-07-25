@@ -26,35 +26,13 @@ journeyRecovery.startAgain.heading = Sorry, there is a problem with the service
 storeMyNino.title = Save your National Insurance number
 storeMyNino.heading = Save your National Insurance number
 storeMyNino.saveYourNino.yourNinoIs = Your National Insurance number is
-storeMyNino.saveYourNino.p1 = You can:
-storeMyNino.saveYourNino.list1.li1 = view and get a copy of your National Insurance number confirmation letter
-storeMyNino.saveYourNino.list1.li2.v1 = add your number to the Wallet app on your Apple iPhone
-storeMyNino.saveYourNino.list1.li2.v2 = add your number to your phone’s wallet
-storeMyNino.saveYourNino.p2 = If you save your National Insurance number on your phone, make sure it has security like Face ID, a pattern, or a pin code set up. This helps protect your details.
-storeMyNino.subHeading1 = View and get a copy of your National Insurance number on a letter
-storeMyNino.getYourNinoLetter.list1.li1 = View or print
-
-storeMyNino.getYourNinoLetter.list1.li2 = Save as a PDF
-
-storeMyNino.subHeading2.v1 = Save your number to your Apple iPhone
-storeMyNino.subHeading2.v2 = Save your number to your phone
-storeMyNino.saveToPhone.p1 = Your National Insurance number would:
-storeMyNino.saveToPhone.list1.li1.v1 = be readily available in your Apple Wallet with your other cards — even offline
-storeMyNino.saveToPhone.list1.li1.v2 = be readily available in your phone’s wallet with your other cards — even offline
-storeMyNino.saveToPhone.list1.li2 = be protected by your phone’s security settings
-storeMyNino.saveToPhone.list1.li3 = only be shared with the wallet provider and no other third parties
-storeMyNino.saveToPhone.list1.li4 = take up minimal storage space on your phone
-storeMyNino.saveToPhone.googleWallet.heading = Google Wallet
-storeMyNino.saveToPhone.appleWallet.heading = Apple Wallet
-storeMyNino.saveToPhone.appleWallet.p1 = To add your number to the Wallet app, you can either:
-storeMyNino.saveToPhone.appleWallet.list1.li1.part1 = download your National Insurance number
-storeMyNino.saveToPhone.appleWallet.list1.li1.part2 = and send it to your iPhone
-storeMyNino.saveToPhone.appleWallet.list1.li2 = use your iPhone to scan the QR code and then sign in to Government Gateway
-
-storeMyNino.saveToPhone.appleWallet.saveToWallet.alt = Add to Apple wallet
-storeMyNino.saveToPhone.appleWallet.saveToWallet.QRCode.alt = QR code to save to an Apple wallet
-storeMyNino.saveToPhone.googleWallet.saveToWallet.alt = Add to Google wallet
-
+storeMyNino.saveYourNino.p1 = These are your options.
+storeMyNino.ninoLetter.heading = View and get a copy of your National Insurance number letter
+storeMyNino.ninoLetter.viewOrPrint = View or print
+storeMyNino.ninoLetter.saveAsPDF = Save as a PDF
+storeMyNino.saveToWallet.heading = Save your number to your phone’s wallet
+storeMyNino.saveToWallet.googleWallet = Google Wallet
+storeMyNino.saveToWallet.appleWallet = Apple Wallet
 
 label.save_your_national_insurance_number=Save your National Insurance number
 
@@ -167,3 +145,34 @@ apple.qrcode.notfound = This QR code has expired
 apple.qrcode.p1 = To try again:
 apple.qrcode.li1 = refresh the page with the QR code on
 apple.qrcode.li2 = scan the code again
+
+appleWallet.title = Add your National Insurance number to your Apple Wallet
+appleWallet.heading = Add your National Insurance number to your Apple Wallet
+appleWallet.p1 = Your National Insurance number would:
+appleWallet.l1.li1 = be readily available in your phone’s wallet with your other cards — even offline
+appleWallet.l1.li2 = be protected by your phone’s security settings
+appleWallet.l1.li3 = only be shared with the wallet provider and no other third parties
+appleWallet.l1.li4 = take up minimal storage space on your phone
+appleWallet.p2 = If you save your National Insurance number on your phone, make sure it has security like Face ID, a pattern, or a pin code set up. This helps protect your details.
+appleWallet.saveAndSendToPhone.heading = Save it and send it to your phone
+appleWallet.saveAndSendToPhone.p1.part1 = To add your number to the Wallet app, you can
+appleWallet.saveAndSendToPhone.p1.linkText = download your National Insurance number
+appleWallet.saveAndSendToPhone.p1.part2 = and then send it to your iPhone — for example, by emailing the file to yourself and opening it on your phone.
+appleWallet.scanQRCodeToAdd.heading = Scan the QR code to add to your phone’s wallet
+appleWallet.scanQRCodeToAdd.p1 = Use your iPhone to scan the QR code and then sign in using Government Gateway.
+appleWallet.tapToAdd.heading = Tap the button to add to your phone’s wallet
+appleWallet.addToWallet.alt = Add to Apple Wallet
+appleWallet.addToWallet.QRCode.alt = QR code to save to Apple Wallet
+
+googleWallet.title = Add your National Insurance number to your Google Wallet
+googleWallet.heading = Add your National Insurance number to your Google Wallet
+googleWallet.p1 = Your National Insurance number would:
+googleWallet.l1.li1 = be readily available in your phone’s wallet with your other cards — even offline
+googleWallet.l1.li2 = be protected by your phone’s security settings
+googleWallet.l1.li3 = only be shared with the wallet provider and no other third parties
+googleWallet.l1.li4 = take up minimal storage space on your phone
+googleWallet.p2 = If you save your National Insurance number on your phone, make sure it has security like Face ID, a pattern, or a pin code set up. This helps protect your details.
+googleWallet.scanQRCodeToAdd.heading = Scan the QR code to add to your phone’s wallet
+googleWallet.tapToAdd.heading = Tap the button to add to your phone’s wallet
+googleWallet.addToWallet.alt = Add to Google Wallet
+googleWallet.addToWallet.QRCode.alt = QR code to save to Google Wallet

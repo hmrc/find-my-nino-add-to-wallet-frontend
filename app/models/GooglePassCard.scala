@@ -1,4 +1,4 @@
-@*
+/*
  * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,11 +12,15 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *@
+ */
 
-@this()
+package models
 
-@(msg: String, classes: Option[String] = None, elmId: Option[String] = None, headerMarginZero: Boolean = false)(implicit messages: Messages)
-<div class="hmrc-page-heading @if(headerMarginZero){govuk-!-margin-top-0}">
-    <h1 id=@elmId.getOrElse("pageHeading") class='@classes.getOrElse("govuk-heading-l") govuk-!-margin-bottom-3'>@Html(messages(msg))</h1>
-</div>
+case class GooglePassCard
+(
+  header: String,
+  title: String,
+  rows: Option[Array[GooglePassTextRow]],
+  hexBackgroundColour: String,
+  language: String
+)

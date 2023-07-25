@@ -16,7 +16,12 @@
 
 @this()
 
-@(msg: String, classes: Option[String] = None, elmId: Option[String] = None, headerMarginZero: Boolean = false)(implicit messages: Messages)
-<div class="hmrc-page-heading @if(headerMarginZero){govuk-!-margin-top-0}">
-    <h1 id=@elmId.getOrElse("pageHeading") class='@classes.getOrElse("govuk-heading-l") govuk-!-margin-bottom-3'>@Html(messages(msg))</h1>
-</div>
+@(elements: Seq[String], classes: String = "govuk-list govuk-list--bullet", id: Option[String] = None)(implicit messages: Messages)
+
+<ul class="@classes" @id.map{id => id="@id"}>
+    @elements.map { element =>
+        <li>
+            @Html(messages(element))
+        </li>
+    }
+</ul>

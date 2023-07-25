@@ -1,4 +1,4 @@
-@*
+/*
  * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,11 +12,21 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *@
+ */
 
-@this()
+package util
 
-@(msg: String, classes: Option[String] = None, elmId: Option[String] = None, headerMarginZero: Boolean = false)(implicit messages: Messages)
-<div class="hmrc-page-heading @if(headerMarginZero){govuk-!-margin-top-0}">
-    <h1 id=@elmId.getOrElse("pageHeading") class='@classes.getOrElse("govuk-heading-l") govuk-!-margin-bottom-3'>@Html(messages(msg))</h1>
-</div>
+import com.google.auth.oauth2.GoogleCredentials
+
+import java.io.ByteArrayInputStream
+import java.util.{Base64, Collections}
+
+
+class GoogleCredentialsHelper {
+  def createGoogleCredentials(key: String): String = {
+    val scope = "https://www.googleapis.com/auth/wallet_object.issuer"
+    val keyAsStream = new ByteArrayInputStream(Base64.getDecoder.decode(key))
+    val credentials: GoogleCredentials = GoogleCredentials.fromStream(keyAsStream).createScoped(Collections.singletonList(scope))
+    GoogleCredentialsSerializer.serializeToBase64String(credentials)
+  }
+}

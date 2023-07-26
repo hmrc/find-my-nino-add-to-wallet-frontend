@@ -17,7 +17,8 @@
 package controllers
 
 import base.SpecBase
-import connectors.{CitizenDetailsConnector, IdentityVerificationFrontendConnector, PayeIndividualDetailsConnector, PersonDetailsErrorResponse, PersonDetailsSuccessResponse}
+import connectors.{CitizenDetailsConnector, IdentityVerificationFrontendConnector, PayeIndividualDetailsConnector,
+  PersonDetailsErrorResponse, PersonDetailsSuccessResponse}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{reset, when}
 import org.scalatestplus.mockito.MockitoSugar
@@ -29,7 +30,7 @@ import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
 import util.CDFixtures
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
-import util.TestData.NinoUser
+import util.TestData.{NinoUser, NinoUser_With_CL50}
 
 import views.html.{StoreMyNinoView,ErrorTemplate}
 
@@ -154,6 +155,24 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
 
       running(application) {
         userLoggedInIsNotFMNUser(NinoUser)
+        val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
+          .withSession(("authToken", "Bearer 123"))
+        val result = route(application, request).value
+        status(result) mustEqual 500
+      }
+    }
+
+    "must fail to login user with 50 CL" in {
+      val application = applicationBuilderWithConfig()
+        .overrides(
+          inject.bind[SessionRepository].toInstance(mockSessionRepository),
+          inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
+        )
+        .configure("features.sca-wrapper-enabled" -> true)
+        .build()
+
+      running(application) {
+        userLoggedInIsNotFMNUser(NinoUser_With_CL50)
         val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value

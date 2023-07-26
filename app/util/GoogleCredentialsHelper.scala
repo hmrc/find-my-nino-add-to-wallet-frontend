@@ -21,7 +21,6 @@ import com.google.auth.oauth2.GoogleCredentials
 import java.io.ByteArrayInputStream
 import java.util.{Base64, Collections}
 
-
 class GoogleCredentialsHelper {
   def createGoogleCredentials(key: String): String = {
     val scope = "https://www.googleapis.com/auth/wallet_object.issuer"

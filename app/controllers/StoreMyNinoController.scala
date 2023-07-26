@@ -18,9 +18,8 @@ package controllers
 
 import config.{ConfigDecorator, FrontendAppConfig}
 import connectors.{StoreMyNinoConnector, CitizenDetailsConnector}
-import controllers.auth.requests.UserRequest
 import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents, Request}
+import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
 import play.api.{Configuration, Environment}
 import services.AuditService
 import uk.gov.hmrc.auth.core.AuthConnector

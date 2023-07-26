@@ -75,7 +75,7 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
         authorisedUser(loginContinueUrl, block)
       }
     }
-  // $COVERAGE-OFF$
+
   private def upliftConfidenceLevel(request: Request[_])(implicit config: FrontendAppConfig): Future[Result] = {
     Future.successful(
       Redirect(
@@ -103,7 +103,7 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
         )
       )
     )
-  // $COVERAGE-ON$
+
   private object GTOE200 {
     def unapply(confLevel: ConfidenceLevel): Option[ConfidenceLevel] =
       if (confLevel.level >= ConfidenceLevel.L200.level) Some(confLevel) else None

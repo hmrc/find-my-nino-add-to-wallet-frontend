@@ -17,7 +17,7 @@
 package util
 
 import com.google.auth.oauth2.GoogleCredentials
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectOutputStream}
+import java.io.{ByteArrayOutputStream, ObjectOutputStream}
 import java.util.Base64
 
 object GoogleCredentialsSerializer {

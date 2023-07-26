@@ -35,7 +35,8 @@ object AuditUtils {
                                     name: String,
                                     mainAddress: Address,
                                     device: Option[String],
-                                    language: String = "en"
+                                    language: String = "en",
+                                    WalletProvider: Option[String]
                                   )
 
   object YourDetailsAuditEvent {
@@ -98,7 +99,7 @@ object AuditUtils {
     )
   }
 
-  private def buildDetails(personDetails: PersonDetails, journeyId: String, hc: HeaderCarrier): YourDetailsAuditEvent = {
+  private def buildDetails(personDetails: PersonDetails, journeyId: String, hc: HeaderCarrier, walletProvider: Option[String]): YourDetailsAuditEvent = {
     val person = personDetails.person
     val mainAddress = getPersonAddress(personDetails)
     val strLang = getLanguageFromCookieStr(hc)
@@ -111,7 +112,8 @@ object AuditUtils {
       name = person.fullName,
       mainAddress = mainAddress,
       device = Some(strDevice),
-      language = strLang
+      language = strLang,
+      WalletProvider = walletProvider
     )
   }
 
@@ -120,9 +122,10 @@ object AuditUtils {
 
   def buildAuditEvent(personDetails: PersonDetails,
                      auditType: String,
-                      appName: String)(implicit hc: HeaderCarrier): ExtendedDataEvent = {
+                      appName: String,
+                      walletProvider: Option[String])(implicit hc: HeaderCarrier): ExtendedDataEvent = {
     buildDataEvent(auditType, s"$appName-$auditType",
-      Json.toJson(buildDetails(personDetails, auditType, hc)))
+      Json.toJson(buildDetails(personDetails, auditType, hc, walletProvider)))
   }
 
 }

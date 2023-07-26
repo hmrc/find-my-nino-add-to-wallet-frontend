@@ -56,7 +56,7 @@ class AppleWalletController @Inject()(val citizenDetailsConnector: CitizenDetail
     implicit request => {
       request.personDetails match {
         case Some(pd) =>
-          auditService.audit(AuditUtils.buildAuditEvent(pd, "ViewAppleWalletPage", configDecorator.appName))
+          auditService.audit(AuditUtils.buildAuditEvent(pd, "ViewAppleWalletPage", configDecorator.appName, None))
           for {
             pId: Some[String] <- findMyNinoServiceConnector.createApplePass(pd.person.fullName, request.nino.map(_.formatted).getOrElse(""))
           } yield Ok(view(pId.value, isMobileDisplay(request)))
@@ -86,9 +86,9 @@ class AppleWalletController @Inject()(val citizenDetailsConnector: CitizenDetail
           case Some(data) =>
             request.getQueryString("qr-code") match {
               case Some("true") => auditService.audit(AuditUtils.buildAuditEvent(request.personDetails.get,
-                "AddNinoToWalletFromQRCode", configDecorator.appName))
+                "AddNinoToWalletFromQRCode", configDecorator.appName, Some("Apple")))
               case _ => auditService.audit(AuditUtils.buildAuditEvent(request.personDetails.get,
-                "AddNinoToWallet", configDecorator.appName))
+                "AddNinoToWallet", configDecorator.appName, Some("Apple")))
             }
             Ok(data).withHeaders("Content-Disposition" -> s"attachment; filename=$passFileName")
           case _ => NotFound(passIdNotFoundView())
@@ -102,7 +102,7 @@ class AppleWalletController @Inject()(val citizenDetailsConnector: CitizenDetail
       authorisedAsFMNUser { _ =>
         findMyNinoServiceConnector.getQrCode(passId).map {
           case Some(data) =>
-            auditService.audit(AuditUtils.buildAuditEvent(request.personDetails.get, "DisplayQRCode", configDecorator.appName))
+            auditService.audit(AuditUtils.buildAuditEvent(request.personDetails.get, "DisplayQRCode", configDecorator.appName, Some("Apple")))
             Ok(data).withHeaders("Content-Disposition" -> s"attachment; filename=$passFileName")
           case _ => NotFound(qrCodeNotFoundView())
         }

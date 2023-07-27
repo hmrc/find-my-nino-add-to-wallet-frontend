@@ -50,7 +50,6 @@ class NinoLetterController @Inject()(
                                       cc: MessagesControllerComponents,
                                       frontendAppConfig: FrontendAppConfig) extends FMNBaseController(authConnector) with I18nSupport {
 
-
   implicit val loginContinueUrl: Call = routes.StoreMyNinoController.onPageLoad
 
   def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction) {
@@ -64,7 +63,6 @@ class NinoLetterController @Inject()(
         personDetails.person.nino.getOrElse(Nino("")).formatted))
     }
   }
-
 
   def saveNationalInsuranceNumberAsPdf: Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction) {
 

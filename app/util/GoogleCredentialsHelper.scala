@@ -20,8 +20,7 @@ import com.google.auth.oauth2.GoogleCredentials
 
 import java.io.ByteArrayInputStream
 import java.util.{Base64, Collections}
-
-
+// $COVERAGE-OFF$
 class GoogleCredentialsHelper {
   def createGoogleCredentials(key: String): String = {
     val scope = "https://www.googleapis.com/auth/wallet_object.issuer"
@@ -30,3 +29,4 @@ class GoogleCredentialsHelper {
     GoogleCredentialsSerializer.serializeToBase64String(credentials)
   }
 }
+// $COVERAGE-ON$

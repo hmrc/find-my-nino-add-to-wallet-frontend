@@ -16,7 +16,7 @@
 
 package util
 
-import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.client.WireMock.{unauthorized, _}
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 
 object Stubs {
@@ -27,7 +27,8 @@ object Stubs {
       |	"authorise": [{
       |		"authProviders": ["GovernmentGateway"]
       |	}],
-      |	"retrieve": ["nino", "affinityGroup", "allEnrolments", "optionalCredentials", "credentialStrength", "confidenceLevel", "optionalName", "trustedHelper", "profile", "internalId", "credentialRole" ]
+      |	"retrieve": ["nino", "affinityGroup", "allEnrolments", "optionalCredentials", "credentialStrength",
+      | "confidenceLevel", "optionalName", "trustedHelper", "profile", "internalId", "credentialRole" ]
       |}
       |""".stripMargin
 
@@ -50,4 +51,5 @@ object Stubs {
           unauthorized.withHeader("WWW-Authenticate", s"""MDTP detail="$error"""")
         )
     )
+
 }

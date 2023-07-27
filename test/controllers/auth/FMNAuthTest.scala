@@ -20,7 +20,7 @@ import base.SpecBase
 import config.{ConfigDecorator, FrontendAppConfig}
 import controllers.ApplicationController
 import org.mockito.MockitoSugar.when
-import play.api.http.Status.{INTERNAL_SERVER_ERROR, SEE_OTHER, FAILED_DEPENDENCY}
+import play.api.http.Status.{SEE_OTHER, FAILED_DEPENDENCY}
 import play.api.mvc.MessagesControllerComponents
 import play.api.test.FakeRequest
 import services.{IdentityVerificationFrontendService}

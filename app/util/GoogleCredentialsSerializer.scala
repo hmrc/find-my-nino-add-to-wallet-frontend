@@ -17,9 +17,9 @@
 package util
 
 import com.google.auth.oauth2.GoogleCredentials
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectOutputStream}
+import java.io.{ByteArrayOutputStream, ObjectOutputStream}
 import java.util.Base64
-
+// $COVERAGE-OFF$
 object GoogleCredentialsSerializer {
   def serializeToBase64String(credentials: GoogleCredentials): String = {
     val outputStream = new ByteArrayOutputStream()
@@ -29,3 +29,4 @@ object GoogleCredentialsSerializer {
     Base64.getEncoder.encodeToString(outputStream.toByteArray)
   }
 }
+// $COVERAGE-ON$

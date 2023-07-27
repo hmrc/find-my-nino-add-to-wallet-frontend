@@ -16,7 +16,6 @@
 
 package controllers
 
-import com.google.auth.oauth2.GoogleCredentials
 import config.{ConfigDecorator, FrontendAppConfig}
 import connectors.{CitizenDetailsConnector, StoreMyNinoConnector}
 import controllers.auth.requests.UserRequest
@@ -27,11 +26,9 @@ import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
 import services.AuditService
 import uk.gov.hmrc.auth.core.AuthConnector
-import util.{AuditUtils, GoogleCredentialsHelper, GoogleCredentialsSerializer}
+import util.{AuditUtils, GoogleCredentialsHelper}
 import views.html.{ErrorTemplate, GoogleWalletView, PassIdNotFoundView, QRCodeNotFoundView}
 
-import java.io.ByteArrayInputStream
-import java.util.{Base64, Collections}
 import scala.concurrent.{ExecutionContext, Future}
 
 class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetailsConnector,

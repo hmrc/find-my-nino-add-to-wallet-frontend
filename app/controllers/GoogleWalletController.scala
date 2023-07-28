@@ -55,7 +55,7 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
     implicit request => {
       request.personDetails match {
         case Some(pd) =>
-          auditService.audit(AuditUtils.buildAuditEvent(pd, "ViewGoogleWalletPage", configDecorator.appName))
+          auditService.audit(AuditUtils.buildAuditEvent(pd, "ViewWalletPage", configDecorator.appName, None))
           for {
             pId: Some[String] <- findMyNinoServiceConnector.createGooglePassWithCredentials(
               pd.person.fullName,
@@ -89,9 +89,9 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
           case Some(data) =>
             request.getQueryString("qr-code") match {
               case Some("true") => auditService.audit(AuditUtils.buildAuditEvent(request.personDetails.get,
-                "AddNinoToGoogleWalletFromQRCode", configDecorator.appName))
+                "AddNinoToWalletFromQRCode", configDecorator.appName, Some("Google")))
               case _ => auditService.audit(AuditUtils.buildAuditEvent(request.personDetails.get,
-                "AddNinoToGoogleWallet", configDecorator.appName))
+                "AddNinoToWallet", configDecorator.appName, Some("Google")))
             }
             Redirect(data)
           case _ => NotFound(passIdNotFoundView())
@@ -105,7 +105,7 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
       authorisedAsFMNUser { _ =>
         findMyNinoServiceConnector.getGooglePassQrCode(passId).map {
           case Some(data) =>
-            auditService.audit(AuditUtils.buildAuditEvent(request.personDetails.get, "DisplayGoogleQRCode", configDecorator.appName))
+            auditService.audit(AuditUtils.buildAuditEvent(request.personDetails.get, "DisplayQRCode", configDecorator.appName, Some("Google")))
             Ok(data)
           case _ => NotFound(qrCodeNotFoundView())
         }

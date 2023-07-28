@@ -55,7 +55,7 @@ class NinoLetterController @Inject()(
   def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction) {
     implicit request => {
       val personDetails: PersonDetails = request.personDetails.get
-      auditService.audit(AuditUtils.buildAuditEvent(personDetails, "ViewNinoLetter", configDecorator.appName))
+      auditService.audit(AuditUtils.buildAuditEvent(personDetails, "ViewNinoLetter", configDecorator.appName, None))
       Ok(view(
         personDetails,
         LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
@@ -68,7 +68,7 @@ class NinoLetterController @Inject()(
 
     implicit request => {
       val personDetails: PersonDetails = request.personDetails.get
-      auditService.audit(AuditUtils.buildAuditEvent(personDetails, "DownloadNinoLetter", configDecorator.appName))
+      auditService.audit(AuditUtils.buildAuditEvent(personDetails, "DownloadNinoLetter", configDecorator.appName, None))
       val pdf = xmlFoToPDF.createPDF(personDetails,
         LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
         messagesApi.preferred(request))

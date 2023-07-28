@@ -113,7 +113,7 @@ object AuditUtils {
       mainAddress = mainAddress,
       device = Some(strDevice),
       language = strLang,
-      WalletProvider = walletProvider
+      walletProvider
     )
   }
 

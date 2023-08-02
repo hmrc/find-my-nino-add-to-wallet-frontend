@@ -56,7 +56,7 @@ class AppleWalletController @Inject()(val citizenDetailsConnector: CitizenDetail
     implicit request => {
       request.personDetails match {
         case Some(pd) =>
-          auditService.audit(AuditUtils.buildAuditEvent(pd, "ViewAppleWalletPage", configDecorator.appName, None))
+          auditService.audit(AuditUtils.buildAuditEvent(pd, "ViewWalletPage", configDecorator.appName, Some("Apple")))
           for {
             pId: Some[String] <- findMyNinoServiceConnector.createApplePass(pd.person.fullName, request.nino.map(_.formatted).getOrElse(""))
           } yield Ok(view(pId.value, isMobileDisplay(request)))

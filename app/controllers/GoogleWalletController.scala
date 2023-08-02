@@ -55,7 +55,7 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
     implicit request => {
       request.personDetails match {
         case Some(pd) =>
-          auditService.audit(AuditUtils.buildAuditEvent(pd, "ViewWalletPage", configDecorator.appName, None))
+          auditService.audit(AuditUtils.buildAuditEvent(pd, "ViewWalletPage", configDecorator.appName, Some("Google")))
           for {
             pId: Some[String] <- findMyNinoServiceConnector.createGooglePassWithCredentials(
               pd.person.fullName,

@@ -18,20 +18,23 @@ package controllers.auth
 
 import config.FrontendAppConfig
 import controllers.auth.FMNAuth.toContinueUrl
+import controllers.auth.requests.AuthenticatedRequest
 import controllers.routes
-import models.NationalInsuranceNumber
+import models.{NationalInsuranceNumber, UserName}
 import play.api.Logging
-import play.api.mvc.{ActionBuilder, AnyContent, BodyParser, Call, ControllerComponents, Request, RequestHeader, Result}
+import play.api.mvc.{ActionBuilder, AnyContent, AnyContentAsFormUrlEncoded, BodyParser, Call, ControllerComponents, Request, RequestHeader, Result}
 import uk.gov.hmrc.auth.core.AffinityGroup.{Individual, Organisation}
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
-import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
+import uk.gov.hmrc.auth.core.retrieve.v2.{Retrievals, TrustedHelper}
 import uk.gov.hmrc.auth.core.retrieve.{Name, ~}
 import uk.gov.hmrc.auth.core._
+import uk.gov.hmrc.domain
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.binders.SafeRedirectUrl
 import uk.gov.hmrc.play.bootstrap.config.AuthRedirects
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
+
 import scala.concurrent.{ExecutionContext, Future}
 
 final case class AuthContext[A](
@@ -42,6 +45,8 @@ final case class AuthContext[A](
                                  affinityGroup: AffinityGroup,
                                  allEnrolments: Enrolments,
                                  name: Name,
+                                 userName: Option[UserName],
+                                 trustedHelper: Option[TrustedHelper],
                                  request: Request[A]
                                )
 
@@ -115,9 +120,17 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
   }
 
   private val FMNRetrievals =
-    Retrievals.nino and Retrievals.affinityGroup and Retrievals.allEnrolments and Retrievals.credentials and Retrievals.credentialStrength and
-      Retrievals.confidenceLevel and Retrievals.name and Retrievals.trustedHelper and Retrievals.profile and
-      Retrievals.internalId and Retrievals.credentialRole
+    Retrievals.nino and
+      Retrievals.affinityGroup and
+      Retrievals.allEnrolments and
+      Retrievals.credentials and
+      Retrievals.credentialStrength and
+      Retrievals.confidenceLevel and
+      Retrievals.name and
+      Retrievals.trustedHelper and
+      Retrievals.profile and
+      Retrievals.internalId and
+      Retrievals.credentialRole
 
   private def authorisedUser[A](loginContinueUrl: Call, block: FMNAction[A])
                                (implicit
@@ -143,13 +156,41 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
           Some(name) ~
           trustedHelper ~
           profile ~
-          Some(internalId)  ~ _ =>
+          Some(internalId)  ~
+          Some(credentialRole) =>
+
+          val trimmedRequest: Request[A] = request
+            .map {
+              case AnyContentAsFormUrlEncoded(data) =>
+                AnyContentAsFormUrlEncoded(data.map { case (key, vals) =>
+                  (key, vals.map(_.trim))
+                })
+              case b => b
+            }
+            .asInstanceOf[Request[A]]
+
+          val authenticatedRequest = AuthContext[A](
+            trustedHelper.fold(NationalInsuranceNumber(nino))(helper => NationalInsuranceNumber(helper.principalNino)),
+            isUser = true,
+            internalId,
+            confidenceLevel,
+            affinityGroup,
+            allEnrolments,
+            name,
+            Some(UserName(
+              trustedHelper.fold(Some(name).getOrElse(Name(None, None)))(helper => Name(Some(helper.principalName), None))
+            )),
+            trustedHelper,
+            trimmedRequest
+          )
+
 
           if (affinityGroup == AffinityGroup.Agent) {
             logger.warn("Agent affinity group encountered whilst attempting to authorise user")
             Future successful Redirect(controllers.routes.UnauthorisedController.onPageLoad)
           } else {
-            block(AuthContext(NationalInsuranceNumber(nino), isUser = true, internalId, confidenceLevel, affinityGroup, allEnrolments, name, request))
+            //block(AuthContext(NationalInsuranceNumber(nino), isUser = true, internalId, confidenceLevel, affinityGroup, allEnrolments, name, request))
+            block(authenticatedRequest)
           }
         case _ =>
           logger.warn("All authorize checks failed whilst attempting to authorise user")

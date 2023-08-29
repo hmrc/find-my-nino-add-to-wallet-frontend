@@ -32,6 +32,8 @@ import uk.gov.hmrc.play.bootstrap.binders.SafeRedirectUrl
 import uk.gov.hmrc.play.bootstrap.config.AuthRedirects
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
+import uk.gov.hmrc.domain
+
 import scala.concurrent.{ExecutionContext, Future}
 
 final case class AuthContext[A](
@@ -136,7 +138,7 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
 
         case Some(nino) ~
           Some(affinityGroup) ~
-          allEnrolments ~
+          Enrolments(enrolments) ~
           credentials ~
           Some(CredentialStrength.strong) ~
           GTOE200(confidenceLevel) ~
@@ -145,11 +147,16 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
           profile ~
           Some(internalId)  ~ _ =>
 
+          if (!checkPTAEnrolment(enrolments, domain.Nino(nino))) {
+            val redirectUrl = config.getTaxEnrolmentAssignmentRedirectUrl(config.saveYourNationalNumberFrontendHost + "/save-your-national-insurance-number")
+            Future.successful(Redirect(redirectUrl))
+          }
+
           if (affinityGroup == AffinityGroup.Agent) {
             logger.warn("Agent affinity group encountered whilst attempting to authorise user")
             Future successful Redirect(controllers.routes.UnauthorisedController.onPageLoad)
           } else {
-            block(AuthContext(NationalInsuranceNumber(nino), isUser = true, internalId, confidenceLevel, affinityGroup, allEnrolments, name, request))
+            block(AuthContext(NationalInsuranceNumber(nino), isUser = true, internalId, confidenceLevel, affinityGroup, Enrolments(enrolments), name, request))
           }
         case _ =>
           logger.warn("All authorize checks failed whilst attempting to authorise user")
@@ -173,6 +180,22 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
     case ex: AuthorisationException ⇒
       logger.warn(s"could not authenticate user due to: $ex")
       InternalServerError
+  }
+
+  def checkPTAEnrolment(enrolments: Set[Enrolment], sessionNino: domain.Nino): Boolean = {
+    enrolments
+      .filter(_.key == "HMRC-PT")
+      .flatMap { enrolment =>
+        enrolment.identifiers
+          .filter(id => id.key == "NINO")
+      } match {
+      case enrolmentIdentifiers
+        if enrolmentIdentifiers.exists(enrolmentIdentifier => domain.Nino(enrolmentIdentifier.value) == sessionNino) =>
+        true
+      case _ =>
+        logger.error("The nino in HMRC-PT enrolment does not match the one from the user session or no enrolment exists for this nino")
+        false
+    }
   }
 }
 

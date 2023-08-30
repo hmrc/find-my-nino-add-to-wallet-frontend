@@ -147,15 +147,14 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
           profile ~
           Some(internalId)  ~ _ =>
 
-          if (!checkPTAEnrolment(enrolments, domain.Nino(nino))) {
-            val redirectUrl = config.getTaxEnrolmentAssignmentRedirectUrl(config.saveYourNationalNumberFrontendHost + "/save-your-national-insurance-number")
-            Future.successful(Redirect(redirectUrl))
-          }
-
           if (affinityGroup == AffinityGroup.Agent) {
             logger.warn("Agent affinity group encountered whilst attempting to authorise user")
             Future successful Redirect(controllers.routes.UnauthorisedController.onPageLoad)
-          } else {
+          }
+          else if (!checkPTAEnrolment(enrolments, domain.Nino(nino))) {
+            val redirectUrl = config.getTaxEnrolmentAssignmentRedirectUrl(config.saveYourNationalNumberFrontendHost + "/save-your-national-insurance-number")
+            Future.successful(Redirect(redirectUrl))
+          }  else {
             block(AuthContext(NationalInsuranceNumber(nino), isUser = true, internalId, confidenceLevel, affinityGroup, Enrolments(enrolments), name, request))
           }
         case _ =>

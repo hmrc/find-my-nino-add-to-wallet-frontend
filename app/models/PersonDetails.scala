@@ -29,43 +29,4 @@ object PersonDetails {
 
 }
 
-/*
-val designatoryDetails =
-          """|
-             |{
-             |  "etag" : "115",
-             |  "person" : {
-             |    "firstName" : "HIPPY",
-             |    "middleName" : "T",
-             |    "lastName" : "NEWYEAR",
-             |    "title" : "Mr",
-             |    "honours": "BSC",
-             |    "sex" : "M",
-             |    "dateOfBirth" : "1952-04-01",
-             |    "nino" : "TW189213B",
-             |    "deceased" : false
-             |  },
-             |  "address" : {
-             |    "line1" : "26 FARADAY DRIVE",
-             |    "line2" : "PO BOX 45",
-             |    "line3" : "LONDON",
-             |    "postcode" : "CT1 1RQ",
-             |    "startDate": "2009-08-29",
-             |    "country" : "GREAT BRITAIN",
-             |    "type" : "Residential",
-             |    "status": 1
-             |  },
-             |  "correspondenceAddress" : {
-             |    "line1" : "26 FARADAY DRIVE",
-             |    "line2" : "PO BOX 45",
-             |    "line3" : "LONDON",
-             |    "postcode" : "CT1 1RQ",
-             |    "startDate": "2009-08-29",
-             |    "country" : "GREAT BRITAIN",
-             |    "type" : "Correspondence",
-             |    "status": 1
-             |  }
-             |}
-             |""".stripMargin
- */
 

@@ -32,7 +32,6 @@ import views.html.RedirectToPostalFormView
 
 import scala.concurrent.{ExecutionContext, Future}
 
-
 class GetPersonDetailsAction @Inject()(
                                         citizenDetailsConnector: CitizenDetailsConnector,
                                         cc: ControllerComponents,

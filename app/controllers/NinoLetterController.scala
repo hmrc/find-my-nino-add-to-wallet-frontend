@@ -28,6 +28,7 @@ import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.domain.Nino
 import util.XmlFoToPDF
 import util.AuditUtils
+import views.html.identity.TechnicalIssuesView
 import views.html.print.PrintNationalInsuranceNumberView
 
 import java.time.LocalDate
@@ -41,14 +42,15 @@ class NinoLetterController @Inject()(
                                       applePassConnector: StoreMyNinoConnector,
                                       auditService: AuditService,
                                       view: PrintNationalInsuranceNumberView,
+                                      technicalIssuesView: TechnicalIssuesView,
                                       getPersonDetailsAction: GetPersonDetailsAction,
-                                      xmlFoToPDF: XmlFoToPDF,
-                                      configDecorator: ConfigDecorator
+                                      xmlFoToPDF: XmlFoToPDF
                                     )(implicit config: Configuration,
                                       env: Environment,
                                       ec: ExecutionContext,
                                       cc: MessagesControllerComponents,
-                                      frontendAppConfig: FrontendAppConfig) extends FMNBaseController(authConnector) with I18nSupport {
+                                      frontendAppConfig: FrontendAppConfig,
+                                      configDecorator: ConfigDecorator) extends FMNBaseController(authConnector) with I18nSupport {
 
   implicit val loginContinueUrl: Call = routes.StoreMyNinoController.onPageLoad
 
@@ -64,22 +66,30 @@ class NinoLetterController @Inject()(
     }
   }
 
-  def saveNationalInsuranceNumberAsPdf: Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction) {
-
+    def saveNationalInsuranceNumberAsPdf: Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction) {
     implicit request => {
-      val personDetails: PersonDetails = request.personDetails.get
-      auditService.audit(AuditUtils.buildAuditEvent(personDetails, "DownloadNinoLetter", configDecorator.appName, None))
-      val pdf = xmlFoToPDF.createPDF(personDetails,
-        LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
-        messagesApi.preferred(request))
 
-      val filename = messagesApi.preferred(request).messages("label.your_national_insurance_number_letter")
+      request.personDetails match {
+        case Some(personDetails @ PersonDetails(_, _, _)) =>
+          auditService.audit(AuditUtils.buildAuditEvent(personDetails, "DownloadNinoLetter", configDecorator.appName, None))
+          val pdf = xmlFoToPDF.createPDF(personDetails,
+            LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
+            messagesApi.preferred(request)
+          )
 
-      Ok(pdf).as(MimeConstants.MIME_PDF)
-        .withHeaders(
-          CONTENT_TYPE -> "application/x-download",
-          CONTENT_DISPOSITION -> s"attachment; filename=${filename.replaceAll(" ", "-")}.pdf")
+          val filename = messagesApi.preferred(request).messages("label.your_national_insurance_number_letter")
+
+          Ok(pdf).as(MimeConstants.MIME_PDF)
+            .withHeaders(
+              CONTENT_TYPE -> "application/x-download",
+              CONTENT_DISPOSITION -> s"attachment; filename=${filename.replaceAll(" ", "-")}.pdf")
+        case _ =>
+          logger.warn("Person details not found from citizen details.")
+          NotFound(technicalIssuesView(routes.NinoLetterController.onPageLoad.url))
+      }
+
     }
   }
+
 }
 

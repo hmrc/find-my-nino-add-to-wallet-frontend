@@ -57,12 +57,10 @@ class CitizenDetailsConnector @Inject() (
             logger.warn("Unable to find personal details record in citizen-details")
             PersonDetailsNotFoundResponse
 
-          case response =>
-            if (response.status >= INTERNAL_SERVER_ERROR) {
+          case response if response.status >= INTERNAL_SERVER_ERROR =>
               logger.warn(
                 s"Unexpected ${response.status} response getting personal details record from citizen-details"
               )
-            }
             PersonDetailsUnexpectedResponse(response)
         },
         onError = { e =>

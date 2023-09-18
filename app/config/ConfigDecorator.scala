@@ -59,7 +59,7 @@ class ConfigDecorator @Inject()(configuration: Configuration, servicesConfig: Se
     configuration.getOptional[String](s"external-url.$key")
 
   def getFeedbackSurveyUrl(origin: Origin): String =
-    feedbackSurveyFrontendHost + "/feedback/" + enc(origin.origin) + "/nino"
+    feedbackSurveyFrontendHost + "/feedback/" + enc(origin.origin)
 
 
   def getBasGatewayFrontendSignOutUrl(continueUrl: String): String =

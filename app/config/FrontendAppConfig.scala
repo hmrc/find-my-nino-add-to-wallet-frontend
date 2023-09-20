@@ -79,4 +79,9 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
   val defaultOrigin: Origin = Origin("STORE_MY_NINO")
   lazy val saveYourNationalNumberFrontendHost: String = getExternalUrl(s"save-your-national-insurance-number-frontend.host").getOrElse("")
 
+  private lazy val taxEnrolmentAssignmentFrontendHost: String = getExternalUrl(s"tax-enrolment-assignment-frontend.host").getOrElse("")
+
+  def getTaxEnrolmentAssignmentRedirectUrl(url: String): String =
+    s"$taxEnrolmentAssignmentFrontendHost/protect-tax-info?redirectUrl=${SafeRedirectUrl(url).encodedUrl}"
+
 }

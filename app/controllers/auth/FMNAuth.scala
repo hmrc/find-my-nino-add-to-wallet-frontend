@@ -149,7 +149,7 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
 
         case Some(nino) ~
           Some(affinityGroup) ~
-          allEnrolments ~
+          Enrolments(enrolments) ~
           credentials ~
           Some(CredentialStrength.strong) ~
           GTOE200(confidenceLevel) ~
@@ -175,7 +175,7 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
             internalId,
             confidenceLevel,
             affinityGroup,
-            allEnrolments,
+            Enrolments(enrolments),
             name,
             Some(UserName(
               trustedHelper.fold(Some(name).getOrElse(Name(None, None)))(helper => Name(Some(helper.principalName), None))
@@ -184,8 +184,11 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
             trimmedRequest
           )
 
-
-          if (affinityGroup == AffinityGroup.Agent) {
+          if (!checkPTAEnrolment(enrolments, domain.Nino(nino))) {
+            val redirectUrl = config.getTaxEnrolmentAssignmentRedirectUrl(config.saveYourNationalNumberFrontendHost + "/save-your-national-insurance-number")
+            Future.successful(Redirect(redirectUrl))
+          }
+          else if (affinityGroup == AffinityGroup.Agent) {
             logger.warn("Agent affinity group encountered whilst attempting to authorise user")
             Future successful Redirect(controllers.routes.UnauthorisedController.onPageLoad)
           } else {
@@ -215,7 +218,24 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
       logger.warn(s"could not authenticate user due to: $ex")
       InternalServerError
   }
+
+  private def checkPTAEnrolment(enrolments: Set[Enrolment], sessionNino: domain.Nino): Boolean = {
+    enrolments
+      .filter(_.key == "HMRC-PT")
+      .flatMap { enrolment =>
+        enrolment.identifiers
+          .filter(id => id.key == "NINO")
+      } match {
+      case enrolmentIdentifiers
+        if enrolmentIdentifiers.exists(enrolmentIdentifier => domain.Nino(enrolmentIdentifier.value) == sessionNino) =>
+        true
+      case _ =>
+        logger.error("The nino in HMRC-PT enrolment does not match the one from the user session or no enrolment exists for this nino")
+        false
+    }
+  }
 }
+
 
 object FMNAuth {
   def toContinueUrl(call: Call)(implicit rh: RequestHeader): String = {

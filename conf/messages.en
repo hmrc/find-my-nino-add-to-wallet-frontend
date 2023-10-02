@@ -8,6 +8,7 @@ site.start = Start now
 site.startAgain = Start again
 site.signIn = Sign in
 site.govuk = GOV.UK
+site.continue = Try again
 
 error.browser.title.prefix = Error:
 error.summary.title = There is a problem

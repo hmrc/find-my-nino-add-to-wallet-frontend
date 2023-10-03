@@ -18,7 +18,6 @@ package controllers.auth
 
 import config.FrontendAppConfig
 import controllers.auth.FMNAuth.toContinueUrl
-import controllers.auth.requests.AuthenticatedRequest
 import controllers.routes
 import models.{NationalInsuranceNumber, UserName}
 import play.api.Logging
@@ -28,9 +27,8 @@ import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
 import uk.gov.hmrc.auth.core.retrieve.v2.{Retrievals, TrustedHelper}
 import uk.gov.hmrc.auth.core.retrieve.{Name, ~}
 import uk.gov.hmrc.auth.core._
-import uk.gov.hmrc.domain
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.bootstrap.binders.SafeRedirectUrl
+import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
+import uk.gov.hmrc.play.bootstrap.binders.{RedirectUrl, SafeRedirectUrl}
 import uk.gov.hmrc.play.bootstrap.config.AuthRedirects
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
@@ -184,7 +182,6 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
             trimmedRequest
           )
 
-
           if (affinityGroup == AffinityGroup.Agent) {
             logger.warn("Agent affinity group encountered whilst attempting to authorise user")
             Future successful Redirect(controllers.routes.UnauthorisedController.onPageLoad)
@@ -211,6 +208,12 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
       logger.warn("incorrect NINO encountered whilst attempting to authorise user")
       Redirect(controllers.routes.UnauthorisedController.onPageLoad)
     // $COVERAGE-ON$
+
+    case _: UpstreamErrorResponse ⇒
+      logger.warn(s"Upstream error due to Auth service connection refused.")
+      val retryUrl = routes.NinoLetterController.onPageLoad.url
+      Redirect(routes.JourneyRecoveryController.onPageLoad(Some(RedirectUrl(retryUrl))))
+
     case ex: AuthorisationException ⇒
       logger.warn(s"could not authenticate user due to: $ex")
       InternalServerError

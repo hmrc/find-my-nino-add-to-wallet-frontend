@@ -7,6 +7,8 @@ site.start=Dechrau nawr
 site.startAgain=Dechrau eto
 site.signIn=Mewngofnodi
 site.govuk=GOV.UK
+site.continue = Rhowch gynnig arall
+
 error.browser.title.prefix=Gwall:
 error.summary.title=Mae problem wedi codi
 checkYourAnswers.title=Gwirio’ch atebion

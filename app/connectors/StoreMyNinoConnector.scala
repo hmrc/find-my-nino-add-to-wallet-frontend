@@ -31,8 +31,6 @@ case class ApplePassDetails(fullName: String, nino: String)
 case class GooglePassDetails(fullName: String, nino: String)
 case class GooglePassDetailsWithCredentials(fullName: String, nino: String, credentials: String)
 
-
-
 class StoreMyNinoConnector @Inject()(config: ConfigDecorator, http: HttpClient) {
 
   private val headers: Seq[(String, String)] = Seq("Content-Type" -> "application/json")
@@ -153,7 +151,6 @@ class StoreMyNinoConnector @Inject()(config: ConfigDecorator, http: HttpClient) 
       }
   }
 
-
   def getGooglePassUrl(passId: String)
                       (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Option[String]] = {
 
@@ -163,13 +160,12 @@ class StoreMyNinoConnector @Inject()(config: ConfigDecorator, http: HttpClient) 
     http.GET[HttpResponse](url)(implicitly, hc, implicitly)
       .map { response =>
         response.status match {
-          case OK =>
-            Some(response.body)
-          case _ => throw new HttpException(response.body, response.status)
+          case OK => Some(response.body)
+          case NOT_FOUND => None
+          case  _ => throw new HttpException(response.body, response.status)
         }
       }
   }
-
 
   def getGooglePassQrCode(passId: String)
                          (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Option[Array[Byte]]] = {
@@ -181,8 +177,10 @@ class StoreMyNinoConnector @Inject()(config: ConfigDecorator, http: HttpClient) 
       .map { response =>
         response.status match {
           case OK => Some(Base64.getDecoder.decode(response.body))
+          case NOT_FOUND => None
           case _ => throw new HttpException(response.body, response.status)
         }
       }
   }
+
 }

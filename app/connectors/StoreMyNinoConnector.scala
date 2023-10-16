@@ -31,8 +31,6 @@ case class ApplePassDetails(fullName: String, nino: String)
 case class GooglePassDetails(fullName: String, nino: String)
 case class GooglePassDetailsWithCredentials(fullName: String, nino: String, credentials: String)
 
-
-
 class StoreMyNinoConnector @Inject()(config: ConfigDecorator, http: HttpClient) {
 
   private val headers: Seq[(String, String)] = Seq("Content-Type" -> "application/json")
@@ -41,7 +39,6 @@ class StoreMyNinoConnector @Inject()(config: ConfigDecorator, http: HttpClient) 
   implicit val googleWrites: Writes[GooglePassDetails] = Json.writes[GooglePassDetails]
   implicit val googleWritesWithCredentials: Writes[GooglePassDetailsWithCredentials] = Json.writes[GooglePassDetailsWithCredentials]
 
-  /* Person details */
   def createPersonDetailsRow(personDetails:PersonDetails)
                            (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Some[String]] = {
     val url = s"${config.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/create-person-details"
@@ -71,7 +68,6 @@ class StoreMyNinoConnector @Inject()(config: ConfigDecorator, http: HttpClient) 
       }
   }
 
-  /* APPLE pass */
   def createApplePass(fullName: String, nino: String)
                      (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Some[String]] = {
 
@@ -153,7 +149,6 @@ class StoreMyNinoConnector @Inject()(config: ConfigDecorator, http: HttpClient) 
       }
   }
 
-
   def getGooglePassUrl(passId: String)
                       (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Option[String]] = {
 
@@ -170,7 +165,6 @@ class StoreMyNinoConnector @Inject()(config: ConfigDecorator, http: HttpClient) 
       }
   }
 
-
   def getGooglePassQrCode(passId: String)
                          (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Option[Array[Byte]]] = {
 
@@ -185,4 +179,5 @@ class StoreMyNinoConnector @Inject()(config: ConfigDecorator, http: HttpClient) 
         }
       }
   }
+
 }

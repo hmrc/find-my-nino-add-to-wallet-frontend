@@ -68,7 +68,6 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
     }
   }
 
-
   private def isMobileDisplay(request: UserRequest[AnyContent]): Boolean = {
     // Display wallet options differently on mobile to pc
     val strUserAgent = request.headers.get("http_user_agent")

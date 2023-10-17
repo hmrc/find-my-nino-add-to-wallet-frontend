@@ -39,7 +39,6 @@ class StoreMyNinoConnector @Inject()(config: ConfigDecorator, http: HttpClient) 
   implicit val googleWrites: Writes[GooglePassDetails] = Json.writes[GooglePassDetails]
   implicit val googleWritesWithCredentials: Writes[GooglePassDetailsWithCredentials] = Json.writes[GooglePassDetailsWithCredentials]
 
-  /* Person details */
   def createPersonDetailsRow(personDetails:PersonDetails)
                            (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Some[String]] = {
     val url = s"${config.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/create-person-details"
@@ -69,7 +68,6 @@ class StoreMyNinoConnector @Inject()(config: ConfigDecorator, http: HttpClient) 
       }
   }
 
-  /* APPLE pass */
   def createApplePass(fullName: String, nino: String)
                      (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Some[String]] = {
 

@@ -53,6 +53,10 @@ class ConfigDecorator @Inject()(configuration: Configuration, servicesConfig: Se
 
   lazy val generalQueriesUrl     = "https://www.gov.uk/contact-hmrc"
 
+  lazy val saveYourNationalNumberFrontendHost: String = getExternalUrl(s"save-your-national-insurance-number-frontend.host").getOrElse("")
+
+  private lazy val taxEnrolmentAssignmentFrontendHost: String = getExternalUrl(s"tax-enrolment-assignment-frontend.host").getOrElse("")
+
   val defaultOrigin: Origin = Origin("STORE_MY_NINO")
 
   private def getExternalUrl(key: String): Option[String] =
@@ -64,6 +68,9 @@ class ConfigDecorator @Inject()(configuration: Configuration, servicesConfig: Se
 
   def getBasGatewayFrontendSignOutUrl(continueUrl: String): String =
     basGatewayFrontendHost + s"/bas-gateway/sign-out-without-state?continue=$continueUrl"
+
+  def getTaxEnrolmentAssignmentRedirectUrl(url: String): String =
+    s"$taxEnrolmentAssignmentFrontendHost/protect-tax-info?redirectUrl=${SafeRedirectUrl(url).encodedUrl}"
 
   //val exitSurveyUrl: String             = s"$feedbackSurveyFrontendHost/feedback/$serviceName"
   //val exitSurveyUrl: String             = s"${servicesConfig.baseUrl("feedback-frontend")}/feedback/$serviceName"

@@ -39,4 +39,4 @@ GET         /google-wallet                             controllers.GoogleWalletC
 GET         /get-google-pass                           controllers.GoogleWalletController.getGooglePass(passId: String)
 GET         /get-google-qr-code                        controllers.GoogleWalletController.getGooglePassQrCode(passId: String)
 
-GET         /govuk-wallet                              controllers.GovUKWalletController.onPageLoad()
+#GET         /govuk-wallet                              controllers.GovUKWalletController.onPageLoad()

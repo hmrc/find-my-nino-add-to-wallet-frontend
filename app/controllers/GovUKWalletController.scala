@@ -47,18 +47,23 @@ class GovUKWalletController @Inject()(
 
   def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction) async {
     implicit request =>
-      request.personDetails match {
-        case Some(pd) =>
-          for {
-            pId: Some[String] <- govUKWalletSMNConnector.createGovUKPass(
-              pd.person.givenName,
-              pd.person.familyName,
-              request.nino.map(_.formatted).getOrElse(""))
-          } yield Ok(view(pId.value, isMobileDisplay(request)))
-        case None =>
-          Future(NotFound(errorTemplate("Details not found", "Your details were not found.", "Your details were not found, please try again later.")))
-
+      if (frontendAppConfig.govukWalletEnabled) {
+        request.personDetails match {
+          case Some(pd) =>
+            for {
+              pId: Some[String] <- govUKWalletSMNConnector.createGovUKPass(
+                pd.person.givenName,
+                pd.person.familyName,
+                request.nino.map(_.formatted).getOrElse(""))
+            } yield Ok(view(pId.value, isMobileDisplay(request)))
+          case None =>
+            Future(NotFound(errorTemplate("Details not found", "Your details were not found.", "Your details were not found, please try again later.")))
+        }
       }
+      else {
+        Future(Redirect(routes.UnauthorisedController.onPageLoad))
+      }
+
   }
 
   private def isMobileDisplay(request: UserRequest[AnyContent]): Boolean = {

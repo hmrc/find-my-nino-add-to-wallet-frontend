@@ -15,11 +15,13 @@
  *@
 
 @import config.ConfigDecorator
+@import config.FrontendAppConfig
 @import components.{H1, H2, P, Link, BulletList}
 
 @this(
         layout: templates.LayoutProvider,
         configDecorator: ConfigDecorator,
+        frontendAppConfig: FrontendAppConfig,
         h1: H1,
         h2: H2,
         p: P,
@@ -54,5 +56,10 @@
     <ul class="govuk-list govuk-list--bullet govuk-list--spaced">
         <li><a class="govuk-link" href='/@configDecorator.serviceName/google-wallet'>@messages("storeMyNino.saveToWallet.googleWallet")</a></li>
         <li><a class="govuk-link" href='/@configDecorator.serviceName/apple-wallet'>@messages("storeMyNino.saveToWallet.appleWallet")</a></li>
+        @if(frontendAppConfig.govukWalletEnabled) {
+            @*
+            * Add govuk wallet page link here
+            *@
+        }
     </ul>
 }

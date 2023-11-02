@@ -177,3 +177,16 @@ googleWallet.scanQRCodeToAdd.heading = Scan the QR code to add to your phone’s
 googleWallet.tapToAdd.heading = Tap the button to add to your phone’s wallet
 googleWallet.addToWallet.alt = Add to Google Wallet
 googleWallet.addToWallet.QRCode.alt = QR code to save to Google Wallet
+
+govUKWallet.title = Add your National Insurance number to your GovUk Wallet
+govUKWallet.heading = Add your National Insurance number to your GovUk Wallet
+govUKWallet.p1 = Your National Insurance number would:
+govUKWallet.l1.li1 = be readily available in your phone’s wallet with your other cards — even offline
+govUKWallet.l1.li2 = be protected by your phone’s security settings
+govUKWallet.l1.li3 = only be shared with the wallet provider and no other third parties
+govUKWallet.l1.li4 = take up minimal storage space on your phone
+govUKWallet.p2 = If you save your National Insurance number on your phone, make sure it has security like Face ID, a pattern, or a pin code set up. This helps protect your details.
+govUKWallet.scanQRCodeToAdd.heading = Scan the QR code to add to your phone’s wallet
+govUKWallet.tapToAdd.heading = Tap the button to add to your phone’s wallet
+govUKWallet.addToWallet.alt = Add to GovUk Wallet
+govUKWallet.addToWallet.QRCode.alt = QR code to save to GovUk Wallet

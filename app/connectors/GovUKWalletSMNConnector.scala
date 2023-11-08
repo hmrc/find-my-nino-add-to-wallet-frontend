@@ -21,8 +21,8 @@ import config.ConfigDecorator
 import play.api.http.Status._
 import play.api.libs.json._
 import uk.gov.hmrc.http.HttpReads.Implicits._
-import uk.gov.hmrc.http.{HttpClient, HeaderCarrier, HttpResponse, HttpException}
-import models.GovUKPassDetails
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpException, HttpResponse}
+import models.{GovUKPassDetails, GovUkPassCreateResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -31,7 +31,7 @@ class GovUKWalletSMNConnector @Inject()(config: ConfigDecorator, http: HttpClien
   private val headers: Seq[(String, String)] = Seq("Content-Type" -> "application/json")
 
   def createGovUKPass(givenName: List[String], familyName: String, nino: String)
-                     (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Some[String]] = {
+                     (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Some[GovUkPassCreateResponse]] = {
 
     val url = s"${config.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/create-govuk-pass"
     val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
@@ -41,7 +41,10 @@ class GovUKWalletSMNConnector @Inject()(config: ConfigDecorator, http: HttpClien
     http.POST[JsValue, HttpResponse](url, Json.toJson(govPassDetails))(implicitly, implicitly, hc, implicitly)
       .map { response =>
         response.status match {
-          case OK => Some(response.body)
+          case OK => {
+            println(response.body)
+            Some(Json.parse(response.body).as[GovUkPassCreateResponse])
+          }
           case _  => throw new HttpException(response.body, response.status)
         }
       }

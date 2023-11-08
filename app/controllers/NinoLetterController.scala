@@ -16,7 +16,7 @@
 
 package controllers
 
-import config.{ConfigDecorator, FrontendAppConfig}
+import config.FrontendAppConfig
 import connectors.StoreMyNinoConnector
 import models.PersonDetails
 import org.apache.xmlgraphics.util.MimeConstants
@@ -49,15 +49,14 @@ class NinoLetterController @Inject()(
                                       env: Environment,
                                       ec: ExecutionContext,
                                       cc: MessagesControllerComponents,
-                                      frontendAppConfig: FrontendAppConfig,
-                                      configDecorator: ConfigDecorator) extends FMNBaseController(authConnector) with I18nSupport {
+                                      frontendAppConfig: FrontendAppConfig) extends FMNBaseController(authConnector) with I18nSupport {
 
   implicit val loginContinueUrl: Call = routes.StoreMyNinoController.onPageLoad
 
   def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction) {
     implicit request => {
       val personDetails: PersonDetails = request.personDetails.get
-      auditService.audit(AuditUtils.buildAuditEvent(personDetails, "ViewNinoLetter", configDecorator.appName, None))
+      auditService.audit(AuditUtils.buildAuditEvent(personDetails, "ViewNinoLetter", frontendAppConfig.appName, None))
       Ok(view(
         personDetails,
         LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
@@ -71,7 +70,7 @@ class NinoLetterController @Inject()(
 
       request.personDetails match {
         case Some(personDetails @ PersonDetails(_, _, _)) =>
-          auditService.audit(AuditUtils.buildAuditEvent(personDetails, "DownloadNinoLetter", configDecorator.appName, None))
+          auditService.audit(AuditUtils.buildAuditEvent(personDetails, "DownloadNinoLetter", frontendAppConfig.appName, None))
           val pdf = xmlFoToPDF.createPDF(personDetails,
             LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
             messagesApi.preferred(request)

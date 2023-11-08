@@ -16,7 +16,7 @@
 
 package controllers
 
-import config.{ConfigDecorator, FrontendAppConfig}
+import config.FrontendAppConfig
 import connectors.{StoreMyNinoConnector, CitizenDetailsConnector}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
@@ -39,7 +39,6 @@ class StoreMyNinoController @Inject()(
                                        view: StoreMyNinoView,
                                        errorTemplate: ErrorTemplate
                                      )(implicit config: Configuration,
-                                       configDecorator: ConfigDecorator,
                                        env: Environment,
                                        ec: ExecutionContext,
                                        cc: MessagesControllerComponents,
@@ -54,7 +53,7 @@ class StoreMyNinoController @Inject()(
     implicit request => {
       request.personDetails match {
         case Some(pd) =>
-          auditService.audit(AuditUtils.buildAuditEvent(pd, "ViewNinoLanding", configDecorator.appName, None))
+          auditService.audit(AuditUtils.buildAuditEvent(pd, "ViewNinoLanding", frontendAppConfig.appName, None))
           Future(Ok(view(request.nino.map(_.formatted).getOrElse(""))))
         case None =>
           Future(NotFound(errorTemplate("Details not found", "Your details were not found.", "Your details were not found, please try again later.")))

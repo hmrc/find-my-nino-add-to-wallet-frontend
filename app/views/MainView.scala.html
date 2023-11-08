@@ -14,7 +14,7 @@
  * limitations under the License.
  *@
 
-@import config.ConfigDecorator
+@import config.FrontendAppConfig
 @import uk.gov.hmrc.hmrcfrontend.views.html._
 @import uk.gov.hmrc.hmrcfrontend.config.AccountMenuConfig
 @import uk.gov.hmrc.hmrcfrontend.views.viewmodels.accountmenu.{AccountMenu, SignOut, AccountHome, AccountMessages, CheckProgress, _}
@@ -33,7 +33,7 @@
     twoThirdsOneThirdMainContent: TwoThirdsOneThirdMainContent,
     hmrcReportTechnicalIssueHelper: HmrcReportTechnicalIssueHelper,
     govukPhaseBanner: GovukPhaseBanner,
-    configDecorator: ConfigDecorator,
+    frontendAppConfig: FrontendAppConfig,
     link: Link,
     backLink: backLink,
     hmrcAccountMenu: HmrcAccountMenu
@@ -67,8 +67,8 @@
         @hmrcTimeoutDialogHelper(
             signOutUrl = controllers.routes.SessionManagementController.timeOut.url,
             keepAliveUrl = Some(controllers.routes.SessionManagementController.keepAlive.url),
-            timeout = Some(configDecorator.timeout),
-            countdown = Some(configDecorator.countdown)
+            timeout = Some(frontendAppConfig.timeout),
+            countdown = Some(frontendAppConfig.countdown)
         )
     }
 

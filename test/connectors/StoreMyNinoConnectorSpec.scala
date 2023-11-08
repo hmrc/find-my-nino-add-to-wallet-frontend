@@ -16,7 +16,7 @@
 
 package connectors
 
-import config.ConfigDecorator
+import config.FrontendAppConfig
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.Application
 import play.api.libs.json.{Json, Writes}
@@ -70,8 +70,8 @@ class StoreMyNinoConnectorSpec extends ConnectorSpec
 
     lazy val connector = {
       val httpClient = app.injector.instanceOf[HttpClient]
-      val config = app.injector.instanceOf[ConfigDecorator]
-      new StoreMyNinoConnector(config,httpClient)
+      val frontendAppConfig = app.injector.instanceOf[FrontendAppConfig]
+      new StoreMyNinoConnector(frontendAppConfig, httpClient)
     }
   }
 

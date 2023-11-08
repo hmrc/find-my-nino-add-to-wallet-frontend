@@ -17,7 +17,7 @@
 package connectors
 
 import com.kenshoo.play.metrics.Metrics
-import config.ConfigDecorator
+import config.FrontendAppConfig
 import models._
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.Application
@@ -67,8 +67,8 @@ class CitizenDetailsConnectorSpec
     lazy val connector = {
       val httpClient = app.injector.instanceOf[SimpleHttp]
       val metrics = app.injector.instanceOf[Metrics]
-      val configDecorator = app.injector.instanceOf[ConfigDecorator]
-      new CitizenDetailsConnector(httpClient, metrics, configDecorator)
+      val frontendAppConfig = app.injector.instanceOf[FrontendAppConfig]
+      new CitizenDetailsConnector(httpClient, metrics, frontendAppConfig)
     }
   }
 

@@ -14,13 +14,11 @@
  * limitations under the License.
  *@
 
-@import config.ConfigDecorator
 @import config.FrontendAppConfig
 @import components.{H1, H2, P, Link, BulletList}
 
 @this(
         layout: templates.LayoutProvider,
-        configDecorator: ConfigDecorator,
         frontendAppConfig: FrontendAppConfig,
         h1: H1,
         h2: H2,
@@ -47,15 +45,15 @@
     @h2("storeMyNino.ninoLetter.heading")
 
     <ul class="govuk-list govuk-list--bullet govuk-list--spaced">
-        <li><a class="govuk-link" href='/@configDecorator.serviceName/print-letter'>@messages("storeMyNino.ninoLetter.viewOrPrint")</a></li>
-        <li><a class="govuk-link" href='/@configDecorator.serviceName/print-letter/save-letter-as-pdf' download="">@messages("storeMyNino.ninoLetter.saveAsPDF")</a></li>
+        <li><a class="govuk-link" href='/@frontendAppConfig.serviceName/print-letter'>@messages("storeMyNino.ninoLetter.viewOrPrint")</a></li>
+        <li><a class="govuk-link" href='/@frontendAppConfig.serviceName/print-letter/save-letter-as-pdf' download="">@messages("storeMyNino.ninoLetter.saveAsPDF")</a></li>
     </ul>
 
     @h2("storeMyNino.saveToWallet.heading")
 
     <ul class="govuk-list govuk-list--bullet govuk-list--spaced">
-        <li><a class="govuk-link" href='/@configDecorator.serviceName/google-wallet'>@messages("storeMyNino.saveToWallet.googleWallet")</a></li>
-        <li><a class="govuk-link" href='/@configDecorator.serviceName/apple-wallet'>@messages("storeMyNino.saveToWallet.appleWallet")</a></li>
+        <li><a class="govuk-link" href='/@frontendAppConfig.serviceName/google-wallet'>@messages("storeMyNino.saveToWallet.googleWallet")</a></li>
+        <li><a class="govuk-link" href='/@frontendAppConfig.serviceName/apple-wallet'>@messages("storeMyNino.saveToWallet.appleWallet")</a></li>
         @if(frontendAppConfig.govukWalletEnabled) {
             @*
             * Add govuk wallet page link here

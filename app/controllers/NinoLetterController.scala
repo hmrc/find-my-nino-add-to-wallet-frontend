@@ -26,6 +26,7 @@ import play.api.{Configuration, Environment}
 import services.AuditService
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.http.NotFoundException
 import util.XmlFoToPDF
 import util.AuditUtils
 import views.html.identity.TechnicalIssuesView
@@ -56,13 +57,17 @@ class NinoLetterController @Inject()(
 
   def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction) {
     implicit request => {
-      val personDetails: PersonDetails = request.personDetails.get
-      auditService.audit(AuditUtils.buildAuditEvent(personDetails, "ViewNinoLetter", configDecorator.appName, None))
-      Ok(view(
-        personDetails,
-        LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
-        true,
-        personDetails.person.nino.getOrElse(Nino("")).formatted))
+      request.personDetails match {
+        case Some(personDetails) =>
+          auditService.audit(AuditUtils.buildAuditEvent(Some(personDetails), "ViewNinoLetter", configDecorator.appName, None))
+          Ok(view(
+            personDetails,
+            LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
+            true,
+            personDetails.person.nino.getOrElse(Nino("")).formatted))
+        case None => throw new NotFoundException("Person details not found")
+      }
+
     }
   }
 
@@ -71,7 +76,7 @@ class NinoLetterController @Inject()(
 
       request.personDetails match {
         case Some(personDetails @ PersonDetails(_, _, _)) =>
-          auditService.audit(AuditUtils.buildAuditEvent(personDetails, "DownloadNinoLetter", configDecorator.appName, None))
+          auditService.audit(AuditUtils.buildAuditEvent(Some(personDetails), "DownloadNinoLetter", configDecorator.appName, None))
           val pdf = xmlFoToPDF.createPDF(personDetails,
             LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
             messagesApi.preferred(request)

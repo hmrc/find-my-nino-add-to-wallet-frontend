@@ -55,7 +55,7 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
     implicit request => {
       request.personDetails match {
         case Some(pd) =>
-          auditService.audit(AuditUtils.buildAuditEvent(pd, "ViewWalletPage", configDecorator.appName, Some("Google")))
+          auditService.audit(AuditUtils.buildAuditEvent(Some(pd), "ViewWalletPage", configDecorator.appName, Some("Google")))
           for {
             pId: Some[String] <- findMyNinoServiceConnector.createGooglePassWithCredentials(
               pd.person.fullName,
@@ -87,9 +87,9 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
         findMyNinoServiceConnector.getGooglePassUrl(passId).map {
           case Some(data) =>
             request.getQueryString("qr-code") match {
-              case Some("true") => auditService.audit(AuditUtils.buildAuditEvent(request.personDetails.get,
+              case Some("true") => auditService.audit(AuditUtils.buildAuditEvent(request.personDetails,
                 "AddNinoToWalletFromQRCode", configDecorator.appName, Some("Google")))
-              case _ => auditService.audit(AuditUtils.buildAuditEvent(request.personDetails.get,
+              case _ => auditService.audit(AuditUtils.buildAuditEvent(request.personDetails,
                 "AddNinoToWallet", configDecorator.appName, Some("Google")))
             }
             Redirect(data)
@@ -104,7 +104,7 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
       authorisedAsFMNUser { _ =>
         findMyNinoServiceConnector.getGooglePassQrCode(passId).map {
           case Some(data) =>
-            auditService.audit(AuditUtils.buildAuditEvent(request.personDetails.get, "DisplayQRCode", configDecorator.appName, Some("Google")))
+            auditService.audit(AuditUtils.buildAuditEvent(request.personDetails, "DisplayQRCode", configDecorator.appName, Some("Google")))
             Ok(data)
           case _ => NotFound(qrCodeNotFoundView())
         }

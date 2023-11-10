@@ -56,7 +56,7 @@ class AppleWalletController @Inject()(val citizenDetailsConnector: CitizenDetail
     implicit request => {
       request.personDetails match {
         case Some(pd) =>
-          auditService.audit(AuditUtils.buildAuditEvent(pd, "ViewWalletPage", configDecorator.appName, Some("Apple")))
+          auditService.audit(AuditUtils.buildAuditEvent(Some(pd), "ViewWalletPage", configDecorator.appName, Some("Apple")))
           for {
             pId: Some[String] <- findMyNinoServiceConnector.createApplePass(pd.person.fullName, request.nino.map(_.formatted).getOrElse(""))
           } yield Ok(view(pId.value, isMobileDisplay(request)))
@@ -85,9 +85,9 @@ class AppleWalletController @Inject()(val citizenDetailsConnector: CitizenDetail
         findMyNinoServiceConnector.getApplePass(passId).map {
           case Some(data) =>
             request.getQueryString("qr-code") match {
-              case Some("true") => auditService.audit(AuditUtils.buildAuditEvent(request.personDetails.get,
+              case Some("true") => auditService.audit(AuditUtils.buildAuditEvent(request.personDetails,
                 "AddNinoToWalletFromQRCode", configDecorator.appName, Some("Apple")))
-              case _ => auditService.audit(AuditUtils.buildAuditEvent(request.personDetails.get,
+              case _ => auditService.audit(AuditUtils.buildAuditEvent(request.personDetails,
                 "AddNinoToWallet", configDecorator.appName, Some("Apple")))
             }
             Ok(data).withHeaders("Content-Disposition" -> s"attachment; filename=$passFileName")
@@ -102,7 +102,7 @@ class AppleWalletController @Inject()(val citizenDetailsConnector: CitizenDetail
       authorisedAsFMNUser { _ =>
         findMyNinoServiceConnector.getQrCode(passId).map {
           case Some(data) =>
-            auditService.audit(AuditUtils.buildAuditEvent(request.personDetails.get, "DisplayQRCode", configDecorator.appName, Some("Apple")))
+            auditService.audit(AuditUtils.buildAuditEvent(request.personDetails, "DisplayQRCode", configDecorator.appName, Some("Apple")))
             Ok(data).withHeaders("Content-Disposition" -> s"attachment; filename=$passFileName")
           case _ => NotFound(qrCodeNotFoundView())
         }

@@ -57,11 +57,10 @@
         <li><a class="govuk-link" href='/@configDecorator.serviceName/google-wallet'>@messages("storeMyNino.saveToWallet.googleWallet")</a></li>
         <li><a class="govuk-link" href='/@configDecorator.serviceName/apple-wallet'>@messages("storeMyNino.saveToWallet.appleWallet")</a></li>
         <!-- Remove line below after demo today *********************** -->
-        <li><a class="govuk-link" href='/@configDecorator.serviceName/govuk-wallet'>GovUK Wallet</a></li>
+
+
         @if(frontendAppConfig.govukWalletEnabled) {
-            @*
-            * Add govuk wallet page link here
-            *@
+            <li><a class="govuk-link" href='/@configDecorator.serviceName/govuk-wallet'>GovUK Wallet</a></li>
         }
     </ul>
 }

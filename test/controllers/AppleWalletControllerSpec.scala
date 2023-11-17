@@ -35,7 +35,7 @@ import util.TestData.{NinoUser, NinoUser_With_CL50}
 import java.util.Base64
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import views.html.{AppleWalletView, ErrorTemplate}
+import views.html.{AppleWalletView, ErrorTemplate, RedirectToPostalFormView}
 
 class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSugar {
 
@@ -78,6 +78,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
 
   lazy val view = applicationWithConfig.injector.instanceOf[AppleWalletView]
   lazy val errview = applicationWithConfig.injector.instanceOf[ErrorTemplate]
+  lazy val redirectview = applicationWithConfig.injector.instanceOf[RedirectToPostalFormView]
 
   val mockSessionRepository = mock[SessionRepository]
   val mockApplePassConnector = mock[StoreMyNinoConnector]
@@ -110,8 +111,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
         val result = route(application, request).value
         status(result) mustEqual NOT_FOUND
 
-        contentAsString(result) mustEqual (errview("Details not found",
-          "Your details were not found.", "Your details were not found, please try again later.")(request, messages(application))).toString
+        contentAsString(result) mustEqual (redirectview()(request, configDecorator, messages(application))).toString()
       }
       reset(mockCitizenDetailsConnector)
     }

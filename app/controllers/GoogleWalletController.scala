@@ -53,18 +53,13 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
 
   def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction) async {
     implicit request => {
-      request.personDetails match {
-        case Some(pd) =>
-          auditService.audit(AuditUtils.buildAuditEvent(Some(pd), "ViewWalletPage", configDecorator.appName, Some("Google")))
-          for {
-            pId: Some[String] <- findMyNinoServiceConnector.createGooglePassWithCredentials(
-              pd.person.fullName,
-              request.nino.map(_.formatted).getOrElse(""),
-              googleCredentialsHelper.createGoogleCredentials(configDecorator.googleKey))
-          } yield Ok(view(pId.value, isMobileDisplay(request)))
-        case None =>
-          Future(NotFound(errorTemplate("Details not found", "Your details were not found.", "Your details were not found, please try again later.")))
-      }
+      auditService.audit(AuditUtils.buildAuditEvent(request.personDetails, "ViewWalletPage", configDecorator.appName, Some("Google")))
+      for {
+        pId: Some[String] <- findMyNinoServiceConnector.createGooglePassWithCredentials(
+          request.personDetails.person.fullName,
+          request.nino.map(_.formatted).getOrElse(""),
+          googleCredentialsHelper.createGoogleCredentials(configDecorator.googleKey))
+      } yield Ok(view(pId.value, isMobileDisplay(request)))
     }
   }
 

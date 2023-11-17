@@ -52,13 +52,8 @@ class StoreMyNinoController @Inject()(
 
   def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction) async {
     implicit request => {
-      request.personDetails match {
-        case Some(pd) =>
-          auditService.audit(AuditUtils.buildAuditEvent(Some(pd), "ViewNinoLanding", configDecorator.appName, None))
-          Future(Ok(view(request.nino.map(_.formatted).getOrElse(""))))
-        case None =>
-          Future(NotFound(errorTemplate("Details not found", "Your details were not found.", "Your details were not found, please try again later.")))
-      }
+      auditService.audit(AuditUtils.buildAuditEvent(request.personDetails, "ViewNinoLanding", configDecorator.appName, None))
+      Future(Ok(view(request.nino.map(_.formatted).getOrElse(""))))
     }
   }
 }

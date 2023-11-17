@@ -126,17 +126,12 @@ object AuditUtils {
   private def timestamp(): String =
     java.time.Instant.now().atOffset(ZoneOffset.UTC).format(DateTimeFormatter.ISO_DATE_TIME)
 
-  def buildAuditEvent(personDetails: Option[PersonDetails],
+  def buildAuditEvent(personDetails: PersonDetails,
                      auditType: String,
                       appName: String,
                       walletProvider: Option[String])(implicit hc: HeaderCarrier): ExtendedDataEvent = {
-    personDetails match {
-      case Some(pd) =>
         buildDataEvent(auditType, s"$appName-$auditType",
-          Json.toJson(buildDetails(pd, auditType, hc, walletProvider)))
-      case None => throw new NotFoundException("Person details not found when building audit event")
+          Json.toJson(buildDetails(personDetails, auditType, hc, walletProvider)))
     }
-
-  }
 
 }

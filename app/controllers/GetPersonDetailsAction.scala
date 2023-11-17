@@ -60,7 +60,7 @@ class GetPersonDetailsAction @Inject()(
     }
   }
 
-  private def getPersonDetails(authContext: AuthContext[_]): Future[Either[Result, Option[PersonDetails]]] = {
+  private def getPersonDetails(authContext: AuthContext[_]): Future[Either[Result, PersonDetails]] = {
 
     implicit val hc: HeaderCarrier =
       HeaderCarrierConverter.fromRequestAndSession(authContext.request, authContext.request.session)
@@ -69,14 +69,14 @@ class GetPersonDetailsAction @Inject()(
     authContext.nino.nino match {
       case nino:String =>
         citizenDetailsConnector.personDetails(Nino(nino)).map {
-          case PersonDetailsSuccessResponse(pd) => Right(Some(pd))
+          case PersonDetailsSuccessResponse(pd) => Right(pd)
           case PersonDetailsNotFoundResponse =>
             Left(NotFound(redirectView()(authContext.request, configDecorator, messages)))
           case PersonDetailsHiddenResponse =>
             Left(Locked(redirectView()(authContext.request, configDecorator, messages)))
-          case _ => Right(None)
+          case _ => Left(NotFound(redirectView()(authContext.request, configDecorator, messages)))
         }
-      case _ => Future.successful(Right(None))
+      case _ => Future.successful(Left(NotFound(redirectView()(authContext.request, configDecorator, messages))))
     }
   }
 

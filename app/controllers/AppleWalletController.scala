@@ -38,7 +38,6 @@ class AppleWalletController @Inject()(val citizenDetailsConnector: CitizenDetail
                                       authConnector: AuthConnector,
                                       auditService: AuditService,
                                       view: AppleWalletView,
-                                      errorTemplate: ErrorTemplate,
                                       getPersonDetailsAction: GetPersonDetailsAction,
                                       passIdNotFoundView: PassIdNotFoundView,
                                       qrCodeNotFoundView: QRCodeNotFoundView
@@ -54,15 +53,10 @@ class AppleWalletController @Inject()(val citizenDetailsConnector: CitizenDetail
 
   def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction) async {
     implicit request => {
-      request.personDetails match {
-        case Some(pd) =>
-          auditService.audit(AuditUtils.buildAuditEvent(Some(pd), "ViewWalletPage", configDecorator.appName, Some("Apple")))
-          for {
-            pId: Some[String] <- findMyNinoServiceConnector.createApplePass(pd.person.fullName, request.nino.map(_.formatted).getOrElse(""))
-          } yield Ok(view(pId.value, isMobileDisplay(request)))
-        case None =>
-          Future(NotFound(errorTemplate("Details not found", "Your details were not found.", "Your details were not found, please try again later.")))
-      }
+      auditService.audit(AuditUtils.buildAuditEvent(request.personDetails, "ViewWalletPage", configDecorator.appName, Some("Apple")))
+      for {
+        pId: Some[String] <- findMyNinoServiceConnector.createApplePass(request.personDetails.person.fullName, request.nino.map(_.formatted).getOrElse(""))
+      } yield Ok(view(pId.value, isMobileDisplay(request)))
     }
   }
 

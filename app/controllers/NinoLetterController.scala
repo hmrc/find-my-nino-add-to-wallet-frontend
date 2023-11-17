@@ -57,43 +57,30 @@ class NinoLetterController @Inject()(
 
   def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction) {
     implicit request => {
-      request.personDetails match {
-        case Some(personDetails) =>
-          auditService.audit(AuditUtils.buildAuditEvent(Some(personDetails), "ViewNinoLetter", configDecorator.appName, None))
-          Ok(view(
-            personDetails,
-            LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
-            true,
-            personDetails.person.nino.getOrElse(Nino("")).formatted))
-        case None => throw new NotFoundException("Person details not found")
+        auditService.audit(AuditUtils.buildAuditEvent(request.personDetails, "ViewNinoLetter", configDecorator.appName, None))
+        Ok(view(
+          request.personDetails,
+          LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
+          true,
+          request.personDetails.person.nino.getOrElse(Nino("")).formatted))
       }
-
     }
-  }
 
     def saveNationalInsuranceNumberAsPdf: Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction) {
     implicit request => {
+      auditService.audit(AuditUtils.buildAuditEvent(request.personDetails, "DownloadNinoLetter", configDecorator.appName, None))
+      val pdf = xmlFoToPDF.createPDF(request.personDetails,
+        LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
+        messagesApi.preferred(request)
+      )
 
-      request.personDetails match {
-        case Some(personDetails @ PersonDetails(_, _, _)) =>
-          auditService.audit(AuditUtils.buildAuditEvent(Some(personDetails), "DownloadNinoLetter", configDecorator.appName, None))
-          val pdf = xmlFoToPDF.createPDF(personDetails,
-            LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
-            messagesApi.preferred(request)
-          )
+      val filename = messagesApi.preferred(request).messages("label.your_national_insurance_number_letter")
 
-          val filename = messagesApi.preferred(request).messages("label.your_national_insurance_number_letter")
-
-          Ok(pdf).as(MimeConstants.MIME_PDF)
-            .withHeaders(
-              CONTENT_TYPE -> "application/x-download",
-              CONTENT_DISPOSITION -> s"attachment; filename=${filename.replaceAll(" ", "-")}.pdf")
-        case _ =>
-          logger.warn("Person details not found from citizen details.")
-          NotFound(technicalIssuesView(routes.NinoLetterController.onPageLoad.url))
+      Ok(pdf).as(MimeConstants.MIME_PDF)
+        .withHeaders(
+          CONTENT_TYPE -> "application/x-download",
+          CONTENT_DISPOSITION -> s"attachment; filename=${filename.replaceAll(" ", "-")}.pdf")
       }
-
-    }
   }
 
 }

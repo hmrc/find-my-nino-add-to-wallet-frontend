@@ -30,7 +30,7 @@ import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
 import util.TestData.NinoUser
 import util.CDFixtures
-import views.html.{ErrorTemplate, GovUKWalletView}
+import views.html.{ErrorTemplate, GovUKWalletView, RedirectToPostalFormView}
 
 import java.util.Base64
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -75,6 +75,7 @@ class GovUKWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
   val mockGovUKWalletSMNConnector = mock[GovUKWalletSMNConnector]
   val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
   val mockIdentityVerificationFrontendConnector = mock[IdentityVerificationFrontendConnector]
+  lazy val redirectview = applicationWithConfig.injector.instanceOf[RedirectToPostalFormView]
 
 
   "Govuk Wallet Controller" - {
@@ -102,8 +103,7 @@ class GovUKWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
         val result = route(application, request).value
         status(result) mustEqual NOT_FOUND
 
-        contentAsString(result) mustEqual (errview("Details not found",
-          "Your details were not found.", "Your details were not found, please try again later.")(request, messages(application))).toString
+        contentAsString(result) mustEqual (redirectview()(request, configDecorator, messages(application))).toString()
       }
       reset(mockCitizenDetailsConnector)
     }

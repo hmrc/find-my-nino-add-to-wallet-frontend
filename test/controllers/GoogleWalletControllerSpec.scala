@@ -17,8 +17,7 @@
 package controllers
 
 import base.SpecBase
-import connectors.{CitizenDetailsConnector, IdentityVerificationFrontendConnector, PersonDetailsErrorResponse,
-  PersonDetailsSuccessResponse, StoreMyNinoConnector}
+import connectors.{CitizenDetailsConnector, IdentityVerificationFrontendConnector, PersonDetailsErrorResponse, PersonDetailsSuccessResponse, StoreMyNinoConnector}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.{reset, when}
@@ -35,7 +34,7 @@ import util.TestData.NinoUser
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import views.html.{ErrorTemplate, GoogleWalletView}
+import views.html.{ErrorTemplate, GoogleWalletView, RedirectToPostalFormView}
 
 import java.util.Base64
 
@@ -90,6 +89,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
   val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
   val mockIdentityVerificationFrontendConnector = mock[IdentityVerificationFrontendConnector]
   val mockGoogleCredentialsHelper = mock[GoogleCredentialsHelper]
+  lazy val redirectview = applicationWithConfig.injector.instanceOf[RedirectToPostalFormView]
 
 
   val fakeBase64String = "UEsDBBQACAgIABxqJlYAAAAAAA"
@@ -119,8 +119,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
         val result = route(application, request).value
         status(result) mustEqual NOT_FOUND
 
-        contentAsString(result) mustEqual (errview("Details not found",
-          "Your details were not found.", "Your details were not found, please try again later.")(request, messages(application))).toString
+        contentAsString(result) mustEqual (redirectview()(request, configDecorator, messages(application))).toString()
       }
       reset(mockCitizenDetailsConnector)
     }

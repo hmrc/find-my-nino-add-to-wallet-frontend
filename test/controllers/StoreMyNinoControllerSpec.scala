@@ -17,8 +17,7 @@
 package controllers
 
 import base.SpecBase
-import connectors.{CitizenDetailsConnector, IdentityVerificationFrontendConnector, PayeIndividualDetailsConnector,
-  PersonDetailsErrorResponse, PersonDetailsSuccessResponse}
+import connectors.{CitizenDetailsConnector, IdentityVerificationFrontendConnector, PayeIndividualDetailsConnector, PersonDetailsErrorResponse, PersonDetailsSuccessResponse}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{reset, when}
 import org.scalatestplus.mockito.MockitoSugar
@@ -31,8 +30,7 @@ import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
 import util.CDFixtures
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
 import util.TestData.{NinoUser, NinoUser_With_CL50}
-
-import views.html.{StoreMyNinoView,ErrorTemplate}
+import views.html.{ErrorTemplate, RedirectToPostalFormView, StoreMyNinoView}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -70,6 +68,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
   val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
   val mockIdentityVerificationFrontendConnector = mock[IdentityVerificationFrontendConnector]
   val mockPayeIndividualDetailsConnector = mock[PayeIndividualDetailsConnector]
+  lazy val redirectview = applicationWithConfig.injector.instanceOf[RedirectToPostalFormView]
 
   "StoreMyNino Controller" - {
 
@@ -94,8 +93,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
         val result = route(application, request).value
         status(result) mustEqual NOT_FOUND
 
-        contentAsString(result) mustEqual (errview("Details not found",
-          "Your details were not found.", "Your details were not found, please try again later.")(request, messages(application))).toString
+        contentAsString(result) mustEqual (redirectview()(request, configDecorator, messages(application))).toString()
       }
       reset(mockCitizenDetailsConnector)
     }

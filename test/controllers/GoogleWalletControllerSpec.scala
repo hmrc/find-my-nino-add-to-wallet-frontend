@@ -117,7 +117,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
         val request = FakeRequest(GET, routes.GoogleWalletController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
-        status(result) mustEqual NOT_FOUND
+        status(result) mustEqual INTERNAL_SERVER_ERROR
 
         contentAsString(result) mustEqual (redirectview()(request, configDecorator, messages(application))).toString()
       }

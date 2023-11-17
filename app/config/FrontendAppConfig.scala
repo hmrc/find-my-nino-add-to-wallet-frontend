@@ -20,7 +20,6 @@ import com.google.inject.{Inject, Singleton}
 import controllers.bindable.Origin
 import play.api.Configuration
 import play.api.i18n.Lang
-import uk.gov.hmrc.play.bootstrap.binders.SafeRedirectUrl
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import java.net.URLEncoder
@@ -45,7 +44,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
   val googleKey: String = configuration.get[String]("googlePass.key")
 
   def accessibilityStatementUrl(referrer: String) =
-    s"$accessibilityBaseUrl/accessibility-statement$accessibilityRedirectUrl?referrerUrl=${SafeRedirectUrl(accessibilityBaseUrl + referrer).encodedUrl}"
+    s"$accessibilityBaseUrl/accessibility-statement$accessibilityRedirectUrl?referrerUrl=${enc(accessibilityBaseUrl + referrer)}"
 
   def getBasGatewayFrontendSignOutUrl(continueUrl: String): String =
     basGatewayFrontendHost + s"/bas-gateway/sign-out-without-state?continue=$continueUrl"
@@ -93,6 +92,6 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
   private lazy val taxEnrolmentAssignmentFrontendHost: String = getExternalUrl(s"tax-enrolment-assignment-frontend.host").getOrElse("")
 
   def getTaxEnrolmentAssignmentRedirectUrl(url: String): String =
-    s"$taxEnrolmentAssignmentFrontendHost/protect-tax-info?redirectUrl=${SafeRedirectUrl(url).encodedUrl}"
+    s"$taxEnrolmentAssignmentFrontendHost/protect-tax-info?redirectUrl=${enc(url)}"
 
 }

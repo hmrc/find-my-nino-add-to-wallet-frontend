@@ -16,7 +16,7 @@
 
 package controllers
 
-import config.{ConfigDecorator, FrontendAppConfig}
+import config.FrontendAppConfig
 import connectors.{CitizenDetailsConnector, StoreMyNinoConnector}
 import controllers.auth.requests.UserRequest
 import play.api.Configuration
@@ -43,7 +43,6 @@ class AppleWalletController @Inject()(val citizenDetailsConnector: CitizenDetail
                                       passIdNotFoundView: PassIdNotFoundView,
                                       qrCodeNotFoundView: QRCodeNotFoundView
                                       )(implicit config: Configuration,
-                                        configDecorator: ConfigDecorator,
                                         env: Environment,
                                         ec: ExecutionContext,
                                         cc: MessagesControllerComponents,
@@ -56,7 +55,7 @@ class AppleWalletController @Inject()(val citizenDetailsConnector: CitizenDetail
     implicit request => {
       request.personDetails match {
         case Some(pd) =>
-          auditService.audit(AuditUtils.buildAuditEvent(pd, "ViewWalletPage", configDecorator.appName, Some("Apple")))
+          auditService.audit(AuditUtils.buildAuditEvent(pd, "ViewWalletPage", frontendAppConfig.appName, Some("Apple")))
           for {
             pId: Some[String] <- findMyNinoServiceConnector.createApplePass(pd.person.fullName, request.nino.map(_.formatted).getOrElse(""))
           } yield Ok(view(pId.value, isMobileDisplay(request)))
@@ -86,9 +85,9 @@ class AppleWalletController @Inject()(val citizenDetailsConnector: CitizenDetail
           case Some(data) =>
             request.getQueryString("qr-code") match {
               case Some("true") => auditService.audit(AuditUtils.buildAuditEvent(request.personDetails.get,
-                "AddNinoToWalletFromQRCode", configDecorator.appName, Some("Apple")))
+                "AddNinoToWalletFromQRCode", frontendAppConfig.appName, Some("Apple")))
               case _ => auditService.audit(AuditUtils.buildAuditEvent(request.personDetails.get,
-                "AddNinoToWallet", configDecorator.appName, Some("Apple")))
+                "AddNinoToWallet", frontendAppConfig.appName, Some("Apple")))
             }
             Ok(data).withHeaders("Content-Disposition" -> s"attachment; filename=$passFileName")
           case _ => NotFound(passIdNotFoundView())
@@ -102,7 +101,7 @@ class AppleWalletController @Inject()(val citizenDetailsConnector: CitizenDetail
       authorisedAsFMNUser { _ =>
         findMyNinoServiceConnector.getQrCode(passId).map {
           case Some(data) =>
-            auditService.audit(AuditUtils.buildAuditEvent(request.personDetails.get, "DisplayQRCode", configDecorator.appName, Some("Apple")))
+            auditService.audit(AuditUtils.buildAuditEvent(request.personDetails.get, "DisplayQRCode", frontendAppConfig.appName, Some("Apple")))
             Ok(data).withHeaders("Content-Disposition" -> s"attachment; filename=$passFileName")
           case _ => NotFound(qrCodeNotFoundView())
         }

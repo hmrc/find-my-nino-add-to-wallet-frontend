@@ -17,13 +17,13 @@
 package controllers
 
 import com.google.inject.Inject
-import config.ConfigDecorator
+import config.FrontendAppConfig
 import play.api.i18n.Lang
 import play.api.mvc._
 import uk.gov.hmrc.play.language.{LanguageController, LanguageUtils}
 
 class LanguageSwitchController @Inject()(
-                                          appConfig: ConfigDecorator,
+                                          appConfig: FrontendAppConfig,
                                           languageUtils: LanguageUtils,
                                           cc: ControllerComponents
                                         ) extends LanguageController(languageUtils, cc) {

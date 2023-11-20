@@ -18,7 +18,7 @@ package controllers
 
 import base.SpecBase
 import cats.data.EitherT
-import config.{ConfigDecorator, FrontendAppConfig}
+import config.FrontendAppConfig
 import connectors.{StoreMyNinoConnector, CitizenDetailsConnector, IdentityVerificationFrontendConnector, PersonDetailsSuccessResponse}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
@@ -120,7 +120,7 @@ class ApplicationControllerSpec extends SpecBase with CDFixtures with MockitoSug
         injected[LockedOutView],
         injected[TimeOutView],
         injected[TechnicalIssuesView]
-      )(config, mock[ConfigDecorator], env, ec, injected[MessagesControllerComponents], mock[FrontendAppConfig])
+      )(config, env, ec, injected[MessagesControllerComponents], mock[FrontendAppConfig])
 
     when(mockIdentityVerificationFrontendService.getIVJourneyStatus(any())(any(), any())) thenReturn {
       getIVJourneyStatusResponse

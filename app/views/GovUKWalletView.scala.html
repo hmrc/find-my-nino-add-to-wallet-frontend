@@ -15,7 +15,7 @@
  *@
 
 @import components.{H1, H2, P, Link, BulletList}
-@import config.ConfigDecorator
+@import config.FrontendAppConfig
 
 @this(
     layout: templates.LayoutProvider,
@@ -24,7 +24,7 @@
     p: P,
     link: Link,
     list: BulletList,
-    configDecorator: ConfigDecorator
+    frontendAppConfig: FrontendAppConfig
 )
 
 @(
@@ -50,6 +50,6 @@
 
   <div class="show-on-phones">
    @h2("govUKWallet.scanQRCodeToAdd.heading")
-   <img id="govuk-qr-code" src='/@configDecorator.serviceName/get-govuk-qr-code?passId=@{govUKPassId}' width="200" height="200" alt='@messages("govUKWallet.addToWallet.QRCode.alt")'>
+   <img id="govuk-qr-code" src='/@frontendAppConfig.serviceName/get-govuk-qr-code?passId=@{govUKPassId}' width="200" height="200" alt='@messages("govUKWallet.addToWallet.QRCode.alt")'>
   </div>
 }

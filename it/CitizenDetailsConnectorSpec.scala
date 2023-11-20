@@ -15,7 +15,7 @@
  */
 
 import com.kenshoo.play.metrics.Metrics
-import config.ConfigDecorator
+import config.FrontendAppConfig
 import connectors.{CitizenDetailsConnector, PersonDetailsNotFoundResponse, PersonDetailsSuccessResponse}
 import controllers.ConnectorSpec
 import models._
@@ -67,8 +67,8 @@ class CitizenDetailsConnectorSpec
     lazy val connector = {
       val httpClient = app.injector.instanceOf[SimpleHttp]
       val metrics = app.injector.instanceOf[Metrics]
-      val configDecorator = app.injector.instanceOf[ConfigDecorator]
-      new CitizenDetailsConnector(httpClient, metrics, configDecorator)
+      val frontendAppConfig = app.injector.instanceOf[FrontendAppConfig]
+      new CitizenDetailsConnector(httpClient, metrics, frontendAppConfig)
     }
   }
 

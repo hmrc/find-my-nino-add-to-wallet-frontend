@@ -15,7 +15,7 @@
  *@
 
 @import components.{H1, H2, P, Link, BulletList}
-@import config.ConfigDecorator
+@import config.FrontendAppConfig
 
 @this(
     layout: templates.LayoutProvider,
@@ -24,7 +24,7 @@
     p: P,
     link: Link,
     list: BulletList,
-    configDecorator: ConfigDecorator
+    frontendAppConfig: FrontendAppConfig
 )
 
 @(
@@ -51,14 +51,14 @@
     @if(displayForMobile) {
         <div class="show-on-phones">
             @h2("googleWallet.tapToAdd.heading")
-            <a href='/@configDecorator.serviceName/get-google-pass?passId=@{googlePassId}'>
-                <img src="/@configDecorator.serviceName/assets/images/google-wallet-condensed.svg" alt='@messages("googleWallet.addToWallet.alt")' class="add-wallet-android-mobile">
+            <a href='/@frontendAppConfig.serviceName/get-google-pass?passId=@{googlePassId}'>
+                <img src="/@frontendAppConfig.serviceName/assets/images/google-wallet-condensed.svg" alt='@messages("googleWallet.addToWallet.alt")' class="add-wallet-android-mobile">
             </a>
         </div>
     } else {
         <div class="hide-on-phones">
             @h2("googleWallet.scanQRCodeToAdd.heading")
-            <img id="google-qr-code" src='/@configDecorator.serviceName/get-google-qr-code?passId=@{googlePassId}' width="200" height="200" alt='@messages("googleWallet.addToWallet.QRCode.alt")'>
+            <img id="google-qr-code" src='/@frontendAppConfig.serviceName/get-google-qr-code?passId=@{googlePassId}' width="200" height="200" alt='@messages("googleWallet.addToWallet.QRCode.alt")'>
         </div>
     }
 }

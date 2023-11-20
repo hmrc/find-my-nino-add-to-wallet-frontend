@@ -16,10 +16,10 @@
 
 package connectors
 
+import config.FrontendAppConfig
 import util.WireMockHelper
 import org.mockito.MockitoSugar._
 import play.api.libs.json.{JsValue, Json}
-import config.ConfigDecorator
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.test.{DefaultAwaitTimeout, Injecting}
@@ -33,11 +33,11 @@ class GovUKWalletSMNConnectorSpec extends ConnectorSpec with WireMockHelper
   with DefaultAwaitTimeout
   with Injecting {
 
-  val mockConfigDecorator = mock[ConfigDecorator]
+  val mockFrontendAppConfig = mock[FrontendAppConfig]
   val mockHttpClient = mock[HttpClient]
   val mockHeaderCarrier = mock[HeaderCarrier]
 
-  val connector = new GovUKWalletSMNConnector(mockConfigDecorator, mockHttpClient)
+  val connector = new GovUKWalletSMNConnector(mockFrontendAppConfig, mockHttpClient)
 
   "GovUKWalletSMNConnector"  must {
     "create a GovUKPass" ignore {
@@ -49,7 +49,7 @@ class GovUKWalletSMNConnectorSpec extends ConnectorSpec with WireMockHelper
       val headers = Map("Content-Type" -> Seq("application/json"))
 
       // Mock the dependencies
-      when(mockConfigDecorator.findMyNinoServiceUrl).thenReturn("http://example.com")
+      when(mockFrontendAppConfig.findMyNinoServiceUrl).thenReturn("http://example.com")
       when(mockHttpClient.POST[JsValue, HttpResponse](any(), any())(any(),any(),any(),any()))
         .thenReturn(Future.successful(HttpResponse(200, Json.parse("""{"key":"value"}"""), headers)))
 
@@ -59,7 +59,7 @@ class GovUKWalletSMNConnectorSpec extends ConnectorSpec with WireMockHelper
       val result = connector.createGovUKPass(givenName, familyName, nino)
 
       // Verify the interactions and assertions
-      verify(mockConfigDecorator).findMyNinoServiceUrl
+      verify(mockFrontendAppConfig).findMyNinoServiceUrl
       verify(mockHttpClient).POST[JsValue, HttpResponse](any(), any())
       verify(mockHeaderCarrier).withExtraHeaders(any())
 

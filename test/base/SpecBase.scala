@@ -16,7 +16,7 @@
 
 package base
 
-import config.ConfigDecorator
+import config.FrontendAppConfig
 import controllers.actions._
 import models.UserAnswers
 import org.jsoup.Jsoup
@@ -98,7 +98,7 @@ class SpecBase extends WireMockSupport with MockitoSugar with GuiceOneAppPerSuit
 
   //implicit lazy val ec = app.injector.instanceOf[ExecutionContext]
 
-  lazy val configDecorator = app.injector.instanceOf[ConfigDecorator]
+  lazy val frontendAppConfig = app.injector.instanceOf[FrontendAppConfig]
 
   lazy val config = app.injector.instanceOf[Configuration]
 

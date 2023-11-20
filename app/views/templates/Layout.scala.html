@@ -18,7 +18,7 @@
 @import uk.gov.hmrc.hmrcfrontend.config.AccountMenuConfig
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits.RichAccountMenu
 @import uk.gov.hmrc.hmrcfrontend.views.viewmodels.accountmenu.{AccountMenu, SignOut, AccountHome, AccountMessages, CheckProgress, _}
-@import config.ConfigDecorator
+@import config.FrontendAppConfig
 @import uk.gov.hmrc.hmrcfrontend.views.config.StandardAlphaBanner
 @import views.html.helper.CSPNonce
 @import components.{FullWidthMainContent, backLink}
@@ -31,7 +31,7 @@
     fullWidthMainContent: FullWidthMainContent,
     twoThirdsOneThirdMainContent: TwoThirdsOneThirdMainContent,
     hmrcReportTechnicalIssueHelper: HmrcReportTechnicalIssueHelper,
-    configDecorator: ConfigDecorator,
+    frontendAppConfig: FrontendAppConfig,
     hmrcAccountMenu: HmrcAccountMenu,
     hmrcTrackingConsentSnippet: HmrcTrackingConsentSnippet,
     backLink: backLink,
@@ -68,10 +68,10 @@
 
     @if(!disableSessionExpired){
         @hmrcTimeoutDialogHelper(
-            signOutUrl = controllers.auth.routes.AuthController.signout(Some(RedirectUrl(configDecorator.getFeedbackSurveyUrl(configDecorator.defaultOrigin))), Some(configDecorator.defaultOrigin)).url,
+            signOutUrl = controllers.auth.routes.AuthController.signout(Some(RedirectUrl(frontendAppConfig.getFeedbackSurveyUrl(frontendAppConfig.defaultOrigin))), Some(frontendAppConfig.defaultOrigin)).url,
             keepAliveUrl = Some(controllers.routes.SessionManagementController.keepAlive.url),
-            timeout = Some(configDecorator.timeout),
-            countdown = Some(configDecorator.countdown)
+            timeout = Some(frontendAppConfig.timeout),
+            countdown = Some(frontendAppConfig.countdown)
         )
     }
 
@@ -86,7 +86,7 @@
 @accountMenu = @{
     hmrcAccountMenu(
         AccountMenu(
-            signOut = SignOut(href = controllers.auth.routes.AuthController.signout(Some(RedirectUrl(configDecorator.getFeedbackSurveyUrl(configDecorator.defaultOrigin))), Some(configDecorator.defaultOrigin)).url),
+            signOut = SignOut(href = controllers.auth.routes.AuthController.signout(Some(RedirectUrl(frontendAppConfig.getFeedbackSurveyUrl(frontendAppConfig.defaultOrigin))), Some(frontendAppConfig.defaultOrigin)).url),
             language = if(messages.lang.code == "cy") Cy else En,
             accountHome = AccountHome(active = accountHome),
             messages = AccountMessages(active = messagesActive, messageCount = Some(0)),
@@ -123,7 +123,7 @@
     serviceName = Some(Messages("service.name")),
     serviceUrl = Some("/personal-account"),
     isWelshTranslationAvailable = true,
-    accessibilityStatementUrl = Some(configDecorator.accessibilityStatementUrl(request.uri)),
+    accessibilityStatementUrl = Some(frontendAppConfig.accessibilityStatementUrl(request.uri)),
     displayHmrcBanner = false,
     additionalHeadBlock = Some(headBlock),
     beforeContentBlock = Some(beforeContent),

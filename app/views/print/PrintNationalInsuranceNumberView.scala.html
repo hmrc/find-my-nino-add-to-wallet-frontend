@@ -16,11 +16,11 @@
 
 @import scala.concurrent.ExecutionContext
 @import uk.gov.hmrc.hmrcfrontend.views.html.components._
-@import config.ConfigDecorator
+@import config.FrontendAppConfig
 
 @this(
     layout: templates.LayoutProvider,
-    configDecorator: ConfigDecorator,
+    frontendAppConfig: FrontendAppConfig,
     niLetter: views.html.print.NiLetterView
 )
 
@@ -44,7 +44,7 @@
         <div class="link-container">
             @if(saveNiLetterAsPdfLinkEnabled) {
             <div class="save-this">
-                <a class="save-this__link govuk-link govuk-link--no-underline govuk-link--no-visited-state" href="/@configDecorator.serviceName/print-letter/save-letter-as-pdf" data-journey-click='save - click:Your National Insurance letter:@messages("label.save_as_a_PDF")'>@messages("label.save_as_a_PDF")</a>
+                <a class="save-this__link govuk-link govuk-link--no-underline govuk-link--no-visited-state" href="/@frontendAppConfig.serviceName/print-letter/save-letter-as-pdf" data-journey-click='save - click:Your National Insurance letter:@messages("label.save_as_a_PDF")'>@messages("label.save_as_a_PDF")</a>
             </div>
             }
         </div>

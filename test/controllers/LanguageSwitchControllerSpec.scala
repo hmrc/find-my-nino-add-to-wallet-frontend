@@ -17,7 +17,7 @@
 package controllers
 
 import base.SpecBase
-import config.ConfigDecorator
+import config.FrontendAppConfig
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.i18n.Lang
@@ -26,7 +26,7 @@ import uk.gov.hmrc.play.language.LanguageUtils
 
 class LanguageSwitchControllerSpec extends SpecBase with MockitoSugar {
 
-  val appConfig: ConfigDecorator = mock[ConfigDecorator]
+  val appConfig: FrontendAppConfig = mock[FrontendAppConfig]
   val languageUtils: LanguageUtils = mock[LanguageUtils]
   //val cc: ControllerComponents = Helpers.stubControllerComponents()
 

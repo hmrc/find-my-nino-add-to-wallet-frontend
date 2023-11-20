@@ -17,7 +17,7 @@
 package controllers.actions
 
 import com.google.inject.Inject
-import config.ConfigDecorator
+import config.FrontendAppConfig
 import controllers.routes
 import models.requests.IdentifierRequest
 import play.api.mvc.Results._
@@ -34,7 +34,7 @@ import play.api.Logging
 trait IdentifierAction extends ActionBuilder[IdentifierRequest, AnyContent] with ActionFunction[Request, IdentifierRequest]
 
 class AuthenticatedIdentifierAction @Inject()(val authConnector: AuthConnector,
-                                              config: ConfigDecorator,
+                                              frontendAppConfig: FrontendAppConfig,
                                               val parser: BodyParsers.Default)
                                              (implicit val executionContext: ExecutionContext) extends IdentifierAction with AuthorisedFunctions with Logging {
 
@@ -49,7 +49,7 @@ class AuthenticatedIdentifierAction @Inject()(val authConnector: AuthConnector,
     } recover {
       case _: NoActiveSession => {
         logger.info("********************* no session detected ********** redirecting to continue url")
-        Redirect(config.loginUrl, Map("continue" -> Seq(config.loginContinueUrl)))
+        Redirect(frontendAppConfig.loginUrl, Map("continue" -> Seq(frontendAppConfig.loginContinueUrl)))
       }
 
       case _: AuthorisationException =>

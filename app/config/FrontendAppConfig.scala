@@ -20,9 +20,9 @@ import com.google.inject.{Inject, Singleton}
 import controllers.bindable.Origin
 import play.api.Configuration
 import play.api.i18n.Lang
-import play.api.mvc.RequestHeader
-import uk.gov.hmrc.play.bootstrap.binders.SafeRedirectUrl
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+
+import java.net.URLEncoder
 
 @Singleton
 class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig: ServicesConfig) {
@@ -32,25 +32,35 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
 
   private val contactHost = configuration.get[String]("contact-frontend.host")
   private val contactFormServiceIdentifier = "save-your-national-insurance-number"
-
   lazy val gtmContainer: String = configuration.get[String]("tracking-consent-frontend.gtm.container")
+  val enc = URLEncoder.encode(_: String, "UTF-8")
+  lazy val generalQueriesUrl     = "https://www.gov.uk/contact-hmrc"
+  lazy val citizenDetailsServiceUrl: String = servicesConfig.baseUrl("citizen-details-service")
+  val serviceName = "save-your-national-insurance-number"
+  lazy val accessibilityBaseUrl: String = servicesConfig.getString("accessibility-statement.baseUrl")
+  lazy private val accessibilityRedirectUrl =
+    servicesConfig.getString("accessibility-statement.redirectUrl")
+  lazy val api1303ServiceUrl: String = servicesConfig.baseUrl("paye-individual-details-service")
+  val googleKey: String = configuration.get[String]("googlePass.key")
 
+  def accessibilityStatementUrl(referrer: String) =
+    s"$accessibilityBaseUrl/accessibility-statement$accessibilityRedirectUrl?referrerUrl=${enc(accessibilityBaseUrl + referrer)}"
+
+  def getBasGatewayFrontendSignOutUrl(continueUrl: String): String =
+    basGatewayFrontendHost + s"/bas-gateway/sign-out-without-state?continue=$continueUrl"
 
   private def getExternalUrl(key: String): Option[String] =
     configuration.getOptional[String](s"external-url.$key")
 
-  def feedbackUrl(implicit request: RequestHeader): String =
-    s"$contactHost/contact/beta-feedback?service=$contactFormServiceIdentifier&backUrl=${SafeRedirectUrl(host + request.uri).encodedUrl}"
+  def getFeedbackSurveyUrl(origin: Origin): String =
+    feedbackSurveyFrontendHost + "/feedback/" + enc(origin.origin)
+
+  lazy val feedbackSurveyFrontendHost = getExternalUrl(s"feedback-survey-frontend.host").getOrElse("")
 
   val loginUrl: String                  = configuration.get[String]("urls.login")
   val loginContinueUrl: String          = configuration.get[String]("urls.loginContinue")
   val signOutUrl: String                = configuration.get[String]("urls.signOut")
   lazy val findMyNinoServiceUrl: String = servicesConfig.baseUrl("find-my-nino-add-to-wallet-service")
-
-  lazy val pertaxFrontendAuthHost: String = getExternalUrl("pertax-frontend.auth-host").getOrElse("")
-
-  private val exitSurveyBaseUrl: String = getExternalUrl(s"feedback-survey-frontend.host").getOrElse("")
-  val exitSurveyUrl: String             = s"$exitSurveyBaseUrl/feedback/save-your-national-insurance-number"
 
   val languageTranslationEnabled: Boolean =
     configuration.get[Boolean]("features.welsh-translation")
@@ -73,7 +83,6 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
 
   lazy val origin: String = configuration.getOptional[String]("sosOrigin").orElse(Some(appName)).getOrElse("undefined")
 
-  lazy val personalAccount = "/personal-account"
   private lazy val identityVerificationHost: String = getExternalUrl(s"identity-verification.host").getOrElse("")
   private lazy val identityVerificationPrefix: String = getExternalUrl(s"identity-verification.prefix").getOrElse("mdtp")
   lazy val identityVerificationUpliftUrl = s"$identityVerificationHost/$identityVerificationPrefix/uplift"
@@ -83,6 +92,6 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
   private lazy val taxEnrolmentAssignmentFrontendHost: String = getExternalUrl(s"tax-enrolment-assignment-frontend.host").getOrElse("")
 
   def getTaxEnrolmentAssignmentRedirectUrl(url: String): String =
-    s"$taxEnrolmentAssignmentFrontendHost/protect-tax-info?redirectUrl=${SafeRedirectUrl(url).encodedUrl}"
+    s"$taxEnrolmentAssignmentFrontendHost/protect-tax-info?redirectUrl=${enc(url)}"
 
 }

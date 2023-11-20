@@ -14,14 +14,14 @@
  * limitations under the License.
  *@
 
-@import config.ConfigDecorator
+@import config.FrontendAppConfig
 @import controllers.auth.requests.UserRequest
 @import scala.concurrent.ExecutionContext
 @import components.{H1, P}
 
 @this(main: MainView, h1: H1, p: P)
 @(title: String, heading: Option[String] = None, body: List[String] = Nil)(implicit request: UserRequest[_],
-        configDecorator: ConfigDecorator, messages: play.api.i18n.Messages, ec: ExecutionContext)
+    frontendAppConfig: FrontendAppConfig, messages: play.api.i18n.Messages, ec: ExecutionContext)
 
 @main(
     pageTitle = messages(title),

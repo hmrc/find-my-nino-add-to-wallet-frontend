@@ -19,12 +19,14 @@ package controllers
 import config.FrontendAppConfig
 import connectors.GovUKWalletSMNConnector
 import controllers.auth.requests.UserRequest
+import models.GovUkPassCreateResponse
 import play.api.{Configuration, Environment}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
 import uk.gov.hmrc.auth.core.AuthConnector
 import views.html.{ErrorTemplate, GovUKWalletView}
 
+import java.util.Base64
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -50,11 +52,14 @@ class GovUKWalletController @Inject()(
         request.personDetails match {
           case Some(pd) =>
             for {
-              pId: Some[String] <- govUKWalletSMNConnector.createGovUKPass(
+              pId: Some[GovUkPassCreateResponse] <- govUKWalletSMNConnector.createGovUKPass(
                 pd.person.givenName,
                 pd.person.familyName,
                 request.nino.map(_.formatted).getOrElse(""))
-            } yield Ok(view(pId.value, isMobileDisplay(request)))
+            } yield Ok(view(
+              pId.value.url,
+              pId.value.bytes,
+              isMobileDisplay(request)))
           case None =>
             Future(NotFound(errorTemplate("Details not found", "Your details were not found.", "Your details were not found, please try again later.")))
         }
@@ -64,6 +69,7 @@ class GovUKWalletController @Inject()(
       }
 
   }
+
 
   private def isMobileDisplay(request: UserRequest[AnyContent]): Boolean = {
     // Display wallet options differently on mobile to pc

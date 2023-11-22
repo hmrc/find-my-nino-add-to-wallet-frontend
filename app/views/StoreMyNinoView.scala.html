@@ -52,12 +52,13 @@
     @h2("storeMyNino.saveToWallet.heading")
 
     <ul class="govuk-list govuk-list--bullet govuk-list--spaced">
+
         <li><a class="govuk-link" href='/@frontendAppConfig.serviceName/google-wallet'>@messages("storeMyNino.saveToWallet.googleWallet")</a></li>
         <li><a class="govuk-link" href='/@frontendAppConfig.serviceName/apple-wallet'>@messages("storeMyNino.saveToWallet.appleWallet")</a></li>
+
         @if(frontendAppConfig.govukWalletEnabled) {
-            @*
-            * Add govuk wallet page link here
-            *@
+            <li><a class="govuk-link" href='/@frontendAppConfig.serviceName/govuk-wallet'>GovUK Wallet</a></li>
         }
+      
     </ul>
 }

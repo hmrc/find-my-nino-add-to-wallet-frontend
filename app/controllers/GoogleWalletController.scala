@@ -82,7 +82,7 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
 
   def getGooglePass(passId: String): Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction).async {
     implicit request => {
-      authorisedAsFMNUser { _ =>
+      authorisedAsFMNUser { authContext =>
         findMyNinoServiceConnector.getGooglePassUrl(passId).map {
           case Some(data) =>
             request.getQueryString("qr-code") match {

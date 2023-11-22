@@ -21,36 +21,36 @@ import org.mockito.MockitoSugar.when
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.i18n.Lang
 
-class ConfigDecoratorSpec extends SpecBase with MockitoSugar{
-  val mockConfigDecorator = mock[ConfigDecorator]
-  when(mockConfigDecorator.languageMap).thenReturn(Map(
+class FrontendAppConfigSpec extends SpecBase with MockitoSugar{
+  val mockFrontendAppConfig = mock[FrontendAppConfig]
+  when(mockFrontendAppConfig.languageMap).thenReturn(Map(
     "en" -> Lang("en"),
     "cy" -> Lang("cy")
   ))
 
   "Methods tests" - {
     "languageTranslationEnabled must return Boolean" in
-        mockConfigDecorator.languageTranslationEnabled.isInstanceOf[Boolean]
+      mockFrontendAppConfig.languageTranslationEnabled.isInstanceOf[Boolean]
     }
 
     "languageMap" in {
-      mockConfigDecorator.languageMap.isInstanceOf[Map[String, Lang]]
+      mockFrontendAppConfig.languageMap.isInstanceOf[Map[String, Lang]]
     }
 
   "languageMap count is correct" in {
-    mockConfigDecorator.languageMap.size.equals(2)
+    mockFrontendAppConfig.languageMap.size.equals(2)
   }
 
   "languageMap returns eng language" in {
-    mockConfigDecorator.languageMap.get("en").equals(Lang("en"))
+    mockFrontendAppConfig.languageMap.get("en").equals(Lang("en"))
     }
 
   "languageMap returns welsh language" in {
-    mockConfigDecorator.languageMap.get("cy").equals(Lang("cy"))
+    mockFrontendAppConfig.languageMap.get("cy").equals(Lang("cy"))
   }
 
   "languageMap returns correct map" in {
-    mockConfigDecorator.languageMap.equals(Map(
+    mockFrontendAppConfig.languageMap.equals(Map(
       "en" -> Lang("en"),
       "cy" -> Lang("cy")
     ))
@@ -58,47 +58,43 @@ class ConfigDecoratorSpec extends SpecBase with MockitoSugar{
 
 
    "timeout" in {
-      mockConfigDecorator.timeout.isInstanceOf[Int]
+     mockFrontendAppConfig.timeout.isInstanceOf[Int]
     }
 
     "signOutUrl" in {
-      mockConfigDecorator.signOutUrl.isInstanceOf[String]
+      mockFrontendAppConfig.signOutUrl.isInstanceOf[String]
     }
 
     "loginUrl" in {
-      mockConfigDecorator.loginUrl.isInstanceOf[String]
+      mockFrontendAppConfig.loginUrl.isInstanceOf[String]
     }
 
     "host" in {
-      mockConfigDecorator.host.isInstanceOf[String]
+      mockFrontendAppConfig.host.isInstanceOf[String]
     }
 
     "cacheTtl" in {
-      mockConfigDecorator.cacheTtl.isInstanceOf[Int]
+      mockFrontendAppConfig.cacheTtl.isInstanceOf[Int]
     }
 
     "appName" in {
-      mockConfigDecorator.appName.isInstanceOf[String]
+      mockFrontendAppConfig.appName.isInstanceOf[String]
     }
 
     "countdown" in {
-      mockConfigDecorator.countdown.isInstanceOf[Int]
+      mockFrontendAppConfig.countdown.isInstanceOf[Int]
     }
 
     "findMyNinoServiceUrl" in {
-      mockConfigDecorator.findMyNinoServiceUrl.isInstanceOf[String]
+      mockFrontendAppConfig.findMyNinoServiceUrl.isInstanceOf[String]
     }
 
-    /*"exitSurveyUrl" in {
-      mockConfigDecorator.exitSurveyUrl.isInstanceOf[String]
-    }*/
-
     "loginContinueUrl" in {
-      mockConfigDecorator.loginContinueUrl.isInstanceOf[String]
+      mockFrontendAppConfig.loginContinueUrl.isInstanceOf[String]
     }
 
     "container" in {
-      mockConfigDecorator.gtmContainer.isInstanceOf[String]
+      mockFrontendAppConfig.gtmContainer.isInstanceOf[String]
     }
 
 }

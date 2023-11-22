@@ -15,7 +15,7 @@
  *@
 
 @import components.{H1, H2, P, Link, BulletList}
-@import config.ConfigDecorator
+@import config.FrontendAppConfig
 
 @this(
     layout: templates.LayoutProvider,
@@ -24,7 +24,7 @@
     p: P,
     link: Link,
     list: BulletList,
-    configDecorator: ConfigDecorator
+    frontendAppConfig: FrontendAppConfig
 )
 
 @(
@@ -38,6 +38,7 @@
 }
 
 @layout(pageTitle = titleNoForm(messages("govUKWallet.title")), stylesheets = Some(stylesheet)) {
+
 
     @h1("govUKWallet.heading")
     @p("govUKWallet.p1")
@@ -60,4 +61,5 @@
         </div>
 
     }
+
 }

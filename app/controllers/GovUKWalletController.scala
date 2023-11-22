@@ -16,7 +16,7 @@
 
 package controllers
 
-import config.{ConfigDecorator, FrontendAppConfig}
+import config.FrontendAppConfig
 import connectors.GovUKWalletSMNConnector
 import controllers.auth.requests.UserRequest
 import models.GovUkPassCreateResponse
@@ -38,7 +38,6 @@ class GovUKWalletController @Inject()(
                                       getPersonDetailsAction: GetPersonDetailsAction,
                                       govUKWalletSMNConnector: GovUKWalletSMNConnector
                                     )(implicit config: Configuration,
-                                       configDecorator: ConfigDecorator,
                                        env: Environment,
                                        ec: ExecutionContext,
                                        cc: MessagesControllerComponents,

@@ -18,7 +18,7 @@ package connectors
 
 import com.google.inject.{Inject, Singleton}
 import com.kenshoo.play.metrics.Metrics
-import config.ConfigDecorator
+import config.FrontendAppConfig
 import models._
 import play.api.Logging
 import play.api.http.Status._
@@ -39,7 +39,7 @@ case class PersonDetailsErrorResponse(cause: Exception) extends PersonDetailsRes
 class CitizenDetailsConnector @Inject() (
   val simpleHttp: SimpleHttp,
   val metrics: Metrics,
-  config: ConfigDecorator
+  config: FrontendAppConfig
 ) extends  Logging {
 
   def personDetails(nino: Nino)(implicit hc: HeaderCarrier): Future[PersonDetailsResponse] =

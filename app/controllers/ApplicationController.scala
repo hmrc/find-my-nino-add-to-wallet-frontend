@@ -17,7 +17,7 @@
 package controllers
 
 import com.google.inject.Inject
-import config.{ConfigDecorator, FrontendAppConfig}
+import config.FrontendAppConfig
 import controllers.bindable.Origin
 import play.api.{Configuration, Environment}
 import play.api.i18n.I18nSupport
@@ -40,7 +40,6 @@ class ApplicationController @Inject()(
   timeOutView: TimeOutView,
   technicalIssuesView: TechnicalIssuesView
 )(implicit config: Configuration,
-  configDecorator: ConfigDecorator,
   env: Environment,
   ec: ExecutionContext,
   cc: MessagesControllerComponents,
@@ -116,13 +115,13 @@ class ApplicationController @Inject()(
       val safeUrl = continueUrl.flatMap { redirectUrl =>
         redirectUrl.getEither(OnlyRelative) match {
           case Right(safeRedirectUrl) => Some(safeRedirectUrl.url)
-          case _                      => Some(configDecorator.getFeedbackSurveyUrl(configDecorator.defaultOrigin))
+          case _                      => Some(frontendAppConfig.getFeedbackSurveyUrl(frontendAppConfig.defaultOrigin))
         }
       }
       safeUrl
-        .orElse(origin.map(configDecorator.getFeedbackSurveyUrl))
+        .orElse(origin.map(frontendAppConfig.getFeedbackSurveyUrl))
         .fold(BadRequest("Missing origin")) { url: String =>
-          Redirect(configDecorator.getBasGatewayFrontendSignOutUrl(url))
+          Redirect(frontendAppConfig.getBasGatewayFrontendSignOutUrl(url))
         }
     }
 }

@@ -3,7 +3,7 @@ package controllers
 
 import base.IntegrationSpecBase
 import com.github.tomakehurst.wiremock.client.WireMock._
-import config.ConfigDecorator
+import config.FrontendAppConfig
 import controllers.auth.requests.UserRequest
 import controllers.auth.routes
 import models.{Address, Person, PersonDetails, UserName}
@@ -62,7 +62,7 @@ class GoogleWalletControllerISpec extends IntegrationSpecBase {
   override lazy val messagesApi: MessagesApi = app.injector.instanceOf[MessagesApi]
 
 
-  implicit lazy val configDecorator: ConfigDecorator = app.injector.instanceOf[ConfigDecorator]
+  implicit lazy val frontendAppConfig: FrontendAppConfig = app.injector.instanceOf[FrontendAppConfig]
   implicit lazy val messages: Messages = MessagesImpl(Lang("en"), messagesApi).messages
 
   trait LocalSetup {
@@ -133,12 +133,12 @@ class GoogleWalletControllerISpec extends IntegrationSpecBase {
       }
 
       "render the google pass QR code on desktop" in new LocalSetup {
-        wireMockServer.stubFor(get(s"${configDecorator.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-google-pass?passId=$fakePassId").willReturn(ok(fakeBase64String)))
+        wireMockServer.stubFor(get(s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-google-pass?passId=$fakePassId").willReturn(ok(fakeBase64String)))
         assertContainsQRCode(doc, s"/get-google-qr-code?passId=$fakePassId")
       }
 
       "render the save to Google Wallet link on mobile" in new LocalSetup {
-        wireMockServer.stubFor(get(s"${configDecorator.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-pass-card?passId=$fakePassId").willReturn(ok(fakeBase64String)))
+        wireMockServer.stubFor(get(s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-pass-card?passId=$fakePassId").willReturn(ok(fakeBase64String)))
         assertContainsLinkByContainingClass(docMobile, s"/get-google-pass?passId=$fakePassId")
       }
     }
@@ -164,7 +164,7 @@ class GoogleWalletControllerISpec extends IntegrationSpecBase {
       "render the sign out link" in new LocalSetup {
 
         val href: String =  routes.AuthController
-          .signout(Some(RedirectUrl(configDecorator.getFeedbackSurveyUrl(configDecorator.defaultOrigin))), None)
+          .signout(Some(RedirectUrl(frontendAppConfig.getFeedbackSurveyUrl(frontendAppConfig.defaultOrigin))), None)
           .url
 
         assertContainsLink(doc, "Sign Out", href)

@@ -14,7 +14,7 @@
  * limitations under the License.
  *@
 
-@import config.ConfigDecorator
+@import config.FrontendAppConfig
 @import scala.concurrent.ExecutionContext
 @import components.{H1, P, Button}
 
@@ -25,7 +25,7 @@
     button: Button
 )
 
-@()(implicit request: Request[_], configDecorator: ConfigDecorator, messages: play.api.i18n.Messages, ec: ExecutionContext)
+@()(implicit request: Request[_], frontendAppConfig: FrontendAppConfig, messages: play.api.i18n.Messages, ec: ExecutionContext)
 
 @main(
     pageTitle = titleNoForm(messages("label.sign_in")),

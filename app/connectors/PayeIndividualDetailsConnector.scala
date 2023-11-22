@@ -18,7 +18,7 @@ package connectors
 
 import com.google.inject.Inject
 import com.kenshoo.play.metrics.Metrics
-import config.ConfigDecorator
+import config.FrontendAppConfig
 import play.api.Logging
 import play.api.http.Status._
 import services.http.SimpleHttp
@@ -42,11 +42,11 @@ case class IndividualDetailsErrorResponse(cause: Exception) extends IndividualDe
 class PayeIndividualDetailsConnector @Inject()(
                                                 val simpleHttp: SimpleHttp,
                                                 val metrics: Metrics,
-                                                config: ConfigDecorator
+                                                frontendAppConfig: FrontendAppConfig
                                               ) extends Logging {
 
   def individualDetails(nino: Nino)(implicit hc: HeaderCarrier): Future[IndividualDetailsResponse] = {
-    simpleHttp.get[IndividualDetailsResponse](s"${config.api1303ServiceUrl}/pay-as-you-earn/02.00.00/individuals/$nino")(
+    simpleHttp.get[IndividualDetailsResponse](s"${frontendAppConfig.api1303ServiceUrl}/pay-as-you-earn/02.00.00/individuals/$nino")(
       onComplete = {
         case response if response.status >= 200 && response.status < 300 =>
           IndividualDetailsSuccessResponse(response.body)

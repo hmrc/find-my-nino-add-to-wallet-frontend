@@ -25,7 +25,7 @@ import views.html.public.SessionTimeoutView
 class PublicControllerSpec extends SpecBase {
 
   private def controller = new PublicController(injected[SessionTimeoutView],injected[AuthConnector])(
-    configDecorator,cc,config,env)
+    frontendAppConfig,cc,config,env)
 
   "Calling PublicController.sessionTimeout" - {
 

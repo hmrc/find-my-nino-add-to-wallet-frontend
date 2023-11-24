@@ -48,8 +48,7 @@ object Person {
 
   implicit class PersonOps(private val person: Person) extends AnyVal {
 
-    def givenName: List[String] =
-      List(person.firstName.getOrElse(""), person.middleName.getOrElse(""))
+    def givenName: String = person.firstName.getOrElse("")
 
     def familyName: String = person.lastName.getOrElse("")
   }

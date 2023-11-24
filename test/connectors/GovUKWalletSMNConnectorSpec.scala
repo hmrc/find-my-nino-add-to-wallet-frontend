@@ -42,7 +42,7 @@ class GovUKWalletSMNConnectorSpec extends ConnectorSpec with WireMockHelper
   "GovUKWalletSMNConnector"  must {
     "create a GovUKPass" ignore {
       // Define test data
-      val givenName = List("John", "Doe")
+      val givenName = "John"
       val familyName = "Smith"
       val nino = "AB123456C"
 

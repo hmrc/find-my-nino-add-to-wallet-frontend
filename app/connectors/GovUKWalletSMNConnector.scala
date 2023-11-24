@@ -31,7 +31,7 @@ class GovUKWalletSMNConnector @Inject()(frontendAppConfig: FrontendAppConfig, ht
 
   private val headers: Seq[(String, String)] = Seq("Content-Type" -> "application/json")
 
-  def createGovUKPass(givenName: List[String], familyName: String, nino: String)
+  def createGovUKPass(givenName: String, familyName: String, nino: String)
                      (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Some[GovUkPassCreateResponse]] = {
 
     val url = s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/create-govuk-pass"

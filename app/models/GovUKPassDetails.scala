@@ -18,7 +18,7 @@ package models
 
 import play.api.libs.json.{Json, OFormat}
 
-case class GovUKPassDetails(givenName: List[String], familyName: String, nino: String)
+case class GovUKPassDetails(givenName: String, familyName: String, nino: String)
 
 case object GovUKPassDetails {
 

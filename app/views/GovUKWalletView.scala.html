@@ -15,7 +15,7 @@
  *@
 
 @import components.{H1, H2, P, Link, BulletList}
-@import config.ConfigDecorator
+@import config.FrontendAppConfig
 
 @this(
     layout: templates.LayoutProvider,
@@ -24,32 +24,42 @@
     p: P,
     link: Link,
     list: BulletList,
-    configDecorator: ConfigDecorator
+    frontendAppConfig: FrontendAppConfig
 )
 
 @(
-    govUKPassId: String,
+    govUKPassUrl: String,
+    qrCodeImage: String,
     displayForMobile: Boolean
 )(implicit request: Request[_], messages: Messages)
 
 @stylesheet = {
-<link rel="stylesheet" href='@routes.AssetsController.versioned("stylesheets/partials/save-your-nino.css")'>
+    <link rel="stylesheet" href='@routes.AssetsController.versioned("stylesheets/partials/save-your-nino.css")'>
 }
 
 @layout(pageTitle = titleNoForm(messages("govUKWallet.title")), stylesheets = Some(stylesheet)) {
 
- @h1("govUKWallet.heading")
- @p("govUKWallet.p1")
- @list(elements = Seq(
-  "govUKWallet.l1.li1",
-  "govUKWallet.l1.li2",
-  "govUKWallet.l1.li3",
-  "govUKWallet.l1.li4"
- ))
- @p("govUKWallet.p2")
 
-  <div class="show-on-phones">
-   @h2("govUKWallet.scanQRCodeToAdd.heading")
-   <img id="govuk-qr-code" src='/@configDecorator.serviceName/get-govuk-qr-code?passId=@{govUKPassId}' width="200" height="200" alt='@messages("govUKWallet.addToWallet.QRCode.alt")'>
-  </div>
+    @h1("govUKWallet.heading")
+    @p("govUKWallet.p1")
+    @list(elements = Seq(
+    "govUKWallet.l1.li1",
+    "govUKWallet.l1.li2",
+    "govUKWallet.l1.li3",
+    "govUKWallet.l1.li4"
+    ))
+    @p("govUKWallet.p2")
+
+    @if(displayForMobile) {
+        <div class="show-on-phones">
+            <a href=@govUKPassUrl>Add National Insurance Number card to your GovUK wallet</a>
+        </div>
+    } else {
+        <div class="show-on-desktops">
+            @h2("govUKWallet.scanQRCodeToAdd.heading")
+            <img id="govuk-qr-code" src="data:image/png;base64,@qrCodeImage" width="400" height="400" alt='@messages("govUKWallet.addToWallet.QRCode.alt")'>
+        </div>
+
+    }
+
 }

@@ -16,15 +16,17 @@
 
 package controllers
 
-import config.{ConfigDecorator, FrontendAppConfig}
+import config.FrontendAppConfig
 import connectors.GovUKWalletSMNConnector
 import controllers.auth.requests.UserRequest
+import models.GovUkPassCreateResponse
 import play.api.{Configuration, Environment}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
 import uk.gov.hmrc.auth.core.AuthConnector
 import views.html.{ErrorTemplate, GovUKWalletView}
 
+import java.util.Base64
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -36,7 +38,6 @@ class GovUKWalletController @Inject()(
                                       getPersonDetailsAction: GetPersonDetailsAction,
                                       govUKWalletSMNConnector: GovUKWalletSMNConnector
                                     )(implicit config: Configuration,
-                                       configDecorator: ConfigDecorator,
                                        env: Environment,
                                        ec: ExecutionContext,
                                        cc: MessagesControllerComponents,
@@ -49,17 +50,21 @@ class GovUKWalletController @Inject()(
     implicit request =>
       if (frontendAppConfig.govukWalletEnabled) {
         for {
-          pId: Some[String] <- govUKWalletSMNConnector.createGovUKPass(
+          pId: Some[GovUkPassCreateResponse] <- govUKWalletSMNConnector.createGovUKPass(
             request.personDetails.person.givenName,
             request.personDetails.person.familyName,
             request.nino.map(_.formatted).getOrElse(""))
-        } yield Ok(view(pId.value, isMobileDisplay(request)))
+        } yield Ok(view(
+              pId.value.url,
+              pId.value.bytes,
+              isMobileDisplay(request)))
       }
       else {
         Future(Redirect(routes.UnauthorisedController.onPageLoad))
       }
 
   }
+
 
   private def isMobileDisplay(request: UserRequest[AnyContent]): Boolean = {
     // Display wallet options differently on mobile to pc

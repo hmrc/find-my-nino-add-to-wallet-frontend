@@ -17,7 +17,7 @@
 package controllers
 
 import com.google.inject.Inject
-import config.ConfigDecorator
+import config.FrontendAppConfig
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import play.api.{Configuration, Environment}
@@ -29,7 +29,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 class PublicController @Inject()(sessionTimeoutView: SessionTimeoutView,
                                  authConnector: AuthConnector
-                                )(implicit configDecorator: ConfigDecorator,
+                                )(implicit frontendAppConfig: FrontendAppConfig,
                                            cc: MessagesControllerComponents,
                                            config: Configuration,
                                            env: Environment) extends FMNBaseController(authConnector) with I18nSupport  {

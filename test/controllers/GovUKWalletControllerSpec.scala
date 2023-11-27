@@ -18,6 +18,7 @@ package controllers
 
 import base.SpecBase
 import connectors._
+import models.GovUkPassCreateResponse
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{reset, when}
 import org.scalatestplus.mockito.MockitoSugar
@@ -47,7 +48,7 @@ class GovUKWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
 
     reset(mockGovUKWalletSMNConnector)
     when(mockGovUKWalletSMNConnector.createGovUKPass(any(), any(), any())(any(), any()))
-      .thenReturn(Future(Some(passId)))
+      .thenReturn(Future.successful(Some(GovUkPassCreateResponse("passId", "qrCodeImage"))))
 
     reset(mockSessionRepository)
     when(mockSessionRepository.get(any())) thenReturn Future.successful(Some(emptyUserAnswers))
@@ -127,7 +128,7 @@ class GovUKWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         status(result) mustEqual OK
-        contentAsString(result) mustEqual (view(passId, false)(request, messages(application))).toString
+        contentAsString(result) mustEqual (view(passId, "qrCodeImage", false)(request, messages(application))).toString
       }
     }
 
@@ -152,7 +153,7 @@ class GovUKWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         status(result) mustEqual OK
-        contentAsString(result) mustEqual (view(passId, false)(request.withAttrs(requestAttributeMap), messages(application))).toString
+        contentAsString(result) mustEqual (view(passId, "qrCodeImage", false)(request.withAttrs(requestAttributeMap), messages(application))).toString
       }
     }
     "must fail to login user" in {

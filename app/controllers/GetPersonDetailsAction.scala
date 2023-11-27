@@ -17,7 +17,7 @@
 package controllers
 
 import com.google.inject.Inject
-import config.ConfigDecorator
+import config.FrontendAppConfig
 import connectors.{CitizenDetailsConnector, PersonDetailsHiddenResponse, PersonDetailsNotFoundResponse, PersonDetailsSuccessResponse}
 import controllers.auth.AuthContext
 import controllers.auth.requests.UserRequest
@@ -37,7 +37,7 @@ class GetPersonDetailsAction @Inject()(
                                         cc: ControllerComponents,
                                         val messagesApi: MessagesApi,
                                         redirectView: RedirectToPostalFormView
-                                      )(implicit configDecorator: ConfigDecorator, ec: ExecutionContext)
+                                      )(implicit frontendAppConfig: FrontendAppConfig, ec: ExecutionContext)
   extends ActionRefiner[AuthContext, UserRequest]
     with ActionFunction[AuthContext, UserRequest]
     with I18nSupport {
@@ -69,9 +69,9 @@ class GetPersonDetailsAction @Inject()(
         citizenDetailsConnector.personDetails(authContext.nino.nino).map {
           case PersonDetailsSuccessResponse(pd) => Right(pd)
           case PersonDetailsNotFoundResponse =>
-            Left(InternalServerError(redirectView()(authContext.request, configDecorator, messages)))
+            Left(InternalServerError(redirectView()(authContext.request, frontendAppConfig, messages)))
           case PersonDetailsHiddenResponse =>
-            Left(Ok(redirectView()(authContext.request, configDecorator, messages)))
+            Left(Ok(redirectView()(authContext.request, frontendAppConfig, messages)))
           case _ => Left(InternalServerError(redirectView()(authContext.request, configDecorator, messages)))
     }
   }

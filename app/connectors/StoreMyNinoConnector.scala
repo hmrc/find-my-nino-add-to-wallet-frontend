@@ -17,7 +17,7 @@
 package connectors
 
 import com.google.inject.Inject
-import config.ConfigDecorator
+import config.FrontendAppConfig
 import models.PersonDetails
 import play.api.http.Status._
 import play.api.libs.json._
@@ -31,7 +31,7 @@ case class ApplePassDetails(fullName: String, nino: String)
 case class GooglePassDetails(fullName: String, nino: String)
 case class GooglePassDetailsWithCredentials(fullName: String, nino: String, credentials: String)
 
-class StoreMyNinoConnector @Inject()(config: ConfigDecorator, http: HttpClient) {
+class StoreMyNinoConnector @Inject()(frontendAppConfig: FrontendAppConfig, http: HttpClient) {
 
   private val headers: Seq[(String, String)] = Seq("Content-Type" -> "application/json")
   implicit val writes: Writes[ApplePassDetails] = Json.writes[ApplePassDetails]
@@ -41,7 +41,7 @@ class StoreMyNinoConnector @Inject()(config: ConfigDecorator, http: HttpClient) 
 
   def createPersonDetailsRow(personDetails:PersonDetails)
                            (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Some[String]] = {
-    val url = s"${config.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/create-person-details"
+    val url = s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/create-person-details"
     val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
 
     http.POST[JsValue, HttpResponse](url, Json.toJson(personDetails))(implicitly, implicitly, hc, implicitly)
@@ -56,7 +56,7 @@ class StoreMyNinoConnector @Inject()(config: ConfigDecorator, http: HttpClient) 
   def getPersonDetails(pdId: String)
                   (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Option[String]] = {
 
-    val url = s"${config.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-person-details?pdId=$pdId"
+    val url = s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-person-details?pdId=$pdId"
     val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
 
     http.GET[HttpResponse](url)(implicitly, hc, implicitly)
@@ -71,7 +71,7 @@ class StoreMyNinoConnector @Inject()(config: ConfigDecorator, http: HttpClient) 
   def createApplePass(fullName: String, nino: String)
                      (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Some[String]] = {
 
-    val url = s"${config.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/create-apple-pass"
+    val url = s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/create-apple-pass"
     val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
 
     val details = ApplePassDetails(fullName, nino)
@@ -88,7 +88,7 @@ class StoreMyNinoConnector @Inject()(config: ConfigDecorator, http: HttpClient) 
   def getApplePass(passId: String)
                   (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Option[Array[Byte]]] = {
 
-    val url = s"${config.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-pass-card?passId=$passId"
+    val url = s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-pass-card?passId=$passId"
     val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
 
     http.GET[HttpResponse](url)(implicitly, hc, implicitly)
@@ -104,7 +104,7 @@ class StoreMyNinoConnector @Inject()(config: ConfigDecorator, http: HttpClient) 
   def getApplePassByNameAndNino(fullName: String, nino: String)
                                (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Option[Array[Byte]]] = {
 
-    val url = s"${config.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-pass-details-by-name-and-nino?fullName=$fullName&nino=$nino"
+    val url = s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-pass-details-by-name-and-nino?fullName=$fullName&nino=$nino"
     val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
 
     http.GET[HttpResponse](url)(implicitly, hc, implicitly)
@@ -119,7 +119,7 @@ class StoreMyNinoConnector @Inject()(config: ConfigDecorator, http: HttpClient) 
   def getQrCode(passId: String)
                (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Option[Array[Byte]]] = {
 
-    val url = s"${config.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-qr-code?passId=$passId"
+    val url = s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-qr-code?passId=$passId"
     val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
 
     http.GET[HttpResponse](url)(implicitly, hc, implicitly)
@@ -135,7 +135,7 @@ class StoreMyNinoConnector @Inject()(config: ConfigDecorator, http: HttpClient) 
   def createGooglePassWithCredentials(fullName: String, nino: String, credentials: String)
                                      (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Some[String]] = {
 
-    val url = s"${config.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/create-google-pass-with-credentials"
+    val url = s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/create-google-pass-with-credentials"
     val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
 
     val details = GooglePassDetailsWithCredentials(fullName, nino, credentials)
@@ -152,7 +152,7 @@ class StoreMyNinoConnector @Inject()(config: ConfigDecorator, http: HttpClient) 
   def getGooglePassUrl(passId: String)
                       (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Option[String]] = {
 
-    val url = s"${config.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-google-pass-url?passId=$passId"
+    val url = s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-google-pass-url?passId=$passId"
     val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
 
     http.GET[HttpResponse](url)(implicitly, hc, implicitly)
@@ -168,7 +168,7 @@ class StoreMyNinoConnector @Inject()(config: ConfigDecorator, http: HttpClient) 
   def getGooglePassQrCode(passId: String)
                          (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Option[Array[Byte]]] = {
 
-    val url = s"${config.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-google-qr-code?passId=$passId"
+    val url = s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-google-qr-code?passId=$passId"
     val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
 
     http.GET[HttpResponse](url)(implicitly, hc, implicitly)

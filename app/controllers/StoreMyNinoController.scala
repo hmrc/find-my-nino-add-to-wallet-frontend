@@ -16,7 +16,7 @@
 
 package controllers
 
-import config.{ConfigDecorator, FrontendAppConfig}
+import config.FrontendAppConfig
 import connectors.{StoreMyNinoConnector, CitizenDetailsConnector}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
@@ -39,7 +39,6 @@ class StoreMyNinoController @Inject()(
                                        view: StoreMyNinoView,
                                        errorTemplate: ErrorTemplate
                                      )(implicit config: Configuration,
-                                       configDecorator: ConfigDecorator,
                                        env: Environment,
                                        ec: ExecutionContext,
                                        cc: MessagesControllerComponents,
@@ -52,7 +51,7 @@ class StoreMyNinoController @Inject()(
 
   def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction) async {
     implicit request => {
-      auditService.audit(AuditUtils.buildAuditEvent(request.personDetails, "ViewNinoLanding", configDecorator.appName, None))
+      auditService.audit(AuditUtils.buildAuditEvent(request.personDetails, "ViewNinoLanding", frontendAppConfig.appName, None))
       Future(Ok(view(request.nino.map(_.formatted).getOrElse(""))))
     }
   }

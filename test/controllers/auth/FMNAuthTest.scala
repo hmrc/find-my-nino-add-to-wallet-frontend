@@ -17,7 +17,7 @@
 package controllers.auth
 
 import base.SpecBase
-import config.{ConfigDecorator, FrontendAppConfig}
+import config.FrontendAppConfig
 import controllers.ApplicationController
 import org.mockito.MockitoSugar.when
 import play.api.http.Status.{SEE_OTHER, FAILED_DEPENDENCY}
@@ -54,7 +54,7 @@ class FMNAuthTest extends SpecBase {
       injected[LockedOutView],
       injected[TimeOutView],
       injected[TechnicalIssuesView]
-    )(config, mock[ConfigDecorator], env, ec, injected[MessagesControllerComponents], mock[FrontendAppConfig])
+    )(config, env, ec, injected[MessagesControllerComponents], mock[FrontendAppConfig])
 
   "Methods tests" - {
 

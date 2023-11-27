@@ -3,7 +3,7 @@ package controllers
 
 import base.IntegrationSpecBase
 import com.github.tomakehurst.wiremock.client.WireMock._
-import config.ConfigDecorator
+import config.FrontendAppConfig
 import controllers.auth.requests.UserRequest
 import controllers.auth.routes
 import models.{Address, Person, PersonDetails, UserName}
@@ -57,7 +57,7 @@ class StoreMyNinoControllerISpec extends IntegrationSpecBase {
 
   override lazy val messagesApi: MessagesApi = app.injector.instanceOf[MessagesApi]
 
-  implicit lazy val configDecorator: ConfigDecorator = app.injector.instanceOf[ConfigDecorator]
+  implicit lazy val frontendAppConfig: FrontendAppConfig = app.injector.instanceOf[FrontendAppConfig]
   implicit lazy val messages: Messages = MessagesImpl(Lang("en"), messagesApi).messages
 
   trait LocalSetup {
@@ -139,7 +139,7 @@ class StoreMyNinoControllerISpec extends IntegrationSpecBase {
       "render the sign out link" in new LocalSetup {
 
         val href: String =  routes.AuthController
-          .signout(Some(RedirectUrl(configDecorator.getFeedbackSurveyUrl(configDecorator.defaultOrigin))), None)
+          .signout(Some(RedirectUrl(frontendAppConfig.getFeedbackSurveyUrl(frontendAppConfig.defaultOrigin))), None)
           .url
 
         assertContainsLink(doc, "Sign Out", href)

@@ -1,4 +1,4 @@
-@*
+/*
  * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,27 +12,13 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *@
+ */
 
-@import config.FrontendAppConfig
-@import scala.concurrent.ExecutionContext
-@import components.{H1, P}
+package models
+import play.api.libs.json.{Json, OFormat}
 
-@this(
-    main: UnauthenticatedMainView,
-    h1: H1,
-    p: P
-)
+case class GovUkPassCreateResponse(url: String, bytes: String)
 
-@(pageTitle: String, heading: String, message: String)(implicit request: Request[_],
-    frontendAppConfig: FrontendAppConfig, messages: play.api.i18n.Messages, ec: ExecutionContext)
-
-@main(
-    pageTitle = messages(pageTitle),
-    showBackLink = true
-) {
-
-    @h1(heading)
-    @p(HtmlContent(messages(message)))
-
+object GovUkPassCreateResponse {
+  implicit val format: OFormat[GovUkPassCreateResponse] = Json.format[GovUkPassCreateResponse]
 }

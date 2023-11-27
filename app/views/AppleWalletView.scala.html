@@ -15,7 +15,7 @@
  *@
 
 @import components.{H1, H2, P, Link, BulletList}
-@import config.ConfigDecorator
+@import config.FrontendAppConfig
 
 @this(
     layout: templates.LayoutProvider,
@@ -24,7 +24,7 @@
     p: P,
     link: Link,
     list: BulletList,
-    configDecorator: ConfigDecorator
+    frontendAppConfig: FrontendAppConfig
 )
 
 @(
@@ -51,8 +51,8 @@
     @if(displayForMobile) {
         <div class="show-on-phones">
             @h2("appleWallet.tapToAdd.heading")
-            <a href='/@configDecorator.serviceName/get-pass-card?passId=@{passId}'>
-                <img class="add-wallet-ios" src="/@configDecorator.serviceName/assets/images/apple-pay.svg" alt='@messages("appleWallet.addToWallet.alt")'>
+            <a href='/@frontendAppConfig.serviceName/get-pass-card?passId=@{passId}'>
+                <img class="add-wallet-ios" src="/@frontendAppConfig.serviceName/assets/images/apple-pay.svg" alt='@messages("appleWallet.addToWallet.alt")'>
             </a>
         </div>
     } else {
@@ -60,12 +60,12 @@
             @h2("appleWallet.saveAndSendToPhone.heading")
             <p class="govuk-body">
                 @messages("appleWallet.saveAndSendToPhone.p1.part1")
-                <a class="govuk-link" href='/@configDecorator.serviceName/get-pass-card?passId=@{passId}'>@messages("appleWallet.saveAndSendToPhone.p1.linkText")</a>
+                <a class="govuk-link" href='/@frontendAppConfig.serviceName/get-pass-card?passId=@{passId}'>@messages("appleWallet.saveAndSendToPhone.p1.linkText")</a>
                 @messages("appleWallet.saveAndSendToPhone.p1.part2")
             </p>
             @h2("appleWallet.scanQRCodeToAdd.heading")
             @p("appleWallet.scanQRCodeToAdd.p1")
-            <img id="apple-qr-code" src='/@configDecorator.serviceName/get-qr-code?passId=@{passId}' width="200" height="200" alt='@messages("appleWallet.addToWallet.QRCode.alt")'>
+            <img id="apple-qr-code" src='/@frontendAppConfig.serviceName/get-qr-code?passId=@{passId}' width="200" height="200" alt='@messages("appleWallet.addToWallet.QRCode.alt")'>
         </div>
     }
 }

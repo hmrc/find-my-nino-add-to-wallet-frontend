@@ -16,7 +16,7 @@
 
 package controllers.auth
 
-import config.ConfigDecorator
+import config.FrontendAppConfig
 import controllers.bindable.Origin
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -29,7 +29,7 @@ import scala.concurrent.ExecutionContext
 
 class AuthController @Inject()(
                                 val controllerComponents: MessagesControllerComponents,
-                                configDecorator: ConfigDecorator,
+                                frontendAppConfig: FrontendAppConfig,
                                 wrapperService: WrapperService
                               )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
@@ -37,9 +37,9 @@ class AuthController @Inject()(
     Action { implicit request =>
       val safeUrl = wrapperService.safeSignoutUrl()
       safeUrl
-        .orElse(origin.map(configDecorator.getFeedbackSurveyUrl))
+        .orElse(origin.map(frontendAppConfig.getFeedbackSurveyUrl))
         .fold(BadRequest("Missing origin")) { url: String =>
-          Redirect(configDecorator.getBasGatewayFrontendSignOutUrl(url))
+          Redirect(frontendAppConfig.getBasGatewayFrontendSignOutUrl(url))
         }
     }
 }

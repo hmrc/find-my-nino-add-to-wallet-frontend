@@ -72,7 +72,7 @@ class GetPersonDetailsAction @Inject()(
             Left(InternalServerError(redirectView()(authContext.request, frontendAppConfig, messages)))
           case PersonDetailsHiddenResponse =>
             Left(Ok(redirectView()(authContext.request, frontendAppConfig, messages)))
-          case _ => Left(InternalServerError(redirectView()(authContext.request, configDecorator, messages)))
+          case _ => Left(InternalServerError(redirectView()(authContext.request, frontendAppConfig, messages)))
     }
   }
 

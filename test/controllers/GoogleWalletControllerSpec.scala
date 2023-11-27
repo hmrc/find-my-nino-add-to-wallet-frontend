@@ -119,7 +119,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
         val result = route(application, request).value
         status(result) mustEqual INTERNAL_SERVER_ERROR
 
-        contentAsString(result) mustEqual (redirectview()(request, configDecorator, messages(application))).toString()
+        contentAsString(result) mustEqual (redirectview()(request, frontendAppConfig, messages(application))).toString()
       }
       reset(mockCitizenDetailsConnector)
     }

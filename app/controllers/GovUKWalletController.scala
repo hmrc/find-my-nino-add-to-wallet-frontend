@@ -35,7 +35,7 @@ class GovUKWalletController @Inject()(
                                       authConnector: AuthConnector,
                                       view: GovUKWalletView,
                                       errorTemplate: ErrorTemplate,
-                                      getPersonDetailsAction: GetPersonDetailsAction,
+                                      getPersonDetailsAction: GetPersonDetailsFromAuthAction,
                                       govUKWalletSMNConnector: GovUKWalletSMNConnector
                                     )(implicit config: Configuration,
                                        env: Environment,

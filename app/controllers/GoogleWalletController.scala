@@ -26,7 +26,7 @@ import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
 import services.AuditService
 import uk.gov.hmrc.auth.core.AuthConnector
-import util.{AuditUtils, GoogleCredentialsHelper}
+import util.AuditUtils
 import views.html.{ErrorTemplate, GoogleWalletView, PassIdNotFoundView, QRCodeNotFoundView}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -39,7 +39,6 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
                                        errorTemplate: ErrorTemplate,
                                        getPersonDetailsAction: GetPersonDetailsAction,
                                        auditService: AuditService,
-                                       googleCredentialsHelper: GoogleCredentialsHelper,
                                        passIdNotFoundView: PassIdNotFoundView,
                                        qrCodeNotFoundView: QRCodeNotFoundView
                                       )(implicit config: Configuration,
@@ -54,10 +53,9 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
     implicit request => {
       auditService.audit(AuditUtils.buildAuditEvent(request.personDetails, "ViewWalletPage", frontendAppConfig.appName, Some("Google")))
       for {
-        pId: Some[String] <- findMyNinoServiceConnector.createGooglePassWithCredentials(
+        pId: Some[String] <- findMyNinoServiceConnector.createGooglePass(
           request.personDetails.person.fullName,
-          request.nino.map(_.formatted).getOrElse(""),
-          googleCredentialsHelper.createGoogleCredentials(frontendAppConfig.googleKey))
+          request.nino.map(_.formatted).getOrElse(""))
       } yield Ok(view(pId.value, isMobileDisplay(request)))
     }
   }

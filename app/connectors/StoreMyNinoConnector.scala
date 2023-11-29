@@ -29,7 +29,6 @@ import scala.concurrent.{ExecutionContext, Future}
 
 case class ApplePassDetails(fullName: String, nino: String)
 case class GooglePassDetails(fullName: String, nino: String)
-case class GooglePassDetailsWithCredentials(fullName: String, nino: String, credentials: String)
 
 class StoreMyNinoConnector @Inject()(frontendAppConfig: FrontendAppConfig, http: HttpClient) {
 
@@ -37,7 +36,6 @@ class StoreMyNinoConnector @Inject()(frontendAppConfig: FrontendAppConfig, http:
   implicit val writes: Writes[ApplePassDetails] = Json.writes[ApplePassDetails]
 
   implicit val googleWrites: Writes[GooglePassDetails] = Json.writes[GooglePassDetails]
-  implicit val googleWritesWithCredentials: Writes[GooglePassDetailsWithCredentials] = Json.writes[GooglePassDetailsWithCredentials]
 
   def createPersonDetailsRow(personDetails:PersonDetails)
                            (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Some[String]] = {
@@ -132,13 +130,13 @@ class StoreMyNinoConnector @Inject()(frontendAppConfig: FrontendAppConfig, http:
       }
   }
 
-  def createGooglePassWithCredentials(fullName: String, nino: String, credentials: String)
+  def createGooglePass(fullName: String, nino: String)
                                      (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Some[String]] = {
 
     val url = s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/create-google-pass-with-credentials"
     val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
 
-    val details = GooglePassDetailsWithCredentials(fullName, nino, credentials)
+    val details = GooglePassDetails(fullName, nino)
 
     http.POST[JsValue, HttpResponse](url, Json.toJson(details))(implicitly, implicitly, hc, implicitly)
       .map { response =>

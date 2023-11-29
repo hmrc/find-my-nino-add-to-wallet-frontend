@@ -54,7 +54,7 @@ class NinoLetterControllerSpec extends SpecBase with CDFixtures with MockitoSuga
   "NinoLetter Controller" - {
     "must return OK and the correct view for a GET" in {
       userLoggedInFMNUser(NinoUser)
-0
+      
       val application = applicationBuilderWithConfig()
         .overrides(
           bind[StoreMyNinoConnector].toInstance(mockApplePassConnector),

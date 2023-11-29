@@ -33,7 +33,6 @@ import util.TestData.NinoUser
 import util.CDFixtures
 import views.html.{ErrorTemplate, GovUKWalletView, RedirectToPostalFormView}
 
-import java.util.Base64
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 

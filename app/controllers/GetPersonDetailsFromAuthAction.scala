@@ -42,7 +42,7 @@ class GetPersonDetailsFromAuthAction @Inject()(cc: ControllerComponents,
         Some(Nino(authContext.nino.nino)),
         Some(UserName(authContext.name)),
         authContext.confidenceLevel,
-        Some(getPersonDetails(authContext)),
+        getPersonDetails(authContext),
         authContext.allEnrolments,
         authContext.request
       )

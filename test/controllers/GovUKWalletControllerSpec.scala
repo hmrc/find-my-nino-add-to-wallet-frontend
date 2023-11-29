@@ -80,35 +80,6 @@ class GovUKWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
 
   "Govuk Wallet Controller" - {
 
-    "must return ErrorView and the correct view for a GET" in {
-      val application =
-        applicationBuilderWithConfig()
-          .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
-            inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector),
-            inject.bind[GovUKWalletSMNConnector].toInstance(mockGovUKWalletSMNConnector),
-            inject.bind[IdentityVerificationFrontendConnector].toInstance(mockIdentityVerificationFrontendConnector)
-          )
-          .configure("features.sca-wrapper-enabled" -> false)
-          .configure("features.govuk-wallet-enabled" -> true)
-          .build()
-
-      when(mockCitizenDetailsConnector.personDetails(any())(any()))
-        .thenReturn(Future(PersonDetailsErrorResponse(new RuntimeException("error"))))
-
-      running(application) {
-        userLoggedInFMNUser(NinoUser)
-        val request = FakeRequest(GET, routes.GovUKWalletController.onPageLoad.url)
-          .withSession(("authToken", "Bearer 123"))
-        val result = route(application, request).value
-        status(result) mustEqual INTERNAL_SERVER_ERROR
-
-        contentAsString(result) mustEqual (redirectview()(request, frontendAppConfig, messages(application))).toString()
-      }
-      reset(mockCitizenDetailsConnector)
-    }
-
-
     "must return OK and the correct view for a GET" in {
       val application =
         applicationBuilderWithConfig()

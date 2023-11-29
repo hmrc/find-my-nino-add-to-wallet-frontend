@@ -42,7 +42,7 @@ class CitizenDetailsConnector @Inject() (
   config: FrontendAppConfig
 ) extends  Logging {
 
-  def personDetails(nino: Nino)(implicit hc: HeaderCarrier): Future[PersonDetailsResponse] =
+  def personDetails(nino: String)(implicit hc: HeaderCarrier): Future[PersonDetailsResponse] =
      {
       simpleHttp.get[PersonDetailsResponse](s"${config.citizenDetailsServiceUrl}/citizen-details/$nino/designatory-details")(
         onComplete = {

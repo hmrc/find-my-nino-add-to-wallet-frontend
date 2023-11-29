@@ -49,20 +49,15 @@ class GovUKWalletController @Inject()(
   def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction) async {
     implicit request =>
       if (frontendAppConfig.govukWalletEnabled) {
-        request.personDetails match {
-          case Some(pd) =>
-            for {
-              pId: Some[GovUkPassCreateResponse] <- govUKWalletSMNConnector.createGovUKPass(
-                pd.person.givenName,
-                pd.person.familyName,
-                request.nino.map(_.formatted).getOrElse(""))
-            } yield Ok(view(
+        for {
+          pId: Some[GovUkPassCreateResponse] <- govUKWalletSMNConnector.createGovUKPass(
+            request.personDetails.person.givenName,
+            request.personDetails.person.familyName,
+            request.nino.map(_.formatted).getOrElse(""))
+        } yield Ok(view(
               pId.value.url,
               pId.value.bytes,
               isMobileDisplay(request)))
-          case None =>
-            Future(NotFound(errorTemplate("Details not found", "Your details were not found.", "Your details were not found, please try again later.")))
-        }
       }
       else {
         Future(Redirect(routes.UnauthorisedController.onPageLoad))

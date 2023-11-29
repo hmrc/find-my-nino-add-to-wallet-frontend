@@ -27,7 +27,7 @@ final case class UserRequest[A](
   //saUserType: SelfAssessmentUserType,
   //credentials: Credentials,
   confidenceLevel: ConfidenceLevel,
-  personDetails: Option[PersonDetails],
+  personDetails: PersonDetails,
   //trustedHelper: Option[TrustedHelper],
   enrolments: Enrolments,
   //profile: Option[String],
@@ -37,10 +37,7 @@ final case class UserRequest[A](
 ) extends WrappedRequest[A](request) {
 
   // $COVERAGE-OFF$
-  def name: Option[String] = personDetails match {
-    case Some(personDetails) => personDetails.person.shortName
-    case _                   => retrievedName.map(_.toString)
-  }
+  def name: Option[String] = personDetails.person.shortName
   // $COVERAGE-ON$
   //def isSa: Boolean = saUserType != NonFilerSelfAssessmentUser
 

@@ -26,6 +26,7 @@ import play.api.{Configuration, Environment}
 import services.AuditService
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.http.NotFoundException
 import util.XmlFoToPDF
 import util.AuditUtils
 import views.html.identity.TechnicalIssuesView
@@ -55,39 +56,30 @@ class NinoLetterController @Inject()(
 
   def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction) {
     implicit request => {
-      val personDetails: PersonDetails = request.personDetails.get
-      auditService.audit(AuditUtils.buildAuditEvent(personDetails, "ViewNinoLetter", frontendAppConfig.appName, None))
-      Ok(view(
-        personDetails,
-        LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
-        true,
-        personDetails.person.nino.getOrElse(Nino("")).formatted))
+        auditService.audit(AuditUtils.buildAuditEvent(request.personDetails, "ViewNinoLetter", frontendAppConfig.appName, None))
+        Ok(view(
+          request.personDetails,
+          LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
+          true,
+          request.personDetails.person.nino.getOrElse(Nino("")).formatted))
+      }
     }
-  }
 
     def saveNationalInsuranceNumberAsPdf: Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction) {
     implicit request => {
+      auditService.audit(AuditUtils.buildAuditEvent(request.personDetails, "DownloadNinoLetter", frontendAppConfig.appName, None))
+      val pdf = xmlFoToPDF.createPDF(request.personDetails,
+        LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
+        messagesApi.preferred(request)
+      )
 
-      request.personDetails match {
-        case Some(personDetails @ PersonDetails(_, _, _)) =>
-          auditService.audit(AuditUtils.buildAuditEvent(personDetails, "DownloadNinoLetter", frontendAppConfig.appName, None))
-          val pdf = xmlFoToPDF.createPDF(personDetails,
-            LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
-            messagesApi.preferred(request)
-          )
+      val filename = messagesApi.preferred(request).messages("label.your_national_insurance_number_letter")
 
-          val filename = messagesApi.preferred(request).messages("label.your_national_insurance_number_letter")
-
-          Ok(pdf).as(MimeConstants.MIME_PDF)
-            .withHeaders(
-              CONTENT_TYPE -> "application/x-download",
-              CONTENT_DISPOSITION -> s"attachment; filename=${filename.replaceAll(" ", "-")}.pdf")
-        case _ =>
-          logger.warn("Person details not found from citizen details.")
-          NotFound(technicalIssuesView(routes.NinoLetterController.onPageLoad.url))
+      Ok(pdf).as(MimeConstants.MIME_PDF)
+        .withHeaders(
+          CONTENT_TYPE -> "application/x-download",
+          CONTENT_DISPOSITION -> s"attachment; filename=${filename.replaceAll(" ", "-")}.pdf")
       }
-
-    }
   }
 
 }

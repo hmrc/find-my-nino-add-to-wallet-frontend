@@ -51,17 +51,12 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
 
   def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction) async {
     implicit request => {
-      request.personDetails match {
-        case Some(pd) =>
-          auditService.audit(AuditUtils.buildAuditEvent(pd, "ViewWalletPage", frontendAppConfig.appName, Some("Google")))
-          for {
-            pId: Some[String] <- findMyNinoServiceConnector.createGooglePass(
-              pd.person.fullName,
-              request.nino.map(_.formatted).getOrElse(""))
-          } yield Ok(view(pId.value, isMobileDisplay(request)))
-        case None =>
-          Future(NotFound(errorTemplate("Details not found", "Your details were not found.", "Your details were not found, please try again later.")))
-      }
+      auditService.audit(AuditUtils.buildAuditEvent(request.personDetails, "ViewWalletPage", frontendAppConfig.appName, Some("Google")))
+      for {
+        pId: Some[String] <- findMyNinoServiceConnector.createGooglePass(
+          request.personDetails.person.fullName,
+          request.nino.map(_.formatted).getOrElse(""))
+      } yield Ok(view(pId.value, isMobileDisplay(request)))
     }
   }
 
@@ -84,9 +79,9 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
         findMyNinoServiceConnector.getGooglePassUrl(passId).map {
           case Some(data) =>
             request.getQueryString("qr-code") match {
-              case Some("true") => auditService.audit(AuditUtils.buildAuditEvent(request.personDetails.get,
+              case Some("true") => auditService.audit(AuditUtils.buildAuditEvent(request.personDetails,
                 "AddNinoToWalletFromQRCode", frontendAppConfig.appName, Some("Google")))
-              case _ => auditService.audit(AuditUtils.buildAuditEvent(request.personDetails.get,
+              case _ => auditService.audit(AuditUtils.buildAuditEvent(request.personDetails,
                 "AddNinoToWallet", frontendAppConfig.appName, Some("Google")))
             }
             Redirect(data)
@@ -101,7 +96,7 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
       authorisedAsFMNUser { _ =>
         findMyNinoServiceConnector.getGooglePassQrCode(passId).map {
           case Some(data) =>
-            auditService.audit(AuditUtils.buildAuditEvent(request.personDetails.get, "DisplayQRCode", frontendAppConfig.appName, Some("Google")))
+            auditService.audit(AuditUtils.buildAuditEvent(request.personDetails, "DisplayQRCode", frontendAppConfig.appName, Some("Google")))
             Ok(data)
           case _ => NotFound(qrCodeNotFoundView())
         }

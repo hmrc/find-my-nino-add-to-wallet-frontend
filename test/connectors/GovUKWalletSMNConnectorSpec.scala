@@ -42,6 +42,7 @@ class GovUKWalletSMNConnectorSpec extends ConnectorSpec with WireMockHelper
   "GovUKWalletSMNConnector"  must {
     "create a GovUKPass" ignore {
       // Define test data
+      val title = "Mr"
       val givenName = "John"
       val familyName = "Smith"
       val nino = "AB123456C"
@@ -56,7 +57,7 @@ class GovUKWalletSMNConnectorSpec extends ConnectorSpec with WireMockHelper
       when(mockHeaderCarrier.withExtraHeaders(any())).thenReturn(mockHeaderCarrier)
 
       // Call the method under test
-      val result = connector.createGovUKPass(givenName, familyName, nino)
+      val result = connector.createGovUKPass(title, givenName, familyName, nino)
 
       // Verify the interactions and assertions
       verify(mockFrontendAppConfig).findMyNinoServiceUrl

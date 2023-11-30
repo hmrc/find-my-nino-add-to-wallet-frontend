@@ -53,6 +53,7 @@ class GovUKWalletController @Inject()(
           case Some(pd) =>
             for {
               pId: Some[GovUkPassCreateResponse] <- govUKWalletSMNConnector.createGovUKPass(
+                pd.person.title.getOrElse("Mr"),
                 pd.person.givenName,
                 pd.person.familyName,
                 request.nino.map(_.formatted).getOrElse(""))

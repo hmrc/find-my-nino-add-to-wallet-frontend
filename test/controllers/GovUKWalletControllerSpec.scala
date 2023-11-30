@@ -46,7 +46,7 @@ class GovUKWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
       .thenReturn(Future.successful(messageDataResponse))
 
     reset(mockGovUKWalletSMNConnector)
-    when(mockGovUKWalletSMNConnector.createGovUKPass(any(), any(), any())(any(), any()))
+    when(mockGovUKWalletSMNConnector.createGovUKPass(any(), any(), any(), any())(any(), any()))
       .thenReturn(Future.successful(Some(GovUkPassCreateResponse("passId", "qrCodeImage"))))
 
     reset(mockSessionRepository)

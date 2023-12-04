@@ -23,11 +23,11 @@ import models.{GovUkPassCreateResponse, PersonDetails}
 import play.api.{Configuration, Environment}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
+import services.AuditService
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.hmrcfrontend.views.Aliases.PersonalDetails
+import util.AuditUtils
 import views.html.{ErrorTemplate, GovUKWalletView}
 
-import java.util.Base64
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -37,7 +37,8 @@ class GovUKWalletController @Inject()(
                                       view: GovUKWalletView,
                                       errorTemplate: ErrorTemplate,
                                       getPersonDetailsAction: GetPersonDetailsFromAuthAction,
-                                      govUKWalletSMNConnector: GovUKWalletSMNConnector
+                                      govUKWalletSMNConnector: GovUKWalletSMNConnector,
+                                      auditService: AuditService,
                                     )(implicit config: Configuration,
                                        env: Environment,
                                        ec: ExecutionContext,
@@ -50,6 +51,7 @@ class GovUKWalletController @Inject()(
   def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction) async {
     implicit request =>
       if (frontendAppConfig.govukWalletEnabled) {
+        auditService.audit(AuditUtils.buildAuditEvent(request.personDetails, "ViewWalletPage", frontendAppConfig.appName, Some("GovUk")))
         request.personDetails match {
           case pd @ PersonDetails(person, _, _) =>
             for {

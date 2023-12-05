@@ -24,6 +24,7 @@ import play.api.{Configuration, Environment}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
 import services.AuditService
+import uk.gov.hmrc.audit
 import uk.gov.hmrc.auth.core.AuthConnector
 import util.AuditUtils
 import views.html.{ErrorTemplate, GovUKWalletView}
@@ -50,6 +51,7 @@ class GovUKWalletController @Inject()(
 
   def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction) async {
     implicit request =>
+      auditService.audit(AuditUtils.buildAuditEvent(request.personDetails, "ViewWalletPage", frontendAppConfig.appName, Some("GovUk")))
       if (frontendAppConfig.govukWalletEnabled) {
         auditService.audit(AuditUtils.buildAuditEvent(request.personDetails, "ViewWalletPage", frontendAppConfig.appName, Some("GovUk")))
         request.personDetails match {

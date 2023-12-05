@@ -65,7 +65,7 @@ class GovUKWalletController @Inject()(
       else {
         Future(Redirect(routes.UnauthorisedController.onPageLoad))
       }
-
+    }
   }
 
 

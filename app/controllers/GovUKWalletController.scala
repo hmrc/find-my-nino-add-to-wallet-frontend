@@ -19,11 +19,12 @@ package controllers
 import config.FrontendAppConfig
 import connectors.GovUKWalletSMNConnector
 import controllers.auth.requests.UserRequest
-import models.GovUkPassCreateResponse
+import models.{GovUkPassCreateResponse, PersonDetails}
 import play.api.{Configuration, Environment}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
 import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.hmrcfrontend.views.Aliases.PersonalDetails
 import views.html.{ErrorTemplate, GovUKWalletView}
 
 import java.util.Base64
@@ -49,22 +50,24 @@ class GovUKWalletController @Inject()(
   def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction) async {
     implicit request =>
       if (frontendAppConfig.govukWalletEnabled) {
-        for {
-          pId: Some[GovUkPassCreateResponse] <- govUKWalletSMNConnector.createGovUKPass(
-            request.personDetails.person.givenName,
-            request.personDetails.person.familyName,
-            request.nino.map(_.formatted).getOrElse(""))
-        } yield Ok(view(
+        request.personDetails match {
+          case pd @ PersonDetails(person, _, _) =>
+            for {
+              pId: Some[GovUkPassCreateResponse] <- govUKWalletSMNConnector.createGovUKPass(
+                person.title.getOrElse("Mr"),
+                person.givenName,
+                person.familyName,
+                request.nino.map(_.formatted).getOrElse(""))
+            } yield Ok(view(
               pId.value.url,
               pId.value.bytes,
               isMobileDisplay(request)))
+        }
       }
       else {
         Future(Redirect(routes.UnauthorisedController.onPageLoad))
       }
-
-  }
-
+    }
 
   private def isMobileDisplay(request: UserRequest[AnyContent]): Boolean = {
     // Display wallet options differently on mobile to pc

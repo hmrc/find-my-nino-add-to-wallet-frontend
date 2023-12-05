@@ -46,7 +46,7 @@ class GovUKWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
       .thenReturn(Future.successful(messageDataResponse))
 
     reset(mockGovUKWalletSMNConnector)
-    when(mockGovUKWalletSMNConnector.createGovUKPass(any(), any(), any())(any(), any()))
+    when(mockGovUKWalletSMNConnector.createGovUKPass(any(), any(), any(), any())(any(), any()))
       .thenReturn(Future.successful(Some(GovUkPassCreateResponse("passId", "qrCodeImage"))))
 
     reset(mockSessionRepository)
@@ -126,6 +126,7 @@ class GovUKWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
         contentAsString(result) mustEqual (view(passId, "qrCodeImage", false)(request.withAttrs(requestAttributeMap), messages(application))).toString
       }
     }
+
     "must fail to login user" in {
       val application = applicationBuilderWithConfig()
         .overrides(
@@ -145,6 +146,7 @@ class GovUKWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
         status(result) mustEqual 500
       }
     }
+
     "must redirect to unauthorised view when govuk wallet toggle disabled" in {
       val application =
         applicationBuilderWithConfig()
@@ -169,5 +171,6 @@ class GovUKWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
         redirectLocation(result).value mustEqual routes.UnauthorisedController.onPageLoad.url
       }
     }
+
   }
 }

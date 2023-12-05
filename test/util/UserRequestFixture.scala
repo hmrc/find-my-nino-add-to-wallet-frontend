@@ -29,7 +29,7 @@ object UserRequestFixture {
                            nino: Option[Nino] = Some(Fixtures.fakeNino),
                            userName: Option[UserName] = Some(UserName(Name(Some("Firstname"), Some("Lastname")))),
                            confidenceLevel: ConfidenceLevel = ConfidenceLevel.L200,
-                           personDetails: Option[PersonDetails] = Some(Fixtures.buildPersonDetails),
+                           personDetails: PersonDetails = Fixtures.buildPersonDetails,
                            enrolments: Enrolments,
                            request: Request[A]
   ): UserRequest[A] =

@@ -41,7 +41,6 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
   lazy private val accessibilityRedirectUrl =
     servicesConfig.getString("accessibility-statement.redirectUrl")
   lazy val api1303ServiceUrl: String = servicesConfig.baseUrl("paye-individual-details-service")
-  val googleKey: String = configuration.get[String]("googlePass.key")
 
   def accessibilityStatementUrl(referrer: String) =
     s"$accessibilityBaseUrl/accessibility-statement$accessibilityRedirectUrl?referrerUrl=${enc(accessibilityBaseUrl + referrer)}"

@@ -61,9 +61,6 @@ class GovUKWalletController @Inject()(
               pId.value.url,
               pId.value.bytes,
               isMobileDisplay(request)))
-          case None =>
-            Future(NotFound(errorTemplate("Details not found", "Your details were not found.", "Your details were not found, please try again later.")))
-        }
       }
       else {
         Future(Redirect(routes.UnauthorisedController.onPageLoad))

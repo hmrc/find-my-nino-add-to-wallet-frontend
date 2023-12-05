@@ -18,7 +18,7 @@ package util
 
 import models.{Address, PersonDetails}
 import play.api.libs.json.{JsValue, Json, OFormat}
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
 import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
 
 import java.time.format.DateTimeFormatter
@@ -105,16 +105,22 @@ object AuditUtils {
     val strLang = getLanguageFromCookieStr(hc)
     val strDevice = getUserDevice(hc)
 
-    YourDetailsAuditEvent(
-      journeyId,
-      timestamp(),
-      person.nino.get.nino,
-      name = person.fullName,
-      mainAddress = mainAddress,
-      device = Some(strDevice),
-      language = strLang,
-      walletProvider
-    )
+    person.nino match {
+      case Some(ninoValue) =>
+        YourDetailsAuditEvent(
+          journeyId,
+          timestamp(),
+          ninoValue.nino,
+          name = person.fullName,
+          mainAddress = mainAddress,
+          device = Some(strDevice),
+          language = strLang,
+          walletProvider
+        )
+      case None => throw new NotFoundException("Nino not found for person when building audit event")
+    }
+
+
   }
 
   private def timestamp(): String =
@@ -124,8 +130,8 @@ object AuditUtils {
                      auditType: String,
                       appName: String,
                       walletProvider: Option[String])(implicit hc: HeaderCarrier): ExtendedDataEvent = {
-    buildDataEvent(auditType, s"$appName-$auditType",
-      Json.toJson(buildDetails(personDetails, auditType, hc, walletProvider)))
-  }
+        buildDataEvent(auditType, s"$appName-$auditType",
+          Json.toJson(buildDetails(personDetails, auditType, hc, walletProvider)))
+    }
 
 }

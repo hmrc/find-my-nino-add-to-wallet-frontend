@@ -38,7 +38,6 @@ class AppleWalletController @Inject()(val citizenDetailsConnector: CitizenDetail
                                       authConnector: AuthConnector,
                                       auditService: AuditService,
                                       view: AppleWalletView,
-                                      errorTemplate: ErrorTemplate,
                                       getPersonDetailsAction: GetPersonDetailsAction,
                                       passIdNotFoundView: PassIdNotFoundView,
                                       qrCodeNotFoundView: QRCodeNotFoundView
@@ -53,15 +52,10 @@ class AppleWalletController @Inject()(val citizenDetailsConnector: CitizenDetail
 
   def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction) async {
     implicit request => {
-      request.personDetails match {
-        case Some(pd) =>
-          auditService.audit(AuditUtils.buildAuditEvent(pd, "ViewWalletPage", frontendAppConfig.appName, Some("Apple")))
-          for {
-            pId: Some[String] <- findMyNinoServiceConnector.createApplePass(pd.person.fullName, request.nino.map(_.formatted).getOrElse(""))
-          } yield Ok(view(pId.value, isMobileDisplay(request)))
-        case None =>
-          Future(NotFound(errorTemplate("Details not found", "Your details were not found.", "Your details were not found, please try again later.")))
-      }
+      auditService.audit(AuditUtils.buildAuditEvent(request.personDetails, "ViewWalletPage", frontendAppConfig.appName, Some("Apple")))
+      for {
+        pId: Some[String] <- findMyNinoServiceConnector.createApplePass(request.personDetails.person.fullName, request.nino.map(_.formatted).getOrElse(""))
+      } yield Ok(view(pId.value, isMobileDisplay(request)))
     }
   }
 
@@ -84,9 +78,9 @@ class AppleWalletController @Inject()(val citizenDetailsConnector: CitizenDetail
         findMyNinoServiceConnector.getApplePass(passId).map {
           case Some(data) =>
             request.getQueryString("qr-code") match {
-              case Some("true") => auditService.audit(AuditUtils.buildAuditEvent(request.personDetails.get,
+              case Some("true") => auditService.audit(AuditUtils.buildAuditEvent(request.personDetails,
                 "AddNinoToWalletFromQRCode", frontendAppConfig.appName, Some("Apple")))
-              case _ => auditService.audit(AuditUtils.buildAuditEvent(request.personDetails.get,
+              case _ => auditService.audit(AuditUtils.buildAuditEvent(request.personDetails,
                 "AddNinoToWallet", frontendAppConfig.appName, Some("Apple")))
             }
             Ok(data).withHeaders("Content-Disposition" -> s"attachment; filename=$passFileName")
@@ -101,7 +95,7 @@ class AppleWalletController @Inject()(val citizenDetailsConnector: CitizenDetail
       authorisedAsFMNUser { _ =>
         findMyNinoServiceConnector.getQrCode(passId).map {
           case Some(data) =>
-            auditService.audit(AuditUtils.buildAuditEvent(request.personDetails.get, "DisplayQRCode", frontendAppConfig.appName, Some("Apple")))
+            auditService.audit(AuditUtils.buildAuditEvent(request.personDetails, "DisplayQRCode", frontendAppConfig.appName, Some("Apple")))
             Ok(data).withHeaders("Content-Disposition" -> s"attachment; filename=$passFileName")
           case _ => NotFound(qrCodeNotFoundView())
         }

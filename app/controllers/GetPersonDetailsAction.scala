@@ -23,7 +23,7 @@ import controllers.auth.AuthContext
 import controllers.auth.requests.UserRequest
 import models.{PersonDetails, UserName}
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
-import play.api.mvc.Results.{Locked, NotFound}
+import play.api.mvc.Results.{InternalServerError, Locked, NotFound, Ok}
 import play.api.mvc._
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
@@ -60,23 +60,19 @@ class GetPersonDetailsAction @Inject()(
     }
   }
 
-  private def getPersonDetails(authContext: AuthContext[_]): Future[Either[Result, Option[PersonDetails]]] = {
+  private def getPersonDetails(authContext: AuthContext[_]): Future[Either[Result, PersonDetails]] = {
 
     implicit val hc: HeaderCarrier =
       HeaderCarrierConverter.fromRequestAndSession(authContext.request, authContext.request.session)
 
     implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
-    authContext.nino.nino match {
-      case nino:String =>
-        citizenDetailsConnector.personDetails(Nino(nino)).map {
-          case PersonDetailsSuccessResponse(pd) => Right(Some(pd))
+        citizenDetailsConnector.personDetails(authContext.nino.nino).map {
+          case PersonDetailsSuccessResponse(pd) => Right(pd)
           case PersonDetailsNotFoundResponse =>
-            Left(NotFound(redirectView()(authContext.request, frontendAppConfig, messages)))
+            Left(InternalServerError(redirectView()(authContext.request, frontendAppConfig, messages)))
           case PersonDetailsHiddenResponse =>
-            Left(Locked(redirectView()(authContext.request, frontendAppConfig, messages)))
-          case _ => Right(None)
-        }
-      case _ => Future.successful(Right(None))
+            Left(Ok(redirectView()(authContext.request, frontendAppConfig, messages)))
+          case _ => Left(InternalServerError(redirectView()(authContext.request, frontendAppConfig, messages)))
     }
   }
 

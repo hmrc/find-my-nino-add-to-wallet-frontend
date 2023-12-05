@@ -34,8 +34,8 @@ class StoreMyNinoConnectorSpec extends ConnectorSpec
   with DefaultAwaitTimeout
   with Injecting {
 
-  implicit val writes: Writes[ApplePassDetails] = Json.writes[ApplePassDetails]
-  implicit val googleWrites: Writes[GooglePassDetailsWithCredentials] = Json.writes[GooglePassDetailsWithCredentials]
+  implicit val appleWrites: Writes[ApplePassDetails] = Json.writes[ApplePassDetails]
+  implicit val googleWrites: Writes[GooglePassDetails] = Json.writes[GooglePassDetails]
 
   override implicit lazy val app: Application = app(
     Map("microservice.services.find-my-nino-add-to-wallet-service.port" -> server.port())
@@ -54,7 +54,6 @@ class StoreMyNinoConnectorSpec extends ConnectorSpec
   val createApplePassDetails = ApplePassDetails(fakeName, fakeNino)
   val googlePassUrl = " https://pay.google.com/gp/v/save/eyJhbGci6IkpXVCJ9"
   val createGooglePassDetails = GooglePassDetails(fakeName, fakeNino)
-  val createGooglePassDetailsWithCredentials = GooglePassDetailsWithCredentials(fakeName, fakeNino, "xxxx")
   val googlePassCardBytes: Array[Byte] = Array(99, 71, 86, 121, 99, 50, 57, 117, 82, 71, 86, 48, 89, 87, 108, 115, 99, 49, 78, 48, 99, 109, 108, 117, 90, 119, 61, 61)
   val googlePassUrlImage = Base64.getEncoder.encodeToString(googlePassCardBytes)
 
@@ -243,14 +242,14 @@ class StoreMyNinoConnectorSpec extends ConnectorSpec
     }
 
     "return OK when called create google pass" in new LocalSetup {
-      stubPost(url, OK, Some(Json.toJson(createGooglePassDetailsWithCredentials).toString()), Some(personDetailsId))
-      val result: String = connector.createGooglePassWithCredentials(createGooglePassDetails.fullName, createGooglePassDetails.nino, "xxxx").futureValue.get
+      stubPost(url, OK, Some(Json.toJson(createGooglePassDetails).toString()), Some(personDetailsId))
+      val result: String = connector.createGooglePass(createGooglePassDetails.fullName, createGooglePassDetails.nino).futureValue.get
       result mustBe personDetailsId
     }
 
     "return error when called create google pass " in new LocalSetup {
-      stubWithDelay(url, INTERNAL_SERVER_ERROR, Some(Json.toJson(createGooglePassDetailsWithCredentials).toString()), None, delay)
-      val result = connector.createGooglePassWithCredentials(createGooglePassDetails.fullName, createGooglePassDetails.nino, "xxxx")
+      stubWithDelay(url, INTERNAL_SERVER_ERROR, Some(Json.toJson(createGooglePassDetails).toString()), None, delay)
+      val result = connector.createGooglePass(createGooglePassDetails.fullName, createGooglePassDetails.nino)
         .value.getOrElse(InternalServerError(Json.toJson(errMsg)))
       result mustBe InternalServerError(Json.toJson(errMsg))
     }

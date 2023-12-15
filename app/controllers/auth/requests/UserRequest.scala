@@ -36,9 +36,8 @@ final case class UserRequest[A](
   request: Request[A]
 ) extends WrappedRequest[A](request) {
 
-  // $COVERAGE-OFF$
+
   def name: Option[String] = personDetails.person.shortName
-  // $COVERAGE-ON$
   //def isSa: Boolean = saUserType != NonFilerSelfAssessmentUser
 
   /*def isSaUserLoggedIntoCorrectAccount: Boolean = saUserType match {

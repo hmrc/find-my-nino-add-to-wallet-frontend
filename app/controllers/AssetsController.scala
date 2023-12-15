@@ -17,9 +17,8 @@
 package controllers
 
 import com.google.inject.Inject
-// $COVERAGE-OFF$
+
 class AssetsController @Inject()(
   localErrorHandler: LocalErrorHandler,
   assetsMetaData: AssetsMetadata
 ) extends AssetsBuilder(localErrorHandler, assetsMetaData)
-// $COVERAGE-ON$

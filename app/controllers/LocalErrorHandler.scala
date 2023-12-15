@@ -21,10 +21,9 @@ import play.api.http.HttpErrorHandler
 import play.api.mvc._
 
 import scala.concurrent.Future
-// $COVERAGE-OFF$
+
 @Singleton
 class LocalErrorHandler extends HttpErrorHandler {
   override def onClientError(request: RequestHeader, statusCode: Int, message: String): Future[Result] = null
   override def onServerError(request: RequestHeader, exception: Throwable): Future[Result] = null
 }
-// $COVERAGE-ON$

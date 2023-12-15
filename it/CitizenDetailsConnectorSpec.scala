@@ -84,13 +84,13 @@ class CitizenDetailsConnectorSpec
 
     "return OK when called with an existing nino" in new LocalSetup {
       stubGet(url, OK, Some(Json.toJson(personDetails).toString()))
-      val result = connector.personDetails(nino).futureValue.leftSideValue
+      val result = connector.personDetails(nino.nino).futureValue.leftSideValue
       result.asInstanceOf[PersonDetailsSuccessResponse].personDetails mustBe personDetails
     }
 
     "return NOT_FOUND when called with an unknown nino" in new LocalSetup {
       stubGet(url, NOT_FOUND, None)
-      val result = connector.personDetails(nino).futureValue
+      val result = connector.personDetails(nino.nino).futureValue
       result mustBe PersonDetailsNotFoundResponse
 
     }

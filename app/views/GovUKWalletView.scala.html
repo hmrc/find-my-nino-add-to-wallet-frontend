@@ -16,6 +16,7 @@
 
 @import components.{H1, H2, P, Link, BulletList}
 @import config.FrontendAppConfig
+@import uk.gov.hmrc.govukfrontend.views.html.components._
 
 @this(
     layout: templates.LayoutProvider,
@@ -24,7 +25,8 @@
     p: P,
     link: Link,
     list: BulletList,
-    frontendAppConfig: FrontendAppConfig
+    frontendAppConfig: FrontendAppConfig,
+    govukButton : GovukButton
 )
 
 @(
@@ -45,19 +47,27 @@
     @list(elements = Seq(
     "govUKWallet.l1.li1",
     "govUKWallet.l1.li2",
-    "govUKWallet.l1.li3",
-    "govUKWallet.l1.li4"
+    "govUKWallet.l1.li3"
     ))
+
+<div class="govuk-inset-text">
     @p("govUKWallet.p2")
+</div>
 
     @if(displayForMobile) {
         <div class="show-on-phones">
-            <a href=@govUKPassUrl>Add National Insurance Number card to your GovUK wallet</a>
+            @h2("govUKWallet.button.heading")
+            @p("govUKWallet.button.p1")
+            @govukButton(Button(
+                content = Text("Add to GOV.UK Wallet"),
+                href = Some(govUKPassUrl)
+            ))
         </div>
     } else {
         <div class="show-on-desktops">
-            @h2("govUKWallet.scanQRCodeToAdd.heading")
-            <img id="govuk-qr-code" src="data:image/png;base64,@qrCodeImage" width="400" height="400" alt='@messages("govUKWallet.addToWallet.QRCode.alt")'>
+            @h2("govUKWallet.QRCode.heading")
+            @p("govUKWallet.QRCode.p1")
+            <img id="govuk-qr-code" src="data:image/png;base64,@qrCodeImage" width="400" height="400" alt='@messages("govUKWallet.QRCode.alt")'>
         </div>
 
     }

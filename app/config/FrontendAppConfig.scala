@@ -76,6 +76,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
 
   lazy val SCAWrapperEnabled = configuration.getOptional[Boolean]("features.sca-wrapper-enabled").getOrElse(false)
   lazy val govukWalletEnabled = configuration.getOptional[Boolean]("features.govuk-wallet-enabled").getOrElse(false)
+  lazy val fakeNinoEnabled = configuration.getOptional[Boolean]("features.fake-nino-enabled").getOrElse(false)
 
   lazy val basGatewayFrontendHost: String     = getExternalUrl(s"bas-gateway-frontend.host").getOrElse("")
   lazy val multiFactorAuthenticationUpliftUrl = s"$basGatewayFrontendHost/bas-gateway/uplift-mfa"

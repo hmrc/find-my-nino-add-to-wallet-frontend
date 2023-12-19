@@ -20,6 +20,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
 import views.html.AppleWalletView
 
+import java.net.URLDecoder
 import java.time.LocalDate
 
 class AppleWalletControllerISpec extends IntegrationSpecBase {
@@ -70,7 +71,7 @@ class AppleWalletControllerISpec extends IntegrationSpecBase {
                              nino: Option[Nino] = Some(generatedNino),
                              userName: Option[UserName] = Some(UserName(Name(Some("Firstname"), Some("Lastname")))),
                              confidenceLevel: ConfidenceLevel = ConfidenceLevel.L200,
-                             personDetails: Option[PersonDetails] = Some(fakePersonDetails),
+                             personDetails: PersonDetails = fakePersonDetails,
                              request: Request[A] = FakeRequest().asInstanceOf[Request[A]]
                            ): UserRequest[A] =
       UserRequest(
@@ -144,7 +145,7 @@ class AppleWalletControllerISpec extends IntegrationSpecBase {
       }
 
       "render the Your Profile link" in new LocalSetup {
-        assertContainsLink(doc, "Profile and settings", "/personal-account/your-profile")
+        assertContainsLink(doc, "Profile and settings", "/personal-account/profile-and-settings")
       }
 
       "render the sign out link" in new LocalSetup {
@@ -153,7 +154,7 @@ class AppleWalletControllerISpec extends IntegrationSpecBase {
           .signout(Some(RedirectUrl(frontendAppConfig.getFeedbackSurveyUrl(frontendAppConfig.defaultOrigin))), None)
           .url
 
-        assertContainsLink(doc, "Sign Out", href)
+        assertContainsLink(doc, "Sign Out", URLDecoder.decode(href, "UTF-8"))
       }
     }
   }

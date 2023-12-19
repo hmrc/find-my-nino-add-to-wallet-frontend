@@ -26,7 +26,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 
 import scala.concurrent.Future
-// $COVERAGE-OFF$
+
 sealed trait IndividualDetailsResponse
 
 case class IndividualDetailsSuccessResponse(str: String) extends IndividualDetailsResponse
@@ -67,7 +67,6 @@ class PayeIndividualDetailsConnector @Inject()(
       }
     )
   }
-  // $COVERAGE-ON$
 }
 
 

@@ -38,7 +38,6 @@ class SimpleHttp @Inject()(http: HttpClient)(implicit executionContext: Executio
       onError(e)
     }
 
-  // $COVERAGE-OFF$
   def post[I, T](url: String, body: I)(onComplete: HttpResponse => T, onError: Exception => T)(implicit
     hc: HeaderCarrier,
     w: Writes[I]
@@ -58,5 +57,4 @@ class SimpleHttp @Inject()(http: HttpClient)(implicit executionContext: Executio
     } recover { case e: Exception =>
       onError(e)
     }
-  // $COVERAGE-ON$
 }

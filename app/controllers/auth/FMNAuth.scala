@@ -79,7 +79,7 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
         authorisedUser(loginContinueUrl, block)
       }
     }
-  // $COVERAGE-OFF$
+
   private def upliftConfidenceLevel(request: Request[_])(implicit config: FrontendAppConfig): Future[Result] = {
     Future.successful(
       Redirect(
@@ -107,7 +107,6 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
         )
       )
     )
-  // $COVERAGE-ON$
   private object GTOE200 {
     def unapply(confLevel: ConfidenceLevel): Option[ConfidenceLevel] =
       if (confLevel.level >= ConfidenceLevel.L200.level) Some(confLevel) else None
@@ -204,7 +203,7 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
   }
 
   private def handleFailure(loginContinueUrl: String)(implicit config: FrontendAppConfig): PartialFunction[Throwable, Result] = {
-    // $COVERAGE-OFF$
+
     case _: NoActiveSession =>
       logger.debug("no active session whilst attempting to authorise user: redirecting to login")
       Redirect(config.loginUrl, Map("continue" -> Seq(loginContinueUrl), "origin" -> Seq(config.appName)))
@@ -212,7 +211,7 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
     case IncorrectNino =>
       logger.warn("incorrect NINO encountered whilst attempting to authorise user")
       Redirect(controllers.routes.UnauthorisedController.onPageLoad)
-    // $COVERAGE-ON$
+
 
     case _: UpstreamErrorResponse ⇒
       logger.warn(s"Upstream error due to Auth service connection refused.")

@@ -25,6 +25,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
 import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
+import util.HtmlMatcherUtils.removeNonce
 import viewmodels.govuk.SummaryListFluency
 import views.html.CheckYourAnswersView
 
@@ -65,7 +66,9 @@ class CheckYourAnswersControllerSpec extends SpecBase with SummaryListFluency {
         val list = SummaryListViewModel(Seq.empty)
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(list)(request, messages(application)).toString
+        assertSameHtmlAfter(removeNonce) (
+          contentAsString(result) , view(list)(request, messages(application)).toString
+        )
       }
     }
 
@@ -92,7 +95,9 @@ class CheckYourAnswersControllerSpec extends SpecBase with SummaryListFluency {
         val list = SummaryListViewModel(Seq.empty)
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(list)(request.withAttrs(requestAttributeMap), messages(application)).toString
+        assertSameHtmlAfter(removeNonce) (
+          contentAsString(result) , view(list)(request.withAttrs(requestAttributeMap), messages(application)).toString
+        )
       }
     }
 

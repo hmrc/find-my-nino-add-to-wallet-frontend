@@ -17,7 +17,7 @@
 package controllers
 
 import base.SpecBase
-import connectors.{CitizenDetailsConnector, IdentityVerificationFrontendConnector, PersonDetailsErrorResponse, PersonDetailsSuccessResponse, StoreMyNinoConnector}
+import connectors._
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.{reset, when}
@@ -29,13 +29,14 @@ import repositories.SessionRepository
 import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
 import util.CDFixtures
+import util.HtmlMatcherUtils.removeNonce
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
 import util.TestData.{NinoUser, NinoUser_With_CL50}
+import views.html.{AppleWalletView, ErrorTemplate, RedirectToPostalFormView}
 
 import java.util.Base64
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import views.html.{AppleWalletView, ErrorTemplate, RedirectToPostalFormView}
 
 class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSugar {
 
@@ -110,8 +111,9 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         status(result) mustEqual INTERNAL_SERVER_ERROR
-
-        contentAsString(result) mustEqual (redirectview()(request, frontendAppConfig, messages(application))).toString()
+        assertSameHtmlAfter(removeNonce)(
+        contentAsString(result),  redirectview()(request, frontendAppConfig, messages(application)).toString(),
+        )
       }
       reset(mockCitizenDetailsConnector)
     }
@@ -134,7 +136,9 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         status(result) mustEqual OK
-        contentAsString(result) mustEqual (view(passId, false)(request, messages(application))).toString
+        assertSameHtmlAfter(removeNonce) (
+        contentAsString(result), view(passId, false)(request, messages(application)).toString()
+        )
       }
     }
 
@@ -158,7 +162,9 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         status(result) mustEqual OK
-        contentAsString(result) mustEqual (view(passId, false)(request.withAttrs(requestAttributeMap), messages(application))).toString
+        assertSameHtmlAfter(removeNonce) (
+        contentAsString(result) , view(passId, false)(request.withAttrs(requestAttributeMap), messages(application)).toString
+        )
       }
     }
 

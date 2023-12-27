@@ -25,6 +25,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
 import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
+import util.HtmlMatcherUtils.removeNonce
 import views.html.UnauthorisedView
 
 import scala.concurrent.Future
@@ -62,7 +63,9 @@ class UnauthorisedControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[UnauthorisedView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view()(request, messages(application)).toString
+        assertSameHtmlAfter(removeNonce) (
+          contentAsString(result) , view()(request, messages(application)).toString
+        )
       }
     }
 
@@ -88,7 +91,9 @@ class UnauthorisedControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[UnauthorisedView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view()(request.withAttrs(requestAttributeMap), messages(application)).toString
+        assertSameHtmlAfter(removeNonce) (
+          contentAsString(result) , view()(request.withAttrs(requestAttributeMap), messages(application)).toString
+        )
       }
     }
   }

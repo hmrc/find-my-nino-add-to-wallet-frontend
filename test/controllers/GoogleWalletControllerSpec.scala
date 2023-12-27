@@ -29,6 +29,7 @@ import repositories.SessionRepository
 import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
 import util.CDFixtures
+import util.HtmlMatcherUtils.removeNonce
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
 import util.TestData.NinoUser
 
@@ -114,7 +115,9 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
         val result = route(application, request).value
         status(result) mustEqual INTERNAL_SERVER_ERROR
 
-        contentAsString(result) mustEqual (redirectview()(request, frontendAppConfig, messages(application))).toString()
+        assertSameHtmlAfter(removeNonce) (
+          contentAsString(result) , redirectview()(request, frontendAppConfig, messages(application)).toString()
+        )
       }
       reset(mockCitizenDetailsConnector)
     }
@@ -137,7 +140,9 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         status(result) mustEqual OK
-        contentAsString(result) mustEqual (view(passId, false)(request, messages(application))).toString
+        assertSameHtmlAfter(removeNonce) (
+          contentAsString(result) , view(passId, false)(request, messages(application)).toString
+        )
       }
     }
 
@@ -161,7 +166,9 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         status(result) mustEqual OK
-        contentAsString(result) mustEqual (view(passId, false)(request.withAttrs(requestAttributeMap), messages(application))).toString
+        assertSameHtmlAfter(removeNonce) (
+          contentAsString(result) , view(passId, false)(request.withAttrs(requestAttributeMap), messages(application)).toString()
+        )
       }
     }
 

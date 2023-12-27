@@ -31,6 +31,7 @@ import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
 import util.TestData.NinoUser
 import util.CDFixtures
+import util.HtmlMatcherUtils.removeNonce
 import views.html.{ErrorTemplate, GovUKWalletView, RedirectToPostalFormView}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -98,7 +99,9 @@ class GovUKWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         status(result) mustEqual OK
-        contentAsString(result) mustEqual (view(passId, "qrCodeImage", false)(request, messages(application))).toString
+        assertSameHtmlAfter(removeNonce) (
+          contentAsString(result) , view(passId, "qrCodeImage", false)(request, messages(application)).toString()
+        )
       }
     }
 
@@ -123,7 +126,9 @@ class GovUKWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         status(result) mustEqual OK
-        contentAsString(result) mustEqual (view(passId, "qrCodeImage", false)(request.withAttrs(requestAttributeMap), messages(application))).toString
+        assertSameHtmlAfter(removeNonce) (
+          contentAsString(result) , view(passId, "qrCodeImage", false)(request.withAttrs(requestAttributeMap), messages(application)).toString
+        )
       }
     }
 

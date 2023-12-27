@@ -28,6 +28,7 @@ import repositories.SessionRepository
 import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
 import util.CDFixtures
+import util.HtmlMatcherUtils.removeNonce
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
 import util.TestData.{NinoUser, NinoUser_With_CL50}
 import views.html.{ErrorTemplate, RedirectToPostalFormView, StoreMyNinoView}
@@ -93,7 +94,9 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
         val result = route(application, request).value
         status(result) mustEqual INTERNAL_SERVER_ERROR
 
-        contentAsString(result) mustEqual (redirectview()(request, frontendAppConfig, messages(application))).toString()
+        assertSameHtmlAfter(removeNonce) (
+          contentAsString(result) , (redirectview()(request, frontendAppConfig, messages(application))).toString()
+        )
       }
       reset(mockCitizenDetailsConnector)
     }
@@ -115,7 +118,9 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         status(result) mustEqual OK
-        contentAsString(result) mustEqual (view("AA 00 00 03 B")(request, messages(application))).toString
+        assertSameHtmlAfter(removeNonce) (
+          contentAsString(result) , (view("AA 00 00 03 B")(request, messages(application))).toString
+        )
       }
     }
 
@@ -138,7 +143,9 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         status(result) mustEqual OK
-        contentAsString(result) mustEqual (view("AA 00 00 03 B")(request.withAttrs(requestAttributeMap), messages(application))).toString
+        assertSameHtmlAfter(removeNonce) (
+          contentAsString(result) , view("AA 00 00 03 B")(request.withAttrs(requestAttributeMap), messages(application)).toString
+        )
       }
     }
 

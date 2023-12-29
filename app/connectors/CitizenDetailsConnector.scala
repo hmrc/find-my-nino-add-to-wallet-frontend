@@ -49,18 +49,19 @@ class CitizenDetailsConnector @Inject() (
       .get(url)
       .execute[Either[UpstreamErrorResponse, HttpResponse]]
       .flatMap {
-        case Right(res)                                      => Future.successful(PersonDetailsSuccessResponse(res.json.as[PersonDetails]))
+        case Right(res)                                      =>
+          Future.successful(PersonDetailsSuccessResponse(res.json.as[PersonDetails]))
         case Left(UpstreamErrorResponse.WithStatusCode(423)) =>
           logger.warn("Personal details record in citizen-details was hidden")
           Future.successful(PersonDetailsHiddenResponse)
         case Left(UpstreamErrorResponse.WithStatusCode(404)) =>
           logger.warn("Unable to find personal details record in citizen-details")
           Future.successful(PersonDetailsNotFoundResponse)
-//        case Left(UpstreamErrorResponse.WithStatusCode(500)) =>
-//          logger.warn(
-//            s"Unexpected 500 response getting personal details record from citizen-details"
-//          )
-//          Future.successful(PersonDetailsUnexpectedResponse(???))
+        case Left(resp@UpstreamErrorResponse.WithStatusCode(500)) =>
+          logger.warn(
+            s"Unexpected 500 response getting personal details record from citizen-details"
+          )
+          Future.successful(PersonDetailsUnexpectedResponse(HttpResponse(resp.statusCode, resp.message)))
         case Left(err)                                       => Future.failed(new RuntimeException(s"Call to $url failed with upstream error: ${err.message}"))
       }
       .recover {

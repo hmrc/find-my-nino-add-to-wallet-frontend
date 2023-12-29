@@ -45,7 +45,7 @@ class NinoLetterControllerSpec extends SpecBase with CDFixtures with MockitoSuga
   lazy val ninoLetterController = applicationWithConfig.injector.instanceOf[NinoLetterController]
   lazy val view = applicationWithConfig.injector.instanceOf[PrintNationalInsuranceNumberView]
 
-  when(mockCitizenDetailsConnector.personDetails(any())(any()))
+  when(mockCitizenDetailsConnector.personDetails(any())(any(), any()))
     .thenReturn(Future(PersonDetailsSuccessResponse(buildPersonDetails)))
 
   when(mockApplePassConnector.getPersonDetails(any())(any(), any()))

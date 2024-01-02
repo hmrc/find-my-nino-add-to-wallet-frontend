@@ -17,6 +17,7 @@
 package util
 
 import models.PersonDetails
+
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, File}
 import javax.inject.{Inject, Singleton}
 import javax.xml.transform.sax.SAXResult
@@ -28,6 +29,8 @@ import org.apache.fop.events.{Event, EventFormatter, EventListener}
 import org.apache.fop.events.model.EventSeverity
 import play.api.Logging
 import play.api.i18n.Messages
+
+import javax.xml.XMLConstants
 import scala.xml.PrettyPrinter
 
 @Singleton
@@ -58,6 +61,8 @@ trait XmlFoToPDF extends Logging{
     val xslStream: StreamSource = resourceStreamResolver.resolvePath(niLetterXSLFilePath)
     val transformerFactory: TransformerFactory = TransformerFactory.newInstance
     transformerFactory.setURIResolver(stylesheetResourceStreamResolver)
+    transformerFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "")
+    transformerFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "")
 
     val transformer: Transformer = transformerFactory.newTransformer(xslStream)
     setupTransformerEventHandling(transformer)

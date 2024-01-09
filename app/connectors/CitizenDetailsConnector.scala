@@ -21,53 +21,54 @@ import com.kenshoo.play.metrics.Metrics
 import config.FrontendAppConfig
 import models._
 import play.api.Logging
-import play.api.http.Status._
-import services.http.SimpleHttp
-import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps, UpstreamErrorResponse}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.control.NonFatal
 
 sealed trait PersonDetailsResponse
 case class PersonDetailsSuccessResponse(personDetails: PersonDetails) extends PersonDetailsResponse
 case object PersonDetailsNotFoundResponse extends PersonDetailsResponse
 case object PersonDetailsHiddenResponse extends PersonDetailsResponse
 case class PersonDetailsUnexpectedResponse(r: HttpResponse) extends PersonDetailsResponse
-case class PersonDetailsErrorResponse(cause: Exception) extends PersonDetailsResponse
+case class PersonDetailsErrorResponse(cause: Throwable) extends PersonDetailsResponse
 
 @Singleton
 class CitizenDetailsConnector @Inject() (
-  val simpleHttp: SimpleHttp,
+  val httpClientV2: HttpClientV2,
   val metrics: Metrics,
   config: FrontendAppConfig
 ) extends  Logging {
 
-  def personDetails(nino: String)(implicit hc: HeaderCarrier): Future[PersonDetailsResponse] =
-     {
-      simpleHttp.get[PersonDetailsResponse](s"${config.citizenDetailsServiceUrl}/citizen-details/$nino/designatory-details")(
-        onComplete = {
-          case response if response.status >= 200 && response.status < 300 =>
-            PersonDetailsSuccessResponse(response.json.as[PersonDetails])
+  import uk.gov.hmrc.http.HttpReads.Implicits._
 
-          case response if response.status == LOCKED =>
-            logger.warn("Personal details record in citizen-details was hidden")
-            PersonDetailsHiddenResponse
-
-          case response if response.status == NOT_FOUND =>
-            logger.warn("Unable to find personal details record in citizen-details")
-            PersonDetailsNotFoundResponse
-
-          case response if response.status >= INTERNAL_SERVER_ERROR =>
-              logger.warn(
-                s"Unexpected ${response.status} response getting personal details record from citizen-details"
-              )
-            PersonDetailsUnexpectedResponse(response)
-        },
-        onError = { e =>
-          logger.warn("Error getting personal details record from citizen-details", e)
-          PersonDetailsErrorResponse(e)
-        }
-      )
+  def personDetails(nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[PersonDetailsResponse] = {
+    val url                                     = url"${config.citizenDetailsServiceUrl}/citizen-details/$nino/designatory-details"
+    httpClientV2
+      .get(url)
+      .execute[Either[UpstreamErrorResponse, HttpResponse]]
+      .flatMap {
+        case Right(res)                                      =>
+          Future.successful(PersonDetailsSuccessResponse(res.json.as[PersonDetails]))
+        case Left(UpstreamErrorResponse.WithStatusCode(423)) =>
+          logger.warn("Personal details record in citizen-details was hidden")
+          Future.successful(PersonDetailsHiddenResponse)
+        case Left(UpstreamErrorResponse.WithStatusCode(404)) =>
+          logger.warn("Unable to find personal details record in citizen-details")
+          Future.successful(PersonDetailsNotFoundResponse)
+        case Left(resp@UpstreamErrorResponse.WithStatusCode(500)) =>
+          logger.warn(
+            s"Unexpected 500 response getting personal details record from citizen-details"
+          )
+          Future.successful(PersonDetailsUnexpectedResponse(HttpResponse(resp.statusCode, resp.message)))
+        case Left(err)                                       => Future.failed(new RuntimeException(s"Call to $url failed with upstream error: ${err.message}"))
+      }
+      .recover {
+        case NonFatal(ex) =>
+          logger.warn("Error getting personal details record from citizen-details", ex)
+          PersonDetailsErrorResponse(ex)
+      }
     }
 
 }

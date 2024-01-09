@@ -23,8 +23,8 @@ import org.scalatestplus.mockito.MockitoSugar
 import play.api.Application
 import play.api.libs.json.Json
 import play.api.test.{DefaultAwaitTimeout, Injecting}
-import services.http.SimpleHttp
 import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.http.client.HttpClientV2
 import util.Fixtures.buildPersonDetails
 import util.WireMockHelper
 
@@ -65,7 +65,7 @@ class CitizenDetailsConnectorSpec
     )
 
     lazy val connector = {
-      val httpClient = app.injector.instanceOf[SimpleHttp]
+      val httpClient = app.injector.instanceOf[HttpClientV2]
       val metrics = app.injector.instanceOf[Metrics]
       val frontendAppConfig = app.injector.instanceOf[FrontendAppConfig]
       new CitizenDetailsConnector(httpClient, metrics, frontendAppConfig)

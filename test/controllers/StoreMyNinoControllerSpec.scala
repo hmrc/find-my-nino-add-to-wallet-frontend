@@ -48,7 +48,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
     when(mockSessionRepository.get(any())) thenReturn Future.successful(Some(emptyUserAnswers))
 
     reset(mockCitizenDetailsConnector)
-    when(mockCitizenDetailsConnector.personDetails(any())(any()))
+    when(mockCitizenDetailsConnector.personDetails(any())(any(), any()))
       .thenReturn(Future(PersonDetailsSuccessResponse(pd)))
 
     reset(mockIdentityVerificationFrontendConnector)
@@ -83,7 +83,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .configure("features.sca-wrapper-enabled" -> false)
           .build()
 
-      when(mockCitizenDetailsConnector.personDetails(any())(any()))
+      when(mockCitizenDetailsConnector.personDetails(any())(any(), any()))
         .thenReturn(Future(PersonDetailsErrorResponse(new RuntimeException("error"))))
 
       running(application) {

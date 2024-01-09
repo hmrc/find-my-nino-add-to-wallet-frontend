@@ -61,8 +61,7 @@ trait XmlFoToPDF extends Logging{
     val xslStream: StreamSource = resourceStreamResolver.resolvePath(niLetterXSLFilePath)
     val transformerFactory: TransformerFactory = TransformerFactory.newInstance
     transformerFactory.setURIResolver(stylesheetResourceStreamResolver)
-    transformerFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "")
-    transformerFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "")
+    transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true)
 
     val transformer: Transformer = transformerFactory.newTransformer(xslStream)
     setupTransformerEventHandling(transformer)

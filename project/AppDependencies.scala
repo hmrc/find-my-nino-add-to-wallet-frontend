@@ -1,4 +1,3 @@
-import AppDependencies.playVersion
 import sbt._
 
 object AppDependencies {
@@ -18,7 +17,7 @@ object AppDependencies {
     "com.auth0"                     % "java-jwt"                              % "4.4.0",
     "com.fasterxml.jackson.module"  %% "jackson-module-scala"                  % "2.14.2",
     "com.google.api-client"         % "google-api-client"                     %   "2.2.0"
-  )
+  ).map(_.excludeAll(ExclusionRule(organization = "xalan")))
 
   val test = Seq(
     "org.scalatest"           %% "scalatest"                     % "3.2.10",

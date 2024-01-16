@@ -18,7 +18,7 @@
 @import components.{H1, P, Button}
 
 @this(
-    layout: templates.Layout,
+    layout: templates.LayoutProvider,
     h1: H1,
     p: P,
     button: Button
@@ -27,7 +27,7 @@
 @(retryUrl: String)(implicit request: Request[_], messages: play.api.i18n.Messages)
 
 @layout(
-    pageTitle = messages("label.you_have_been_signed_out"),
+    pageTitle = titleNoForm(messages("label.you_have_been_signed_out")),
     showBackLink = false,
     hideAccountMenu = true,
     disableSessionExpired = true

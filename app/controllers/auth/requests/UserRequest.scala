@@ -24,25 +24,11 @@ import uk.gov.hmrc.domain.Nino
 final case class UserRequest[A](
   nino: Option[Nino],
   retrievedName: Option[UserName],
-  //saUserType: SelfAssessmentUserType,
-  //credentials: Credentials,
   confidenceLevel: ConfidenceLevel,
   personDetails: PersonDetails,
-  //trustedHelper: Option[TrustedHelper],
   enrolments: Enrolments,
-  //profile: Option[String],
-  //unreadMessageCount: Option[Int] = None,
-  //breadcrumb: Option[Breadcrumb] = None,
   request: Request[A]
 ) extends WrappedRequest[A](request) {
 
-
   def name: Option[String] = personDetails.person.shortName
-  //def isSa: Boolean = saUserType != NonFilerSelfAssessmentUser
-
-  /*def isSaUserLoggedIntoCorrectAccount: Boolean = saUserType match {
-    case ActivatedOnlineFilerSelfAssessmentUser(_) => true
-    case _                                         => false
-  }*/
-
 }

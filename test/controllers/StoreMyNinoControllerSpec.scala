@@ -17,7 +17,7 @@
 package controllers
 
 import base.SpecBase
-import connectors.{CitizenDetailsConnector, IdentityVerificationFrontendConnector, PayeIndividualDetailsConnector, PersonDetailsErrorResponse, PersonDetailsSuccessResponse}
+import connectors.{CitizenDetailsConnector, IdentityVerificationFrontendConnector, PersonDetailsErrorResponse, PersonDetailsSuccessResponse}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{reset, when}
 import org.scalatestplus.mockito.MockitoSugar
@@ -67,7 +67,6 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
   val mockSessionRepository = mock[SessionRepository]
   val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
   val mockIdentityVerificationFrontendConnector = mock[IdentityVerificationFrontendConnector]
-  val mockPayeIndividualDetailsConnector = mock[PayeIndividualDetailsConnector]
   lazy val redirectview = applicationWithConfig.injector.instanceOf[RedirectToPostalFormView]
 
   "StoreMyNino Controller" - {
@@ -103,8 +102,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
         applicationBuilderWithConfig()
           .overrides(
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
-            inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector),
-            inject.bind[PayeIndividualDetailsConnector].toInstance(mockPayeIndividualDetailsConnector),
+            inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
           )
           .configure("features.sca-wrapper-enabled" -> false)
           .build()

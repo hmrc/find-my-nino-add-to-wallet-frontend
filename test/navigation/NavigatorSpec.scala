@@ -39,17 +39,5 @@ class NavigatorSpec extends SpecBase {
         navigator.nextPage(UnknownPage, NormalMode, UserAnswers("id")) mustBe routes.StoreMyNinoController.onPageLoad
       }
     }
-
-    "in Check mode" - {
-
-      "must go from a page that doesn't exist in the edit route map to CheckYourAnswers" in {
-
-        case object UnknownPage extends Page {
-          override def route(): Call = ???
-          override def nextPageNormalMode(answers: UserAnswers): Page = ???
-        }
-        navigator.nextPage(UnknownPage, CheckMode, UserAnswers("id")) mustBe routes.CheckYourAnswersController.onPageLoad
-      }
-    }
   }
 }

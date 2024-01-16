@@ -79,7 +79,8 @@ class NewLayoutProvider @Inject()(wrapperService: WrapperService, additionalScri
       serviceNameUrl = Some("/personal-account"),
       scripts = Seq(additionalScript()),
       styleSheets = stylesheets.toSeq :+ headBlock(),
-      fullWidth = fullWidth
+      fullWidth = fullWidth,
+      hideMenuBar = hideAccountMenu
     )(messages, HeaderCarrierConverter.fromRequest(request), request)
   }
 }

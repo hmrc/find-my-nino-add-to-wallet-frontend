@@ -18,7 +18,6 @@ package connectors
 
 import com.google.inject.Inject
 import config.FrontendAppConfig
-import models.PersonDetails
 import play.api.http.Status._
 import play.api.libs.json._
 import uk.gov.hmrc.http.HttpReads.Implicits._
@@ -36,35 +35,6 @@ class StoreMyNinoConnector @Inject()(frontendAppConfig: FrontendAppConfig, http:
   implicit val writes: Writes[ApplePassDetails] = Json.writes[ApplePassDetails]
 
   implicit val googleWrites: Writes[GooglePassDetails] = Json.writes[GooglePassDetails]
-
-  def createPersonDetailsRow(personDetails:PersonDetails)
-                           (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Some[String]] = {
-    val url = s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/create-person-details"
-    val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
-
-    http.POST[JsValue, HttpResponse](url, Json.toJson(personDetails))(implicitly, implicitly, hc, implicitly)
-      .map { response =>
-        response.status match {
-          case OK => Some(response.body)
-          case _ => throw new HttpException(response.body, response.status)
-        }
-      }
-  }
-
-  def getPersonDetails(pdId: String)
-                  (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Option[String]] = {
-
-    val url = s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-person-details?pdId=$pdId"
-    val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
-
-    http.GET[HttpResponse](url)(implicitly, hc, implicitly)
-      .map { response =>
-        response.status match {
-          case OK => Some(response.body)
-          case _ => throw new HttpException(response.body, response.status)
-        }
-      }
-  }
 
   def createApplePass(fullName: String, nino: String)
                      (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Some[String]] = {
@@ -94,21 +64,6 @@ class StoreMyNinoConnector @Inject()(frontendAppConfig: FrontendAppConfig, http:
         response.status match {
           case OK => Some(Base64.getDecoder.decode(response.body))
           case NOT_FOUND => None
-          case _ => throw new HttpException(response.body, response.status)
-        }
-      }
-  }
-
-  def getApplePassByNameAndNino(fullName: String, nino: String)
-                               (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Option[Array[Byte]]] = {
-
-    val url = s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-pass-details-by-name-and-nino?fullName=$fullName&nino=$nino"
-    val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
-
-    http.GET[HttpResponse](url)(implicitly, hc, implicitly)
-      .map { response =>
-        response.status match {
-          case OK => Some(Base64.getDecoder.decode(response.body))
           case _ => throw new HttpException(response.body, response.status)
         }
       }

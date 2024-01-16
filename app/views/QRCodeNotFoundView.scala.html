@@ -20,16 +20,14 @@
 @import components.{H1, P, Link}
 
 @this(
-    main: MainView,
+    layout: templates.LayoutProvider,
     h1: H1,
     p: P,
     link: Link
 )
 @()(implicit request: UserRequest[_], frontendAppConfig: FrontendAppConfig, messages: play.api.i18n.Messages, ec: ExecutionContext)
 
-@main(
-    pageTitle = messages(s"apple.qrcode.notfound")
-) {
+@layout(pageTitle = titleNoForm(messages("apple.qrcode.notfound")), hideAccountMenu = true, showBackLink = false) {
     @h1(messages(s"apple.qrcode.notfound"))
     <p class="govuk-body">@messages("apple.qrcode.p1")</p>
     <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-6">

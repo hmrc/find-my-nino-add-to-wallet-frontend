@@ -26,6 +26,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
+import uk.gov.hmrc.sca.services.WrapperService
 
 import scala.concurrent.Future
 
@@ -33,31 +34,7 @@ class AuthControllerSpec extends SpecBase with MockitoSugar {
 
   "signOut" - {
 
-    "must clear user answers and redirect to sign out, specifying the exit survey as the continue URL when the sca wrapper is enabled" in {
-
-      val mockSessionRepository = mock[SessionRepository]
-      when(mockSessionRepository.clear(any())) thenReturn Future.successful(true)
-
-      val application =
-        applicationBuilder(None)
-          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
-          .configure("features.sca-wrapper-enabled" -> true)
-          .build()
-
-      running(application) {
-
-        val sentLocation = "http://example.com&origin=STORE_MY_NINO"
-        val request   = FakeRequest(GET, routes.AuthController.signout(Some(RedirectUrl(sentLocation)),Some(Origin("STORE_MY_NINO"))).url)
-
-        val result = route(application, request).value
-
-
-        status(result) mustEqual SEE_OTHER
-
-      }
-    }
-
-    "must clear user answers and redirect to sign out, specifying the exit survey as the continue URL when the sca wrapper is disabled" in {
+    "must clear user answers and redirect to sign out" in {
 
       val mockSessionRepository = mock[SessionRepository]
       when(mockSessionRepository.clear(any())) thenReturn Future.successful(true)
@@ -75,33 +52,34 @@ class AuthControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-
         status(result) mustEqual SEE_OTHER
-
+        redirectLocation(result) mustBe Some("http://localhost:9553/bas-gateway/sign-out-without-state?continue=http://localhost:9514/feedback/STORE_MY_NINO")
       }
     }
 
-    "must not redirect when origin is missing" in {
+    "must clear user answers and redirect to sign out when safeSignOutUrl returns none" in {
 
       val mockSessionRepository = mock[SessionRepository]
       when(mockSessionRepository.clear(any())) thenReturn Future.successful(true)
 
+      val mockWrapperService = mock[WrapperService]
+      when(mockWrapperService.safeSignoutUrl(any)).thenReturn(None)
+
       val application =
         applicationBuilder(None)
-          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
+          .overrides(bind[SessionRepository].toInstance(mockSessionRepository),
+            bind[WrapperService].toInstance(mockWrapperService))
           .configure("features.sca-wrapper-enabled" -> false)
           .build()
 
       running(application) {
 
-        val sentLocation = "http://example.com&origin=STORE_MY_NINO"
-        val request = FakeRequest(GET, routes.AuthController.signout(Some(RedirectUrl(sentLocation)), None).url)
+        val request = FakeRequest(GET, routes.AuthController.signout(None, Some(Origin("STORE_MY_NINO"))).url)
 
         val result = route(application, request).value
 
-
         status(result) mustEqual SEE_OTHER
-
+        redirectLocation(result) mustBe Some("http://localhost:9553/bas-gateway/sign-out-without-state?continue=http://localhost:9514/feedback/STORE_MY_NINO")
       }
     }
   }

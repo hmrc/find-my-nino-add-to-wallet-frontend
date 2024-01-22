@@ -48,9 +48,6 @@ class NinoLetterControllerSpec extends SpecBase with CDFixtures with MockitoSuga
   when(mockCitizenDetailsConnector.personDetails(any())(any(), any()))
     .thenReturn(Future(PersonDetailsSuccessResponse(buildPersonDetails)))
 
-  when(mockApplePassConnector.getPersonDetails(any())(any(), any()))
-    .thenReturn(Future.successful(Some(jsonPd.toString())))
-
   "NinoLetter Controller" - {
     "must return OK and the correct view for a GET" in {
       userLoggedInFMNUser(NinoUser)

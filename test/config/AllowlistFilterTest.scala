@@ -38,7 +38,7 @@ class AllowlistFilterTest extends SpecBase with BeforeAndAfterEach {
         running(application) {
 
           implicit val request: FakeRequest[AnyContentAsEmpty.type] =
-            FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad.url)
+            FakeRequest(GET, routes.PublicController.sessionTimeout.url)
               .withHeaders("True-Client-IP" -> "192.1.2.3")
 
           val result = route(application, request).value
@@ -55,7 +55,7 @@ class AllowlistFilterTest extends SpecBase with BeforeAndAfterEach {
         running(application) {
 
           implicit val request: FakeRequest[AnyContentAsEmpty.type] =
-            FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad.url)
+            FakeRequest(GET, routes.PublicController.sessionTimeout.url)
               .withHeaders("True-Client-IP" -> "192.1.2.6")
 
           val result  = route(application, request).value
@@ -78,7 +78,7 @@ class AllowlistFilterTest extends SpecBase with BeforeAndAfterEach {
         running(application) {
 
           implicit val request: FakeRequest[AnyContentAsEmpty.type] =
-            FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad.url)
+            FakeRequest(GET, routes.PublicController.sessionTimeout.url)
               .withHeaders("True-Client-IP" -> "192.1.2.6")
 
           val result = route(application, request).value

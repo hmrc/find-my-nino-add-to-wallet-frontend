@@ -18,6 +18,7 @@ package controllers
 
 import base.SpecBase
 import connectors.{CitizenDetailsConnector, IdentityVerificationFrontendConnector, PersonDetailsErrorResponse, PersonDetailsSuccessResponse, StoreMyNinoConnector}
+import controllers.auth.requests.UserRequest
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.{reset, when}
@@ -26,6 +27,7 @@ import play.api.inject
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
+import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolment, Enrolments}
 import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
 import util.CDFixtures
@@ -34,7 +36,7 @@ import util.TestData.NinoUser
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import views.html.{ErrorTemplate, GoogleWalletView, RedirectToPostalFormView}
+import views.html.{ErrorTemplate, GoogleWalletView, PassIdNotFoundView, QRCodeNotFoundView, RedirectToPostalFormView}
 
 import java.util.Base64
 
@@ -47,14 +49,12 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
     when(mockScaWrapperDataConnector.messageData()(any(), any()))
       .thenReturn(Future.successful(messageDataResponse))
 
-    reset(mockApplePassConnector)
-    when(mockApplePassConnector.getGooglePassUrl(eqTo(passId))(any(), any()))
+    reset(mockGooglePassConnector)
+    when(mockGooglePassConnector.getGooglePassUrl(eqTo(passId))(any(), any()))
       .thenReturn(Future(Some(fakeGooglePassSaveUrl)))
-    when(mockApplePassConnector.createGooglePass(any(), any())(any(), any()))
+    when(mockGooglePassConnector.createGooglePass(any(), any())(any(), any()))
       .thenReturn(Future(Some(passId)))
-    when(mockApplePassConnector.createPersonDetailsRow(any())(any(), any()))
-      .thenReturn(Future(Some(personDetailsId)))
-    when(mockApplePassConnector.getGooglePassQrCode(eqTo(passId))(any(), any()))
+    when(mockGooglePassConnector.getGooglePassQrCode(eqTo(passId))(any(), any()))
       .thenReturn(Future(Some(Base64.getDecoder.decode(fakeBase64String))))
 
     reset(mockSessionRepository)
@@ -81,10 +81,12 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
   lazy val errview = applicationWithConfig.injector.instanceOf[ErrorTemplate]
 
   val mockSessionRepository = mock[SessionRepository]
-  val mockApplePassConnector = mock[StoreMyNinoConnector]
+  val mockGooglePassConnector = mock[StoreMyNinoConnector]
   val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
   val mockIdentityVerificationFrontendConnector = mock[IdentityVerificationFrontendConnector]
   lazy val redirectview = applicationWithConfig.injector.instanceOf[RedirectToPostalFormView]
+  lazy val passIdNotFoundView = applicationWithConfig.injector.instanceOf[PassIdNotFoundView]
+  lazy val qrCodeNotFoundView = applicationWithConfig.injector.instanceOf[QRCodeNotFoundView]
 
 
   val fakeBase64String = "UEsDBBQACAgIABxqJlYAAAAAAA"
@@ -98,7 +100,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           .overrides(
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector),
-            inject.bind[StoreMyNinoConnector].toInstance(mockApplePassConnector),
+            inject.bind[StoreMyNinoConnector].toInstance(mockGooglePassConnector),
             inject.bind[IdentityVerificationFrontendConnector].toInstance(mockIdentityVerificationFrontendConnector)
           )
           .configure("features.sca-wrapper-enabled" -> false)
@@ -125,7 +127,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
         applicationBuilderWithConfig()
           .overrides(
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
-            inject.bind[StoreMyNinoConnector].toInstance(mockApplePassConnector),
+            inject.bind[StoreMyNinoConnector].toInstance(mockGooglePassConnector),
             inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
           )
           .configure("features.sca-wrapper-enabled" -> false)
@@ -146,7 +148,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
         applicationBuilderWithConfig()
           .overrides(
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
-            inject.bind[StoreMyNinoConnector].toInstance(mockApplePassConnector),
+            inject.bind[StoreMyNinoConnector].toInstance(mockGooglePassConnector),
             inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector),
             inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector)
           )
@@ -169,7 +171,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
 
       val application = applicationBuilderWithConfig().overrides(
         inject.bind[SessionRepository].toInstance(mockSessionRepository),
-        inject.bind[StoreMyNinoConnector].toInstance(mockApplePassConnector),
+        inject.bind[StoreMyNinoConnector].toInstance(mockGooglePassConnector),
         inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
       )
         .configure("features.sca-wrapper-enabled" -> false)
@@ -185,11 +187,40 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
       }
     }
 
+    "must redirect to passIdNotFoundView when no Google pass is returned" in {
+      when(mockGooglePassConnector.getGooglePassUrl(eqTo(passId))(any(), any()))
+        .thenReturn(Future(None))
+
+      val application = applicationBuilderWithConfig().overrides(
+        inject.bind[SessionRepository].toInstance(mockSessionRepository),
+        inject.bind[StoreMyNinoConnector].toInstance(mockGooglePassConnector),
+        inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
+      )
+        .configure("features.sca-wrapper-enabled" -> false)
+        .build()
+
+      running(application) {
+        userLoggedInFMNUser(NinoUser)
+        val request = FakeRequest(GET, routes.GoogleWalletController.getGooglePass(passId).url)
+          .withSession(("authToken", "Bearer 123"))
+        val result = route(application, request).value
+        val userRequest = UserRequest(
+          None,
+          None,
+          ConfidenceLevel.L200,
+          pd,
+          Enrolments(Set(Enrolment("HMRC-PT"))),
+          request
+        )
+        contentAsString(result) mustEqual (passIdNotFoundView()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
+      }
+    }
+
     "must return QR code" in {
       val application = applicationBuilderWithConfig()
         .overrides(
           inject.bind[SessionRepository].toInstance(mockSessionRepository),
-          inject.bind[StoreMyNinoConnector].toInstance(mockApplePassConnector),
+          inject.bind[StoreMyNinoConnector].toInstance(mockGooglePassConnector),
           inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
         )
         .configure("features.sca-wrapper-enabled" -> false)
@@ -205,11 +236,40 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
       }
     }
 
+    "must redirect to qrCodeNotFoundView when no Google pass QR code is returned" in {
+      when(mockGooglePassConnector.getGooglePassQrCode(eqTo(passId))(any(), any()))
+        .thenReturn(Future(None))
+
+      val application = applicationBuilderWithConfig().overrides(
+        inject.bind[SessionRepository].toInstance(mockSessionRepository),
+        inject.bind[StoreMyNinoConnector].toInstance(mockGooglePassConnector),
+        inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
+      )
+        .configure("features.sca-wrapper-enabled" -> false)
+        .build()
+
+      running(application) {
+        userLoggedInFMNUser(NinoUser)
+        val request = FakeRequest(GET, routes.GoogleWalletController.getGooglePassQrCode(passId).url)
+          .withSession(("authToken", "Bearer 123"))
+        val result = route(application, request).value
+        val userRequest = UserRequest(
+          None,
+          None,
+          ConfidenceLevel.L200,
+          pd,
+          Enrolments(Set(Enrolment("HMRC-PT"))),
+          request
+        )
+        contentAsString(result) mustEqual (qrCodeNotFoundView()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
+      }
+    }
+
     "must fail to login user" in {
       val application = applicationBuilderWithConfig()
         .overrides(
           inject.bind[SessionRepository].toInstance(mockSessionRepository),
-          inject.bind[StoreMyNinoConnector].toInstance(mockApplePassConnector),
+          inject.bind[StoreMyNinoConnector].toInstance(mockGooglePassConnector),
           inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
         )
         .configure("features.sca-wrapper-enabled" -> false)

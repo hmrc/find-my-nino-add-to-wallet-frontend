@@ -52,11 +52,6 @@ case class Address(
       case false => country
       case _     => None
     }
-
-  def isWelshLanguageUnit: Boolean = {
-    val welshLanguageUnitPostcodes = Set("CF145SH", "CF145TS", "LL499BF", "BX55AB", "LL499AB")
-    welshLanguageUnitPostcodes.contains(postcode.getOrElse("").toUpperCase.trim.replace(" ", ""))
-  }
 }
 
 object Address extends Logging {

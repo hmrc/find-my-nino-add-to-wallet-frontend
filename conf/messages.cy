@@ -11,8 +11,6 @@ site.continue = Rhowch gynnig arall
 
 error.browser.title.prefix=Gwall:
 error.summary.title=Mae problem wedi codi
-checkYourAnswers.title=Gwirio’ch atebion
-checkYourAnswers.heading=Gwirio’ch atebion
 unauthorised.title=Ni allwch gael mynediad at y gwasanaeth hwn gyda’r cyfrif hwn
 unauthorised.heading=Ni allwch gael mynediad at y gwasanaeth hwn gyda’r cyfrif hwn
 journeyRecovery.continue.title=Mae’n ddrwg gennym – mae problem gyda’r gwasanaeth
@@ -88,12 +86,10 @@ label.www_youtube_com_hmrcgovuk=www.youtube.com/HMRCgovuk
 label.information_is_available_in_large_print_audio_tape_and_braille_formats=Mae gwybodaeth ar gael ar sain, mewn print bras a Braille.
 label.text_relay_service_prefix_number_18001=I gael gwasanaeth Text Relay, gwasgwch 18001 yn gyntaf.
 label.hmrc_date=CThEF {0}
-label.you_cannot_access_your_account=Ni allwn gael at eich manylion
-label.we_need_to_speak_to_you_about_an_mci_error_=Mae hyn oherwydd problem MCI. Mae’n golygu bod angen i ni wirio rhai manylion gyda chi, cyn i chi allu mewngofnodi eto
-label.how_to_contact_us=Gallwch ein ffonio
-label.resolve.mci.issue=i gael help ymgynghorydd i ddatrys y broblem MCI.
+
 label.sign_in=Mewngofnodi
 label.youve_been_signed_out=Er eich diogelwch, gwnaethom eich allgofnodi
+label.you_have_been_signed_out=Rydych wedi cael eich allgofnodi
 label.timeout_message=Ni wnaethom gadw’ch atebion.
 label.please_sign_in_again=Mewngofnodwch eto.
 

@@ -35,7 +35,7 @@ class AuthController @Inject()(
 
   def signout(continueUrl: Option[RedirectUrl], origin: Option[Origin]): Action[AnyContent] =
     Action { implicit request =>
-      val safeUrl = wrapperService.safeSignoutUrl()
+      val safeUrl = wrapperService.safeSignoutUrl(continueUrl)
       safeUrl
         .orElse(origin.map(frontendAppConfig.getFeedbackSurveyUrl))
         .fold(BadRequest("Missing origin")) { url: String =>

@@ -74,26 +74,6 @@ class StoreMyNinoConnectorSpec extends ConnectorSpec
     }
   }
 
-  "Calling get personDetails" must {
-
-    trait LocalSetup extends SpecSetup {
-      def url: String = s"/find-my-nino-add-to-wallet/get-person-details?pdId=$personDetailsId"
-    }
-
-    "return OK when called with an existing person details Id" in new LocalSetup {
-      stubGet(url, OK, Some("personDetailsString"))
-      val result = connector.getPersonDetails(personDetailsId).futureValue.get
-      result mustBe "personDetailsString"
-    }
-
-    "return NOT_FOUND when called with an unknown personDetailsId" in new LocalSetup {
-      stubGet(url, OK, None)
-      val result = connector.getPersonDetails(personDetailsId).futureValue.get
-      result mustBe ""
-
-    }
-  }
-
   "Calling get pass card by pass Id" must {
 
     trait LocalSetup extends SpecSetup {
@@ -111,26 +91,6 @@ class StoreMyNinoConnectorSpec extends ConnectorSpec
       val result = connector.getApplePass(passId).futureValue.get
       result mustBe Array()
 
-    }
-  }
-
-  "Calling getPass card by name and nino" must {
-
-    trait LocalSetup extends SpecSetup {
-      def url: String =
-        s"/find-my-nino-add-to-wallet/get-pass-details-by-name-and-nino?fullName=$fakeName&nino=$fakeNino"
-    }
-
-    "return Pass when called with an existing name and nino" in new LocalSetup {
-      stubGet(url, OK, Some(applePassCard))
-      val result = connector.getApplePassByNameAndNino(fakeName, fakeNino).futureValue.get
-      result mustBe applePassCardBytes
-    }
-
-    "return empty Array when called with an unknown passId" in new LocalSetup {
-      stubGet(url, OK, None)
-      val result = connector.getApplePassByNameAndNino(fakeName, fakeNino).futureValue.get
-      result mustBe Array()
     }
   }
 
@@ -152,26 +112,6 @@ class StoreMyNinoConnectorSpec extends ConnectorSpec
       result mustBe Array()
 
     }
-  }
-
-  "Calling create personDetails" must {
-
-    trait LocalSetup extends SpecSetup {
-      def url: String = s"/find-my-nino-add-to-wallet/create-person-details"
-    }
-
-    "return OK when called create person details" in new LocalSetup {
-      stubPost(url, OK, Some(jsonPd.toString()), Some(personDetailsId))
-      val result = connector.createPersonDetailsRow(pd).futureValue.get
-      result mustBe personDetailsId
-    }
-
-    "return error when called create person details" in new LocalSetup {
-      stubWithDelay(url, INTERNAL_SERVER_ERROR, Some(jsonPd.toString()), None, delay)
-      val result = connector.createPersonDetailsRow(pd).value.getOrElse(InternalServerError(Json.toJson(errMsg)))
-      result mustBe InternalServerError(Json.toJson(errMsg))
-    }
-
   }
 
   "Calling create pass" must {

@@ -18,6 +18,7 @@ package controllers
 
 import base.SpecBase
 import connectors.{CitizenDetailsConnector, IdentityVerificationFrontendConnector, PersonDetailsErrorResponse, PersonDetailsSuccessResponse, StoreMyNinoConnector}
+import controllers.auth.requests.UserRequest
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.{reset, when}
@@ -26,6 +27,7 @@ import play.api.inject
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
+import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolment, Enrolments}
 import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
 import util.CDFixtures
@@ -35,7 +37,7 @@ import util.TestData.{NinoUser, NinoUser_With_CL50}
 import java.util.Base64
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import views.html.{AppleWalletView, ErrorTemplate, RedirectToPostalFormView}
+import views.html.{AppleWalletView, ErrorTemplate, PassIdNotFoundView, QRCodeNotFoundView, RedirectToPostalFormView}
 
 class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSugar {
 
@@ -51,8 +53,6 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
       .thenReturn(Future(Some(Base64.getDecoder.decode(fakeBase64String))))
     when(mockApplePassConnector.createApplePass(any(), any())(any(), any()))
       .thenReturn(Future(Some(passId)))
-    when(mockApplePassConnector.createPersonDetailsRow(any())(any(), any()))
-      .thenReturn(Future(Some(personDetailsId)))
     when(mockApplePassConnector.getQrCode(eqTo(passId))(any(), any()))
       .thenReturn(Future(Some(Base64.getDecoder.decode(fakeBase64String))))
 
@@ -79,6 +79,8 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
   lazy val view = applicationWithConfig.injector.instanceOf[AppleWalletView]
   lazy val errview = applicationWithConfig.injector.instanceOf[ErrorTemplate]
   lazy val redirectview = applicationWithConfig.injector.instanceOf[RedirectToPostalFormView]
+  lazy val passIdNotFoundView = applicationWithConfig.injector.instanceOf[PassIdNotFoundView]
+  lazy val qrCodeNotFoundView = applicationWithConfig.injector.instanceOf[QRCodeNotFoundView]
 
   val mockSessionRepository = mock[SessionRepository]
   val mockApplePassConnector = mock[StoreMyNinoConnector]
@@ -182,6 +184,36 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
       }
     }
 
+    "must redirect to passIdNotFoundView when no Apple pass is returned" in {
+      when(mockApplePassConnector.getApplePass(eqTo(passId))(any(), any()))
+        .thenReturn(Future(None))
+
+      val application = applicationBuilderWithConfig().overrides(
+        inject.bind[SessionRepository].toInstance(mockSessionRepository),
+        inject.bind[StoreMyNinoConnector].toInstance(mockApplePassConnector),
+        inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
+      )
+        .configure("features.sca-wrapper-enabled" -> false)
+        .build()
+
+      running(application) {
+        userLoggedInFMNUser(NinoUser)
+        val request = FakeRequest(GET, routes.AppleWalletController.getPassCard(passId).url)
+          .withSession(("authToken", "Bearer 123"))
+        val result = route(application, request).value
+        val userRequest = UserRequest(
+          None,
+          None,
+          ConfidenceLevel.L200,
+          pd,
+          Enrolments(Set(Enrolment("HMRC-PT"))),
+          request
+        )
+        contentAsString(result) mustEqual (passIdNotFoundView()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
+      }
+
+    }
+
     "must return QR code" in {
       val application = applicationBuilderWithConfig()
         .overrides(
@@ -199,6 +231,35 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
         val result = route(application, request).value
         status(result) mustEqual OK
         contentAsBytes(result) mustEqual Base64.getDecoder.decode(fakeBase64String)
+      }
+    }
+
+    "must redirect to qrCodeNotFoundView when no Apple pass QR code is returned" in {
+      when(mockApplePassConnector.getQrCode(eqTo(passId))(any(), any()))
+        .thenReturn(Future(None))
+
+      val application = applicationBuilderWithConfig().overrides(
+        inject.bind[SessionRepository].toInstance(mockSessionRepository),
+        inject.bind[StoreMyNinoConnector].toInstance(mockApplePassConnector),
+        inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
+      )
+        .configure("features.sca-wrapper-enabled" -> false)
+        .build()
+
+      running(application) {
+        userLoggedInFMNUser(NinoUser)
+        val request = FakeRequest(GET, routes.AppleWalletController.getQrCode(passId).url)
+          .withSession(("authToken", "Bearer 123"))
+        val result = route(application, request).value
+        val userRequest = UserRequest(
+          None,
+          None,
+          ConfidenceLevel.L200,
+          pd,
+          Enrolments(Set(Enrolment("HMRC-PT"))),
+          request
+        )
+        contentAsString(result) mustEqual (qrCodeNotFoundView()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
       }
     }
 

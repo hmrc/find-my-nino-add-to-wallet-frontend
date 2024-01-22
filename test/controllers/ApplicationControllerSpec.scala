@@ -56,8 +56,6 @@ class ApplicationControllerSpec extends SpecBase with CDFixtures with MockitoSug
       .thenReturn(Future(Some(Base64.getDecoder.decode(fakeBase64String))))
     when(mockApplePassConnector.createApplePass(any(), any())(any(), any()))
       .thenReturn(Future(Some(passId)))
-    when(mockApplePassConnector.createPersonDetailsRow(any())(any(), any()))
-      .thenReturn(Future(Some(personDetailsId)))
     when(mockApplePassConnector.getQrCode(eqTo(passId))(any(), any()))
       .thenReturn(Future(Some(Base64.getDecoder.decode(fakeBase64String))))
 
@@ -300,23 +298,5 @@ class ApplicationControllerSpec extends SpecBase with CDFixtures with MockitoSug
 
       }
     }
-
-    "Calling signout" - {
-
-      "return BAD_REQUEST when signed in with government gateway with no continue URL and no origin" in new LocalSetup {
-        override lazy val authProviderType: String = UserDetails.GovernmentGatewayAuthProvider
-
-        val result = controller.signout(None, None)(FakeRequest())
-        status(result) mustBe BAD_REQUEST
-      }
-
-      "return 'Bad Request' when signed in with verify and supplied no continue URL and no origin" in new LocalSetup {
-        val result = controller.signout(None, None)(FakeRequest())
-        status(result) mustBe BAD_REQUEST
-      }
-
-    }
-
   }
-
 }

@@ -109,20 +109,5 @@ class ApplicationController @Inject()(
 
   private def logErrorMessage(reason: String): Unit =
     logger.warn(s"Unable to confirm user identity: $reason")
-
-  def signout(continueUrl: Option[RedirectUrl], origin: Option[Origin]): Action[AnyContent] =
-    Action {
-      val safeUrl = continueUrl.flatMap { redirectUrl =>
-        redirectUrl.getEither(OnlyRelative) match {
-          case Right(safeRedirectUrl) => Some(safeRedirectUrl.url)
-          case _                      => Some(frontendAppConfig.getFeedbackSurveyUrl(frontendAppConfig.defaultOrigin))
-        }
-      }
-      safeUrl
-        .orElse(origin.map(frontendAppConfig.getFeedbackSurveyUrl))
-        .fold(BadRequest("Missing origin")) { url: String =>
-          Redirect(frontendAppConfig.getBasGatewayFrontendSignOutUrl(url))
-        }
-    }
 }
 

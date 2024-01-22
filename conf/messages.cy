@@ -116,6 +116,14 @@ label.confirmNINO.l1.li2.part3.address.line3 = BX9 1ST
 label.confirmNINO.p2 = Os ydych yn llenwi ffurflen CA5403, mae’n bosibl y bydd angen i chi gadarnhau pwy ydych drwy ddefnyddio dogfennau penodol. Bydd y ffurflen ar-lein yn rhoi gwybod i chi pa ddogfennau y bydd eu hangen arnoch.
 label.confirmNINO.p3 = Dylai’ch rhif Yswiriant Gwladol eich cyrraedd cyn pen 15 diwrnod ar ôl i chi gysylltu â ni.
 
+apple.passid.notfound = Mae’r cysylltiad wedi dod i ben
+apple.passid.startagain = Ewch yn ôl a rhowch gynnig arall arni
+
+apple.qrcode.notfound = Mae’r cod QR wedi dod i ben
+apple.qrcode.p1 = I roi cynnig arall arni:
+apple.qrcode.li1 = adnewyddwch y tudalen gyda’r cod QR arno
+apple.qrcode.li2 = sganiwch y cod eto
+
 appleWallet.title = Ychwanegwch eich rhif Yswiriant Gwladol at eich Apple Wallet
 appleWallet.heading = Ychwanegwch eich rhif Yswiriant Gwladol at eich Apple Wallet
 appleWallet.p1 = Byddai’ch rhif Yswiriant Gwladol:

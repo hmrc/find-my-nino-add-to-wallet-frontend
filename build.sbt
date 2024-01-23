@@ -55,7 +55,7 @@ lazy val root = (project in file("."))
           "-Wconf:cat=deprecation:ws,cat=feature:ws,cat=optimizer:ws,src=target/.*:s"
       ),
       libraryDependencies ++= AppDependencies(),
-      dependencyOverrides += "org.apache.servicemix.bundles" % "org.apache.servicemix.bundles.xalan" % "2.7.2_3",
+      //dependencyOverrides += "org.apache.servicemix.bundles" % "org.apache.servicemix.bundles.xalan" % "2.7.2_3",
       retrieveManaged := true,
       evictionWarningOptions in update :=
         EvictionWarningOptions.default.withWarnScalaVersionEviction(false),

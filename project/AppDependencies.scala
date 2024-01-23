@@ -19,6 +19,10 @@ object AppDependencies {
     "com.google.api-client"         % "google-api-client"                     %   "2.2.0"
   ).map(_.excludeAll(ExclusionRule(organization = "xalan")))
 
+  val overrides = Seq(
+    "org.apache.servicemix.bundles"         % "org.apache.servicemix.bundles.xalan"                     %   "2.7.3_3"
+  )
+
   val test = Seq(
     "org.scalatest"           %% "scalatest"                     % "3.2.10",
     "uk.gov.hmrc"             %% s"bootstrap-test-$playVersion"  % "7.13.0",
@@ -36,5 +40,5 @@ object AppDependencies {
     "com.github.tomakehurst"  % "wiremock-jre8"                  % "2.26.3"
   ).map(_ % "test, it")
 
-  def apply(): Seq[ModuleID] = compile ++ test
+  def apply(): Seq[ModuleID] = compile ++ overrides ++ test
 }

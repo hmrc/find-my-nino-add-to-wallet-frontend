@@ -50,7 +50,6 @@ class GetPersonDetailsAction @Inject()(
         Right(
           UserRequest(
             Some(Nino(authContext.nino.nino)),
-            Some(UserName(authContext.name)),
             authContext.confidenceLevel,
             personDetails,
             authContext.allEnrolments,

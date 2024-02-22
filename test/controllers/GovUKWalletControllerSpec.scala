@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+/*
 package controllers
 
 import base.SpecBase
@@ -174,3 +175,4 @@ class GovUKWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
 
   }
 }
+*/

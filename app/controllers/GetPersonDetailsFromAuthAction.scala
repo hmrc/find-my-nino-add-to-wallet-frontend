@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+/*
 package controllers
 
 import com.google.inject.Inject
@@ -74,4 +75,4 @@ class GetPersonDetailsFromAuthAction @Inject()(cc: ControllerComponents,
   }
 
   override protected def executionContext: ExecutionContext = cc.executionContext
-}
+}*/

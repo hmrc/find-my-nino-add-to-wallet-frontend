@@ -45,13 +45,11 @@ class AuthenticatedIdentifierAction @Inject()(val authConnector: AuthConnector,
     authorised().retrieve(Retrievals.internalId) {
       _.map {
         internalId => block(IdentifierRequest(request, internalId))
-      }.getOrElse(throw new UnauthorizedException("******************** Unable to retrieve internal Id"))
+      }.getOrElse(throw new UnauthorizedException("Unable to retrieve internal Id"))
     } recover {
       case _: NoActiveSession => {
-        logger.info("********************* no session detected ********** redirecting to continue url")
         Redirect(frontendAppConfig.loginUrl, Map("continue" -> Seq(frontendAppConfig.loginContinueUrl)))
       }
-
       case _: AuthorisationException =>
         Redirect(routes.UnauthorisedController.onPageLoad)
     }
@@ -66,16 +64,8 @@ class SessionIdentifierAction @Inject()(val parser: BodyParsers.Default)
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
     hc.sessionId match {
-      case Some(session) => {
-        logger.info(s"******************************** session detected, sessionId ${hc.sessionId}")
-        block(IdentifierRequest(request, session.value))
-      }
-
-      case None => {
-        logger.info("********************* no session detected ********** redirecting to continue url")
-        Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
-      }
-
+      case Some(session) => block(IdentifierRequest(request, session.value))
+      case None => Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
     }
   }
 }

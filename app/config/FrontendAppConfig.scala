@@ -32,6 +32,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
 
   private val contactHost = configuration.get[String]("contact-frontend.host")
   private val contactFormServiceIdentifier = "save-your-national-insurance-number"
+  lazy val contactHmrcUrl = "https://www.gov.uk/contact-hmrc"
   lazy val gtmContainer: String = configuration.get[String]("tracking-consent-frontend.gtm.container")
   val enc = URLEncoder.encode(_: String, "UTF-8")
   lazy val generalQueriesUrl     = "https://www.gov.uk/contact-hmrc"

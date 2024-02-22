@@ -19,13 +19,13 @@ package controllers.auth
 import config.FrontendAppConfig
 import controllers.auth.FMNAuth.toContinueUrl
 import controllers.routes
-import models.{NationalInsuranceNumber, UserName}
+import models.NationalInsuranceNumber
 import play.api.Logging
 import play.api.mvc.{ActionBuilder, AnyContent, AnyContentAsFormUrlEncoded, BodyParser, Call, ControllerComponents, Request, RequestHeader, Result}
 import uk.gov.hmrc.auth.core.AffinityGroup.{Individual, Organisation}
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
 import uk.gov.hmrc.auth.core.retrieve.v2.{Retrievals, TrustedHelper}
-import uk.gov.hmrc.auth.core.retrieve.{Name, ~}
+import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.domain
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
@@ -43,8 +43,6 @@ final case class AuthContext[A](
                                  confidenceLevel: ConfidenceLevel,
                                  affinityGroup: AffinityGroup,
                                  allEnrolments: Enrolments,
-                                 name: Name,
-                                 userName: Option[UserName],
                                  trustedHelper: Option[TrustedHelper],
                                  request: Request[A]
                                )
@@ -124,7 +122,6 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
       Retrievals.credentials and
       Retrievals.credentialStrength and
       Retrievals.confidenceLevel and
-      Retrievals.name and
       Retrievals.trustedHelper and
       Retrievals.profile and
       Retrievals.internalId and
@@ -139,10 +136,10 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
                                ): Future[Result] = {
     authorised(AuthPredicate)
       .retrieve(FMNRetrievals) {
-        case _ ~ Some(Individual | Organisation) ~ _ ~ _ ~ (Some(CredentialStrength.weak) | Some("none")) ~ _ ~ _ ~ _ ~ _ ~ _ ~ _ =>
+        case _ ~ Some(Individual | Organisation) ~ _ ~ _ ~ (Some(CredentialStrength.weak) | Some("none")) ~ _ ~ _ ~ _ ~ _ ~ _ =>
           upliftCredentialStrength
 
-        case _ ~ Some(Individual | Organisation) ~ _ ~ _ ~ _ ~ LT200(_) ~ _ ~ _ ~ _~ _ ~ _ =>
+        case _ ~ Some(Individual | Organisation) ~ _ ~ _ ~ LT200(_) ~ _ ~ _ ~ _~ _ ~ _ =>
           upliftConfidenceLevel(request)
 
         case Some(nino) ~
@@ -151,7 +148,6 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
           credentials ~
           Some(CredentialStrength.strong) ~
           GTOE200(confidenceLevel) ~
-          Some(name) ~
           trustedHelper ~
           profile ~
           Some(internalId)  ~
@@ -174,10 +170,7 @@ trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
             confidenceLevel,
             affinityGroup,
             Enrolments(enrolments),
-            name,
-            Some(UserName(
-              trustedHelper.fold(Some(name).getOrElse(Name(None, None)))(helper => Name(Some(helper.principalName), None))
-            )),
+
             trustedHelper,
             trimmedRequest
           )

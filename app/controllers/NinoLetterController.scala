@@ -40,10 +40,8 @@ import scala.concurrent.ExecutionContext
 class NinoLetterController @Inject()(
                                       override val messagesApi: MessagesApi,
                                       authConnector: AuthConnector,
-                                      applePassConnector: StoreMyNinoConnector,
                                       auditService: AuditService,
                                       view: PrintNationalInsuranceNumberView,
-                                      technicalIssuesView: TechnicalIssuesView,
                                       getPersonDetailsAction: GetPersonDetailsAction,
                                       xmlFoToPDF: XmlFoToPDF
                                     )(implicit config: Configuration,

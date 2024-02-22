@@ -36,7 +36,6 @@ object TestData {
        | "confidenceLevel": 50,
        | "affinityGroup": "Individual",
        | $allEnrolments,
-       | "optionalName" : {"name": "somename"}
        |}
        |""".stripMargin
 
@@ -50,7 +49,6 @@ object TestData {
        | "confidenceLevel": 200,
        | "affinityGroup": "Individual",
        | $allEnrolments,
-       | "optionalName" : {"name": "somename"}
        |}
        |""".stripMargin
 

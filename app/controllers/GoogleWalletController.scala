@@ -27,16 +27,15 @@ import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
 import services.AuditService
 import uk.gov.hmrc.auth.core.AuthConnector
 import util.AuditUtils
-import views.html.{ErrorTemplate, GoogleWalletView, PassIdNotFoundView, QRCodeNotFoundView}
+import views.html.{GoogleWalletView, PassIdNotFoundView, QRCodeNotFoundView}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetailsConnector,
                                        override val messagesApi: MessagesApi,
                                        authConnector: AuthConnector,
                                        view: GoogleWalletView,
                                        findMyNinoServiceConnector: StoreMyNinoConnector,
-                                       errorTemplate: ErrorTemplate,
                                        getPersonDetailsAction: GetPersonDetailsAction,
                                        auditService: AuditService,
                                        passIdNotFoundView: PassIdNotFoundView,
@@ -75,7 +74,7 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
 
   def getGooglePass(passId: String): Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction).async {
     implicit request => {
-      authorisedAsFMNUser { authContext =>
+      authorisedAsFMNUser { _ =>
         findMyNinoServiceConnector.getGooglePassUrl(passId).map {
           case Some(data) =>
             request.getQueryString("qr-code") match {

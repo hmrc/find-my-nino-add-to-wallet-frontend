@@ -71,7 +71,6 @@ class StoreMyNinoControllerISpec extends IntegrationSpecBase {
                            ): UserRequest[A] =
       UserRequest(
         nino,
-        userName,
         confidenceLevel,
         personDetails,
         Enrolments(Set(Enrolment("HMRC-PT"))),

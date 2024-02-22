@@ -69,14 +69,12 @@ class GoogleWalletControllerISpec extends IntegrationSpecBase {
   trait LocalSetup {
     def buildUserRequest[A](
                              nino: Option[Nino] = Some(generatedNino),
-                             userName: Option[UserName] = Some(UserName(Name(Some("Firstname"), Some("Lastname")))),
                              confidenceLevel: ConfidenceLevel = ConfidenceLevel.L200,
                              personDetails: PersonDetails = fakePersonDetails,
                              request: Request[A] = FakeRequest().asInstanceOf[Request[A]]
                            ): UserRequest[A] =
       UserRequest(
         nino,
-        userName,
         confidenceLevel,
         personDetails,
         Enrolments(Set(Enrolment("HMRC-PT"))),

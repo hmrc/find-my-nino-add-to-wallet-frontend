@@ -16,14 +16,33 @@
 
 package controllers
 
-import com.google.inject.Singleton
-import play.api.http.HttpErrorHandler
+import com.google.inject.{Inject, Singleton}
+import config.FrontendAppConfig
+import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc._
+import play.twirl.api.Html
+import uk.gov.hmrc.play.bootstrap.frontend.http.FrontendErrorHandler
+import views.html.ErrorTemplate
+import views.html.templates.InternalServerErrorView
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class LocalErrorHandler extends HttpErrorHandler {
-  override def onClientError(request: RequestHeader, statusCode: Int, message: String): Future[Result] = null
-  override def onServerError(request: RequestHeader, exception: Throwable): Future[Result] = null
+class LocalErrorHandler @Inject()(val messagesApi: MessagesApi,
+                                  val errorTemplate: ErrorTemplate,
+                                  val internalServerErrorView: InternalServerErrorView
+
+                                 ) (implicit val ec: ExecutionContext, val appConfig: FrontendAppConfig) extends FrontendErrorHandler with I18nSupport {
+  override def standardErrorTemplate(
+                                      pageTitle: String,
+                                      heading: String,
+                                      message: String
+                                    )(implicit request: Request[_]): Html =
+    errorTemplate(pageTitle, heading, message)
+
+  override def internalServerErrorTemplate(implicit request: Request[_]): Html =
+    internalServerErrorView()
+
+
+
 }

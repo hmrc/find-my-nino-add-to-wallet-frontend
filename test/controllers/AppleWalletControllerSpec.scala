@@ -203,7 +203,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
         val result = route(application, request).value
         val userRequest = UserRequest(
           None,
-          None,
+
           ConfidenceLevel.L200,
           pd,
           Enrolments(Set(Enrolment("HMRC-PT"))),
@@ -253,7 +253,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
         val result = route(application, request).value
         val userRequest = UserRequest(
           None,
-          None,
+
           ConfidenceLevel.L200,
           pd,
           Enrolments(Set(Enrolment("HMRC-PT"))),

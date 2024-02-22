@@ -26,11 +26,11 @@ import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
 import services.AuditService
 import uk.gov.hmrc.auth.core.AuthConnector
-import views.html.{AppleWalletView, ErrorTemplate, PassIdNotFoundView, QRCodeNotFoundView}
+import views.html.{AppleWalletView, PassIdNotFoundView, QRCodeNotFoundView}
 import play.api.Environment
 import util.AuditUtils
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class AppleWalletController @Inject()(val citizenDetailsConnector: CitizenDetailsConnector,
                                       findMyNinoServiceConnector: StoreMyNinoConnector,

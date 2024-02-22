@@ -206,7 +206,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
         val result = route(application, request).value
         val userRequest = UserRequest(
           None,
-          None,
+          //None,
           ConfidenceLevel.L200,
           pd,
           Enrolments(Set(Enrolment("HMRC-PT"))),
@@ -255,7 +255,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
         val result = route(application, request).value
         val userRequest = UserRequest(
           None,
-          None,
+
           ConfidenceLevel.L200,
           pd,
           Enrolments(Set(Enrolment("HMRC-PT"))),

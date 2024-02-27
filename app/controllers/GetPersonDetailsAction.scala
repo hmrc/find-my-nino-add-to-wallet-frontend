@@ -23,7 +23,7 @@ import controllers.auth.AuthContext
 import controllers.auth.requests.UserRequest
 import models.{PersonDetails, UserName}
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
-import play.api.mvc.Results.{InternalServerError, Locked, NotFound, Ok}
+import play.api.mvc.Results.{InternalServerError, Ok}
 import play.api.mvc._
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier

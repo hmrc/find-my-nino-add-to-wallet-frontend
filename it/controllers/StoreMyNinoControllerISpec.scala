@@ -2,7 +2,6 @@
 package controllers
 
 import base.IntegrationSpecBase
-import com.github.tomakehurst.wiremock.client.WireMock._
 import config.FrontendAppConfig
 import controllers.auth.requests.UserRequest
 import controllers.auth.routes
@@ -19,8 +18,8 @@ import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolment, Enrolments}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
 import views.html.StoreMyNinoView
-import java.net.URLDecoder
 
+import java.net.URLDecoder
 import java.time.LocalDate
 
 class StoreMyNinoControllerISpec extends IntegrationSpecBase {

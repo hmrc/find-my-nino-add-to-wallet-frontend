@@ -25,16 +25,15 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import uk.gov.hmrc.sca.services.WrapperService
 
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
 
 class AuthController @Inject()(
                                 val controllerComponents: MessagesControllerComponents,
                                 frontendAppConfig: FrontendAppConfig,
                                 wrapperService: WrapperService
-                              )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                              ) extends FrontendBaseController with I18nSupport {
 
   def signout(continueUrl: Option[RedirectUrl], origin: Option[Origin]): Action[AnyContent] =
-    Action { implicit request =>
+    Action {
       val safeUrl = wrapperService.safeSignoutUrl(continueUrl)
       safeUrl
         .orElse(origin.map(frontendAppConfig.getFeedbackSurveyUrl))

@@ -19,24 +19,22 @@ package controllers
 import config.FrontendAppConfig
 import connectors.{CitizenDetailsConnector, StoreMyNinoConnector}
 import controllers.auth.requests.UserRequest
-import play.api.{Configuration, Environment}
-
-import javax.inject.Inject
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
+import play.api.{Configuration, Environment}
 import services.AuditService
 import uk.gov.hmrc.auth.core.AuthConnector
 import util.AuditUtils
-import views.html.{ErrorTemplate, GoogleWalletView, PassIdNotFoundView, QRCodeNotFoundView}
+import views.html.{GoogleWalletView, PassIdNotFoundView, QRCodeNotFoundView}
 
-import scala.concurrent.{ExecutionContext, Future}
+import javax.inject.Inject
+import scala.concurrent.ExecutionContext
 
 class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetailsConnector,
                                        override val messagesApi: MessagesApi,
                                        authConnector: AuthConnector,
                                        view: GoogleWalletView,
                                        findMyNinoServiceConnector: StoreMyNinoConnector,
-                                       errorTemplate: ErrorTemplate,
                                        getPersonDetailsAction: GetPersonDetailsAction,
                                        auditService: AuditService,
                                        passIdNotFoundView: PassIdNotFoundView,

@@ -173,7 +173,6 @@ trait BaseSpec
   val mockPartialRetriever = mock[FormPartialRetriever]
   when(mockPartialRetriever.getPartialContent(any(), any(), any())(any(), any())) thenReturn Html("")
 
-
   val configValues =
     Map(
       "cookie.encryption.key"         -> "gvBoGdgzqG1AarzF1LY0zQ==",

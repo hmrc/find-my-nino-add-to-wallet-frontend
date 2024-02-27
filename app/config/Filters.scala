@@ -25,16 +25,11 @@ import javax.inject.{Inject, Singleton};
 @Singleton
 class Filters @Inject()(
                          defaultFilters: EnabledFilters,
-                         allowListFilter: AllowlistFilter,
                          wrapperDataFilter: WrapperDataFilter,
                          appConfig: FrontendAppConfig
                        ) extends HttpFilters {
-
-  val allowListFilterEnabled: Boolean = allowListFilter.allowlist.nonEmpty
-
   override val filters: Seq[EssentialFilter] = {
     defaultFilters.filters ++
-      Option.when(appConfig.SCAWrapperEnabled)(wrapperDataFilter) ++
-      Option.when(allowListFilterEnabled)(allowListFilter)
+      Option.when(appConfig.SCAWrapperEnabled)(wrapperDataFilter)
   }
 }

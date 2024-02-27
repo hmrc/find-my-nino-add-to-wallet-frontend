@@ -35,7 +35,7 @@ class StoreMyNinoController @Inject()(
                                        auditService: AuditService,
                                        override val messagesApi: MessagesApi,
                                        getPersonDetailsAction: GetPersonDetailsAction,
-                                       view: StoreMyNinoView,
+                                       view: StoreMyNinoView
                                      )(implicit config: Configuration,
                                        env: Environment,
                                        ec: ExecutionContext,
@@ -52,5 +52,3 @@ class StoreMyNinoController @Inject()(
     }
   }
 }
-
-

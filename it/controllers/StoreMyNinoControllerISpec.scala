@@ -3,6 +3,7 @@ package controllers
 
 import base.IntegrationSpecBase
 import config.FrontendAppConfig
+import com.github.tomakehurst.wiremock.client.WireMock._
 import controllers.auth.requests.UserRequest
 import controllers.auth.routes
 import models.{Address, Person, PersonDetails, UserName}

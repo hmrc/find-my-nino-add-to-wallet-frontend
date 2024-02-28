@@ -45,10 +45,10 @@
         <p>@messages("storeMyNino.saveYourNino.yourNinoIs")<strong> @{nino}</strong></p>
         @if(displayForMobile) {
             <div class="show-on-phones">
-                <a href='/@frontendAppConfig.serviceName/get-pass-card?passId=@{applePassId}'>
+                <a href='/@frontendAppConfig.serviceName/get-pass-card?passId=@{applePassId}' id="apple">
                     <img class="add-wallet-ios" src="/@frontendAppConfig.serviceName/assets/images/apple-pay.svg" alt='@messages("appleWallet.addToWallet.alt")'>
                 </a>
-                <a href='/@frontendAppConfig.serviceName/get-google-pass?passId=@{googlePassId}'>
+                <a href='/@frontendAppConfig.serviceName/get-google-pass?passId=@{googlePassId}' id="google">
                     <img src="/@frontendAppConfig.serviceName/assets/images/google-wallet-condensed.svg" alt='@messages("googleWallet.addToWallet.alt")' class="add-wallet-android-mobile">
                 </a>
             </div>

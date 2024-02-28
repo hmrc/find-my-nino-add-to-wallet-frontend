@@ -24,7 +24,6 @@ import java.time.LocalDate
 
 class StoreMyNinoControllerISpec extends IntegrationSpecBase {
 
-  //generate fake details to provide for testing the functionality of the landing page and viewing the PDF
   val fakePersonDetails: PersonDetails = PersonDetails(
     Person(
       Some("John"),
@@ -55,6 +54,11 @@ class StoreMyNinoControllerISpec extends IntegrationSpecBase {
     None
   )
 
+  val fakeGooglePassId = "googlePassId"
+  val fakeApplePassId = "applePassId"
+
+  val fakeBase64String = "UEsDBBQACAgIABxqJlYAAAAAAA"
+
   override lazy val messagesApi: MessagesApi = app.injector.instanceOf[MessagesApi]
 
   implicit lazy val frontendAppConfig: FrontendAppConfig = app.injector.instanceOf[FrontendAppConfig]
@@ -83,7 +87,10 @@ class StoreMyNinoControllerISpec extends IntegrationSpecBase {
 
     def main: Html =
       view(
-        nino = generatedNino.nino
+        applePassId = fakeApplePassId,
+        googlePassId = fakeGooglePassId,
+        nino = generatedNino.nino,
+        displayForMobile = true
       )(fakeRequest, messages)
 
     def doc: Document = Jsoup.parse(main.toString)
@@ -96,26 +103,32 @@ class StoreMyNinoControllerISpec extends IntegrationSpecBase {
         doc.getElementsContainingText(text).attr("href").contains(href),
         s"\n\nLink $href was not rendered on the page\n"
       )
+    def assertContainsLinkByContainingClass(doc: Document, href: String, passType: String): Assertion = {
+      assert(
+        doc.getElementsByClass("show-on-phones").select(s"a#$passType").attr("href").contains(href),
+        s"\n\nLink $href was not rendered on the page\n"
+      )
+    }
   }
 
   "Main" when {
 
     "rendering the view" must {
+
       "render the correct nino" in new LocalSetup {
-        assertContainsText(doc,generatedNino.nino)
+        assertContainsText(doc, generatedNino.nino)
       }
 
-      "render the welsh language toggle" in new LocalSetup {
-        assertContainsLink(doc, "Cymraeg", "/hmrc-frontend/language/cy")
+      "render the save to Google Wallet link on mobile" in new LocalSetup {
+        wireMockServer.stubFor(get(s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-google-pass?passId=$fakeGooglePassId").willReturn(ok(fakeBase64String)))
+        assertContainsLinkByContainingClass(doc, s"/get-google-pass?passId=$fakeGooglePassId", "google")
       }
 
-      "render the view or print letter link" in new LocalSetup {
-        assertContainsLink(doc, "View or print", "/print-letter")
+      "render the save to Apple Wallet link on mobile" in new LocalSetup {
+        wireMockServer.stubFor(get(s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-pass-card?passId=$fakeApplePassId").willReturn(ok(fakeBase64String)))
+        assertContainsLinkByContainingClass(doc, s"/get-pass-card?passId=$fakeApplePassId", "apple")
       }
 
-      "render the save as a PDF link" in new LocalSetup {
-        assertContainsLink(doc, "Save as a PDF", "/print-letter/save-letter-as-pdf")
-      }
     }
 
     "rendering the nav bar" must {

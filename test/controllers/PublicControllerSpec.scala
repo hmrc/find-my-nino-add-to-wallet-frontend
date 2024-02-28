@@ -22,10 +22,15 @@ import uk.gov.hmrc.auth.core.AuthConnector
 import util.Fixtures.buildFakeRequestWithAuth
 import views.html.public.SessionTimeoutView
 
+import scala.concurrent.ExecutionContext
+
 class PublicControllerSpec extends SpecBase {
 
+  val ec: ExecutionContext =
+    scala.concurrent.ExecutionContext.global
+
   private def controller = new PublicController(injected[SessionTimeoutView],injected[AuthConnector])(
-    frontendAppConfig,cc,config,env)
+    frontendAppConfig,cc,config,env, ec)
 
   "Calling PublicController.sessionTimeout" - {
 

@@ -24,15 +24,16 @@ import play.api.{Configuration, Environment}
 import uk.gov.hmrc.auth.core.AuthConnector
 import views.html.public.SessionTimeoutView
 
-import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{ExecutionContext, Future}
 
 class PublicController @Inject()(sessionTimeoutView: SessionTimeoutView,
                                  authConnector: AuthConnector
                                 )(implicit frontendAppConfig: FrontendAppConfig,
                                            cc: MessagesControllerComponents,
                                            config: Configuration,
-                                           env: Environment) extends FMNBaseController(authConnector) with I18nSupport  {
+                                           env: Environment,
+                                           ec: ExecutionContext)
+  extends FMNBaseController(authConnector) with I18nSupport {
 
   def sessionTimeout: Action[AnyContent] = Action.async { implicit request =>
     Future.successful {

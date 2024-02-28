@@ -1,7 +1,9 @@
 # microservice specific routes
 
+->          /sca-wrapper                                  sca.Routes
+
 ->          /hmrc-frontend                               hmrcfrontend.Routes
-->          /pta-frontend                                ptafrontend.Routes
+
 GET         /assets/*file                                controllers.Assets.versioned(path="/public", file: Asset)
 
 GET         /language/:lang                              controllers.LanguageSwitchController.switchToLanguage(lang: String)

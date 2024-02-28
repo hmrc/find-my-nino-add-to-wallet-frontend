@@ -17,27 +17,25 @@
 package controllers
 
 import config.FrontendAppConfig
-import connectors.{StoreMyNinoConnector, CitizenDetailsConnector}
+import connectors.CitizenDetailsConnector
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
 import play.api.{Configuration, Environment}
 import services.AuditService
 import uk.gov.hmrc.auth.core.AuthConnector
 import util.AuditUtils
-import views.html.{ StoreMyNinoView, ErrorTemplate }
+import views.html.StoreMyNinoView
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class StoreMyNinoController @Inject()(
                                        val citizenDetailsConnector: CitizenDetailsConnector,
-                                       findMyNinoServiceConnector: StoreMyNinoConnector,
                                        authConnector: AuthConnector,
                                        auditService: AuditService,
                                        override val messagesApi: MessagesApi,
                                        getPersonDetailsAction: GetPersonDetailsAction,
-                                       view: StoreMyNinoView,
-                                       errorTemplate: ErrorTemplate
+                                       view: StoreMyNinoView
                                      )(implicit config: Configuration,
                                        env: Environment,
                                        ec: ExecutionContext,
@@ -47,8 +45,6 @@ class StoreMyNinoController @Inject()(
 
   implicit val loginContinueUrl: Call = routes.StoreMyNinoController.onPageLoad
 
-  private val passFileName = "National-Insurance-number-card.pkpass"
-
   def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction) async {
     implicit request => {
       auditService.audit(AuditUtils.buildAuditEvent(request.personDetails, "ViewNinoLanding", frontendAppConfig.appName, None))
@@ -56,5 +52,3 @@ class StoreMyNinoController @Inject()(
     }
   }
 }
-
-

@@ -16,7 +16,6 @@
 
 package connectors
 
-import com.kenshoo.play.metrics.Metrics
 import config.FrontendAppConfig
 import models._
 import org.scalatestplus.mockito.MockitoSugar
@@ -25,6 +24,7 @@ import play.api.libs.json.Json
 import play.api.test.{DefaultAwaitTimeout, Injecting}
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.play.bootstrap.metrics.Metrics
 import util.Fixtures.buildPersonDetails
 import util.WireMockHelper
 

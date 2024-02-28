@@ -17,12 +17,12 @@
 package connectors
 
 import com.google.inject.{Inject, Singleton}
-import com.kenshoo.play.metrics.Metrics
 import config.FrontendAppConfig
 import models._
 import play.api.Logging
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps, UpstreamErrorResponse}
+import uk.gov.hmrc.play.bootstrap.metrics.Metrics
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal

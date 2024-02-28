@@ -17,8 +17,6 @@
 package controllers
 
 import config.FrontendAppConfig
-import connectors.StoreMyNinoConnector
-import models.PersonDetails
 import org.apache.xmlgraphics.util.MimeConstants
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
@@ -26,10 +24,7 @@ import play.api.{Configuration, Environment}
 import services.AuditService
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.NotFoundException
-import util.XmlFoToPDF
-import util.AuditUtils
-import views.html.identity.TechnicalIssuesView
+import util.{AuditUtils, XmlFoToPDF}
 import views.html.print.PrintNationalInsuranceNumberView
 
 import java.time.LocalDate
@@ -40,10 +35,8 @@ import scala.concurrent.ExecutionContext
 class NinoLetterController @Inject()(
                                       override val messagesApi: MessagesApi,
                                       authConnector: AuthConnector,
-                                      applePassConnector: StoreMyNinoConnector,
                                       auditService: AuditService,
                                       view: PrintNationalInsuranceNumberView,
-                                      technicalIssuesView: TechnicalIssuesView,
                                       getPersonDetailsAction: GetPersonDetailsAction,
                                       xmlFoToPDF: XmlFoToPDF
                                     )(implicit config: Configuration,

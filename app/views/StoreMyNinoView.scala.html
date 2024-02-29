@@ -36,16 +36,10 @@
 @layout(pageTitle = titleNoForm(messages("storeMyNino.title")), stylesheets = Some(stylesheet)) {
     @h1("storeMyNino.heading")
 
-    @if(frontendAppConfig.govukWalletEnabled && frontendAppConfig.fakeNinoEnabled) {
-        <div class="govuk-inset-text">
-            <p>@messages("storeMyNino.saveYourNino.yourNinoIs")<strong> @("QQ" + nino.substring(2))</strong></p>
-        </div>
-    } else {
-        <div class="govuk-inset-text">
-            <p>@messages("storeMyNino.saveYourNino.yourNinoIs")<strong> @{nino}</strong></p>
-        </div>
-    }
 
+    <div class="govuk-inset-text">
+            <p>@messages("storeMyNino.saveYourNino.yourNinoIs")<strong> @{nino}</strong></p>
+    </div>
 
     @p("storeMyNino.saveYourNino.p1")
 
@@ -59,13 +53,7 @@
     @h2("storeMyNino.saveToWallet.heading")
 
     <ul class="govuk-list govuk-list--bullet govuk-list--spaced">
-
         <li><a class="govuk-link" href='/@frontendAppConfig.serviceName/google-wallet'>@messages("storeMyNino.saveToWallet.googleWallet")</a></li>
         <li><a class="govuk-link" href='/@frontendAppConfig.serviceName/apple-wallet'>@messages("storeMyNino.saveToWallet.appleWallet")</a></li>
-
-        @if(frontendAppConfig.govukWalletEnabled) {
-            <li><a class="govuk-link" href='/@frontendAppConfig.serviceName/govuk-wallet'>GOV.UK Wallet</a></li>
-        }
-      
     </ul>
 }

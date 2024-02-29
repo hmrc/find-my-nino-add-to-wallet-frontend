@@ -21,13 +21,15 @@ journeyRecovery.startAgain.heading=Mae’n ddrwg gennym – mae problem gyda’r
 storeMyNino.title = Cadw eich rhif Yswiriant Gwladol
 storeMyNino.heading = Cadw eich rhif Yswiriant Gwladol
 storeMyNino.saveYourNino.yourNinoIs = Eich rhif Yswiriant Gwladol yw
-storeMyNino.saveYourNino.p1 = Dyma’ch opsiynau.
+storeMyNino.saveYourNino.p1 = You will need your National Insurance number for employment, applying for a student loan and to claim certain benefits.
+storeMyNino.saveYourNino.p2 = So that you have your number when you need it, these are your options.
 storeMyNino.ninoLetter.heading = Cael llythyr sy’n cadarnhau eich rhif Yswiriant Gwladol a bwrw golwg drosto
 storeMyNino.ninoLetter.viewOrPrint = Bwrw golwg drosto neu argraffu
 storeMyNino.ninoLetter.saveAsPDF = Cadw fel PDF
 storeMyNino.saveToWallet.heading = Cadw eich rhif i’r waled ar eich ffôn
 storeMyNino.saveToWallet.googleWallet = Google Wallet
 storeMyNino.saveToWallet.appleWallet = Apple Wallet
+storeMyNino.saveYourNino.p3 = View your National Insurance record and State Pension summary
 
 label.save_your_national_insurance_number=Cadw eich rhif Yswiriant Gwladol
 label.your_national_insurance_number_letter=Eich llythyr rhif Yswiriant Gwladol

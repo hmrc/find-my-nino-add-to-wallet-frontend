@@ -23,7 +23,7 @@ import controllers.auth.AuthContext
 import controllers.auth.requests.UserRequest
 import models.{PersonDetails, UserName}
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
-import play.api.mvc.Results.{InternalServerError, Ok}
+import play.api.mvc.Results.{InternalServerError, Ok, NotFound}
 import play.api.mvc._
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
@@ -69,7 +69,7 @@ class GetPersonDetailsAction @Inject()(
         citizenDetailsConnector.personDetails(authContext.nino.nino).map {
           case PersonDetailsSuccessResponse(pd) => Right(pd)
           case PersonDetailsNotFoundResponse =>
-            Left(InternalServerError(redirectView()(authContext.request, frontendAppConfig, messages)))
+            Left(NotFound(redirectView()(authContext.request, frontendAppConfig, messages)))
           case PersonDetailsHiddenResponse =>
             Left(Ok(redirectView()(authContext.request, frontendAppConfig, messages)))
           case _ => Left(InternalServerError(redirectView()(authContext.request, frontendAppConfig, messages)))

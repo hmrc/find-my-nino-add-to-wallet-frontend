@@ -51,17 +51,18 @@ class StoreMyNinoController @Inject()(
   def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction) async {
     implicit request => {
       auditService.audit(AuditUtils.buildAuditEvent(request.personDetails, "ViewNinoLanding", frontendAppConfig.appName, None))
-      for {
-        googleId: Some[String] <- googleWalletConnector.createGooglePass(
-          request.personDetails.person.fullName,
-          request.nino.map(_.formatted).getOrElse(""))
-        appleId: Some[String] <- appleWalletConnector.createApplePass(
-          request.personDetails.person.fullName,
-          request.nino.map(_.formatted).getOrElse(""))
-      } yield Ok(view(appleId.value, googleId.value, request.nino.map(_.formatted).getOrElse(""), isMobileDisplay(request)))
+      val fullName: String = request.personDetails.person.fullName
+      val nino: String = request.nino.map(_.formatted).getOrElse("")
+      val googleId = googleWalletConnector.createGooglePass(fullName, nino)
+      val appleId = appleWalletConnector.createApplePass(fullName, nino)
+
+      googleId.flatMap { googleId =>
+        appleId.map { appleId =>
+          Ok(view(googleId.value, appleId.value, nino, isMobileDisplay(request)))
+        }
+      }
     }
   }
-
 
   private def isMobileDisplay(request: UserRequest[AnyContent]): Boolean = {
     val strUserAgent = request.headers.get("http_user_agent")

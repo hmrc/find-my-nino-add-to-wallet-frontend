@@ -19,9 +19,8 @@ package controllers
 import base.SpecBase
 import cats.data.EitherT
 import config.FrontendAppConfig
-import connectors.{StoreMyNinoConnector, CitizenDetailsConnector, IdentityVerificationFrontendConnector, PersonDetailsSuccessResponse}
+import connectors.{CitizenDetailsConnector, IdentityVerificationFrontendConnector, PersonDetailsSuccessResponse}
 import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.MockitoSugar.{reset, when}
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject
@@ -40,7 +39,6 @@ import models.{ActivatedOnlineFilerSelfAssessmentUser, PersonDetails, SelfAssess
 import uk.gov.hmrc.domain.{Nino, SaUtr, SaUtrGenerator}
 import util.Fixtures.buildFakeRequestWithAuth
 
-import java.util.Base64
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -50,14 +48,6 @@ class ApplicationControllerSpec extends SpecBase with CDFixtures with MockitoSug
     reset(mockScaWrapperDataConnector)
     when(mockScaWrapperDataConnector.wrapperData()(any(), any(), any()))
       .thenReturn(Future.successful(wrapperDataResponse))
-
-    reset(mockApplePassConnector)
-    when(mockApplePassConnector.getApplePass(eqTo(passId))(any(), any()))
-      .thenReturn(Future(Some(Base64.getDecoder.decode(fakeBase64String))))
-    when(mockApplePassConnector.createApplePass(any(), any())(any(), any()))
-      .thenReturn(Future(Some(passId)))
-    when(mockApplePassConnector.getQrCode(eqTo(passId))(any(), any()))
-      .thenReturn(Future(Some(Base64.getDecoder.decode(fakeBase64String))))
 
     reset(mockSessionRepository)
     when(mockSessionRepository.get(any())) thenReturn Future.successful(Some(emptyUserAnswers))
@@ -72,16 +62,11 @@ class ApplicationControllerSpec extends SpecBase with CDFixtures with MockitoSug
   }
 
   val mockSessionRepository: SessionRepository = mock[SessionRepository]
-  val mockApplePassConnector: StoreMyNinoConnector = mock[StoreMyNinoConnector]
   val mockCitizenDetailsConnector: CitizenDetailsConnector = mock[CitizenDetailsConnector]
   val mockIdentityVerificationFrontendConnector: IdentityVerificationFrontendConnector = mock[IdentityVerificationFrontendConnector]
   val mockIdentityVerificationFrontendService: IdentityVerificationFrontendService = mock[IdentityVerificationFrontendService]
 
-  val passId = "applePassId"
-  val notApplePassId = ""
-  val personDetailsId = "pdId"
   val pd = buildPersonDetails
-  val fakeBase64String = "UEsDBBQACAgIABxqJlYAAAAAAA"
   implicit lazy val ec = app.injector.instanceOf[ExecutionContext]
 
   trait LocalSetup {
@@ -101,7 +86,6 @@ class ApplicationControllerSpec extends SpecBase with CDFixtures with MockitoSug
     lazy val application = applicationBuilderWithConfig()
       .overrides(
         inject.bind[SessionRepository].toInstance(mockSessionRepository),
-        inject.bind[StoreMyNinoConnector].toInstance(mockApplePassConnector),
         inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector),
         inject.bind[IdentityVerificationFrontendConnector].toInstance(mockIdentityVerificationFrontendConnector)
       )

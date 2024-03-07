@@ -33,7 +33,7 @@
 )(implicit request: Request[_], messages: Messages)
 
 @stylesheet = {
-    <link rel="stylesheet" href='@routes.AssetsController.versioned("stylesheets/partials/save-your-nino.css")'>
+    <link rel="stylesheet" href='@routes.Assets.versioned("stylesheets/partials/save-your-nino.css")'>
 }
 
 @layout(pageTitle = titleNoForm(messages("appleWallet.title")), stylesheets = Some(stylesheet)) {

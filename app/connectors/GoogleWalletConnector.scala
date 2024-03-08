@@ -26,67 +26,15 @@ import uk.gov.hmrc.http._
 import java.util.Base64
 import scala.concurrent.{ExecutionContext, Future}
 
-case class ApplePassDetails(fullName: String, nino: String)
 case class GooglePassDetails(fullName: String, nino: String)
 
-class StoreMyNinoConnector @Inject()(frontendAppConfig: FrontendAppConfig, http: HttpClient) {
+class GoogleWalletConnector @Inject()(frontendAppConfig: FrontendAppConfig, http: HttpClient) {
 
   private val headers: Seq[(String, String)] = Seq("Content-Type" -> "application/json")
-  implicit val writes: Writes[ApplePassDetails] = Json.writes[ApplePassDetails]
-
-  implicit val googleWrites: Writes[GooglePassDetails] = Json.writes[GooglePassDetails]
-
-  def createApplePass(fullName: String, nino: String)
-                     (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Some[String]] = {
-
-    val url = s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/create-apple-pass"
-    val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
-
-    val details = ApplePassDetails(fullName, nino)
-
-    http.POST[JsValue, HttpResponse](url, Json.toJson(details))(implicitly, implicitly, hc, implicitly)
-      .map { response =>
-        response.status match {
-          case OK => Some(response.body)
-          case _ => throw new HttpException(response.body, response.status)
-        }
-      }
-  }
-
-  def getApplePass(passId: String)
-                  (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Option[Array[Byte]]] = {
-
-    val url = s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-pass-card?passId=$passId"
-    val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
-
-    http.GET[HttpResponse](url)(implicitly, hc, implicitly)
-      .map { response =>
-        response.status match {
-          case OK => Some(Base64.getDecoder.decode(response.body))
-          case NOT_FOUND => None
-          case _ => throw new HttpException(response.body, response.status)
-        }
-      }
-  }
-
-  def getQrCode(passId: String)
-               (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Option[Array[Byte]]] = {
-
-    val url = s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-qr-code?passId=$passId"
-    val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
-
-    http.GET[HttpResponse](url)(implicitly, hc, implicitly)
-      .map { response =>
-        response.status match {
-          case OK => Some(Base64.getDecoder.decode(response.body))
-          case NOT_FOUND => None
-          case _ => throw new HttpException(response.body, response.status)
-        }
-      }
-  }
+  implicit val writes: Writes[GooglePassDetails] = Json.writes[GooglePassDetails]
 
   def createGooglePass(fullName: String, nino: String)
-                                     (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Some[String]] = {
+                      (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Some[String]] = {
 
     val url = s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/create-google-pass-with-credentials"
     val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
@@ -113,7 +61,7 @@ class StoreMyNinoConnector @Inject()(frontendAppConfig: FrontendAppConfig, http:
         response.status match {
           case OK => Some(response.body)
           case NOT_FOUND => None
-          case  _ => throw new HttpException(response.body, response.status)
+          case _ => throw new HttpException(response.body, response.status)
         }
       }
   }
@@ -133,5 +81,4 @@ class StoreMyNinoConnector @Inject()(frontendAppConfig: FrontendAppConfig, http:
         }
       }
   }
-
 }

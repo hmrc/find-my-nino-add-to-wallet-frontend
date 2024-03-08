@@ -17,7 +17,7 @@
 package controllers
 
 import config.FrontendAppConfig
-import connectors.{CitizenDetailsConnector, StoreMyNinoConnector}
+import connectors.{CitizenDetailsConnector, GoogleWalletConnector}
 import controllers.auth.requests.UserRequest
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
@@ -34,7 +34,7 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
                                        override val messagesApi: MessagesApi,
                                        authConnector: AuthConnector,
                                        view: GoogleWalletView,
-                                       findMyNinoServiceConnector: StoreMyNinoConnector,
+                                       googleWalletConnector: GoogleWalletConnector,
                                        getPersonDetailsAction: GetPersonDetailsAction,
                                        auditService: AuditService,
                                        passIdNotFoundView: PassIdNotFoundView,
@@ -51,7 +51,7 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
     implicit request => {
       auditService.audit(AuditUtils.buildAuditEvent(request.personDetails, "ViewWalletPage", frontendAppConfig.appName, Some("Google")))
       for {
-        pId: Some[String] <- findMyNinoServiceConnector.createGooglePass(
+        pId: Some[String] <- googleWalletConnector.createGooglePass(
           request.personDetails.person.fullName,
           request.nino.map(_.formatted).getOrElse(""))
       } yield Ok(view(pId.value, isMobileDisplay(request)))
@@ -74,7 +74,7 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
   def getGooglePass(passId: String): Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction).async {
     implicit request => {
       authorisedAsFMNUser { authContext =>
-        findMyNinoServiceConnector.getGooglePassUrl(passId).map {
+        googleWalletConnector.getGooglePassUrl(passId).map {
           case Some(data) =>
             request.getQueryString("qr-code") match {
               case Some("true") => auditService.audit(AuditUtils.buildAuditEvent(request.personDetails,
@@ -92,7 +92,7 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
   def getGooglePassQrCode(passId: String): Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction).async {
     implicit request => {
       authorisedAsFMNUser { _ =>
-        findMyNinoServiceConnector.getGooglePassQrCode(passId).map {
+        googleWalletConnector.getGooglePassQrCode(passId).map {
           case Some(data) =>
             auditService.audit(AuditUtils.buildAuditEvent(request.personDetails, "DisplayQRCode", frontendAppConfig.appName, Some("Google")))
             Ok(data)

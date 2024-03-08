@@ -17,7 +17,7 @@
 package controllers
 
 import config.FrontendAppConfig
-import connectors.{CitizenDetailsConnector, StoreMyNinoConnector}
+import connectors.{CitizenDetailsConnector, AppleWalletConnector}
 import controllers.auth.requests.UserRequest
 import play.api.{Configuration, Environment}
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -31,7 +31,7 @@ import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
 class AppleWalletController @Inject()(val citizenDetailsConnector: CitizenDetailsConnector,
-                                      findMyNinoServiceConnector: StoreMyNinoConnector,
+                                      appleWalletConnector: AppleWalletConnector,
                                       override val messagesApi: MessagesApi,
                                       authConnector: AuthConnector,
                                       auditService: AuditService,
@@ -52,7 +52,7 @@ class AppleWalletController @Inject()(val citizenDetailsConnector: CitizenDetail
     implicit request => {
       auditService.audit(AuditUtils.buildAuditEvent(request.personDetails, "ViewWalletPage", frontendAppConfig.appName, Some("Apple")))
       for {
-        pId: Some[String] <- findMyNinoServiceConnector.createApplePass(request.personDetails.person.fullName, request.nino.map(_.formatted).getOrElse(""))
+        pId: Some[String] <- appleWalletConnector.createApplePass(request.personDetails.person.fullName, request.nino.map(_.formatted).getOrElse(""))
       } yield Ok(view(pId.value, isMobileDisplay(request)))
     }
   }
@@ -73,7 +73,7 @@ class AppleWalletController @Inject()(val citizenDetailsConnector: CitizenDetail
   def getPassCard(passId: String): Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction).async {
     implicit request => {
       authorisedAsFMNUser { _ =>
-        findMyNinoServiceConnector.getApplePass(passId).map {
+        appleWalletConnector.getApplePass(passId).map {
           case Some(data) =>
             request.getQueryString("qr-code") match {
               case Some("true") => auditService.audit(AuditUtils.buildAuditEvent(request.personDetails,
@@ -91,7 +91,7 @@ class AppleWalletController @Inject()(val citizenDetailsConnector: CitizenDetail
   def getQrCode(passId: String): Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction).async {
     implicit request => {
       authorisedAsFMNUser { _ =>
-        findMyNinoServiceConnector.getQrCode(passId).map {
+        appleWalletConnector.getAppleQrCode(passId).map {
           case Some(data) =>
             auditService.audit(AuditUtils.buildAuditEvent(request.personDetails, "DisplayQRCode", frontendAppConfig.appName, Some("Apple")))
             Ok(data).withHeaders("Content-Disposition" -> s"attachment; filename=$passFileName")

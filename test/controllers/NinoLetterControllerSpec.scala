@@ -17,7 +17,7 @@
 package controllers
 
 import base.SpecBase
-import connectors.{StoreMyNinoConnector, CitizenDetailsConnector, PersonDetailsSuccessResponse}
+import connectors.{CitizenDetailsConnector, PersonDetailsSuccessResponse}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
@@ -40,7 +40,6 @@ class NinoLetterControllerSpec extends SpecBase with CDFixtures with MockitoSuga
 
   val personDetailsId = "pdId"
 
-  lazy val mockApplePassConnector = mock[StoreMyNinoConnector]
   lazy val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
   lazy val ninoLetterController = applicationWithConfig.injector.instanceOf[NinoLetterController]
   lazy val view = applicationWithConfig.injector.instanceOf[PrintNationalInsuranceNumberView]
@@ -54,7 +53,6 @@ class NinoLetterControllerSpec extends SpecBase with CDFixtures with MockitoSuga
       
       val application = applicationBuilderWithConfig()
         .overrides(
-          bind[StoreMyNinoConnector].toInstance(mockApplePassConnector),
           bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
         )
         .build()
@@ -75,7 +73,6 @@ class NinoLetterControllerSpec extends SpecBase with CDFixtures with MockitoSuga
 
       val application = applicationBuilderWithConfig()
         .overrides(
-          bind[StoreMyNinoConnector].toInstance(mockApplePassConnector),
           bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
         )
         .build()

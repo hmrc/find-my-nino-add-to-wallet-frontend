@@ -27,7 +27,12 @@
         list: BulletList
 )
 
-@(nino: String)(implicit request: Request[_], messages: Messages)
+@(
+    applePassId: String,
+    googlePassId: String,
+    nino: String,
+    displayForMobile: Boolean
+)(implicit request: Request[_], messages: Messages)
 
 @stylesheet = {
     <link rel="stylesheet" href='@routes.Assets.versioned("stylesheets/partials/save-your-nino.css")'>
@@ -36,12 +41,31 @@
 @layout(pageTitle = titleNoForm(messages("storeMyNino.title")), stylesheets = Some(stylesheet)) {
     @h1("storeMyNino.heading")
 
-
     <div class="govuk-inset-text">
-            <p>@messages("storeMyNino.saveYourNino.yourNinoIs")<strong> @{nino}</strong></p>
+        <p>@messages("storeMyNino.saveYourNino.yourNinoIs")<strong> @{nino}</strong></p>
+        @if(displayForMobile) {
+            <div class="show-on-phones">
+                <a href='/@frontendAppConfig.serviceName/get-pass-card?passId=@{applePassId}'>
+                    <img class="add-wallet-ios" src="/@frontendAppConfig.serviceName/assets/images/apple-pay.svg" alt='@messages("appleWallet.addToWallet.alt")'>
+                </a>
+                <a href='/@frontendAppConfig.serviceName/get-google-pass?passId=@{googlePassId}'>
+                    <img src="/@frontendAppConfig.serviceName/assets/images/google-wallet-condensed.svg" alt='@messages("googleWallet.addToWallet.alt")' class="add-wallet-android-mobile">
+                </a>
+            </div>
+        }
     </div>
 
     @p("storeMyNino.saveYourNino.p1")
+
+    @p("storeMyNino.saveYourNino.p2")
+
+
+    @h2("storeMyNino.saveToWallet.heading")
+
+    <ul class="govuk-list govuk-list--bullet govuk-list--spaced">
+        <li><a class="govuk-link" href='/@frontendAppConfig.serviceName/google-wallet'>@messages("storeMyNino.saveToWallet.googleWallet")</a></li>
+        <li><a class="govuk-link" href='/@frontendAppConfig.serviceName/apple-wallet'>@messages("storeMyNino.saveToWallet.appleWallet")</a></li>
+    </ul>
 
     @h2("storeMyNino.ninoLetter.heading")
 
@@ -50,10 +74,8 @@
         <li><a class="govuk-link" href='/@frontendAppConfig.serviceName/print-letter/save-letter-as-pdf' download="">@messages("storeMyNino.ninoLetter.saveAsPDF")</a></li>
     </ul>
 
-    @h2("storeMyNino.saveToWallet.heading")
+    <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
 
-    <ul class="govuk-list govuk-list--bullet govuk-list--spaced">
-        <li><a class="govuk-link" href='/@frontendAppConfig.serviceName/google-wallet'>@messages("storeMyNino.saveToWallet.googleWallet")</a></li>
-        <li><a class="govuk-link" href='/@frontendAppConfig.serviceName/apple-wallet'>@messages("storeMyNino.saveToWallet.appleWallet")</a></li>
-    </ul>
+    <p><a class="govuk-link" href='@frontendAppConfig.pertaxFrontendUrl'> @messages("storeMyNino.saveYourNino.p3")</a></p>
+
 }

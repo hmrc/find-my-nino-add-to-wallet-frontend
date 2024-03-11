@@ -53,11 +53,11 @@ class StoreMyNinoController @Inject()(
       auditService.audit(AuditUtils.buildAuditEvent(request.personDetails, "ViewNinoLanding", frontendAppConfig.appName, None))
       val fullName: String = request.personDetails.person.fullName
       val nino: String = request.nino.map(_.formatted).getOrElse("")
-      val googleId = googleWalletConnector.createGooglePass(fullName, nino)
-      val appleId = appleWalletConnector.createApplePass(fullName, nino)
+      val googleIdf = googleWalletConnector.createGooglePass(fullName, nino)
+      val appleIdf = appleWalletConnector.createApplePass(fullName, nino)
 
-      googleId.flatMap { googleId =>
-        appleId.map { appleId =>
+      googleIdf.flatMap { googleId =>
+        appleIdf.map { appleId =>
           Ok(view(appleId.value, googleId.value, nino, isMobileDisplay(request)))
         }
       }

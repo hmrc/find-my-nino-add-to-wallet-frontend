@@ -3,13 +3,15 @@
 
 
 ## About
-This is the frontend repository for the Store my NINO service.
+This is the frontend repository for the Save your National Insurance number service.
 It provides the pages to allow an authenticated PTA user to view, download or print their national insurance number 
 letter as a PDF, or save the number to a digital wallet card.
 
-The service consists of 2 pages:
+The service consists of 4 pages:
 - Save your National Insurance number
 - Your National Insurance number letter
+- Add your National Insurance number to your Google Wallet
+- Add your National Insurance number to your Apple Wallet
 
 ## How to run locally
 1. Use the service manager to start the auth and other supporting services

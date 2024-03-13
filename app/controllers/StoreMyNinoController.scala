@@ -17,7 +17,8 @@
 package controllers
 
 import config.FrontendAppConfig
-import connectors.CitizenDetailsConnector
+import connectors.{AppleWalletConnector, GoogleWalletConnector,CitizenDetailsConnector}
+import controllers.auth.requests.UserRequest
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
 import play.api.{Configuration, Environment}
@@ -27,10 +28,12 @@ import util.AuditUtils
 import views.html.StoreMyNinoView
 
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class StoreMyNinoController @Inject()(
                                        val citizenDetailsConnector: CitizenDetailsConnector,
+                                       val appleWalletConnector: AppleWalletConnector,
+                                       val googleWalletConnector: GoogleWalletConnector,
                                        authConnector: AuthConnector,
                                        auditService: AuditService,
                                        override val messagesApi: MessagesApi,
@@ -48,7 +51,28 @@ class StoreMyNinoController @Inject()(
   def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction) async {
     implicit request => {
       auditService.audit(AuditUtils.buildAuditEvent(request.personDetails, "ViewNinoLanding", frontendAppConfig.appName, None))
-      Future(Ok(view(request.nino.map(_.formatted).getOrElse(""))))
+      val fullName: String = request.personDetails.person.fullName
+      val nino: String = request.nino.map(_.formatted).getOrElse("")
+      val googleIdf = googleWalletConnector.createGooglePass(fullName, nino)
+      val appleIdf = appleWalletConnector.createApplePass(fullName, nino)
+
+      googleIdf.flatMap { googleId =>
+        appleIdf.map { appleId =>
+          Ok(view(appleId.value, googleId.value, nino, isMobileDisplay(request)))
+        }
+      }
+    }
+  }
+
+  private def isMobileDisplay(request: UserRequest[AnyContent]): Boolean = {
+    val strUserAgent = request.headers.get("http_user_agent")
+      .getOrElse(request.headers.get("User-Agent")
+        .getOrElse(""))
+
+    config.get[String]("mobileDeviceDetectionRegexStr").r
+      .findFirstMatchIn(strUserAgent) match {
+      case Some(_) => true
+      case None => false
     }
   }
 }

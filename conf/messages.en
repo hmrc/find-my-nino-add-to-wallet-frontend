@@ -24,13 +24,15 @@ journeyRecovery.startAgain.heading = Sorry, there is a problem with the service
 storeMyNino.title = Save your National Insurance number
 storeMyNino.heading = Save your National Insurance number
 storeMyNino.saveYourNino.yourNinoIs = Your National Insurance number is
-storeMyNino.saveYourNino.p1 = These are your options.
+storeMyNino.saveYourNino.p1 = You will need your National Insurance number for employment, applying for a student loan and to claim certain benefits.
+storeMyNino.saveYourNino.p2 = So that you have your number when you need it, these are your options.
 storeMyNino.ninoLetter.heading = View and get a copy of your National Insurance number letter
 storeMyNino.ninoLetter.viewOrPrint = View or print
 storeMyNino.ninoLetter.saveAsPDF = Save as a PDF
 storeMyNino.saveToWallet.heading = Save your number to your phone’s wallet
 storeMyNino.saveToWallet.googleWallet = Google Wallet
 storeMyNino.saveToWallet.appleWallet = Apple Wallet
+storeMyNino.saveYourNino.p3 = View your National Insurance record and State Pension summary
 
 label.save_your_national_insurance_number=Save your National Insurance number
 

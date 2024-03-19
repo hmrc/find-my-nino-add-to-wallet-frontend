@@ -27,7 +27,7 @@ lazy val root = (project in file("."))
   .settings(majorVersion := 0)
   .settings(useSuperShell in ThisBuild := false)
   .settings(
-      scalaVersion := "2.13.8",
+      scalaVersion := "2.13.12",
       name := appName,
       RoutesKeys.routesImport ++= Seq(
           "uk.gov.hmrc.play.bootstrap.binders._",

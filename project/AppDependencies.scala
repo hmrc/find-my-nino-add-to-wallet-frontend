@@ -1,4 +1,4 @@
-import sbt.*
+import sbt._
 
 object AppDependencies {
 
@@ -26,7 +26,7 @@ object AppDependencies {
     "uk.gov.hmrc" %% s"bootstrap-test-$playVersion" % bootstrapVersion,
     "uk.gov.hmrc.mongo" %% s"hmrc-mongo-test-$playVersion" % mongoVersion,
     "com.vladsch.flexmark" % "flexmark-all" % "0.64.8"
-  ).map(_ % "test, it")
+  ).map(_ % "test")
 
   def apply(): Seq[ModuleID] = compile ++ test
 }

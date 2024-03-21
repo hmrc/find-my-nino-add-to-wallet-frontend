@@ -30,7 +30,6 @@ import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.domain
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.play.bootstrap.binders.{RedirectUrl, SafeRedirectUrl}
-import uk.gov.hmrc.play.bootstrap.config.AuthRedirects
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 
@@ -49,7 +48,7 @@ final case class AuthContext[A](
                                  request: Request[A]
                                )
 
-trait FMNAuth extends AuthorisedFunctions with AuthRedirects with Logging {
+trait FMNAuth extends AuthorisedFunctions with Logging {
   this: FrontendController =>
 
   protected type FMNAction[A] = AuthContext[A] => Future[Result]

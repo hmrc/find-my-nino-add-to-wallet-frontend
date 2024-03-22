@@ -42,7 +42,7 @@
     @h1("storeMyNino.heading")
 
     <div class="govuk-inset-text">
-        <p>@messages("storeMyNino.saveYourNino.yourNinoIs")<strong> @{nino}</strong></p>
+        <p>@messages("storeMyNino.saveYourNino.yourNinoIs")<span class="govuk-!-font-weight-bold" id="nino"> @{nino}</span></p>
         @if(displayForMobile) {
             <div class="show-on-phones">
                 <a href='/@frontendAppConfig.serviceName/get-pass-card?passId=@{applePassId}' id="apple">

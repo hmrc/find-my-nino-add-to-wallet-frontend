@@ -14,9 +14,9 @@ class IndividualDetailsConnector @Inject()(
                                             val httpClient: HttpClient,
                                             appConfig:  FrontendAppConfig) extends Logging {
 
-  def getIndividualDetails(nino: String, resolveMerge: String, desHeaders: HeaderCarrier
+  def getIndividualDetails(nino: String, resolveMerge: String
                           )(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
     val url = s"${appConfig.individualDetailsServiceUrl}/individuals/details/NINO/${nino.take(8)}/$resolveMerge"
-    httpClient.GET[HttpResponse](url)(implicitly, desHeaders, implicitly)
+    httpClient.GET[HttpResponse](url)(implicitly, implicitly, implicitly)
   }
 }

@@ -32,7 +32,7 @@ class IndividualDetailsConnectorSpec extends ConnectorSpec
         when(mockHttpClient.GET[HttpResponse](any(), any(), any())(any(), any(), any()))
           .thenReturn(Future.successful(expectedResponse))
 
-        val result = await(connector.getIndividualDetails(nino, resolveMerge, hc))
+        val result = await(connector.getIndividualDetails(nino, resolveMerge))
 
         result mustBe expectedResponse
 

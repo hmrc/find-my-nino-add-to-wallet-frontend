@@ -1,10 +1,8 @@
 
 package connectors
 
-
 import com.google.inject.{Inject, Singleton}
-import config.{AppConfig, FrontendAppConfig}
-import models.individualDetails.CorrelationId
+import config.FrontendAppConfig
 import play.api.Logging
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}

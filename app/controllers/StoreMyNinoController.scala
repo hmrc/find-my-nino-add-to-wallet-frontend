@@ -17,8 +17,8 @@
 package controllers
 
 import config.FrontendAppConfig
-import connectors.{AppleWalletConnector, GoogleWalletConnector,CitizenDetailsConnector}
-import controllers.auth.requests.UserRequest
+import connectors.{AppleWalletConnector, CitizenDetailsConnector, GoogleWalletConnector}
+import controllers.auth.requests.{UserRequest, UserRequestNew}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
 import play.api.{Configuration, Environment}
@@ -37,7 +37,7 @@ class StoreMyNinoController @Inject()(
                                        authConnector: AuthConnector,
                                        auditService: AuditService,
                                        override val messagesApi: MessagesApi,
-                                       getPersonDetailsAction: GetPersonDetailsAction,
+                                       getIndividualDetailsAction: GetIndividualDetailsAction,
                                        view: StoreMyNinoView
                                      )(implicit config: Configuration,
                                        env: Environment,
@@ -48,10 +48,10 @@ class StoreMyNinoController @Inject()(
 
   implicit val loginContinueUrl: Call = routes.StoreMyNinoController.onPageLoad
 
-  def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction) async {
+  def onPageLoad: Action[AnyContent] = authorisedAsFMNUser andThen getIndividualDetailsAction async {
     implicit request => {
-      auditService.audit(AuditUtils.buildAuditEvent(request.personDetails, "ViewNinoLanding", frontendAppConfig.appName, None))
-      val fullName: String = request.personDetails.person.fullName
+      //auditService.audit(AuditUtils.buildAuditEvent(request.personDetails, "ViewNinoLanding", frontendAppConfig.appName, None))
+      val fullName: String = request.individualDetails.getFullName
       val nino: String = request.nino.map(_.formatted).getOrElse("")
       val googleIdf = googleWalletConnector.createGooglePass(fullName, nino)
       val appleIdf = appleWalletConnector.createApplePass(fullName, nino)
@@ -64,7 +64,7 @@ class StoreMyNinoController @Inject()(
     }
   }
 
-  private def isMobileDisplay(request: UserRequest[AnyContent]): Boolean = {
+  private def isMobileDisplay(request: UserRequestNew[AnyContent]): Boolean = {
     val strUserAgent = request.headers.get("http_user_agent")
       .getOrElse(request.headers.get("User-Agent")
         .getOrElse(""))

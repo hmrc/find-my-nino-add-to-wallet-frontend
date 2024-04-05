@@ -94,4 +94,10 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
   def getTaxEnrolmentAssignmentRedirectUrl(url: String): String =
     s"$taxEnrolmentAssignmentFrontendHost/protect-tax-info?redirectUrl=${enc(url)}"
 
+  lazy val individualDetailsProtocol: String = configuration.get[String]("microservice.services.individual-details.protocol")
+  lazy val individualDetailsHost: String = configuration.get[String]("microservice.services.individual-details.host")
+  lazy val individualDetailsPort: String = configuration.get[String]("microservice.services.individual-details.port")
+  val individualDetailsServiceUrl: String = s"$individualDetailsProtocol://$individualDetailsHost:$individualDetailsPort"
+
+
 }

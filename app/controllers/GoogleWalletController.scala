@@ -18,27 +18,31 @@ package controllers
 
 import config.FrontendAppConfig
 import connectors.{CitizenDetailsConnector, GoogleWalletConnector}
-import controllers.auth.requests.UserRequest
-import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
+import controllers.auth.requests.{UserRequest, UserRequestNew}
+import play.api.i18n.{I18nSupport, Messages, MessagesApi}
+import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents, Request}
 import play.api.{Configuration, Environment}
-import services.AuditService
+import services.{AuditService, IndividualDetailsService}
 import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import util.AuditUtils
+import views.html.identity.TechnicalIssuesView
 import views.html.{GoogleWalletView, PassIdNotFoundView, QRCodeNotFoundView}
 
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetailsConnector,
                                        override val messagesApi: MessagesApi,
                                        authConnector: AuthConnector,
                                        view: GoogleWalletView,
                                        googleWalletConnector: GoogleWalletConnector,
-                                       getPersonDetailsAction: GetPersonDetailsAction,
+                                       individualDetailsService: IndividualDetailsService,
                                        auditService: AuditService,
                                        passIdNotFoundView: PassIdNotFoundView,
-                                       qrCodeNotFoundView: QRCodeNotFoundView
+                                       qrCodeNotFoundView: QRCodeNotFoundView,
+                                       technicalIssuesView: TechnicalIssuesView
                                       )(implicit config: Configuration,
                                         env: Environment,
                                         ec: ExecutionContext,
@@ -47,18 +51,32 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
 
   implicit val loginContinueUrl: Call = routes.StoreMyNinoController.onPageLoad
 
-  def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction) async {
-    implicit request => {
-      auditService.audit(AuditUtils.buildAuditEvent(request.personDetails, "ViewWalletPage", frontendAppConfig.appName, Some("Google")))
-      for {
-        pId: Some[String] <- googleWalletConnector.createGooglePass(
-          request.personDetails.person.fullName,
-          request.nino.map(_.formatted).getOrElse(""))
-      } yield Ok(view(pId.value, isMobileDisplay(request)))
+  def onPageLoad: Action[AnyContent] = authorisedAsFMNUser async {
+    authContext => {
+      //auditService.audit(AuditUtils.buildAuditEvent(request.personDetails, "ViewWalletPage", frontendAppConfig.appName, Some("Google")))
+      implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(authContext.request, authContext.request.session)
+      implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
+
+      individualDetailsService.getIdDataFromCache(authContext.nino.nino).flatMap {
+        case Right((fullName, nino)) =>
+          val formattedNino = nino.grouped(2).mkString(" ")
+          for{
+            pId: Some[String] <- googleWalletConnector.createGooglePass(fullName, formattedNino)
+          } yield Ok(view(pId.value, isMobileDisplay(authContext.request))(authContext.request, messages))
+        case Left("Individual details not found in cache") => Future.successful(InternalServerError(
+          technicalIssuesView("Failed to get individual details from cache")(authContext.request, frontendAppConfig, messages)))
+
+      }
+
+      //      for {
+      //        pId: Some[String] <- googleWalletConnector.createGooglePass(
+      //          request.personDetails.person.fullName,
+      //          request.nino.map(_.formatted).getOrElse(""))
+      //      } yield Ok(view(pId.value, isMobileDisplay(request)))
     }
   }
 
-  private def isMobileDisplay(request: UserRequest[AnyContent]): Boolean = {
+  private def isMobileDisplay(request: Request[AnyContent]): Boolean = {
     // Display wallet options differently on mobile to pc
     val strUserAgent = request.headers.get("http_user_agent")
       .getOrElse(request.headers.get("User-Agent")
@@ -71,34 +89,47 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
     }
   }
 
-  def getGooglePass(passId: String): Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction).async {
-    implicit request => {
-      authorisedAsFMNUser { authContext =>
-        googleWalletConnector.getGooglePassUrl(passId).map {
-          case Some(data) =>
-            request.getQueryString("qr-code") match {
-              case Some("true") => auditService.audit(AuditUtils.buildAuditEvent(request.personDetails,
-                "AddNinoToWalletFromQRCode", frontendAppConfig.appName, Some("Google")))
-              case _ => auditService.audit(AuditUtils.buildAuditEvent(request.personDetails,
-                "AddNinoToWallet", frontendAppConfig.appName, Some("Google")))
-            }
-            Redirect(data)
-          case _ => NotFound(passIdNotFoundView())
-        }
-      }(loginContinueUrl)
+  def getGooglePass(passId: String): Action[AnyContent] = authorisedAsFMNUser async {
+    authContext => {
+      implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(authContext.request, authContext.request.session)
+      implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
+
+      googleWalletConnector.getGooglePassUrl(passId).map {
+        case Some(data) =>
+          val eventType = authContext.request.getQueryString("qr-code") match {
+            case Some("true") => "AddNinoToWalletFromQRCode"
+            case _ => "AddNinoToWallet"
+          }
+          //auditGoogleWallet(eventType, hc)
+          Redirect(data)
+        case _ => NotFound(passIdNotFoundView()(authContext.request, messages, ec))
+      }
     }
   }
 
-  def getGooglePassQrCode(passId: String): Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction).async {
-    implicit request => {
-      authorisedAsFMNUser { _ =>
-        googleWalletConnector.getGooglePassQrCode(passId).map {
-          case Some(data) =>
-            auditService.audit(AuditUtils.buildAuditEvent(request.personDetails, "DisplayQRCode", frontendAppConfig.appName, Some("Google")))
-            Ok(data)
-          case _ => NotFound(qrCodeNotFoundView())
-        }
-      }(loginContinueUrl)
+  def getGooglePassQrCode(passId: String): Action[AnyContent] = authorisedAsFMNUser async {
+    authContext => {
+      implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(authContext.request, authContext.request.session)
+      implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
+
+      googleWalletConnector.getGooglePassQrCode(passId).map {
+        case Some(data) =>
+          //auditGoogleWallet("DisplayQRCode", hc)
+          Ok(data)
+        case _ => NotFound(qrCodeNotFoundView()(authContext.request, messages, ec))
+
+      }
     }
   }
+
+    def auditGoogleWallet(eventType:String, hc:HeaderCarrier): Unit = {
+      auditService.audit(AuditUtils.buildAuditEvent(
+        null,
+        eventType,
+        frontendAppConfig.appName,
+        Some("Google")
+      )(hc))(hc)
+    }
+
+
 }

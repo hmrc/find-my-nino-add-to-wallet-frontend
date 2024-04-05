@@ -17,8 +17,9 @@
 package controllers
 
 import base.SpecBase
-import connectors.{CitizenDetailsConnector, IdentityVerificationFrontendConnector, PersonDetailsErrorResponse, PersonDetailsSuccessResponse, GoogleWalletConnector}
+import connectors.{CitizenDetailsConnector, GoogleWalletConnector, IdentityVerificationFrontendConnector, PersonDetailsErrorResponse, PersonDetailsSuccessResponse}
 import controllers.auth.requests.UserRequest
+import models.individualDetails.{AccountStatusType, Address, AddressLine, AddressList, AddressPostcode, AddressSequenceNumber, AddressSource, AddressStatus, AddressType, CountryCode, CrnIndicator, DateOfBirthStatus, DeliveryInfo, FirstForename, Honours, IndividualDetails, Name, NameEndDate, NameList, NameSequenceNumber, NameStartDate, NameType, NinoSuffix, OtherTitle, PafReference, RequestedName, SecondForename, Surname, TitleType, VpaMail}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.{reset, when}
@@ -27,20 +28,24 @@ import play.api.inject
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
+import services.IndividualDetailsService
 import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolment, Enrolments}
 import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
 import util.CDFixtures
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
 import util.TestData.NinoUser
+import views.html.identity.TechnicalIssuesView
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import views.html.{ErrorTemplate, GoogleWalletView, PassIdNotFoundView, QRCodeNotFoundView, RedirectToPostalFormView}
 
+import java.time.LocalDate
 import java.util.Base64
 
 class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSugar {
+
 
   override protected def beforeEach(): Unit = {
     reset(mockScaWrapperDataConnector)
@@ -60,9 +65,9 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
     reset(mockSessionRepository)
     when(mockSessionRepository.get(any())) thenReturn Future.successful(Some(emptyUserAnswers))
 
-    reset(mockCitizenDetailsConnector)
-    when(mockCitizenDetailsConnector.personDetails(any())(any(), any()))
-      .thenReturn(Future(PersonDetailsSuccessResponse(pd)))
+    reset(mockIndividualDetailsService)
+    when(mockIndividualDetailsService.getIdDataFromCache(any()))
+      .thenReturn(Future.successful(Right(("John Doe"), "AB123456C")))
 
     reset(mockIdentityVerificationFrontendConnector)
     when(mockIdentityVerificationFrontendConnector.getIVJourneyStatus(any())(any(), any()))
@@ -82,11 +87,12 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
 
   val mockSessionRepository = mock[SessionRepository]
   val mockGooglePassConnector = mock[GoogleWalletConnector]
-  val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
+  val mockIndividualDetailsService = mock[IndividualDetailsService]
   val mockIdentityVerificationFrontendConnector = mock[IdentityVerificationFrontendConnector]
   lazy val redirectview = applicationWithConfig.injector.instanceOf[RedirectToPostalFormView]
   lazy val passIdNotFoundView = applicationWithConfig.injector.instanceOf[PassIdNotFoundView]
   lazy val qrCodeNotFoundView = applicationWithConfig.injector.instanceOf[QRCodeNotFoundView]
+  lazy val technicalIssuesView = applicationWithConfig.injector.instanceOf[TechnicalIssuesView]
 
 
   val fakeBase64String = "UEsDBBQACAgIABxqJlYAAAAAAA"
@@ -99,15 +105,15 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
         applicationBuilderWithConfig()
           .overrides(
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
-            inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector),
+            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[IdentityVerificationFrontendConnector].toInstance(mockIdentityVerificationFrontendConnector)
           )
           .configure("features.sca-wrapper-enabled" -> false)
           .build()
 
-      when(mockCitizenDetailsConnector.personDetails(any())(any(), any()))
-        .thenReturn(Future(PersonDetailsErrorResponse(new RuntimeException("error"))))
+      when(mockIndividualDetailsService.getIdDataFromCache(any()))
+        .thenReturn(Future.successful(Left("Individual details not found in cache")))
 
       running(application) {
         userLoggedInFMNUser(NinoUser)
@@ -115,10 +121,12 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         status(result) mustEqual INTERNAL_SERVER_ERROR
-
-        contentAsString(result) mustEqual (redirectview()(request, frontendAppConfig, messages(application))).toString()
+        contentAsString(result) mustEqual (technicalIssuesView("Failed to get individual details from cache")(request,
+          frontendAppConfig,
+          messages(application)))
+          .toString()
       }
-      reset(mockCitizenDetailsConnector)
+      reset(mockIndividualDetailsService)
     }
 
 
@@ -128,7 +136,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           .overrides(
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
-            inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
+            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
           )
           .configure("features.sca-wrapper-enabled" -> false)
           .build()
@@ -149,7 +157,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           .overrides(
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
-            inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector),
+            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
             inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector)
           )
           .configure("features.sca-wrapper-enabled" -> true)
@@ -172,7 +180,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
       val application = applicationBuilderWithConfig().overrides(
         inject.bind[SessionRepository].toInstance(mockSessionRepository),
         inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
-        inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
+          inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
       )
         .configure("features.sca-wrapper-enabled" -> false)
         .build()
@@ -194,7 +202,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
       val application = applicationBuilderWithConfig().overrides(
         inject.bind[SessionRepository].toInstance(mockSessionRepository),
         inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
-        inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
+          inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
       )
         .configure("features.sca-wrapper-enabled" -> false)
         .build()
@@ -212,7 +220,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           Enrolments(Set(Enrolment("HMRC-PT"))),
           request
         )
-        contentAsString(result) mustEqual (passIdNotFoundView()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
+        contentAsString(result) mustEqual (passIdNotFoundView()(userRequest, messages(application), scala.concurrent.ExecutionContext.global).toString)
       }
     }
 
@@ -221,7 +229,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
         .overrides(
           inject.bind[SessionRepository].toInstance(mockSessionRepository),
           inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
-          inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
+          inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
         )
         .configure("features.sca-wrapper-enabled" -> false)
         .build()
@@ -243,7 +251,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
       val application = applicationBuilderWithConfig().overrides(
         inject.bind[SessionRepository].toInstance(mockSessionRepository),
         inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
-        inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
+          inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
       )
         .configure("features.sca-wrapper-enabled" -> false)
         .build()
@@ -261,7 +269,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           Enrolments(Set(Enrolment("HMRC-PT"))),
           request
         )
-        contentAsString(result) mustEqual (qrCodeNotFoundView()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
+        contentAsString(result) mustEqual (qrCodeNotFoundView()(userRequest, messages(application), scala.concurrent.ExecutionContext.global).toString)
       }
     }
 
@@ -270,7 +278,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
         .overrides(
           inject.bind[SessionRepository].toInstance(mockSessionRepository),
           inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
-          inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
+          inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
         )
         .configure("features.sca-wrapper-enabled" -> false)
         .build()

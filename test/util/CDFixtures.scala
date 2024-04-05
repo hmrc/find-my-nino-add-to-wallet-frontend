@@ -18,6 +18,7 @@ package util
 
 import controllers.auth.requests.UserRequest
 import models._
+import models.individualDetails.{AccountStatusType, Address, AddressLine, AddressList, AddressPostcode, AddressSequenceNumber, AddressSource, AddressStatus, AddressType, CountryCode, CrnIndicator, DateOfBirthStatus, DeliveryInfo, FirstForename, Honours, IndividualDetails, Name, NameEndDate, NameList, NameSequenceNumber, NameStartDate, NameType, NinoSuffix, OtherTitle, PafReference, RequestedName, SecondForename, Surname, TitleType, VpaMail}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatest.concurrent.{PatienceConfiguration, ScalaFutures}
@@ -111,7 +112,7 @@ trait CDFixtures {
       None
     )
 
-  def buildFakeAddress: Address = Address(
+  def buildFakeAddress: models.Address = models.Address(
     Some("1 Fake Street"),
     Some("Fake Town"),
     Some("Fake City"),
@@ -125,7 +126,7 @@ trait CDFixtures {
     false
   )
 
-  def buildFakeCorrespondenceAddress: Address = Address(
+  def buildFakeCorrespondenceAddress: models.Address = models.Address(
     Some("2 Fake Street"),
     Some("Fake Town"),
     Some("Fake City"),
@@ -139,7 +140,7 @@ trait CDFixtures {
     false
   )
 
-  def buildFakeAddressWithEndDate: Address = Address(
+  def buildFakeAddressWithEndDate: models.Address = models.Address(
     Some("1 Fake Street"),
     Some("Fake Town"),
     Some("Fake City"),
@@ -307,5 +308,54 @@ object Fixtures extends CDFixtures  {
       Some(LocalDate.parse("1931-01-17")),
       Some(Fixtures.fakeNino)
     )*/
+
+  val fakeName: Name = models.individualDetails.Name(
+    nameSequenceNumber = NameSequenceNumber(1),
+    nameType = NameType.RealName,
+    titleType = Some(TitleType.Mr),
+    requestedName = Some(RequestedName("John Doe")),
+    nameStartDate = NameStartDate(LocalDate.of(2000, 1, 1)),
+    nameEndDate = Some(NameEndDate(LocalDate.of(2022, 12, 31))),
+    otherTitle = Some(OtherTitle("Sir")),
+    honours = Some(Honours("PhD")),
+    firstForename = FirstForename("John"),
+    secondForename = Some(SecondForename("Doe")),
+    surname = Surname("Smith")
+  )
+
+  val fakeAddress: Address = Address(
+    addressSequenceNumber = AddressSequenceNumber(0),
+    addressSource = Some(AddressSource.Customer),
+    countryCode = CountryCode(826),
+    addressType = AddressType.ResidentialAddress,
+    addressStatus = Some(AddressStatus.NotDlo),
+    addressStartDate = LocalDate.of(2000, 1, 1),
+    addressEndDate = Some(LocalDate.of(2022, 12, 31)),
+    addressLastConfirmedDate = Some(LocalDate.of(2022, 1, 1)),
+    vpaMail = Some(VpaMail(1)),
+    deliveryInfo = Some(DeliveryInfo("Delivery info")),
+    pafReference = Some(PafReference("PAF reference")),
+    addressLine1 = AddressLine("123 Fake Street"),
+    addressLine2 = AddressLine("Apt 4B"),
+    addressLine3 = Some(AddressLine("Faketown")),
+    addressLine4 = Some(AddressLine("Fakeshire")),
+    addressLine5 = Some(AddressLine("Fakecountry")),
+    addressPostcode = Some(AddressPostcode("AA1 1AA"))
+  )
+
+  val fakeIndividualDetails: IndividualDetails = IndividualDetails(
+    ninoWithoutSuffix = "AB123456",
+    ninoSuffix = Some(NinoSuffix("C")),
+    accountStatusType = Some(AccountStatusType.FullLive),
+    dateOfEntry = Some(LocalDate.of(2000, 1, 1)),
+    dateOfBirth = LocalDate.of(1990, 1, 1),
+    dateOfBirthStatus = Some(DateOfBirthStatus.Verified),
+    dateOfDeath = None,
+    dateOfDeathStatus = None,
+    dateOfRegistration = Some(LocalDate.of(2000, 1, 1)),
+    crnIndicator = CrnIndicator.False,
+    nameList = NameList(Some(List(fakeName))),
+    addressList = AddressList(Some(List(fakeAddress)))
+  )
 
 }

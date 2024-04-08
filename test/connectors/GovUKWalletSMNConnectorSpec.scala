@@ -28,46 +28,46 @@ import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 
 import scala.concurrent.Future
 
-class GovUKWalletSMNConnectorSpec extends ConnectorSpec with WireMockHelper
-  with MockitoSugar
-  with DefaultAwaitTimeout
-  with Injecting {
-
-  val mockFrontendAppConfig = mock[FrontendAppConfig]
-  val mockHttpClient = mock[HttpClient]
-  val mockHeaderCarrier = mock[HeaderCarrier]
-
-  val connector = new GovUKWalletSMNConnector(mockFrontendAppConfig, mockHttpClient)
-
-  "GovUKWalletSMNConnector"  must {
-    "create a GovUKPass" ignore {
-      // Define test data
-      val title = "Mr"
-      val givenName = "John"
-      val familyName = "Smith"
-      val nino = "AB123456C"
-
-      val headers = Map("Content-Type" -> Seq("application/json"))
-
-      // Mock the dependencies
-      when(mockFrontendAppConfig.findMyNinoServiceUrl).thenReturn("http://example.com")
-      when(mockHttpClient.POST[JsValue, HttpResponse](any(), any())(any(),any(),any(),any()))
-        .thenReturn(Future.successful(HttpResponse(200, Json.parse("""{"key":"value"}"""), headers)))
-
-      when(mockHeaderCarrier.withExtraHeaders(any())).thenReturn(mockHeaderCarrier)
-
-      // Call the method under test
-      val result = connector.createGovUKPass(title, givenName, familyName, nino)
-
-      // Verify the interactions and assertions
-      verify(mockFrontendAppConfig).findMyNinoServiceUrl
-      verify(mockHttpClient).POST[JsValue, HttpResponse](any(), any())
-      verify(mockHeaderCarrier).withExtraHeaders(any())
-
-      // Check the result
-      whenReady(result) { response =>
-        response shouldBe Some("""{"key":"value"}""")
-      }
-    }
-  }
-}
+//class GovUKWalletSMNConnectorSpec extends ConnectorSpec with WireMockHelper
+//  with MockitoSugar
+//  with DefaultAwaitTimeout
+//  with Injecting {
+//
+//  val mockFrontendAppConfig = mock[FrontendAppConfig]
+//  val mockHttpClient = mock[HttpClient]
+//  val mockHeaderCarrier = mock[HeaderCarrier]
+//
+//  val connector = new GovUKWalletSMNConnector(mockFrontendAppConfig, mockHttpClient)
+//
+//  "GovUKWalletSMNConnector"  must {
+//    "create a GovUKPass" ignore {
+//      // Define test data
+//      val title = "Mr"
+//      val givenName = "John"
+//      val familyName = "Smith"
+//      val nino = "AB123456C"
+//
+//      val headers = Map("Content-Type" -> Seq("application/json"))
+//
+//      // Mock the dependencies
+//      when(mockFrontendAppConfig.findMyNinoServiceUrl).thenReturn("http://example.com")
+//      when(mockHttpClient.POST[JsValue, HttpResponse](any(), any())(any(),any(),any(),any()))
+//        .thenReturn(Future.successful(HttpResponse(200, Json.parse("""{"key":"value"}"""), headers)))
+//
+//      when(mockHeaderCarrier.withExtraHeaders(any())).thenReturn(mockHeaderCarrier)
+//
+//      // Call the method under test
+//      val result = connector.createGovUKPass(title, givenName, familyName, nino)
+//
+//      // Verify the interactions and assertions
+//      verify(mockFrontendAppConfig).findMyNinoServiceUrl
+//      verify(mockHttpClient).POST[JsValue, HttpResponse](any(), any())
+//      verify(mockHeaderCarrier).withExtraHeaders(any())
+//
+//      // Check the result
+//      whenReady(result) { response =>
+//        response shouldBe Some("""{"key":"value"}""")
+//      }
+//    }
+//  }
+//}

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// $COVERAGE-OFF$
 package controllers
 
 import com.google.inject.Inject

@@ -25,7 +25,9 @@ import play.api.inject.bind
 import play.api.libs.json.{JsString, Json}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import services.IndividualDetailsService
 import util.CDFixtures
+import util.Fixtures.fakeIndividualDetailsDataCache
 import util.Stubs.userLoggedInFMNUser
 import util.TestData.NinoUser
 import views.html.print.PrintNationalInsuranceNumberView
@@ -35,55 +37,57 @@ import scala.concurrent.Future
 
 class NinoLetterControllerSpec extends SpecBase with CDFixtures with MockitoSugar {
 
-//  val pd = buildPersonDetails
-//  val jsonPd: JsString = JsString(Json.toJson(pd).toString())
-//
-//  val personDetailsId = "pdId"
-//
-//  lazy val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
-//  lazy val ninoLetterController = applicationWithConfig.injector.instanceOf[NinoLetterController]
-//  lazy val view = applicationWithConfig.injector.instanceOf[PrintNationalInsuranceNumberView]
-//
-//  when(mockCitizenDetailsConnector.personDetails(any())(any(), any()))
-//    .thenReturn(Future(PersonDetailsSuccessResponse(buildPersonDetails)))
-//
-//  "NinoLetter Controller" - {
-//    "must return OK and the correct view for a GET" in {
-//      userLoggedInFMNUser(NinoUser)
-//
-//      val application = applicationBuilderWithConfig()
-//        .overrides(
-//          bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
-//        )
-//        .build()
-//
-//      running(application) {
-//        val request = FakeRequest(GET, routes.NinoLetterController.onPageLoad.url)
-//          .withSession(("authToken", "Bearer 123"))
-//
-//        val result = route(application, request).value
-//        status(result) mustEqual OK
-//      }
-//    }
-//  }
-//
-//  "NinoLetterController saveNationalInsuranceNumberAsPdf" - {
-//    "must return OK and pdf file with correct content" in {
-//      userLoggedInFMNUser(NinoUser)
-//
-//      val application = applicationBuilderWithConfig()
-//        .overrides(
-//          bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
-//        )
-//        .build()
-//
-//      running(application) {
-//        val request = FakeRequest(GET, routes.NinoLetterController.saveNationalInsuranceNumberAsPdf.url)
-//          .withSession(("authToken", "Bearer 123"))
-//
-//        val result = route(application, request).value
-//        status(result) mustEqual OK
-//      }
-//    }
-//  }
+
+
+
+  val personDetailsId = "pdId"
+
+  lazy val mockIndividualDetailsService = mock[IndividualDetailsService]
+  lazy val ninoLetterController = applicationWithConfig.injector.instanceOf[NinoLetterController]
+  lazy val view = applicationWithConfig.injector.instanceOf[PrintNationalInsuranceNumberView]
+
+  when(mockIndividualDetailsService.getIdDataFromCache(any()))
+    .thenReturn(
+      Future.successful(Right(fakeIndividualDetailsDataCache))
+    )
+
+  "NinoLetter Controller" - {
+    "must return OK and the correct view for a GET" in {
+      userLoggedInFMNUser(NinoUser)
+
+      val application = applicationBuilderWithConfig()
+        .overrides(
+          bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+        )
+        .build()
+
+      running(application) {
+        val request = FakeRequest(GET, routes.NinoLetterController.onPageLoad.url)
+          .withSession(("authToken", "Bearer 123"))
+
+        val result = route(application, request).value
+        status(result) mustEqual OK
+      }
+    }
+  }
+
+  "NinoLetterController saveNationalInsuranceNumberAsPdf" - {
+    "must return OK and pdf file with correct content" in {
+      userLoggedInFMNUser(NinoUser)
+
+      val application = applicationBuilderWithConfig()
+        .overrides(
+          bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+        )
+        .build()
+
+      running(application) {
+        val request = FakeRequest(GET, routes.NinoLetterController.saveNationalInsuranceNumberAsPdf.url)
+          .withSession(("authToken", "Bearer 123"))
+
+        val result = route(application, request).value
+        status(result) mustEqual OK
+      }
+    }
+  }
 }

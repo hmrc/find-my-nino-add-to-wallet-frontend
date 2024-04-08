@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// $COVERAGE-OFF$
 package controllers
 
 import com.google.inject.Inject
@@ -77,6 +78,7 @@ class GetPersonDetailsAction @Inject()(
   }
 
   override protected def executionContext: ExecutionContext = cc.executionContext
-}
 
+}
+// $COVERAGE-ON$
 

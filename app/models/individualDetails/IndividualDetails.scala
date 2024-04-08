@@ -197,9 +197,9 @@ object IndividualDetails {
 
   implicit class IndividualDetailsOps(idData: IndividualDetails) {
 
-    private def getResidenceAddress: Option[Address] = idData.addressList.getAddress.filter(_.addressType.equals(ResidentialAddress)).headOption
+    def getResidenceAddress: Option[Address] = idData.addressList.getAddress.filter(_.addressType.equals(ResidentialAddress)).headOption
 
-    private def getCorrespondenceAddress: Option[Address] = idData.addressList.getAddress.filter(_.addressType.equals(AddressType.CorrespondenceAddress)).headOption
+    def getCorrespondenceAddress: Option[Address] = idData.addressList.getAddress.filter(_.addressType.equals(AddressType.CorrespondenceAddress)).headOption
 
     def getAddress: Option[Address] = getCorrespondenceAddress.orElse(getResidenceAddress)
 
@@ -234,7 +234,13 @@ object IndividualDetails {
         .mkString(" ")
     }
 
+    def getInitialsName: String = {
 
+      List(getTitle, getFirstForename.toUpperCase().take(1), getSecondForename.toUpperCase().take(1), getLastName.toUpperCase(), getHonours)
+        .filter(_.nonEmpty)
+        .mkString(" ")
+
+    }
 
   }
 

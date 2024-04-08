@@ -31,8 +31,7 @@ case class Person(
                    dateOfBirth: Option[LocalDate],
                    nino: Option[Nino]
                  ) {
-  lazy val initialsName = initials
-      .getOrElse(List(title, firstName.map(_.take(1)), middleName.map(_.take(1)), lastName)
+  lazy val initialsName = initials.getOrElse(List(title, firstName.map(_.take(1)), middleName.map(_.take(1)), lastName)
       .flatten.mkString(" "))
 
   lazy val shortName    = for {

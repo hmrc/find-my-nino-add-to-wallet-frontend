@@ -27,6 +27,7 @@ case class IndividualDetailsData(
                               fullName: String,
                               firstForename: String,
                               surname: String,
+                              initialsName: String,
                               dateOfBirth: String,
                               postCode: String,
                               nino: String,
@@ -34,9 +35,9 @@ case class IndividualDetailsData(
                               )
 
 case class IndividualDetailsDataCache(
-   id: String,
-   individualDetails: Option[IndividualDetailsData],
-   lastUpdated: Instant = LocalDateTime.now(ZoneId.systemDefault()).toInstant(ZoneOffset.UTC)
+                                       id: String,
+                                       individualDetailsData: Option[IndividualDetailsData],
+                                       lastUpdated: Instant = LocalDateTime.now(ZoneId.systemDefault()).toInstant(ZoneOffset.UTC)
  )
 
 object IndividualDetailsDataCache {
@@ -44,6 +45,7 @@ object IndividualDetailsDataCache {
     ( (__ \ "fullName").format[String]
       ~ (__ \ "firstForename").format[String]
       ~ (__ \ "surname").format[String]
+      ~ (__ \ "initialsName").format[String]
       ~ (__ \ "dateOfBirth").format[String]
       ~ (__ \ "postCode").format[String]
       ~ (__ \ "nino").format[String]
@@ -57,40 +59,64 @@ object IndividualDetailsDataCache {
       ~ (__ \ "lastUpdated").format[Instant](instantFormat)
       )(IndividualDetailsDataCache.apply, unlift(IndividualDetailsDataCache.unapply))
   }
-  
+
   implicit class IndividualDetailsDataOps(private val individualDetailsData:IndividualDetailsDataCache) extends AnyVal {
 
-
-
-    def getFullName: String = individualDetailsData.individualDetails match {
+    def getFullName: String = individualDetailsData.individualDetailsData match {
       case Some(id) => id.fullName
       case _        => StringUtils.EMPTY
     }
 
-    def getNino: String = individualDetailsData.individualDetails match {
+    def getNino: String = individualDetailsData.individualDetailsData match {
       case Some(id) => id.nino
       case _        => StringUtils.EMPTY
     }
 
-    def getPostCode: String = individualDetailsData.individualDetails match {
+    def getPostCode: String = individualDetailsData.individualDetailsData match {
       case Some(id) => id.postCode
       case _        => StringUtils.EMPTY
     }
 
-    def getFirstForename: String = individualDetailsData.individualDetails match {
+    def getFirstForename: String = individualDetailsData.individualDetailsData match {
       case Some(id) => id.firstForename
       case _        => StringUtils.EMPTY
     }
 
-    def getLastName: String = individualDetailsData.individualDetails match {
+    def getLastName: String = individualDetailsData.individualDetailsData match {
       case Some(id) => id.surname
       case _        => StringUtils.EMPTY
     }
 
-    def dateOfBirth: String = individualDetailsData.individualDetails match {
+    def dateOfBirth: String = individualDetailsData.individualDetailsData match {
       case Some(id) => id.dateOfBirth
       case _        => StringUtils.EMPTY
     }
+
+    def getInitialsName: String = individualDetailsData.individualDetailsData match {
+      case Some(id) => id.initialsName
+      case _        => StringUtils.EMPTY
+    }
+
+    def getAddress: Option[Address] = individualDetailsData.individualDetailsData match {
+      case Some(id) => id.address
+      case _        => None
+    }
+
+    def getAddressLines: List[String] = individualDetailsData.individualDetailsData match {
+      case Some(id) => id.address match {
+        case Some(address) =>
+          List(
+            address.addressLine1.value,
+            address.addressLine2.value,
+            address.addressLine3.map(_.value).getOrElse(""),
+            address.addressLine4.map(_.value).getOrElse(""),
+            address.addressLine5.map(_.value).getOrElse("")
+          ).filter(_.nonEmpty)
+        case _ => List.empty
+      }
+      case _ => List.empty
+    }
+
   }
 
 }

@@ -60,8 +60,9 @@ class AppleWalletController @Inject()(val citizenDetailsConnector: CitizenDetail
       //auditApple("ViewWalletPage", hc)
 
       individualDetailsService.getIdDataFromCache(authContext.nino.nino).flatMap {
-        case Right((fullName, nino)) =>
-          val formattedNino = nino.grouped(2).mkString(" ")
+        case Right(individualDetailsDataCache) =>
+          val formattedNino = individualDetailsDataCache.getNino.grouped(2).mkString(" ")
+          val fullName = individualDetailsDataCache.getFullName
           for{
             pId: Some[String] <- appleWalletConnector.createApplePass(fullName, formattedNino)
           } yield Ok(view(pId.value, isMobileDisplay(authContext.request))(authContext.request, messages))

@@ -33,7 +33,7 @@ import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolment, Enrolments}
 import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
 import util.CDFixtures
-import util.Fixtures.fakeIndividualDetails
+import util.Fixtures.{fakeIndividualDetails, fakeIndividualDetailsDataCache}
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
 import util.TestData.{NinoUser, NinoUser_With_CL50}
 import views.html._
@@ -68,7 +68,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
 
     reset(mockIndividualDetailsService)
     when(mockIndividualDetailsService.getIdDataFromCache(any()))
-      .thenReturn(Future.successful(Right(("John Doe"), "AB123456C")))
+      .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCache)))
 
     reset(mockIdentityVerificationFrontendConnector)
     when(mockIdentityVerificationFrontendConnector.getIVJourneyStatus(any())(any(), any()))
@@ -144,7 +144,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .build()
 
       when(mockIndividualDetailsService.getIdDataFromCache(any()))
-        .thenReturn(Future.successful(Right(fakeIndividualDetails.getFullName, fakeIndividualDetails.ninoWithoutSuffix)))
+        .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCache)))
 
       running(application) {
         userLoggedInFMNUser(NinoUser)
@@ -169,7 +169,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .build()
 
       when(mockIndividualDetailsService.getIdDataFromCache(any()))
-        .thenReturn(Future.successful(Right(fakeIndividualDetails.getFullName, fakeIndividualDetails.ninoWithoutSuffix)))
+        .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCache)))
 
       val view = application.injector.instanceOf[AppleWalletView]
 

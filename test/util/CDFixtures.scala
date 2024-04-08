@@ -18,7 +18,7 @@ package util
 
 import controllers.auth.requests.UserRequest
 import models._
-import models.individualDetails.{AccountStatusType, Address, AddressLine, AddressList, AddressPostcode, AddressSequenceNumber, AddressSource, AddressStatus, AddressType, CountryCode, CrnIndicator, DateOfBirthStatus, DeliveryInfo, FirstForename, Honours, IndividualDetails, Name, NameEndDate, NameList, NameSequenceNumber, NameStartDate, NameType, NinoSuffix, OtherTitle, PafReference, RequestedName, SecondForename, Surname, TitleType, VpaMail}
+import models.individualDetails.{AccountStatusType, Address, AddressLine, AddressList, AddressPostcode, AddressSequenceNumber, AddressSource, AddressStatus, AddressType, CountryCode, CrnIndicator, DateOfBirthStatus, DeliveryInfo, FirstForename, Honours, IndividualDetails, IndividualDetailsData, IndividualDetailsDataCache, Name, NameEndDate, NameList, NameSequenceNumber, NameStartDate, NameType, NinoSuffix, OtherTitle, PafReference, RequestedName, SecondForename, Surname, TitleType, VpaMail}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatest.concurrent.{PatienceConfiguration, ScalaFutures}
@@ -38,7 +38,7 @@ import uk.gov.hmrc.domain.{Generator, Nino, SaUtrGenerator}
 import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
 import uk.gov.hmrc.play.partials.FormPartialRetriever
 
-import java.time.LocalDate
+import java.time.{Instant, LocalDate, LocalDateTime, ZoneId, ZoneOffset}
 import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
@@ -312,15 +312,15 @@ object Fixtures extends CDFixtures  {
   val fakeName: Name = models.individualDetails.Name(
     nameSequenceNumber = NameSequenceNumber(1),
     nameType = NameType.RealName,
-    titleType = Some(TitleType.Mr),
-    requestedName = Some(RequestedName("John Doe")),
+    titleType = Some(TitleType.Dr),
+    requestedName = Some(RequestedName("Firstname Middlename")),
     nameStartDate = NameStartDate(LocalDate.of(2000, 1, 1)),
     nameEndDate = Some(NameEndDate(LocalDate.of(2022, 12, 31))),
     otherTitle = Some(OtherTitle("Sir")),
     honours = Some(Honours("PhD")),
-    firstForename = FirstForename("John"),
-    secondForename = Some(SecondForename("Doe")),
-    surname = Surname("Smith")
+    firstForename = FirstForename("Firstname"),
+    secondForename = Some(SecondForename("Middlename")),
+    surname = Surname("Lastname")
   )
 
   val fakeAddress: Address = Address(
@@ -356,6 +356,25 @@ object Fixtures extends CDFixtures  {
     crnIndicator = CrnIndicator.False,
     nameList = NameList(Some(List(fakeName))),
     addressList = AddressList(Some(List(fakeAddress)))
+  )
+
+
+
+  val fakeIndividualDetailsData = IndividualDetailsData(
+    fullName = "Dr Firstname Middlename Lastname Phd.",
+    firstForename = "Firstname",
+    surname = "Lastname",
+    initialsName = "FML",
+    dateOfBirth = "01/01/1990",
+    postCode = "AA1 1AA",
+    nino = "AB123456C",
+    address = Some(fakeAddress)
+  )
+
+  val fakeIndividualDetailsDataCache = IndividualDetailsDataCache(
+    "some-fake-Id",
+    Some(fakeIndividualDetailsData),
+    LocalDateTime.now(ZoneId.systemDefault()).toInstant(ZoneOffset.UTC)
   )
 
 }

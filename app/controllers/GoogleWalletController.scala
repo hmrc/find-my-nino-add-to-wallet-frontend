@@ -58,8 +58,9 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
       implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
 
       individualDetailsService.getIdDataFromCache(authContext.nino.nino).flatMap {
-        case Right((fullName, nino)) =>
-          val formattedNino = nino.grouped(2).mkString(" ")
+        case Right(individualDetailsDataCache) =>
+          val formattedNino = individualDetailsDataCache.getNino.grouped(2).mkString(" ")
+          val fullName = individualDetailsDataCache.getFullName
           for{
             pId: Some[String] <- googleWalletConnector.createGooglePass(fullName, formattedNino)
           } yield Ok(view(pId.value, isMobileDisplay(authContext.request))(authContext.request, messages))
@@ -67,12 +68,6 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
           technicalIssuesView("Failed to get individual details from cache")(authContext.request, frontendAppConfig, messages)))
 
       }
-
-      //      for {
-      //        pId: Some[String] <- googleWalletConnector.createGooglePass(
-      //          request.personDetails.person.fullName,
-      //          request.nino.map(_.formatted).getOrElse(""))
-      //      } yield Ok(view(pId.value, isMobileDisplay(request)))
     }
   }
 

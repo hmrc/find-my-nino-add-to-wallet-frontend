@@ -36,7 +36,7 @@ trait IndividualDetailsService {
 
   def getIndividualDetails(nino: String)(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[Either[IndividualDetailsError, IndividualDetails]]
 
-  def getIdDataFromCache(nino: String): Future[Either[String, (String, String)]]
+  def getIdDataFromCache(nino: String): Future[Either[String, IndividualDetailsDataCache]]
 }
 
 
@@ -68,6 +68,7 @@ class IndividualDetailsServiceImpl @Inject()(
       individualDetails.getFullName,
       individualDetails.getFirstForename,
       individualDetails.getLastName,
+      individualDetails.getInitialsName,
       individualDetails.dateOfBirth.toString,
       individualDetails.getPostCode,
       individualDetails.getNino,
@@ -95,11 +96,11 @@ class IndividualDetailsServiceImpl @Inject()(
   }
 
 
-  def getIdDataFromCache(nino: String): Future[Either[String, (String, String)]] = {
+  def getIdDataFromCache(nino: String): Future[Either[String, IndividualDetailsDataCache]] = {
     getIndividualDetailsDataCache(nino).map {
-      case Some(individualDetails) =>
-        logger.info(s"Individual details found in cache: ${individualDetails.toString}")
-        Right(individualDetails.getFullName, individualDetails.getNino)
+      case Some(individualDetailsDataCache) =>
+        logger.info(s"Individual details found in cache for Nino: ${nino}")
+        Right(individualDetailsDataCache)
       case None =>
         logger.info("Individual details not found in cache")
         Left("Individual details not found in cache")

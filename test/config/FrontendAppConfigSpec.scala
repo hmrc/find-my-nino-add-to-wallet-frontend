@@ -19,7 +19,9 @@ package config
 import base.SpecBase
 import org.mockito.MockitoSugar.when
 import org.scalatestplus.mockito.MockitoSugar
+import play.api.Configuration
 import play.api.i18n.Lang
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 class FrontendAppConfigSpec extends SpecBase with MockitoSugar{
   val mockFrontendAppConfig = mock[FrontendAppConfig]
@@ -55,6 +57,19 @@ class FrontendAppConfigSpec extends SpecBase with MockitoSugar{
       "cy" -> Lang("cy")
     ))
   }
+
+
+
+    "return the correct language map" in {
+      val mockConfiguration = mock[Configuration]
+      val mockServicesConfig = mock[ServicesConfig]
+
+      val appConfig = new FrontendAppConfig(mockConfiguration, mockServicesConfig)
+
+      val result = appConfig.languageMap
+
+      result mustBe Map("en" -> Lang("en"), "cy" -> Lang("cy"))
+    }
 
 
    "timeout" in {

@@ -16,16 +16,19 @@
 
 package services
 
+import config.FrontendAppConfig
 import connectors.IndividualDetailsConnector
-import models.individualDetails.IndividualDetails
+import models.individualDetails.IndividualDetailsDataCache
 import org.mockito.ArgumentMatchersSugar.any
 import org.mockito.Mockito._
+import org.mongodb.scala.{MongoCollection, MongoException}
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatestplus.mockito.MockitoSugar
 import repositories.IndividualDetailsRepository
 import uk.gov.hmrc.http.HeaderCarrier
-import util.Fixtures.{fakeIndividualDetails, fakeIndividualDetailsData, fakeIndividualDetailsDataCache}
-import org.scalatest.concurrent.ScalaFutures
+import uk.gov.hmrc.mongo.MongoComponent
+import util.Fixtures.{fakeIndividualDetails, fakeIndividualDetailsDataCache}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt
@@ -119,5 +122,18 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec
     val result = service.getIdDataFromCache("incorrectNINO")
     assert(result.futureValue.isLeft)
   }
+
+//  it should "handle MongoException" in {
+//    val mockRepository = mock[IndividualDetailsRepository]
+//    val mockConnector = mock[IndividualDetailsConnector]
+//    val service = new IndividualDetailsServiceImpl(mockRepository, mockConnector)
+//
+//    val nino = "testNino"
+//    when(mockRepository.findIndividualDetailsDataByNino(any)(any[ExecutionContext]))
+//      .thenThrow(new MongoException("Test exception"))
+//
+//    val result = service.getIdDataFromCache(nino)
+//    assert(result.futureValue.isLeft)
+//  }
 
 }

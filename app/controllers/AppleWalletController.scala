@@ -18,6 +18,8 @@ package controllers
 
 import config.FrontendAppConfig
 import connectors.{AppleWalletConnector, CitizenDetailsConnector}
+import controllers.auth.AuthContext
+import models.individualDetails.IndividualDetailsDataCache
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc._
 import play.api.{Configuration, Environment}
@@ -53,14 +55,12 @@ class AppleWalletController @Inject()(val citizenDetailsConnector: CitizenDetail
 
   def onPageLoad: Action[AnyContent] = authorisedAsFMNUser async {
     authContext => {
-
       implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(authContext.request, authContext.request.session)
       implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
 
-      //auditApple("ViewWalletPage", hc)
-
       individualDetailsService.getIdDataFromCache(authContext.nino.nino).flatMap {
         case Right(individualDetailsDataCache) =>
+          auditApple("ViewWalletPage", individualDetailsDataCache, hc)
           val formattedNino = individualDetailsDataCache.getNino.grouped(2).mkString(" ")
           val fullName = individualDetailsDataCache.getFullName
           for{
@@ -71,6 +71,36 @@ class AppleWalletController @Inject()(val citizenDetailsConnector: CitizenDetail
       }
     }
   }
+
+  def getPassCard(passId: String): Action[AnyContent] = authorisedAsFMNUser async {
+    authContext => {
+      implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(authContext.request, authContext.request.session)
+      implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
+
+      individualDetailsService.getIdDataFromCache(authContext.nino.nino).flatMap {
+        case Right(individualDetailsDataCache) =>
+          getApplePass(passId, individualDetailsDataCache, authContext, hc, messages)
+        case Left("Individual details not found in cache") => Future.successful(InternalServerError(
+          technicalIssuesView("Failed to get individual details from cache")(authContext.request, frontendAppConfig, messages)))
+      }
+    }
+  }
+
+  def getQrCode(passId: String): Action[AnyContent] = authorisedAsFMNUser async {
+
+    authContext => {
+      implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(authContext.request, authContext.request.session)
+      implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
+
+      individualDetailsService.getIdDataFromCache(authContext.nino.nino).flatMap {
+        case Right(individualDetailsDataCache) =>
+          getAppleQRCode(passId, individualDetailsDataCache, authContext, hc, messages)
+        case Left("Individual details not found in cache") => Future.successful(InternalServerError(
+          technicalIssuesView("Failed to get individual details from cache")(authContext.request, frontendAppConfig, messages)))
+      }
+    }
+  }
+
 
   private def isMobileDisplay(request: Request[AnyContent]): Boolean = {
     // Display wallet options differently on mobile to pc
@@ -86,43 +116,35 @@ class AppleWalletController @Inject()(val citizenDetailsConnector: CitizenDetail
     }
   }
 
-  def getPassCard(passId: String): Action[AnyContent] = authorisedAsFMNUser async {
-    authContext => {
-      implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(authContext.request, authContext.request.session)
-      implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
-      appleWalletConnector.getApplePass(passId).map {
-        case Some(data) =>
-          val eventType = authContext.request.getQueryString("qr-code") match {
-            case Some("true") => "AddNinoToWalletFromQRCode"
-            case _ => "AddNinoToWallet"
-          }
-          //auditApple(eventType, hc)
-          Ok(data).withHeaders("Content-Disposition" -> s"attachment; filename=$passFileName")
-        case _ =>
-          NotFound(passIdNotFoundView()(authContext.request, messages, ec))
-      }
+  private def getApplePass(passId: String, individualDetailsDataCache: IndividualDetailsDataCache,
+                           authContext: AuthContext[AnyContent], hc:HeaderCarrier, messages: Messages): Future[Result] = {
+    appleWalletConnector.getApplePass(passId)(ec, hc).map {
+      case Some(data) =>
+        val eventType = authContext.request.getQueryString("qr-code") match {
+          case Some("true") => "AddNinoToWalletFromQRCode"
+          case _ => "AddNinoToWallet"
+        }
+        auditApple(eventType, individualDetailsDataCache, hc)
+        Ok(data).withHeaders("Content-Disposition" -> s"attachment; filename=$passFileName")
+      case _ =>
+        NotFound(passIdNotFoundView()(authContext.request, messages, ec))
     }
   }
 
-
-
-  def getQrCode(passId: String): Action[AnyContent] = authorisedAsFMNUser async {
-
-    authContext => {
-      implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(authContext.request, authContext.request.session)
-      implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
-      appleWalletConnector.getAppleQrCode(passId).map {
-        case Some(data) =>
-          //auditApple("DisplayQRCode", hc)
-          Ok(data).withHeaders("Content-Disposition" -> s"attachment; filename=$passFileName")
-        case _ => NotFound(qrCodeNotFoundView()(authContext.request, messages, ec))
-      }
+  private def getAppleQRCode(passId: String, individualDetailsDataCache: IndividualDetailsDataCache,
+                             authContext: AuthContext[AnyContent], hc:HeaderCarrier, messages: Messages): Future[Result] = {
+    appleWalletConnector.getAppleQrCode(passId)(ec, hc).map {
+      case Some(data) =>
+        auditApple("DisplayQRCode", individualDetailsDataCache, hc)
+        Ok(data).withHeaders("Content-Disposition" -> s"attachment; filename=$passFileName")
+      case _ =>
+        NotFound(qrCodeNotFoundView()(authContext.request, messages, ec))
     }
   }
 
-  private def auditApple(eventType:String, hc:HeaderCarrier): Unit = {
+  private def auditApple(eventType:String, individualDataCache:IndividualDetailsDataCache, hc:HeaderCarrier): Unit = {
     auditService.audit(AuditUtils.buildAuditEvent(
-      null,
+      individualDataCache,
       eventType,
       frontendAppConfig.appName,
       Some("Apple")

@@ -17,6 +17,7 @@
 package controllers
 
 import config.FrontendAppConfig
+import models.individualDetails.IndividualDetailsDataCache
 import org.apache.xmlgraphics.util.MimeConstants
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
@@ -27,6 +28,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import util.{AuditUtils, XmlFoToPDF}
+import views.html.identity.TechnicalIssuesView
 import views.html.print.PrintNationalInsuranceNumberView
 
 import java.time.LocalDate
@@ -39,6 +41,7 @@ class NinoLetterController @Inject()(
                                       authConnector: AuthConnector,
                                       auditService: AuditService,
                                       view: PrintNationalInsuranceNumberView,
+                                      technicalIssuesView: TechnicalIssuesView,
                                       individualDetailsService: IndividualDetailsService,
                                       xmlFoToPDF: XmlFoToPDF
                                     )(implicit config: Configuration,
@@ -51,48 +54,54 @@ class NinoLetterController @Inject()(
 
   def onPageLoad: Action[AnyContent] = authorisedAsFMNUser async {
     authContext => {
-        //auditService.audit(AuditUtils.buildAuditEvent(request.personDetails, "ViewNinoLetter", frontendAppConfig.appName, None))
       implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(authContext.request, authContext.request.session)
       implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
 
-
       individualDetailsService.getIdDataFromCache(authContext.nino.nino).flatMap {
         case Right(individualDetailsDataCache) =>
+          auditNinoLetter("ViewNinoLetter", individualDetailsDataCache, hc)
           val formattedNino = individualDetailsDataCache.getNino.grouped(2).mkString(" ")
           Future.successful(Ok(view(
             individualDetailsDataCache,
             LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
             true,
             formattedNino)(authContext.request, messages)))
-        case _ =>
-          Future.successful(InternalServerError("Failed to get individual details from cache"))
+        case Left("Individual details not found in cache") => Future.successful(InternalServerError(
+          technicalIssuesView("Failed to get individual details from cache")(authContext.request, frontendAppConfig, messages)))
       }
     }
   }
 
 
-    def saveNationalInsuranceNumberAsPdf: Action[AnyContent] = authorisedAsFMNUser async {
-      authContext => {
-        implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(authContext.request, authContext.request.session)
-        implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
-        //auditService.audit(AuditUtils.buildAuditEvent(request.personDetails, "DownloadNinoLetter", frontendAppConfig.appName, None))
+  def saveNationalInsuranceNumberAsPdf: Action[AnyContent] = authorisedAsFMNUser async {
+    authContext => {
+      implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(authContext.request, authContext.request.session)
+      implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
+      val filename = messagesApi.preferred(authContext.request).messages("label.your_national_insurance_number_letter")
 
-        individualDetailsService.getIdDataFromCache(authContext.nino.nino).flatMap {
-          case Right(individualDetailsDataCache) =>
-            val pdf:Array[Byte] = xmlFoToPDF.createPDF(
-              individualDetailsDataCache,
-              LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
-              messagesApi.preferred(authContext.request)
-            )
-
-            val filename = messagesApi.preferred(authContext.request).messages("label.your_national_insurance_number_letter")
-
-            Future.successful(Ok(pdf).as(MimeConstants.MIME_PDF)
-              .withHeaders(
-                CONTENT_TYPE -> "application/x-download",
-                CONTENT_DISPOSITION -> s"attachment; filename=${filename.replaceAll(" ", "-")}.pdf"))
+      individualDetailsService.getIdDataFromCache(authContext.nino.nino).flatMap {
+        case Right(individualDetailsDataCache) => {
+          auditNinoLetter("DownloadNinoLetter", individualDetailsDataCache, hc)
+          val pdf = createPDF(individualDetailsDataCache, messages)
+          Future.successful(Ok(pdf).as(MimeConstants.MIME_PDF)
+            .withHeaders(CONTENT_TYPE -> "application/x-download", CONTENT_DISPOSITION -> s"attachment; filename=${filename.replaceAll(" ", "-")}.pdf"))
         }
+        case Left("Individual details not found in cache") => Future.successful(InternalServerError(
+          technicalIssuesView("Failed to get individual details from cache")(authContext.request, frontendAppConfig, messages)))
+
       }
     }
+  }
 
+  private def createPDF(individualDetailsDataCache: IndividualDetailsDataCache, messages: Messages): Array[Byte] = {
+    xmlFoToPDF.createPDF(
+      individualDetailsDataCache,
+      LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
+      messages
+    )
+  }
+
+  private def auditNinoLetter(eventType: String, individualDetailsDataCache: IndividualDetailsDataCache, hc: HeaderCarrier): Unit = {
+    auditService.audit(AuditUtils.buildAuditEvent(individualDetailsDataCache, eventType, frontendAppConfig.appName, None)(hc))(hc)
+  }
 }

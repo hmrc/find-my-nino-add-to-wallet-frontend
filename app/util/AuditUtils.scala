@@ -16,7 +16,7 @@
 
 package util
 
-import models.{Address, PersonDetails}
+import models.individualDetails.{Address, AddressLine, AddressSequenceNumber, AddressType, CountryCode, IndividualDetailsDataCache}
 import play.api.libs.json.{JsValue, Json, OFormat}
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
 import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
@@ -69,13 +69,34 @@ object AuditUtils {
 
   def getReferer(hc: HeaderCarrier): String = hc.otherHeaders.toMap.getOrElse("Referer", "")
 
-  def getPersonAddress(personDetails: PersonDetails): Address = {
-    personDetails.address match {
+
+  private def emptyAddress = Address(
+    addressSequenceNumber = AddressSequenceNumber(0),
+    addressSource = None,
+    countryCode = CountryCode(0),
+    addressType = AddressType.ResidentialAddress, // Assuming ResidentialAddress as default
+    addressStatus = None,
+    addressStartDate = LocalDate.now(),
+    addressEndDate = None,
+    addressLastConfirmedDate = None,
+    vpaMail = None,
+    deliveryInfo = None,
+    pafReference = None,
+    addressLine1 = AddressLine(""), // Assuming AddressLine is a case class with a single String parameter
+    addressLine2 = AddressLine(""),
+    addressLine3 = None,
+    addressLine4 = None,
+    addressLine5 = None,
+    addressPostcode = None
+  )
+
+  def getIndivudualsAddress(individualDetailsDataCache: IndividualDetailsDataCache): Address = {
+    individualDetailsDataCache.getAddress match {
       case Some(a: Address) => a
-      case _ => Address.apply(Some(""), Some(""), Some(""), Some(""), Some(""),
-        Some(""), Some(""), Some(LocalDate.now()), Some(LocalDate.now()), Some(""), true)
+      case _ => emptyAddress
     }
   }
+
 
   private def buildDataEvent(auditType: String, transactionName: String, detail: JsValue)(implicit
                                                                                           hc: HeaderCarrier
@@ -99,25 +120,25 @@ object AuditUtils {
     )
   }
 
-  private def buildDetails(personDetails: PersonDetails, journeyId: String, hc: HeaderCarrier, walletProvider: Option[String]): YourDetailsAuditEvent = {
-    val person = personDetails.person
-    val mainAddress = getPersonAddress(personDetails)
+  private def buildDetails(individualDetailsDataCache: IndividualDetailsDataCache, journeyId: String, hc: HeaderCarrier, walletProvider: Option[String]): YourDetailsAuditEvent = {
+
+    val mainAddress = getIndivudualsAddress(individualDetailsDataCache)
     val strLang = getLanguageFromCookieStr(hc)
     val strDevice = getUserDevice(hc)
 
-    person.nino match {
-      case Some(ninoValue) =>
+    individualDetailsDataCache.getNino match {
+      case (nino:String) =>
         YourDetailsAuditEvent(
           journeyId,
           timestamp(),
-          ninoValue.nino,
-          name = person.fullName,
+          nino,
+          name = individualDetailsDataCache.getFullName,
           mainAddress = mainAddress,
           device = Some(strDevice),
           language = strLang,
           walletProvider
         )
-      case None => throw new NotFoundException("Nino not found for person when building audit event")
+      case _ => throw new NotFoundException("Nino not found for person when building audit event")
     }
 
 
@@ -126,12 +147,12 @@ object AuditUtils {
   private def timestamp(): String =
     java.time.Instant.now().atOffset(ZoneOffset.UTC).format(DateTimeFormatter.ISO_DATE_TIME)
 
-  def buildAuditEvent(personDetails: PersonDetails,
+  def buildAuditEvent(individualDetailsDataCache: IndividualDetailsDataCache,
                      auditType: String,
                       appName: String,
                       walletProvider: Option[String])(implicit hc: HeaderCarrier): ExtendedDataEvent = {
         buildDataEvent(auditType, s"$appName-$auditType",
-          Json.toJson(buildDetails(personDetails, auditType, hc, walletProvider)))
+          Json.toJson(buildDetails(individualDetailsDataCache, auditType, hc, walletProvider)))
     }
 
 }

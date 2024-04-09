@@ -19,6 +19,7 @@ package controllers
 import config.FrontendAppConfig
 import connectors.{CitizenDetailsConnector, GoogleWalletConnector}
 import controllers.auth.requests.{UserRequest, UserRequestNew}
+import models.individualDetails.IndividualDetailsDataCache
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents, Request}
 import play.api.{Configuration, Environment}
@@ -53,12 +54,13 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
 
   def onPageLoad: Action[AnyContent] = authorisedAsFMNUser async {
     authContext => {
-      //auditService.audit(AuditUtils.buildAuditEvent(request.personDetails, "ViewWalletPage", frontendAppConfig.appName, Some("Google")))
+
       implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(authContext.request, authContext.request.session)
       implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
 
       individualDetailsService.getIdDataFromCache(authContext.nino.nino).flatMap {
         case Right(individualDetailsDataCache) =>
+          auditGoogleWallet("ViewWalletPage", individualDetailsDataCache, hc)
           val formattedNino = individualDetailsDataCache.getNino.grouped(2).mkString(" ")
           val fullName = individualDetailsDataCache.getFullName
           for{
@@ -89,15 +91,20 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
       implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(authContext.request, authContext.request.session)
       implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
 
-      googleWalletConnector.getGooglePassUrl(passId).map {
-        case Some(data) =>
-          val eventType = authContext.request.getQueryString("qr-code") match {
-            case Some("true") => "AddNinoToWalletFromQRCode"
-            case _ => "AddNinoToWallet"
+      individualDetailsService.getIdDataFromCache(authContext.nino.nino).flatMap {
+        case Right(individualDetailsDataCache) =>
+          googleWalletConnector.getGooglePassUrl(passId).map {
+            case Some(data) =>
+              val eventType = authContext.request.getQueryString("qr-code") match {
+                case Some("true") => "AddNinoToWalletFromQRCode"
+                case _ => "AddNinoToWallet"
+              }
+              auditGoogleWallet(eventType, individualDetailsDataCache, hc)
+              Redirect(data)
+            case _ => NotFound(passIdNotFoundView()(authContext.request, messages, ec))
           }
-          //auditGoogleWallet(eventType, hc)
-          Redirect(data)
-        case _ => NotFound(passIdNotFoundView()(authContext.request, messages, ec))
+        case Left("Individual details not found in cache") => Future.successful(InternalServerError(
+          technicalIssuesView("Failed to get individual details from cache")(authContext.request, frontendAppConfig, messages)))
       }
     }
   }
@@ -106,25 +113,28 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
     authContext => {
       implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(authContext.request, authContext.request.session)
       implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
+      individualDetailsService.getIdDataFromCache(authContext.nino.nino).flatMap {
+        case Right(individualDetailsDataCache) =>
+          googleWalletConnector.getGooglePassQrCode(passId).map {
+            case Some(data) =>
+              auditGoogleWallet("DisplayQRCode", individualDetailsDataCache, hc)
+              Ok(data)
+            case _ => NotFound(qrCodeNotFoundView()(authContext.request, messages, ec))
 
-      googleWalletConnector.getGooglePassQrCode(passId).map {
-        case Some(data) =>
-          //auditGoogleWallet("DisplayQRCode", hc)
-          Ok(data)
-        case _ => NotFound(qrCodeNotFoundView()(authContext.request, messages, ec))
-
+          }
+        case Left("Individual details not found in cache") => Future.successful(InternalServerError(
+          technicalIssuesView("Failed to get individual details from cache")(authContext.request, frontendAppConfig, messages)))
       }
     }
   }
 
-    def auditGoogleWallet(eventType:String, hc:HeaderCarrier): Unit = {
-      auditService.audit(AuditUtils.buildAuditEvent(
-        null,
-        eventType,
-        frontendAppConfig.appName,
-        Some("Google")
-      )(hc))(hc)
-    }
-
+  def auditGoogleWallet(eventType:String, individualDetailsDataCache: IndividualDetailsDataCache, hc:HeaderCarrier): Unit = {
+    auditService.audit(AuditUtils.buildAuditEvent(
+      individualDetailsDataCache,
+      eventType,
+      frontendAppConfig.appName,
+      Some("Google")
+    )(hc))(hc)
+  }
 
 }

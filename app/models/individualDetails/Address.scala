@@ -23,7 +23,7 @@ import java.time.LocalDate
 final case class AddressSequenceNumber(value: Int) extends AnyVal
 
 object AddressSequenceNumber {
-  implicit val format = Json.valueFormat[AddressSequenceNumber]
+  implicit val format: Format[AddressSequenceNumber] = Json.valueFormat[AddressSequenceNumber]
 }
 
 sealed trait AddressSource
@@ -71,7 +71,7 @@ object AddressSource {
 final case class CountryCode(value: Int) extends AnyVal
 
 object CountryCode {
-  implicit val format = Json.valueFormat[CountryCode]
+  implicit val format: Format[CountryCode] = Json.valueFormat[CountryCode]
 }
 sealed trait AddressType
 
@@ -115,30 +115,30 @@ object AddressStatus {
 final case class AddressStartDate(value: Int) extends AnyVal
 
 object AddressStartDate {
-  implicit val format = Json.valueFormat[AddressStartDate]
+  implicit val format: Format[AddressStartDate] = Json.valueFormat[AddressStartDate]
 }
 final case class VpaMail(value: Int) extends AnyVal
 
 object VpaMail {
-  implicit val format = Json.valueFormat[VpaMail]
+  implicit val format: Format[VpaMail] = Json.valueFormat[VpaMail]
 }
 
 final case class DeliveryInfo(value: String) extends AnyVal
 
 object DeliveryInfo {
-  implicit val format = Json.valueFormat[DeliveryInfo]
+  implicit val format: Format[DeliveryInfo] = Json.valueFormat[DeliveryInfo]
 }
 
 final case class PafReference(value: String) extends AnyVal
 
 object PafReference {
-  implicit val format = Json.valueFormat[PafReference]
+  implicit val format: Format[PafReference] = Json.valueFormat[PafReference]
 }
 
 final case class AddressPostcode(value: String) extends AnyVal
 
 object AddressPostcode {
-  implicit val format = Json.valueFormat[AddressPostcode]
+  implicit val format: Format[AddressPostcode] = Json.valueFormat[AddressPostcode]
 }
 
 final case class Address(

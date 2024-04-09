@@ -68,6 +68,7 @@ class AppleWalletController @Inject()(val citizenDetailsConnector: CitizenDetail
           } yield Ok(view(pId.value, isMobileDisplay(authContext.request))(authContext.request, messages))
         case Left("Individual details not found in cache") => Future.successful(InternalServerError(
           technicalIssuesView("Failed to get individual details from cache")(authContext.request, frontendAppConfig, messages)))
+        case _ => Future.successful(InternalServerError("Failed to get individual details from cache"))
       }
     }
   }
@@ -82,6 +83,8 @@ class AppleWalletController @Inject()(val citizenDetailsConnector: CitizenDetail
           getApplePass(passId, individualDetailsDataCache, authContext, hc, messages)
         case Left("Individual details not found in cache") => Future.successful(InternalServerError(
           technicalIssuesView("Failed to get individual details from cache")(authContext.request, frontendAppConfig, messages)))
+        case _ => Future.successful(InternalServerError("Failed to get individual details from cache"))
+
       }
     }
   }
@@ -95,8 +98,8 @@ class AppleWalletController @Inject()(val citizenDetailsConnector: CitizenDetail
       individualDetailsService.getIdDataFromCache(authContext.nino.nino).flatMap {
         case Right(individualDetailsDataCache) =>
           getAppleQRCode(passId, individualDetailsDataCache, authContext, hc, messages)
-        case Left("Individual details not found in cache") => Future.successful(InternalServerError(
-          technicalIssuesView("Failed to get individual details from cache")(authContext.request, frontendAppConfig, messages)))
+        case Left("Individual details not found in cache") => catchAllError(authContext, messages)
+        case _ => catchAllError(authContext, messages)
       }
     }
   }
@@ -115,6 +118,11 @@ class AppleWalletController @Inject()(val citizenDetailsConnector: CitizenDetail
       case None => false
     }
   }
+
+  private def catchAllError(authContext: AuthContext[AnyContent], messages: Messages)  =
+    Future.successful(InternalServerError(
+      technicalIssuesView("Failed to get individual details from cache")(authContext.request, frontendAppConfig, messages)))
+
 
   private def getApplePass(passId: String, individualDetailsDataCache: IndividualDetailsDataCache,
                            authContext: AuthContext[AnyContent], hc:HeaderCarrier, messages: Messages): Future[Result] = {

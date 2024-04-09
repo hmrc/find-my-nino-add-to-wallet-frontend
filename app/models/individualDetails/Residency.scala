@@ -23,7 +23,7 @@ import java.time.LocalDate
 
 final case class ResidencySequenceNumber(value: Int) extends AnyVal
 object ResidencySequenceNumber {
-  implicit val format = Json.valueFormat[ResidencySequenceNumber]
+  implicit val format: Format[ResidencySequenceNumber] = Json.valueFormat[ResidencySequenceNumber]
 }
 sealed trait ResidencyStatusFlag
 

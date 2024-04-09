@@ -17,9 +17,8 @@
 package controllers
 
 import base.SpecBase
-import connectors.{CitizenDetailsConnector, GoogleWalletConnector, IdentityVerificationFrontendConnector, PersonDetailsErrorResponse, PersonDetailsSuccessResponse}
+import connectors.{GoogleWalletConnector, IdentityVerificationFrontendConnector}
 import controllers.auth.requests.UserRequest
-import models.individualDetails.{AccountStatusType, Address, AddressLine, AddressList, AddressPostcode, AddressSequenceNumber, AddressSource, AddressStatus, AddressType, CountryCode, CrnIndicator, DateOfBirthStatus, DeliveryInfo, FirstForename, Honours, IndividualDetails, Name, NameEndDate, NameList, NameSequenceNumber, NameStartDate, NameType, NinoSuffix, OtherTitle, PafReference, RequestedName, SecondForename, Surname, TitleType, VpaMail}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.{reset, when}
@@ -37,13 +36,11 @@ import util.Fixtures.fakeIndividualDetailsDataCache
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
 import util.TestData.NinoUser
 import views.html.identity.TechnicalIssuesView
+import views.html._
 
+import java.util.Base64
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import views.html.{ErrorTemplate, GoogleWalletView, PassIdNotFoundView, QRCodeNotFoundView, RedirectToPostalFormView}
-
-import java.time.LocalDate
-import java.util.Base64
 
 class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSugar {
 

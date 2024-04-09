@@ -18,10 +18,10 @@ package controllers
 
 import config.FrontendAppConfig
 import connectors.{AppleWalletConnector, CitizenDetailsConnector, GoogleWalletConnector}
-import controllers.auth.requests.{UserRequest, UserRequestNew}
+import controllers.auth.requests.UserRequestNew
 import models.individualDetails.IndividualDetailsDataCache
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
-import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents, Request}
+import play.api.mvc._
 import play.api.{Configuration, Environment}
 import services.{AuditService, IndividualDetailsService}
 import uk.gov.hmrc.auth.core.AuthConnector
@@ -74,11 +74,15 @@ class StoreMyNinoController @Inject()(
               Ok(view(appleId.value, googleId.value, nino, isMobileDisplay(request))(request, messages))
             }
           }
-        case Left("Individual details not found in cache") => Future.successful(InternalServerError(
-          technicalIssuesView("Failed to get individual details from cache")(request, frontendAppConfig, messages)))
+        case Left("Individual details not found in cache") => catchAllError(request, messages)
+        case _ => catchAllError(request, messages)
       }
     }
   }
+
+  private def catchAllError(request: Request[_], messages: Messages)  =
+    Future.successful(InternalServerError(
+      technicalIssuesView("Failed to get individual details from cache")(request, frontendAppConfig, messages)))
 
   private def isMobileDisplay(request: UserRequestNew[AnyContent]): Boolean = {
     val strUserAgent = request.headers.get("http_user_agent")

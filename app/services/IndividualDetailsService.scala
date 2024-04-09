@@ -25,7 +25,6 @@ import play.api.http.Status.OK
 import repositories.IndividualDetailsRepoTrait
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 
-import java.util.UUID
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 

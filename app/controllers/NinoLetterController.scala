@@ -17,6 +17,7 @@
 package controllers
 
 import config.FrontendAppConfig
+import controllers.auth.AuthContext
 import models.individualDetails.IndividualDetailsDataCache
 import org.apache.xmlgraphics.util.MimeConstants
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
@@ -24,7 +25,6 @@ import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
 import play.api.{Configuration, Environment}
 import services.{AuditService, IndividualDetailsService}
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import util.{AuditUtils, XmlFoToPDF}
@@ -66,11 +66,15 @@ class NinoLetterController @Inject()(
             LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
             true,
             formattedNino)(authContext.request, messages)))
-        case Left("Individual details not found in cache") => Future.successful(InternalServerError(
-          technicalIssuesView("Failed to get individual details from cache")(authContext.request, frontendAppConfig, messages)))
+        case Left("Individual details not found in cache") => catchAllError(authContext, messages)
+        case _ => catchAllError(authContext, messages)
       }
     }
   }
+
+  private def catchAllError(authContext: AuthContext[AnyContent], messages: Messages)  =
+    Future.successful(InternalServerError(
+      technicalIssuesView("Failed to get individual details from cache")(authContext.request, frontendAppConfig, messages)))
 
 
   def saveNationalInsuranceNumberAsPdf: Action[AnyContent] = authorisedAsFMNUser async {
@@ -86,8 +90,8 @@ class NinoLetterController @Inject()(
           Future.successful(Ok(pdf).as(MimeConstants.MIME_PDF)
             .withHeaders(CONTENT_TYPE -> "application/x-download", CONTENT_DISPOSITION -> s"attachment; filename=${filename.replaceAll(" ", "-")}.pdf"))
         }
-        case Left("Individual details not found in cache") => Future.successful(InternalServerError(
-          technicalIssuesView("Failed to get individual details from cache")(authContext.request, frontendAppConfig, messages)))
+        case Left("Individual details not found in cache") => catchAllError(authContext, messages)
+        case _ => catchAllError(authContext, messages)
 
       }
     }

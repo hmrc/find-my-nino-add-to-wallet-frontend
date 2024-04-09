@@ -16,21 +16,19 @@
 
 package util
 
-import models.PersonDetails
 import models.individualDetails.IndividualDetailsDataCache
+import org.apache.fop.apps._
+import org.apache.fop.events.model.EventSeverity
+import org.apache.fop.events.{Event, EventFormatter, EventListener}
+import org.apache.xmlgraphics.util.MimeConstants
+import play.api.Logging
+import play.api.i18n.Messages
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, File}
 import javax.inject.{Inject, Singleton}
 import javax.xml.transform.sax.SAXResult
-import javax.xml.transform.{ErrorListener, Transformer, TransformerException, TransformerFactory}
 import javax.xml.transform.stream.StreamSource
-import org.apache.fop.apps._
-import org.apache.xmlgraphics.util.MimeConstants
-import org.apache.fop.events.{Event, EventFormatter, EventListener}
-import org.apache.fop.events.model.EventSeverity
-import play.api.Logging
-import play.api.i18n.Messages
-
+import javax.xml.transform.{ErrorListener, Transformer, TransformerException, TransformerFactory}
 import scala.xml.PrettyPrinter
 
 @Singleton

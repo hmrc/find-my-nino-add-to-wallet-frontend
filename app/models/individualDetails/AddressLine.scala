@@ -16,10 +16,10 @@
 
 package models.individualDetails
 
-import play.api.libs.json.Json
+import play.api.libs.json.{Format, Json}
 
 final case class AddressLine(value: String) extends AnyVal
 
 object AddressLine {
-  implicit val format = Json.valueFormat[AddressLine]
+  implicit val format: Format[AddressLine] = Json.valueFormat[AddressLine]
 }

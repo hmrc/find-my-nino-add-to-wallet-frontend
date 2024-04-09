@@ -18,7 +18,7 @@ package models.individualDetails
 
 import org.apache.commons.lang3.StringUtils
 import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
-import play.api.libs.json.{JsObject, OFormat, __}
+import play.api.libs.json.{OFormat, __}
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats.instantFormat
 
 import java.time.{Instant, LocalDateTime, ZoneId, ZoneOffset}

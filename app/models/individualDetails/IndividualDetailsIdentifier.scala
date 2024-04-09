@@ -16,7 +16,7 @@
 
 package models.individualDetails
 
-import play.api.libs.json.{JsPath, Json, Reads, Writes}
+import play.api.libs.json.{Format, JsPath, Json, Reads, Writes}
 
 import scala.util.matching.Regex
 
@@ -53,13 +53,13 @@ object IndividualDetailsIdentifier {
 }
 
 object IndividualDetailsNino {
-  implicit val format = Json.valueFormat[IndividualDetailsNino]
+  implicit val format: Format[IndividualDetailsNino] = Json.valueFormat[IndividualDetailsNino]
 }
 
 object ChildReferenceNumber {
-  implicit val format = Json.valueFormat[ChildReferenceNumber]
+  implicit val format: Format[ChildReferenceNumber] = Json.valueFormat[ChildReferenceNumber]
 }
 
 object TemporaryReferenceNumber {
-  implicit val tempFormat = Json.valueFormat[TemporaryReferenceNumber]
+  implicit val tempFormat: Format[TemporaryReferenceNumber] = Json.valueFormat[TemporaryReferenceNumber]
 }

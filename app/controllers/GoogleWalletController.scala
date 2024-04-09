@@ -18,10 +18,10 @@ package controllers
 
 import config.FrontendAppConfig
 import connectors.{CitizenDetailsConnector, GoogleWalletConnector}
-import controllers.auth.requests.{UserRequest, UserRequestNew}
+import controllers.auth.AuthContext
 import models.individualDetails.IndividualDetailsDataCache
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
-import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents, Request}
+import play.api.mvc._
 import play.api.{Configuration, Environment}
 import services.{AuditService, IndividualDetailsService}
 import uk.gov.hmrc.auth.core.AuthConnector
@@ -66,12 +66,16 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
           for{
             pId: Some[String] <- googleWalletConnector.createGooglePass(fullName, formattedNino)
           } yield Ok(view(pId.value, isMobileDisplay(authContext.request))(authContext.request, messages))
-        case Left("Individual details not found in cache") => Future.successful(InternalServerError(
-          technicalIssuesView("Failed to get individual details from cache")(authContext.request, frontendAppConfig, messages)))
+        case Left("Individual details not found in cache") => catchAllError(authContext, messages)
+        case _ => catchAllError(authContext, messages)
 
       }
     }
   }
+
+  private def catchAllError(authContext: AuthContext[AnyContent], messages: Messages)  =
+    Future.successful(InternalServerError(
+      technicalIssuesView("Failed to get individual details from cache")(authContext.request, frontendAppConfig, messages)))
 
   private def isMobileDisplay(request: Request[AnyContent]): Boolean = {
     // Display wallet options differently on mobile to pc
@@ -103,8 +107,8 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
               Redirect(data)
             case _ => NotFound(passIdNotFoundView()(authContext.request, messages, ec))
           }
-        case Left("Individual details not found in cache") => Future.successful(InternalServerError(
-          technicalIssuesView("Failed to get individual details from cache")(authContext.request, frontendAppConfig, messages)))
+        case Left("Individual details not found in cache") => catchAllError(authContext, messages)
+        case _ => catchAllError(authContext, messages)
       }
     }
   }
@@ -122,8 +126,8 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
             case _ => NotFound(qrCodeNotFoundView()(authContext.request, messages, ec))
 
           }
-        case Left("Individual details not found in cache") => Future.successful(InternalServerError(
-          technicalIssuesView("Failed to get individual details from cache")(authContext.request, frontendAppConfig, messages)))
+        case Left("Individual details not found in cache") => catchAllError(authContext, messages)
+        case _ => catchAllError(authContext, messages)
       }
     }
   }

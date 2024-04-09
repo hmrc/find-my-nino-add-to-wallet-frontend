@@ -23,7 +23,7 @@ import java.time.LocalDate
 
 final case class NameSequenceNumber(value: Int) extends AnyVal
 object NameSequenceNumber {
-  implicit val format = Json.valueFormat[NameSequenceNumber]
+  implicit val format: Format[NameSequenceNumber] = Json.valueFormat[NameSequenceNumber]
 }
 sealed trait NameType
 object NameType {
@@ -42,7 +42,7 @@ object NameType {
     case KnownAsName => 2
   })
 
-  implicit val format = Format[NameType](reads, writes)
+  implicit val format: Format[NameType] = Format[NameType](reads, writes)
 }
 
 sealed trait TitleType
@@ -80,36 +80,36 @@ object TitleType {
 
 final case class RequestedName(value: String) extends AnyVal
 object RequestedName {
-  implicit val format = Json.valueFormat[RequestedName]
+  implicit val format: Format[RequestedName] = Json.valueFormat[RequestedName]
 }
 final case class NameStartDate(value: LocalDate) extends AnyVal
 object NameStartDate {
-  implicit val format = Json.valueFormat[NameStartDate]
+  implicit val format: Format[NameStartDate] = Json.valueFormat[NameStartDate]
 }
 final case class NameEndDate(value: LocalDate) extends AnyVal
 object NameEndDate {
-  implicit val format = Json.valueFormat[NameEndDate]
+  implicit val format: Format[NameEndDate] = Json.valueFormat[NameEndDate]
 }
 final case class OtherTitle(value: String) extends AnyVal
 object OtherTitle {
-  implicit val format = Json.valueFormat[OtherTitle]
+  implicit val format: Format[OtherTitle] = Json.valueFormat[OtherTitle]
 }
 final case class Honours(value: String) extends AnyVal
 object Honours {
-  implicit val format = Json.valueFormat[Honours]
+  implicit val format: Format[Honours] = Json.valueFormat[Honours]
 }
 final case class FirstForename(value: String) extends AnyVal
 object FirstForename {
-  implicit val format = Json.valueFormat[FirstForename]
+  implicit val format: Format[FirstForename] = Json.valueFormat[FirstForename]
 }
 final case class SecondForename(value: String) extends AnyVal
 object SecondForename {
-  implicit val format = Json.valueFormat[SecondForename]
+  implicit val format: Format[SecondForename] = Json.valueFormat[SecondForename]
 }
 final case class Surname(value: String) extends AnyVal
 
 object Surname {
-  implicit val format = Json.valueFormat[Surname]
+  implicit val format: Format[Surname] = Json.valueFormat[Surname]
 }
 
 final case class Name(

@@ -17,12 +17,10 @@
 package controllers
 
 import base.SpecBase
-import connectors.{CitizenDetailsConnector, PersonDetailsSuccessResponse}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject.bind
-import play.api.libs.json.{JsString, Json}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import services.IndividualDetailsService
@@ -32,7 +30,6 @@ import util.Stubs.userLoggedInFMNUser
 import util.TestData.NinoUser
 import views.html.print.PrintNationalInsuranceNumberView
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class NinoLetterControllerSpec extends SpecBase with CDFixtures with MockitoSugar {

@@ -16,17 +16,17 @@
 
 package connectors
 
-import config.FrontendAppConfig
-import util.WireMockHelper
-import org.mockito.MockitoSugar._
-import play.api.libs.json.{JsValue, Json}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
-import org.scalatestplus.mockito.MockitoSugar
-import play.api.test.{DefaultAwaitTimeout, Injecting}
-import org.mockito.ArgumentMatchers.any
-import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
-
-import scala.concurrent.Future
+//import config.FrontendAppConfig
+//import util.WireMockHelper
+//import org.mockito.MockitoSugar._
+//import play.api.libs.json.{JsValue, Json}
+//import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
+//import org.scalatestplus.mockito.MockitoSugar
+//import play.api.test.{DefaultAwaitTimeout, Injecting}
+//import org.mockito.ArgumentMatchers.any
+//import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
+//
+//import scala.concurrent.Future
 
 //class GovUKWalletSMNConnectorSpec extends ConnectorSpec with WireMockHelper
 //  with MockitoSugar

@@ -29,6 +29,7 @@ import models.Person
 import play.api.i18n.MessagesApi
 import play.api.i18n.I18nSupport
 
+// NOT in use, since the deprecation of CitizenDetails usage
 class GetPersonDetailsFromAuthAction @Inject()(cc: ControllerComponents,
                                         val messagesApi: MessagesApi,
                                         redirectView: RedirectToPostalFormView

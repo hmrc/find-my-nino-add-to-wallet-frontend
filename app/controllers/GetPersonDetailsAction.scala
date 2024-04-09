@@ -32,7 +32,7 @@ import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import views.html.RedirectToPostalFormView
 
 import scala.concurrent.{ExecutionContext, Future}
-
+// NOT in use, since the deprecation of CitizenDetails usage
 class GetPersonDetailsAction @Inject()(
                                         citizenDetailsConnector: CitizenDetailsConnector,
                                         cc: ControllerComponents,

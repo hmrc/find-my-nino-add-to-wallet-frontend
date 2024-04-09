@@ -56,14 +56,14 @@ class StoreMyNinoController @Inject()(
 
   def onPageLoad: Action[AnyContent] = authorisedAsFMNUser andThen getIndividualDetailsAction async {
     implicit request => {
-      //auditService.audit(AuditUtils.buildAuditEvent(request.personDetails, "ViewNinoLanding", frontendAppConfig.appName, None))
+
+      implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
+      implicit val messages: Messages = cc.messagesApi.preferred(request)
+
       val fullName: String = request.individualDetails.getFullName
       val nino: String = request.nino.map(_.formatted).getOrElse("")
       val googleIdf = googleWalletConnector.createGooglePass(fullName, nino)
       val appleIdf = appleWalletConnector.createApplePass(fullName, nino)
-
-      implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
-      implicit val messages: Messages = cc.messagesApi.preferred(request)
 
       individualDetailsService.getIdDataFromCache(nino).flatMap {
         case Right(individualDetailsDataCache) =>
@@ -71,7 +71,7 @@ class StoreMyNinoController @Inject()(
           auditSMNLandingPage("ViewNinoLanding", individualDetailsDataCache, hc)
           googleIdf.flatMap { googleId =>
             appleIdf.map { appleId =>
-              Ok(view(appleId.value, googleId.value, nino, isMobileDisplay(request)))
+              Ok(view(appleId.value, googleId.value, nino, isMobileDisplay(request))(request, messages))
             }
           }
         case Left("Individual details not found in cache") => Future.successful(InternalServerError(

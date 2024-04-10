@@ -19,7 +19,6 @@ package controllers
 import base.SpecBase
 import connectors.{AppleWalletConnector, IdentityVerificationFrontendConnector}
 import controllers.auth.requests.UserRequestNew
-import models.individualDetails._
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.{reset, when}
@@ -39,7 +38,6 @@ import util.TestData.{NinoUser, NinoUser_With_CL50}
 import views.html._
 import views.html.identity.TechnicalIssuesView
 
-import java.time.LocalDate
 import java.util.Base64
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future

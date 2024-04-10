@@ -18,20 +18,21 @@ package util
 
 import base.SpecBase
 import org.scalatestplus.mockito.MockitoSugar
-import play.api.i18n.MessagesApi
+import play.api.i18n.{Messages, MessagesApi}
+import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import util.Fixtures.{fakeIndividualDetails, fakeIndividualDetailsDataCache}
 
 import scala.xml.Utility.trim
-import scala.xml.XML
+import scala.xml.{Elem, XML}
 import java.nio.charset.StandardCharsets
 
 class XmlFoToPDFSpec extends SpecBase with MockitoSugar with CDFixtures {
   implicit val messagesApi: MessagesApi = app.injector.instanceOf[MessagesApi]
-  implicit val request = FakeRequest()
-  val messages = messagesApi.preferred(request)
-  
-  val expectedXML = <root>
+  implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
+  val messages: Messages = messagesApi.preferred(request)
+
+  val expectedXML: Elem = <root>
     <initials-name>FML</initials-name>
     <full-name>Dr Firstname Middlename Lastname Phd.</full-name>
     <address>

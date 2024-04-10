@@ -36,7 +36,6 @@ import util.{CDFixtures, Fixtures, UserDetails}
 import views.html.identity._
 import cats.instances.future._
 import models.{ActivatedOnlineFilerSelfAssessmentUser, PersonDetails, SelfAssessmentUserType}
-import org.mockito.Mockito.verify
 import uk.gov.hmrc.domain.{Nino, SaUtr, SaUtrGenerator}
 import util.Fixtures.buildFakeRequestWithAuth
 
@@ -117,21 +116,7 @@ class ApplicationControllerSpec extends SpecBase with CDFixtures with MockitoSug
 
   "ApplicationController" - {
 
-
-
-
     "Calling uplift" - {
-
-      "call the uplift method" in new LocalSetup {
-        // Create a mock instance of ApplicationController
-        val mockController = mock[ApplicationController]
-
-        // Call the method you want to test
-        val result = routeWrapper(buildFakeRequestWithAuth("GET", "/save-your-national-insurance-number/do-uplift?redirectUrl='/save-your-national-insurance-number'")).get
-
-        // Verify that the uplift method was called
-        verify(mockController).uplift(None)
-      }
 
       "return BAD_REQUEST status when completionURL is empty" in new LocalSetup {
 
@@ -296,8 +281,6 @@ class ApplicationControllerSpec extends SpecBase with CDFixtures with MockitoSug
         status(result) mustBe BAD_REQUEST
 
       }
-
-      ""
     }
   }
 }

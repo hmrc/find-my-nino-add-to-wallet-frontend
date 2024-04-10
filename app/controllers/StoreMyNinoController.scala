@@ -61,17 +61,17 @@ class StoreMyNinoController @Inject()(
       implicit val messages: Messages = cc.messagesApi.preferred(request)
 
       val fullName: String = request.individualDetails.getFullName
-      val nino: String = request.nino.map(_.formatted).getOrElse("")
-      val googleIdf = googleWalletConnector.createGooglePass(fullName, nino)
-      val appleIdf = appleWalletConnector.createApplePass(fullName, nino)
+      val ninoFormatted: String = request.nino.map(_.formatted).getOrElse("")
+      val googleIdf = googleWalletConnector.createGooglePass(fullName, ninoFormatted)
+      val appleIdf = appleWalletConnector.createApplePass(fullName, ninoFormatted)
 
-      individualDetailsService.getIdDataFromCache(nino).flatMap {
+      individualDetailsService.getIdDataFromCache(ninoFormatted.replaceAll(" ","")).flatMap {
         case Right(individualDetailsDataCache) =>
           //auditService.audit(AuditUtils.buildAuditEvent(request.personDetails, "ViewNinoLanding", frontendAppConfig.appName, None))
           auditSMNLandingPage("ViewNinoLanding", individualDetailsDataCache, hc)
           googleIdf.flatMap { googleId =>
             appleIdf.map { appleId =>
-              Ok(view(appleId.value, googleId.value, nino, isMobileDisplay(request))(request, messages))
+              Ok(view(appleId.value, googleId.value, ninoFormatted, isMobileDisplay(request))(request, messages))
             }
           }
         case Left("Individual details not found in cache") => catchAllError(request, messages)

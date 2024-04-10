@@ -98,13 +98,13 @@ class SpecBase extends WireMockSupport with MockitoSugar with GuiceOneAppPerSuit
 
   //implicit lazy val ec = app.injector.instanceOf[ExecutionContext]
 
-  lazy val frontendAppConfig = app.injector.instanceOf[FrontendAppConfig]
+  lazy val frontendAppConfig: FrontendAppConfig = app.injector.instanceOf[FrontendAppConfig]
 
-  lazy val config = app.injector.instanceOf[Configuration]
+  lazy val config: Configuration = app.injector.instanceOf[Configuration]
 
-  implicit lazy val cc = app.injector.instanceOf[MessagesControllerComponents]
+  implicit lazy val cc: MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
 
-  implicit lazy val env = app.injector.instanceOf[Environment]
+  implicit lazy val env: Environment = app.injector.instanceOf[Environment]
 
   def buildFakeRequestWithSessionId(method: String) =
     FakeRequest(method, "/save-your-national-insurance-number").withSession("sessionId" -> "FAKE_SESSION_ID")

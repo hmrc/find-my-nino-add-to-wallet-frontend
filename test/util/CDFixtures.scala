@@ -312,7 +312,7 @@ object Fixtures extends CDFixtures  {
   val fakeName: Name = models.individualDetails.Name(
     nameSequenceNumber = NameSequenceNumber(1),
     nameType = NameType.RealName,
-    titleType = Some(TitleType.Dr),
+    titleType = Some(TitleType.Mr),
     requestedName = Some(RequestedName("Firstname Middlename")),
     nameStartDate = NameStartDate(LocalDate.of(2000, 1, 1)),
     nameEndDate = Some(NameEndDate(LocalDate.of(2022, 12, 31))),
@@ -344,8 +344,8 @@ object Fixtures extends CDFixtures  {
   )
 
   val fakeIndividualDetails: IndividualDetails = IndividualDetails(
-    ninoWithoutSuffix = "AB123456",
-    ninoSuffix = Some(NinoSuffix("C")),
+    ninoWithoutSuffix = "AA000003",
+    ninoSuffix = Some(NinoSuffix("B")),
     accountStatusType = Some(AccountStatusType.FullLive),
     dateOfEntry = Some(LocalDate.of(2000, 1, 1)),
     dateOfBirth = LocalDate.of(1990, 1, 1),
@@ -361,13 +361,14 @@ object Fixtures extends CDFixtures  {
 
 
   val fakeIndividualDetailsData = IndividualDetailsData(
+    title = "Mr",
     fullName = "Dr Firstname Middlename Lastname Phd.",
     firstForename = "Firstname",
     surname = "Lastname",
     initialsName = "FML",
     dateOfBirth = "01/01/1990",
     postCode = "AA1 1AA",
-    nino = "AB123456C",
+    nino = "AA000003B",
     address = Some(fakeAddress)
   )
 

@@ -24,6 +24,7 @@ import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats.instantFormat
 import java.time.{Instant, LocalDateTime, ZoneId, ZoneOffset}
 
 case class IndividualDetailsData(
+                              title: String,
                               fullName: String,
                               firstForename: String,
                               surname: String,
@@ -42,7 +43,8 @@ case class IndividualDetailsDataCache(
 
 object IndividualDetailsDataCache {
   private val individualDetailsDataFormat: OFormat[IndividualDetailsData] = {
-    ( (__ \ "fullName").format[String]
+    ( (__ \ "title").format[String]
+      ~ (__ \ "fullName").format[String]
       ~ (__ \ "firstForename").format[String]
       ~ (__ \ "surname").format[String]
       ~ (__ \ "initialsName").format[String]
@@ -61,6 +63,11 @@ object IndividualDetailsDataCache {
   }
 
   implicit class IndividualDetailsDataOps(private val individualDetailsData:IndividualDetailsDataCache) extends AnyVal {
+
+    def getTitle: String = individualDetailsData.individualDetailsData match {
+      case Some(id) => id.title
+      case _        => StringUtils.EMPTY
+    }
 
     def getFullName: String = individualDetailsData.individualDetailsData match {
       case Some(id) => id.fullName

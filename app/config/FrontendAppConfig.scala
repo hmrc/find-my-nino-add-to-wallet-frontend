@@ -99,5 +99,6 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
   lazy val individualDetailsPort: String = configuration.get[String]("microservice.services.individual-details.port")
   val individualDetailsServiceUrl: String = s"$individualDetailsProtocol://$individualDetailsHost:$individualDetailsPort"
 
+  lazy val govukWalletEnabled = configuration.getOptional[Boolean]("features.govuk-wallet-enabled").getOrElse(false)
 
 }

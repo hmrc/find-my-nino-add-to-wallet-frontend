@@ -72,7 +72,11 @@
     <ul class="govuk-list govuk-list--bullet govuk-list--spaced">
         <li><a class="govuk-link" href='/@frontendAppConfig.serviceName/print-letter'>@messages("storeMyNino.ninoLetter.viewOrPrint")</a></li>
         <li><a class="govuk-link" href='/@frontendAppConfig.serviceName/print-letter/save-letter-as-pdf' download="">@messages("storeMyNino.ninoLetter.saveAsPDF")</a></li>
+        @if(frontendAppConfig.govukWalletEnabled) {
+        <li><a class="govuk-link" href='/@frontendAppConfig.serviceName/govuk-wallet'>GOV.UK Wallet</a></li>
+        }
     </ul>
+
 
     <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
 

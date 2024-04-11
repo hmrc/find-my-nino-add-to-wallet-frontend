@@ -106,7 +106,6 @@ class AppleWalletController @Inject()(val citizenDetailsConnector: CitizenDetail
 
 
   private def isMobileDisplay(request: Request[AnyContent]): Boolean = {
-    // Display wallet options differently on mobile to pc
     val strUserAgent = request.headers
       .get("http_user_agent")
       .getOrElse(request.headers.get("User-Agent")

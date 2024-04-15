@@ -14,28 +14,12 @@
  * limitations under the License.
  */
 
-/*
- * Copyright 2024 HM Revenue & Customs
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package models.encryption.id
 
 import models.Address
 import models.encryption.EncryptedValueFormat._
-import models.individualDetails.{IndividualDetailsData, IndividualDetailsDataCache}
-import play.api.libs.json.{OFormat, __}
+import models.individualDetails.{AddressData, AddressLine, AddressPostcode, IndividualDetailsData, IndividualDetailsDataCache}
+import play.api.libs.json.{Format, Json, OFormat, __}
 import uk.gov.hmrc.crypto.{EncryptedValue, SymmetricCryptoFactory}
 import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats.instantFormat
@@ -62,51 +46,44 @@ case class EncryptedAddressData(addressLine1: EncryptedAddressLine,
                                 addressLine3: Option[EncryptedAddressLine],
                                 addressLine4: Option[EncryptedAddressLine],
                                 addressLine5: Option[EncryptedAddressLine],
-                                addressPostcode: Option[String])
+                                addressPostcode: Option[EncryptedAddressPostcode])
 
 case class EncryptedAddressLine(value: EncryptedValue)
 case class EncryptedAddressPostcode(value: EncryptedValue)
 
 object EncryptedIndividualDetailsDataCache {
 
-  private val encryptedIndividualDetailsDataFormat: OFormat[EncryptedIndividualDetailsData] = {
+  implicit val encryptedIndividualDetailsDataFormat: OFormat[EncryptedIndividualDetailsData] = {
     ((__ \ "fullName").format[EncryptedValue]
       ~ (__ \ "firstForename").format[EncryptedValue]
       ~ (__ \ "surname").format[EncryptedValue]
       ~ (__ \ "initialsName").format[EncryptedValue]
       ~ (__ \ "nino").format[String]
-      ~ (__ \ "address").format[EncryptedAddressData]
+      ~ (__ \ "address").formatNullable[EncryptedAddressData]
       )(EncryptedIndividualDetailsData.apply, unlift(EncryptedIndividualDetailsData.unapply))
   }
 
 
-  val encryptedIndividualDetailsDataCacheFormat: OFormat[EncryptedIndividualDetailsDataCache] = {
+  implicit val encryptedIndividualDetailsDataCacheFormat: OFormat[EncryptedIndividualDetailsDataCache] = {
     ((__ \ "id").format[String]
       ~ (__ \ "individualDetails").formatNullable[EncryptedIndividualDetailsData](encryptedIndividualDetailsDataFormat)
       ~ (__ \ "lastUpdated").format[Instant](instantFormat)
       )(EncryptedIndividualDetailsDataCache.apply, unlift(EncryptedIndividualDetailsDataCache.unapply))
   }
 
-  private val encryptedAddressDataFormat: OFormat[EncryptedAddressData] = {
+  implicit val encryptedAddressDataFormat: OFormat[EncryptedAddressData] = {
     ((__ \ "addressLine1").format[EncryptedAddressLine]
     ~ (__ \ "addressLine2").format[EncryptedAddressLine]
     ~ (__ \ "addressLine3").formatNullable[EncryptedAddressLine]
     ~ (__ \ "addressLine4").formatNullable[EncryptedAddressLine]
     ~ (__ \ "addressLine5").formatNullable[EncryptedAddressLine]
-    ~ (__ \ "postcode").formatNullable[]
+    ~ (__ \ "postcode").formatNullable[EncryptedAddressPostcode]
       )(EncryptedAddressData.apply, unlift(EncryptedAddressData.unapply))
   }
 
-  private val encryptedAddressLineFormat: OFormat[EncryptedAddressLine] = {
-    ((__ \ "value").format[EncryptedValue]
-      )(EncryptedAddressLine.apply, unlift(EncryptedAddressLine.unapply))
-  }
+  implicit val formatEncryptedAddressLine: Format[EncryptedAddressLine] = Json.format[EncryptedAddressLine]
 
-  private val encryptedAddressPostcodeFormat: OFormat[EncryptedAddressPostcode] = {
-    ((__ \ "value").format[EncryptedValue]
-      )(EncryptedAddressPostcode.apply, unlift(EncryptedAddressLine.unapply))
-  }
-
+  implicit val formatEncryptedAddressPostcode: Format[EncryptedAddressPostcode] = Json.format[EncryptedAddressPostcode]
 
   def encryptField(fieldValue: String, key: String): EncryptedValue = {
     SymmetricCryptoFactory.aesGcmAdCrypto(key).encrypt(fieldValue, key)
@@ -127,8 +104,17 @@ object EncryptedIndividualDetailsDataCache {
             surname = e(id.surname),
             initialsName = e(id.initialsName),
             nino = id.nino,
-            address =
-          )
+            address = id.address.map(
+              addr =>
+                EncryptedAddressData(
+                  EncryptedAddressLine(e(addr.addressLine1.value)),
+                  EncryptedAddressLine(e(addr.addressLine2.value)),
+                  addr.addressLine3.map(x => EncryptedAddressLine(e(x.value))),
+                  addr.addressLine4.map(x => EncryptedAddressLine(e(x.value))),
+                  addr.addressLine5.map(x => EncryptedAddressLine(e(x.value))),
+                  addr.addressPostcode.map(x => EncryptedAddressPostcode(e(x.value)))
+            )
+          ))
       }
     )
   }
@@ -148,7 +134,15 @@ object EncryptedIndividualDetailsDataCache {
             surname = d(id.surname),
             initialsName = d(id.initialsName),
             nino = id.nino,
-
+            address =
+              AddressData(
+              AddressLine(d(id.address..value)),
+            AddressLine(d(addr.addressLine2.value)),
+            addr.addressLine3.map(x => AddressLine(d(x.value))),
+            addr.addressLine4.map(x => AddressLine(d(x.value))),
+            addr.addressLine5.map(x => AddressLine(d(x.value))),
+            addr.addressPostcode.map(x => AddressPostcode(d(x.value)))
+          )
           )
       }
     )

@@ -28,10 +28,8 @@ case class IndividualDetailsData(
                               firstForename: String,
                               surname: String,
                               initialsName: String,
-                              dateOfBirth: String,
-                              postCode: String,
                               nino: String,
-                              address: Option[Address]
+                              address: Option[AddressData]
                               )
 
 case class IndividualDetailsDataCache(
@@ -46,10 +44,8 @@ object IndividualDetailsDataCache {
       ~ (__ \ "firstForename").format[String]
       ~ (__ \ "surname").format[String]
       ~ (__ \ "initialsName").format[String]
-      ~ (__ \ "dateOfBirth").format[String]
-      ~ (__ \ "postCode").format[String]
       ~ (__ \ "nino").format[String]
-      ~ (__ \ "address").formatNullable[Address]
+      ~ (__ \ "address").formatNullable[AddressData]
       )(IndividualDetailsData.apply, unlift(IndividualDetailsData.unapply))
   }
 
@@ -72,11 +68,6 @@ object IndividualDetailsDataCache {
       case _        => StringUtils.EMPTY
     }
 
-    def getPostCode: String = individualDetailsData.individualDetailsData match {
-      case Some(id) => id.postCode
-      case _        => StringUtils.EMPTY
-    }
-
     def getFirstForename: String = individualDetailsData.individualDetailsData match {
       case Some(id) => id.firstForename
       case _        => StringUtils.EMPTY
@@ -87,17 +78,12 @@ object IndividualDetailsDataCache {
       case _        => StringUtils.EMPTY
     }
 
-    def dateOfBirth: String = individualDetailsData.individualDetailsData match {
-      case Some(id) => id.dateOfBirth
-      case _        => StringUtils.EMPTY
-    }
-
     def getInitialsName: String = individualDetailsData.individualDetailsData match {
       case Some(id) => id.initialsName
       case _        => StringUtils.EMPTY
     }
 
-    def getAddress: Option[Address] = individualDetailsData.individualDetailsData match {
+    def getAddress: Option[AddressData] = individualDetailsData.individualDetailsData match {
       case Some(id) => id.address
       case _        => None
     }
@@ -115,6 +101,11 @@ object IndividualDetailsDataCache {
         case _ => List.empty
       }
       case _ => List.empty
+    }
+
+    def getPostCode: Option[String] = individualDetailsData.individualDetailsData match {
+      case Some(id) => id.address.flatMap(addr => addr.addressPostcode.map(postcode => postcode.value))
+      case _ => Some(StringUtils.EMPTY)
     }
 
   }

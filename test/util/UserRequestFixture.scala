@@ -19,7 +19,6 @@ package util
 import controllers.auth.requests.UserRequest
 import models._
 import play.api.mvc.Request
-import uk.gov.hmrc.auth.core.retrieve.Name
 import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolments}
 import uk.gov.hmrc.domain.Nino
 
@@ -27,7 +26,6 @@ object UserRequestFixture {
 
   def buildUserRequest[A](
                            nino: Option[Nino] = Some(Fixtures.fakeNino),
-                           userName: Option[UserName] = Some(UserName(Name(Some("Firstname"), Some("Lastname")))),
                            confidenceLevel: ConfidenceLevel = ConfidenceLevel.L200,
                            personDetails: PersonDetails = Fixtures.buildPersonDetails,
                            enrolments: Enrolments,

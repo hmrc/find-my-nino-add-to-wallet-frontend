@@ -18,7 +18,7 @@ package util
 
 object TestData {
 
-  val allEnrolments = """
+  val allEnrolments: String = """
                         |  "allEnrolments": [{
                         |    "key": "HMRC-PT",
                         |    "identifiers": [{ "key": "NINO", "value": "AA000003B" }],
@@ -35,8 +35,7 @@ object TestData {
        |	"internalId": "Int-8612ba91-5581-411d-9d32-fb2de937a565",
        | "confidenceLevel": 50,
        | "affinityGroup": "Individual",
-       | $allEnrolments,
-       | "optionalName" : {"name": "somename"}
+       | $allEnrolments
        |}
        |""".stripMargin
 
@@ -49,8 +48,7 @@ object TestData {
        |	"internalId": "Int-8612ba91-5581-411d-9d32-fb2de937a565",
        | "confidenceLevel": 200,
        | "affinityGroup": "Individual",
-       | $allEnrolments,
-       | "optionalName" : {"name": "somename"}
+       | $allEnrolments
        |}
        |""".stripMargin
 

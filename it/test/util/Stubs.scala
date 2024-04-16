@@ -27,7 +27,7 @@ object Stubs {
       |	"authorise": [{
       |		"authProviders": ["GovernmentGateway"]
       |	}],
-      |	"retrieve": ["nino", "credentialRole", "internalId", "confidenceLevel","affinityGroup", "allEnrolments", "optionalName" ]
+      |	"retrieve": ["nino", "credentialRole", "internalId", "confidenceLevel","affinityGroup", "allEnrolments" ]
       |}
       |""".stripMargin
 

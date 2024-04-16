@@ -19,18 +19,16 @@ package controllers
 import com.google.inject.Inject
 import controllers.auth.AuthContext
 import controllers.auth.requests.UserRequest
-import models.{PersonDetails, UserName}
+import models.PersonDetails
 import play.api.mvc._
 import uk.gov.hmrc.domain.Nino
-import views.html.RedirectToPostalFormView
 import scala.concurrent.{ExecutionContext, Future}
 import models.Person
 import play.api.i18n.MessagesApi
 import play.api.i18n.I18nSupport
 
 class GetPersonDetailsFromAuthAction @Inject()(cc: ControllerComponents,
-                                        val messagesApi: MessagesApi,
-                                        redirectView: RedirectToPostalFormView
+                                        val messagesApi: MessagesApi
                                       )(ec: ExecutionContext)
   extends ActionRefiner[AuthContext, UserRequest]
     with ActionFunction[AuthContext, UserRequest]
@@ -40,7 +38,6 @@ class GetPersonDetailsFromAuthAction @Inject()(cc: ControllerComponents,
     Future.successful(Right(
       UserRequest(
         Some(Nino(authContext.nino.nino)),
-        Some(UserName(authContext.name)),
         authContext.confidenceLevel,
         getPersonDetails(authContext),
         authContext.allEnrolments,
@@ -50,24 +47,14 @@ class GetPersonDetailsFromAuthAction @Inject()(cc: ControllerComponents,
   }
 
   private def getPersonDetails(authContext: AuthContext[_]): PersonDetails = {
-    val allNames: List[String] = List(authContext.name.name, authContext.name.lastName)
-                                  .flatten
-                                  .mkString(" ")
-                                  .split(' ')
-                                  .toList
-
-    val firstname:Option[String] = allNames.headOption
-    val lastName:Option[String] = allNames.lastOption
-    val middleNames:Option[String] = Some(allNames.drop(1).dropRight(1).mkString(" ")).collect{case x if x.length > 0 => x}
-
     PersonDetails(
       Person(
-        firstname,
-        middleNames,
-        lastName,
+        None,
+        None,
+        None,
         None, None, None, None, None,
         Some(Nino(authContext.nino.nino))
-      ), 
+      ),
       None,
       None
     )

@@ -35,7 +35,6 @@ object UserRequestFixture {
   ): UserRequest[A] =
     UserRequest(
       nino,
-      userName,
       confidenceLevel,
       personDetails,
       enrolments,

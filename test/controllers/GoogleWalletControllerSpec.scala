@@ -35,7 +35,6 @@ import util.CDFixtures
 import util.Fixtures.fakeIndividualDetailsDataCache
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
 import util.TestData.NinoUser
-import views.html.identity.TechnicalIssuesView
 import views.html._
 
 import java.util.Base64
@@ -90,8 +89,6 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
   lazy val redirectview = applicationWithConfig.injector.instanceOf[RedirectToPostalFormView]
   lazy val passIdNotFoundView = applicationWithConfig.injector.instanceOf[PassIdNotFoundView]
   lazy val qrCodeNotFoundView = applicationWithConfig.injector.instanceOf[QRCodeNotFoundView]
-  lazy val technicalIssuesView = applicationWithConfig.injector.instanceOf[TechnicalIssuesView]
-
 
   val fakeBase64String = "UEsDBBQACAgIABxqJlYAAAAAAA"
   val fakeGooglePassSaveUrl = "testURL"
@@ -118,13 +115,10 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
         val request = FakeRequest(GET, routes.GoogleWalletController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
-        status(result) mustEqual INTERNAL_SERVER_ERROR
-        contentAsString(result) mustEqual (technicalIssuesView("Failed to get individual details from cache")(request,
-          frontendAppConfig,
-          messages(application)))
-          .toString()
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        reset(mockIndividualDetailsService)
       }
-      reset(mockIndividualDetailsService)
     }
 
 

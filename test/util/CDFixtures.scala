@@ -168,7 +168,7 @@ trait BaseSpec
     with Injecting {
   this: Suite =>
 
-  implicit val hc: HeaderCarrier = HeaderCarrier()
+  implicit val hc = HeaderCarrier()
 
   val mockPartialRetriever = mock[FormPartialRetriever]
   when(mockPartialRetriever.getPartialContent(any(), any(), any())(any(), any())) thenReturn Html("")

@@ -40,6 +40,7 @@ import uk.gov.hmrc.domain.{Nino, SaUtr, SaUtrGenerator}
 import util.Fixtures.buildFakeRequestWithAuth
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class ApplicationControllerSpec extends SpecBase with CDFixtures with MockitoSugar {
 
@@ -66,7 +67,7 @@ class ApplicationControllerSpec extends SpecBase with CDFixtures with MockitoSug
   val mockIdentityVerificationFrontendService: IdentityVerificationFrontendService = mock[IdentityVerificationFrontendService]
 
   val pd = buildPersonDetails
-  implicit lazy val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
+  implicit lazy val ec = app.injector.instanceOf[ExecutionContext]
 
   trait LocalSetup {
 

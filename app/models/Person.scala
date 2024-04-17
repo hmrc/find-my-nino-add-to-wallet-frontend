@@ -31,16 +31,16 @@ case class Person(
                    dateOfBirth: Option[LocalDate],
                    nino: Option[Nino]
                  ) {
-  lazy val initialsName: String = initials
+  lazy val initialsName = initials
       .getOrElse(List(title, firstName.map(_.take(1)), middleName.map(_.take(1)), lastName)
       .flatten.mkString(" "))
 
-  lazy val shortName: Option[String] = for {
+  lazy val shortName    = for {
     f <- firstName
     l <- lastName
   } yield List(f, l).mkString(" ")
 
-  lazy val fullName: String = List(title, firstName, middleName, lastName, honours).flatten.mkString(" ")
+  lazy val fullName     = List(title, firstName, middleName, lastName, honours).flatten.mkString(" ")
 
 }
 
@@ -53,7 +53,7 @@ object Person {
     def familyName: String = person.lastName.getOrElse("")
   }
 
-  implicit val formats: OFormat[Person] = Json.format[Person]
+  implicit val formats = Json.format[Person]
 
 }
 

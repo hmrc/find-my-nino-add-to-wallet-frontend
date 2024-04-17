@@ -34,7 +34,7 @@ object SelfAssessmentUserType {
   val notEnrolledSa  = NotEnrolledSelfAssessmentUser.toString
   val nonFilerSa     = NonFilerSelfAssessmentUser.toString
 
-  implicit val writes: Writes[SelfAssessmentUserType] = new Writes[SelfAssessmentUserType] {
+  implicit val writes = new Writes[SelfAssessmentUserType] {
     override def writes(o: SelfAssessmentUserType): JsValue = o match {
       case ActivatedOnlineFilerSelfAssessmentUser(utr)       =>
         Json.obj("_type" -> JsString(activatedSa), "utr" -> JsString(utr.toString))
@@ -49,7 +49,7 @@ object SelfAssessmentUserType {
     }
   }
 
-  implicit val reads: Reads[SelfAssessmentUserType] = new Reads[SelfAssessmentUserType] {
+  implicit val reads = new Reads[SelfAssessmentUserType] {
     override def reads(json: JsValue): JsResult[SelfAssessmentUserType] =
       (json \ "_type", json \ "utr") match {
 

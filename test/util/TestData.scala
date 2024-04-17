@@ -18,7 +18,7 @@ package util
 
 object TestData {
 
-  val allEnrolments: String = """
+  val allEnrolments = """
     |  "allEnrolments": [{
     |    "key": "HMRC-PT",
     |    "identifiers": [{ "key": "NINO", "value": "AA000003B" }],
@@ -35,7 +35,8 @@ object TestData {
       |	"internalId": "Int-8612ba91-5581-411d-9d32-fb2de937a565",
       | "confidenceLevel": 50,
       | "affinityGroup": "Individual",
-      | $allEnrolments
+      | $allEnrolments,
+      | "optionalName" : {"name": "somename"}
       |}
       |""".stripMargin
 
@@ -48,7 +49,8 @@ object TestData {
        |	"internalId": "Int-8612ba91-5581-411d-9d32-fb2de937a565",
        | "confidenceLevel": 200,
        | "affinityGroup": "Individual",
-       | $allEnrolments
+       | $allEnrolments,
+       | "optionalName" : {"name": "somename"}
        |}
        |""".stripMargin
 
@@ -67,5 +69,6 @@ object TestData {
       |		"description": "ClaimantIsLockedOut"
       |	}
       |""".stripMargin
+
 
 }

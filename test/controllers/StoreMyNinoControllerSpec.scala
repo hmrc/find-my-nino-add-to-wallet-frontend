@@ -216,6 +216,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
         val result = route(application, request).value
         val userRequest = UserRequest(
           None,
+          None,
           ConfidenceLevel.L200,
           pd,
           Enrolments(Set(Enrolment("HMRC-PT"))),
@@ -267,6 +268,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         val userRequest = UserRequest(
+          None,
           None,
           ConfidenceLevel.L200,
           pd,

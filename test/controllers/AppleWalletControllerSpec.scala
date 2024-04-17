@@ -17,8 +17,7 @@
 package controllers
 
 import base.SpecBase
-import connectors.{CitizenDetailsConnector, IdentityVerificationFrontendConnector, PersonDetailsErrorResponse,
-  PersonDetailsSuccessResponse, AppleWalletConnector}
+import connectors.{CitizenDetailsConnector, IdentityVerificationFrontendConnector, PersonDetailsErrorResponse, PersonDetailsSuccessResponse, AppleWalletConnector}
 import controllers.auth.requests.UserRequest
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
@@ -119,6 +118,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
       reset(mockCitizenDetailsConnector)
     }
 
+
     "must return OK and the correct view for a GET" in {
       val application =
         applicationBuilderWithConfig()
@@ -203,6 +203,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
         val result = route(application, request).value
         val userRequest = UserRequest(
           None,
+          None,
           ConfidenceLevel.L200,
           pd,
           Enrolments(Set(Enrolment("HMRC-PT"))),
@@ -252,6 +253,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
         val result = route(application, request).value
         val userRequest = UserRequest(
           None,
+          None,
           ConfidenceLevel.L200,
           pd,
           Enrolments(Set(Enrolment("HMRC-PT"))),
@@ -298,6 +300,5 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
         status(result) mustEqual 500
       }
     }
-
   }
 }

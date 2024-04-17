@@ -21,7 +21,7 @@ import config.FrontendAppConfig
 import com.github.tomakehurst.wiremock.client.WireMock._
 import controllers.auth.requests.UserRequest
 import controllers.auth.routes
-import models.{Address, Person, PersonDetails}
+import models.{Address, Person, PersonDetails, UserName}
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.scalatest.Assertion
@@ -29,6 +29,7 @@ import play.api.i18n.{Lang, Messages, MessagesApi, MessagesImpl}
 import play.api.mvc.{AnyContentAsEmpty, Request}
 import play.api.test.FakeRequest
 import play.twirl.api.Html
+import uk.gov.hmrc.auth.core.retrieve.Name
 import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolment, Enrolments}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
@@ -82,12 +83,14 @@ class StoreMyNinoControllerISpec extends IntegrationSpecBase {
   trait LocalSetup {
     def buildUserRequest[A](
                              nino: Option[Nino] = Some(generatedNino),
+                             userName: Option[UserName] = Some(UserName(Name(Some("Firstname"), Some("Lastname")))),
                              confidenceLevel: ConfidenceLevel = ConfidenceLevel.L200,
                              personDetails: PersonDetails = fakePersonDetails,
                              request: Request[A] = FakeRequest().asInstanceOf[Request[A]]
                            ): UserRequest[A] =
       UserRequest(
         nino,
+        userName,
         confidenceLevel,
         personDetails,
         Enrolments(Set(Enrolment("HMRC-PT"))),

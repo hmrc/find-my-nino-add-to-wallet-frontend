@@ -23,6 +23,7 @@ import uk.gov.hmrc.domain.Nino
 
 final case class UserRequest[A](
   nino: Option[Nino],
+  retrievedName: Option[UserName],
   confidenceLevel: ConfidenceLevel,
   personDetails: PersonDetails,
   enrolments: Enrolments,

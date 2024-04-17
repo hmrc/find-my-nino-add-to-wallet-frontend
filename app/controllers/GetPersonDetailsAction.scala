@@ -21,7 +21,7 @@ import config.FrontendAppConfig
 import connectors.{CitizenDetailsConnector, PersonDetailsHiddenResponse, PersonDetailsNotFoundResponse, PersonDetailsSuccessResponse}
 import controllers.auth.AuthContext
 import controllers.auth.requests.UserRequest
-import models.PersonDetails
+import models.{PersonDetails, UserName}
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc.Results.{InternalServerError, Ok, NotFound}
 import play.api.mvc._
@@ -50,6 +50,7 @@ class GetPersonDetailsAction @Inject()(
         Right(
           UserRequest(
             Some(Nino(authContext.nino.nino)),
+            Some(UserName(authContext.name)),
             authContext.confidenceLevel,
             personDetails,
             authContext.allEnrolments,
@@ -65,13 +66,13 @@ class GetPersonDetailsAction @Inject()(
       HeaderCarrierConverter.fromRequestAndSession(authContext.request, authContext.request.session)
 
     implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
-    citizenDetailsConnector.personDetails(authContext.nino.nino).map {
-        case PersonDetailsSuccessResponse(pd) => Right(pd)
-        case PersonDetailsNotFoundResponse =>
-          Left(NotFound(redirectView()(authContext.request, frontendAppConfig, messages)))
-        case PersonDetailsHiddenResponse =>
-          Left(Ok(redirectView()(authContext.request, frontendAppConfig, messages)))
-        case _ => Left(InternalServerError(redirectView()(authContext.request, frontendAppConfig, messages)))
+        citizenDetailsConnector.personDetails(authContext.nino.nino).map {
+          case PersonDetailsSuccessResponse(pd) => Right(pd)
+          case PersonDetailsNotFoundResponse =>
+            Left(NotFound(redirectView()(authContext.request, frontendAppConfig, messages)))
+          case PersonDetailsHiddenResponse =>
+            Left(Ok(redirectView()(authContext.request, frontendAppConfig, messages)))
+          case _ => Left(InternalServerError(redirectView()(authContext.request, frontendAppConfig, messages)))
     }
   }
 

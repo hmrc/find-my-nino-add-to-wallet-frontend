@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ object Stubs {
       |	"authorise": [{
       |		"authProviders": ["GovernmentGateway"]
       |	}],
-      |	"retrieve": ["nino", "credentialRole", "internalId", "confidenceLevel","affinityGroup", "allEnrolments", "optionalName" ]
+      |	"retrieve": ["nino", "credentialRole", "internalId", "confidenceLevel","affinityGroup", "allEnrolments" ]
       |}
       |""".stripMargin
 

@@ -16,7 +16,6 @@
 
 package models.encryption.id
 
-import models.Address
 import models.encryption.EncryptedValueFormat._
 import models.individualDetails.{AddressData, AddressLine, AddressPostcode, IndividualDetailsData, IndividualDetailsDataCache}
 import play.api.libs.json.{Format, Json, OFormat, __}
@@ -41,19 +40,29 @@ case class EncryptedIndividualDetailsDataCache(
   lastUpdated: Instant = LocalDateTime.now(ZoneId.systemDefault()).toInstant(ZoneOffset.UTC)
 )
 
-case class EncryptedAddressData(addressLine1: EncryptedAddressLine,
+final case class EncryptedAddressData(addressLine1: EncryptedAddressLine,
                                 addressLine2: EncryptedAddressLine,
                                 addressLine3: Option[EncryptedAddressLine],
                                 addressLine4: Option[EncryptedAddressLine],
                                 addressLine5: Option[EncryptedAddressLine],
                                 addressPostcode: Option[EncryptedAddressPostcode])
 
-case class EncryptedAddressLine(value: EncryptedValue)
-case class EncryptedAddressPostcode(value: EncryptedValue)
+object EncryptedAddressData {
+  implicit val format: OFormat[EncryptedAddressData] = Json.format[EncryptedAddressData]
+}
+
+final case class EncryptedAddressLine(value: EncryptedValue)
+object EncryptedAddressLine {
+  implicit val format: Format[EncryptedAddressLine] = Json.valueFormat[EncryptedAddressLine]
+}
+final case class EncryptedAddressPostcode(value: EncryptedValue)
+object EncryptedAddressPostcode {
+  implicit val format: Format[EncryptedAddressPostcode] = Json.valueFormat[EncryptedAddressPostcode]
+}
 
 object EncryptedIndividualDetailsDataCache {
 
-  implicit val encryptedIndividualDetailsDataFormat: OFormat[EncryptedIndividualDetailsData] = {
+  private val encryptedIndividualDetailsDataFormat: OFormat[EncryptedIndividualDetailsData] = {
     ((__ \ "fullName").format[EncryptedValue]
       ~ (__ \ "firstForename").format[EncryptedValue]
       ~ (__ \ "surname").format[EncryptedValue]
@@ -64,26 +73,12 @@ object EncryptedIndividualDetailsDataCache {
   }
 
 
-  implicit val encryptedIndividualDetailsDataCacheFormat: OFormat[EncryptedIndividualDetailsDataCache] = {
+  val encryptedIndividualDetailsDataCacheFormat: OFormat[EncryptedIndividualDetailsDataCache] = {
     ((__ \ "id").format[String]
       ~ (__ \ "individualDetails").formatNullable[EncryptedIndividualDetailsData](encryptedIndividualDetailsDataFormat)
       ~ (__ \ "lastUpdated").format[Instant](instantFormat)
       )(EncryptedIndividualDetailsDataCache.apply, unlift(EncryptedIndividualDetailsDataCache.unapply))
   }
-
-  implicit val encryptedAddressDataFormat: OFormat[EncryptedAddressData] = {
-    ((__ \ "addressLine1").format[EncryptedAddressLine]
-    ~ (__ \ "addressLine2").format[EncryptedAddressLine]
-    ~ (__ \ "addressLine3").formatNullable[EncryptedAddressLine]
-    ~ (__ \ "addressLine4").formatNullable[EncryptedAddressLine]
-    ~ (__ \ "addressLine5").formatNullable[EncryptedAddressLine]
-    ~ (__ \ "postcode").formatNullable[EncryptedAddressPostcode]
-      )(EncryptedAddressData.apply, unlift(EncryptedAddressData.unapply))
-  }
-
-  implicit val formatEncryptedAddressLine: Format[EncryptedAddressLine] = Json.format[EncryptedAddressLine]
-
-  implicit val formatEncryptedAddressPostcode: Format[EncryptedAddressPostcode] = Json.format[EncryptedAddressPostcode]
 
   def encryptField(fieldValue: String, key: String): EncryptedValue = {
     SymmetricCryptoFactory.aesGcmAdCrypto(key).encrypt(fieldValue, key)
@@ -134,16 +129,17 @@ object EncryptedIndividualDetailsDataCache {
             surname = d(id.surname),
             initialsName = d(id.initialsName),
             nino = id.nino,
-            address =
-              AddressData(
-              AddressLine(d(id.address..value)),
-            AddressLine(d(addr.addressLine2.value)),
-            addr.addressLine3.map(x => AddressLine(d(x.value))),
-            addr.addressLine4.map(x => AddressLine(d(x.value))),
-            addr.addressLine5.map(x => AddressLine(d(x.value))),
-            addr.addressPostcode.map(x => AddressPostcode(d(x.value)))
-          )
-          )
+            address = id.address.map(
+              addr =>
+                AddressData(
+                  AddressLine(d(addr.addressLine1.value)),
+                  AddressLine(d(addr.addressLine2.value)),
+                  addr.addressLine3.map(x => AddressLine(d(x.value))),
+                  addr.addressLine4.map(x => AddressLine(d(x.value))),
+                  addr.addressLine5.map(x => AddressLine(d(x.value))),
+                  addr.addressPostcode.map(x => AddressPostcode(d(x.value)))
+                )
+            ))
       }
     )
   }
@@ -152,11 +148,6 @@ object EncryptedIndividualDetailsDataCache {
 
     def getNino: String = individualDetailsData.individualDetailsData match {
       case Some(id) => id.nino
-      case _        => ""
-    }
-
-    def getPostCode: String = individualDetailsData.individualDetailsData match {
-      case Some(id) => id.postCode.value
       case _        => ""
     }
 
@@ -170,9 +161,9 @@ object EncryptedIndividualDetailsDataCache {
       case _        => ""
     }
 
-    def dateOfBirth: String = individualDetailsData.individualDetailsData match {
-      case Some(id) => id.dateOfBirth.value
-      case _        => ""
+    def getAddress: Option[EncryptedAddressData] = individualDetailsData.individualDetailsData match {
+      case Some(id) => id.address
+      case _ => None
     }
   }
 }

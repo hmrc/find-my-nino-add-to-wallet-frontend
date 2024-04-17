@@ -28,7 +28,6 @@ import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import util.AuditUtils
-import views.html.identity.TechnicalIssuesView
 import views.html.{AppleWalletView, PassIdNotFoundView, QRCodeNotFoundView}
 
 import javax.inject.Inject
@@ -42,8 +41,7 @@ class AppleWalletController @Inject()(val citizenDetailsConnector: CitizenDetail
                                       individualDetailsService: IndividualDetailsService,
                                       view: AppleWalletView,
                                       passIdNotFoundView: PassIdNotFoundView,
-                                      qrCodeNotFoundView: QRCodeNotFoundView,
-                                      technicalIssuesView: TechnicalIssuesView
+                                      qrCodeNotFoundView: QRCodeNotFoundView
                                      )(implicit config: Configuration,
                                        env: Environment,
                                        ec: ExecutionContext,
@@ -66,9 +64,8 @@ class AppleWalletController @Inject()(val citizenDetailsConnector: CitizenDetail
           for{
             pId: Some[String] <- appleWalletConnector.createApplePass(fullName, formattedNino)
           } yield Ok(view(pId.value, isMobileDisplay(authContext.request))(authContext.request, messages))
-        case Left("Individual details not found in cache") => Future.successful(InternalServerError(
-          technicalIssuesView("Failed to get individual details from cache")(authContext.request, frontendAppConfig, messages)))
-        case _ => Future.successful(InternalServerError("Failed to get individual details from cache"))
+        case Left("Individual details not found in cache") => Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad(None)))
+        case _ => Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad(None)))
       }
     }
   }
@@ -81,10 +78,8 @@ class AppleWalletController @Inject()(val citizenDetailsConnector: CitizenDetail
       individualDetailsService.getIdDataFromCache(authContext.nino.nino).flatMap {
         case Right(individualDetailsDataCache) =>
           getApplePass(passId, individualDetailsDataCache, authContext, hc, messages)
-        case Left("Individual details not found in cache") => Future.successful(InternalServerError(
-          technicalIssuesView("Failed to get individual details from cache")(authContext.request, frontendAppConfig, messages)))
-        case _ => Future.successful(InternalServerError("Failed to get individual details from cache"))
-
+        case Left("Individual details not found in cache") => Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad(None)))
+        case _ => Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad(None)))
       }
     }
   }
@@ -98,8 +93,8 @@ class AppleWalletController @Inject()(val citizenDetailsConnector: CitizenDetail
       individualDetailsService.getIdDataFromCache(authContext.nino.nino).flatMap {
         case Right(individualDetailsDataCache) =>
           getAppleQRCode(passId, individualDetailsDataCache, authContext, hc, messages)
-        case Left("Individual details not found in cache") => catchAllError(authContext, messages)
-        case _ => catchAllError(authContext, messages)
+        case Left("Individual details not found in cache") => Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad(None)))
+        case _ => Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad(None)))
       }
     }
   }
@@ -118,11 +113,6 @@ class AppleWalletController @Inject()(val citizenDetailsConnector: CitizenDetail
       case None => false
     }
   }
-
-  private def catchAllError(authContext: AuthContext[AnyContent], messages: Messages)  =
-    Future.successful(InternalServerError(
-      technicalIssuesView("Failed to get individual details from cache")(authContext.request, frontendAppConfig, messages)))
-
 
   private def getApplePass(passId: String, individualDetailsDataCache: IndividualDetailsDataCache,
                            authContext: AuthContext[AnyContent], hc:HeaderCarrier, messages: Messages): Future[Result] = {

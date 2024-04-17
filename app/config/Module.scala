@@ -19,7 +19,7 @@ package config
 import com.google.inject.AbstractModule
 import controllers.actions._
 import play.api.{Configuration, Environment}
-import repositories.{IndividualDetailsRepoTrait, IndividualDetailsRepository}
+import repositories.{EncryptedIndividualDetailsRepository, IndividualDetailsRepoTrait, IndividualDetailsRepository}
 import util.{BaseResourceStreamResolver, DefaultFopURIResolver, DefaultResourceStreamResolver, DefaultStylesheetResourceStreamResolver, DefaultXmlFoToPDF, FopURIResolver, StylesheetResourceStreamResolver, XmlFoToPDF}
 import views.html.templates.{LayoutProvider, NewLayoutProvider, OldLayoutProvider}
 
@@ -49,12 +49,12 @@ class Module(environment: Environment, config: Configuration) extends AbstractMo
     } else {
       bind(classOf[LayoutProvider]).to(classOf[OldLayoutProvider]).asEagerSingleton()
     }
-//    if (encryptionEnabled) {
-//      bind(classOf[IndividualDetailsRepoTrait])
-//        .to(classOf[EncryptedIndividualDetailsRepository]).asEagerSingleton()
-//    } else {
+    if (encryptionEnabled) {
+      bind(classOf[IndividualDetailsRepoTrait])
+        .to(classOf[EncryptedIndividualDetailsRepository]).asEagerSingleton()
+    } else {
       bind(classOf[IndividualDetailsRepoTrait])
         .to(classOf[IndividualDetailsRepository]).asEagerSingleton()
-    //}
+    }
   }
 }

@@ -16,17 +16,10 @@
 
 package models.individualDetails
 
-import play.api.libs.json._
+import play.api.libs.json.{Format, Json}
 
-final case class AddressData(
-    addressLine1:             AddressLine,
-    addressLine2:             AddressLine,
-    addressLine3:             Option[AddressLine],
-    addressLine4:             Option[AddressLine],
-    addressLine5:             Option[AddressLine],
-    addressPostcode:          Option[AddressPostcode]
-)
+final case class AddressPostcode(value: String) extends AnyVal
 
-object AddressData {
-  implicit val format: OFormat[AddressData] = Json.format[AddressData]
+object AddressPostcode {
+  implicit val format: Format[AddressPostcode] = Json.valueFormat[AddressPostcode]
 }

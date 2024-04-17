@@ -203,6 +203,16 @@ object IndividualDetails {
 
     def getAddress: Option[Address] = getCorrespondenceAddress.orElse(getResidenceAddress)
 
+    def getAddressData: Option[AddressData] = {
+      getAddress.map(addr => AddressData(addr.addressLine1,
+        addr.addressLine2,
+        addr.addressLine3,
+        addr.addressLine4,
+        addr.addressLine5,
+        addr.addressPostcode))
+
+    }
+
     def getPostCode: String = getAddress.flatMap(_.addressPostcode.map(_.value)).getOrElse("")
 
     def getNinoWithoutSuffix: String = idData.ninoWithoutSuffix

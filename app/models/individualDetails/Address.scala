@@ -135,12 +135,6 @@ object PafReference {
   implicit val format: Format[PafReference] = Json.valueFormat[PafReference]
 }
 
-final case class AddressPostcode(value: String) extends AnyVal
-
-object AddressPostcode {
-  implicit val format: Format[AddressPostcode] = Json.valueFormat[AddressPostcode]
-}
-
 final case class Address(
     addressSequenceNumber:    AddressSequenceNumber,
     addressSource:            Option[AddressSource],

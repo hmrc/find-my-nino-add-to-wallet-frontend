@@ -29,7 +29,6 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import util.AuditUtils
 import views.html.StoreMyNinoView
-import views.html.identity.TechnicalIssuesView
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -40,7 +39,6 @@ class StoreMyNinoController @Inject()(
                                        val googleWalletConnector: GoogleWalletConnector,
                                        authConnector: AuthConnector,
                                        auditService: AuditService,
-                                       technicalIssuesView: TechnicalIssuesView,
                                        individualDetailsService: IndividualDetailsService,
                                        override val messagesApi: MessagesApi,
                                        getIndividualDetailsAction: GetIndividualDetailsAction,
@@ -74,15 +72,11 @@ class StoreMyNinoController @Inject()(
               Ok(view(appleId.value, googleId.value, ninoFormatted, isMobileDisplay(request))(request, messages))
             }
           }
-        case Left("Individual details not found in cache") => catchAllError(request, messages)
-        case _ => catchAllError(request, messages)
+        case Left("Individual details not found in cache") => Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad(None)))
+        case _ => Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad(None)))
       }
     }
   }
-
-  private def catchAllError(request: Request[_], messages: Messages)  =
-    Future.successful(InternalServerError(
-      technicalIssuesView("Failed to get individual details from cache")(request, frontendAppConfig, messages)))
 
   private def isMobileDisplay(request: UserRequestNew[AnyContent]): Boolean = {
     val strUserAgent = request.headers.get("http_user_agent")

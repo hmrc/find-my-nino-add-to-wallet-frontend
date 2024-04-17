@@ -105,7 +105,7 @@ object IndividualDetailsDataCache {
 
     def getPostCode: Option[String] = individualDetailsData.individualDetailsData match {
       case Some(id) => id.address.flatMap(addr => addr.addressPostcode.map(postcode => postcode.value))
-      case _ => Some(StringUtils.EMPTY)
+      case _ => None
     }
 
   }

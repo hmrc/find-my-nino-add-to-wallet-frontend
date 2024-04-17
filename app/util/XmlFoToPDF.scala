@@ -131,7 +131,7 @@ trait XmlFoToPDF extends Logging{
             <address-line>{line}</address-line>
           }}
           </address>
-          <postcode>{individualDetailsDataCache.getPostCode.toUpperCase}</postcode>
+          <postcode>{individualDetailsDataCache.getPostCode.getOrElse("").toUpperCase}</postcode>
 
 
     val xmlElem = <root>

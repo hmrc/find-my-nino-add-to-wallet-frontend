@@ -197,11 +197,12 @@ object IndividualDetails {
 
   implicit class IndividualDetailsOps(idData: IndividualDetails) {
 
-    def getResidenceAddress: Option[Address] = idData.addressList.getAddress.filter(_.addressType.equals(ResidentialAddress)).headOption
+    private def getResidenceAddress: Option[Address] = idData.addressList.getAddress.filter(_.addressType.equals(ResidentialAddress)).headOption
 
-    def getCorrespondenceAddress: Option[Address] = idData.addressList.getAddress.filter(_.addressType.equals(AddressType.CorrespondenceAddress)).headOption
+    private def getCorrespondenceAddress: Option[Address] = idData.addressList.getAddress.filter(
+      _.addressType.equals(AddressType.CorrespondenceAddress)).headOption
 
-    def getAddress: Option[Address] = getCorrespondenceAddress.orElse(getResidenceAddress)
+    private def getAddress: Option[Address] = getCorrespondenceAddress.orElse(getResidenceAddress)
 
     def getAddressData: Option[AddressData] = {
       getAddress.map(addr => AddressData(addr.addressLine1,
@@ -213,14 +214,12 @@ object IndividualDetails {
 
     }
 
-    def getPostCode: String = getAddress.flatMap(_.addressPostcode.map(_.value)).getOrElse("")
-
-    def getNinoWithoutSuffix: String = idData.ninoWithoutSuffix
+    private def getNinoWithoutSuffix: String = idData.ninoWithoutSuffix
 
     def getNino: String = getNinoWithoutSuffix + idData.ninoSuffix.get.value
 
     def getFirstForename: String = idData.nameList.name.flatMap(_.headOption).map(_.firstForename.value).getOrElse("")
-    def getSecondForename: String = idData.nameList.name.flatMap(_.drop(1).headOption).map(_.firstForename.value).getOrElse("")
+    private def getSecondForename: String = idData.nameList.name.flatMap(_.drop(1).headOption).map(_.firstForename.value).getOrElse("")
     def getLastName: String = idData.nameList.name.flatMap(_.headOption).map(_.surname.value).getOrElse("")
 
     def getTitle: String = idData.nameList.name.flatMap(_.headOption).map(_.titleType).getOrElse(TitleType.NotKnown) match {

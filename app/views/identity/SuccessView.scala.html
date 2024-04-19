@@ -28,7 +28,7 @@
 @(continueUrl: String)(implicit request: Request[_], messages: play.api.i18n.Messages)
 
 @layout(
-    pageTitle = messages("label.we_have_confirmed_your_identity"),
+    pageTitle = titleNoForm(messages("label.we_have_confirmed_your_identity")),
     showBackLink = false,
     hideAccountMenu = true
 ) {

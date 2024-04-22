@@ -18,7 +18,6 @@ package controllers
 
 import config.FrontendAppConfig
 import connectors.{CitizenDetailsConnector, GoogleWalletConnector}
-import controllers.auth.AuthContext
 import models.individualDetails.IndividualDetailsDataCache
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc._
@@ -28,7 +27,6 @@ import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import util.AuditUtils
-import views.html.identity.TechnicalIssuesView
 import views.html.{GoogleWalletView, PassIdNotFoundView, QRCodeNotFoundView}
 
 import javax.inject.Inject
@@ -42,8 +40,7 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
                                        individualDetailsService: IndividualDetailsService,
                                        auditService: AuditService,
                                        passIdNotFoundView: PassIdNotFoundView,
-                                       qrCodeNotFoundView: QRCodeNotFoundView,
-                                       technicalIssuesView: TechnicalIssuesView
+                                       qrCodeNotFoundView: QRCodeNotFoundView
                                       )(implicit config: Configuration,
                                         env: Environment,
                                         ec: ExecutionContext,
@@ -66,16 +63,12 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
           for{
             pId: Some[String] <- googleWalletConnector.createGooglePass(fullName, formattedNino)
           } yield Ok(view(pId.value, isMobileDisplay(authContext.request))(authContext.request, messages))
-        case Left("Individual details not found in cache") => catchAllError(authContext, messages)
-        case _ => catchAllError(authContext, messages)
+        case Left("Individual details not found in cache") => Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad(None)))
+        case _ => Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad(None)))
 
       }
     }
   }
-
-  private def catchAllError(authContext: AuthContext[AnyContent], messages: Messages)  =
-    Future.successful(InternalServerError(
-      technicalIssuesView("Failed to get individual details from cache")(authContext.request, frontendAppConfig, messages)))
 
   private def isMobileDisplay(request: Request[AnyContent]): Boolean = {
     // Display wallet options differently on mobile to pc
@@ -107,8 +100,8 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
               Redirect(data)
             case _ => NotFound(passIdNotFoundView()(authContext.request, messages, ec))
           }
-        case Left("Individual details not found in cache") => catchAllError(authContext, messages)
-        case _ => catchAllError(authContext, messages)
+        case Left("Individual details not found in cache") => Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad(None)))
+        case _ => Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad(None)))
       }
     }
   }
@@ -126,8 +119,8 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
             case _ => NotFound(qrCodeNotFoundView()(authContext.request, messages, ec))
 
           }
-        case Left("Individual details not found in cache") => catchAllError(authContext, messages)
-        case _ => catchAllError(authContext, messages)
+        case Left("Individual details not found in cache") => Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad(None)))
+        case _ => Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad(None)))
       }
     }
   }

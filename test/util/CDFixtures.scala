@@ -343,6 +343,15 @@ object Fixtures extends CDFixtures  {
     addressPostcode = Some(AddressPostcode("AA1 1AA"))
   )
 
+  val fakeAddressData: AddressData = AddressData(
+    addressLine1 = AddressLine("123 Fake Street"),
+    addressLine2 = AddressLine("Apt 4B"),
+    addressLine3 = Some(AddressLine("Faketown")),
+    addressLine4 = Some(AddressLine("Fakeshire")),
+    addressLine5 = Some(AddressLine("Fakecountry")),
+    addressPostcode = Some(AddressPostcode("AA1 1AA"))
+  )
+
   val fakeIndividualDetails: IndividualDetails = IndividualDetails(
     ninoWithoutSuffix = "AB123456",
     ninoSuffix = Some(NinoSuffix("C")),
@@ -358,17 +367,13 @@ object Fixtures extends CDFixtures  {
     addressList = AddressList(Some(List(fakeAddress)))
   )
 
-
-
   val fakeIndividualDetailsData = IndividualDetailsData(
     fullName = "Dr Firstname Middlename Lastname Phd.",
     firstForename = "Firstname",
     surname = "Lastname",
     initialsName = "FML",
-    dateOfBirth = "01/01/1990",
-    postCode = "AA1 1AA",
     nino = "AB123456C",
-    address = Some(fakeAddress)
+    address = Some(fakeAddressData)
   )
 
   val fakeIndividualDetailsDataCache = IndividualDetailsDataCache(
@@ -376,5 +381,4 @@ object Fixtures extends CDFixtures  {
     Some(fakeIndividualDetailsData),
     LocalDateTime.now(ZoneId.systemDefault()).toInstant(ZoneOffset.UTC)
   )
-
 }

@@ -17,7 +17,6 @@
 package controllers
 
 import config.FrontendAppConfig
-import controllers.auth.AuthContext
 import models.individualDetails.IndividualDetailsDataCache
 import org.apache.xmlgraphics.util.MimeConstants
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
@@ -28,7 +27,6 @@ import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import util.{AuditUtils, XmlFoToPDF}
-import views.html.identity.TechnicalIssuesView
 import views.html.print.PrintNationalInsuranceNumberView
 
 import java.time.LocalDate
@@ -41,7 +39,6 @@ class NinoLetterController @Inject()(
                                       authConnector: AuthConnector,
                                       auditService: AuditService,
                                       view: PrintNationalInsuranceNumberView,
-                                      technicalIssuesView: TechnicalIssuesView,
                                       individualDetailsService: IndividualDetailsService,
                                       xmlFoToPDF: XmlFoToPDF
                                     )(implicit config: Configuration,
@@ -66,16 +63,11 @@ class NinoLetterController @Inject()(
             LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
             true,
             formattedNino)(authContext.request, messages)))
-        case Left("Individual details not found in cache") => catchAllError(authContext, messages)
-        case _ => catchAllError(authContext, messages)
+        case Left("Individual details not found in cache") => Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad(None)))
+        case _ => Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad(None)))
       }
     }
   }
-
-  private def catchAllError(authContext: AuthContext[AnyContent], messages: Messages)  =
-    Future.successful(InternalServerError(
-      technicalIssuesView("Failed to get individual details from cache")(authContext.request, frontendAppConfig, messages)))
-
 
   def saveNationalInsuranceNumberAsPdf: Action[AnyContent] = authorisedAsFMNUser async {
     authContext => {
@@ -90,8 +82,8 @@ class NinoLetterController @Inject()(
           Future.successful(Ok(pdf).as(MimeConstants.MIME_PDF)
             .withHeaders(CONTENT_TYPE -> "application/x-download", CONTENT_DISPOSITION -> s"attachment; filename=${filename.replaceAll(" ", "-")}.pdf"))
         }
-        case Left("Individual details not found in cache") => catchAllError(authContext, messages)
-        case _ => catchAllError(authContext, messages)
+        case Left("Individual details not found in cache") => Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad(None)))
+        case _ => Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad(None)))
 
       }
     }

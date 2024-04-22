@@ -68,10 +68,8 @@ class IndividualDetailsServiceImpl @Inject()(
       individualDetails.getFirstForename,
       individualDetails.getLastName,
       individualDetails.getInitialsName,
-      individualDetails.dateOfBirth.toString,
-      individualDetails.getPostCode,
       individualDetails.getNino,
-      individualDetails.getAddress
+      individualDetails.getAddressData
       )
 
     IndividualDetailsDataCache(

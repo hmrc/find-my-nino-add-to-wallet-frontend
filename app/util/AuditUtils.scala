@@ -16,13 +16,13 @@
 
 package util
 
-import models.individualDetails.{Address, AddressLine, AddressSequenceNumber, AddressType, CountryCode, IndividualDetailsDataCache}
+import models.individualDetails.{AddressData, AddressLine, IndividualDetailsDataCache}
 import play.api.libs.json.{JsValue, Json, OFormat}
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
 import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
 
 import java.time.format.DateTimeFormatter
-import java.time.{LocalDate, ZoneOffset}
+import java.time.ZoneOffset
 
 object AuditUtils {
 
@@ -33,7 +33,7 @@ object AuditUtils {
                                     formCreationTimestamp: String,
                                     nino: String,
                                     name: String,
-                                    mainAddress: Address,
+                                    mainAddress: AddressData,
                                     device: Option[String],
                                     language: String = "en",
                                     WalletProvider: Option[String]
@@ -70,19 +70,8 @@ object AuditUtils {
   def getReferer(hc: HeaderCarrier): String = hc.otherHeaders.toMap.getOrElse("Referer", "")
 
 
-  private def emptyAddress = Address(
-    addressSequenceNumber = AddressSequenceNumber(0),
-    addressSource = None,
-    countryCode = CountryCode(0),
-    addressType = AddressType.ResidentialAddress, // Assuming ResidentialAddress as default
-    addressStatus = None,
-    addressStartDate = LocalDate.now(),
-    addressEndDate = None,
-    addressLastConfirmedDate = None,
-    vpaMail = None,
-    deliveryInfo = None,
-    pafReference = None,
-    addressLine1 = AddressLine(""), // Assuming AddressLine is a case class with a single String parameter
+  private def emptyAddress = AddressData(
+    addressLine1 = AddressLine(""),
     addressLine2 = AddressLine(""),
     addressLine3 = None,
     addressLine4 = None,
@@ -90,9 +79,9 @@ object AuditUtils {
     addressPostcode = None
   )
 
-  def getIndivudualsAddress(individualDetailsDataCache: IndividualDetailsDataCache): Address = {
+  def getIndivudualsAddress(individualDetailsDataCache: IndividualDetailsDataCache): AddressData = {
     individualDetailsDataCache.getAddress match {
-      case Some(a: Address) => a
+      case Some(a: AddressData) => a
       case _ => emptyAddress
     }
   }

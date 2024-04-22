@@ -19,7 +19,7 @@ package config
 import com.google.inject.AbstractModule
 import controllers.actions._
 import play.api.{Configuration, Environment}
-import repositories.{IndividualDetailsRepoTrait, IndividualDetailsRepository}
+import repositories.{EncryptedIndividualDetailsRepository, IndividualDetailsRepoTrait, IndividualDetailsRepository}
 import util.{BaseResourceStreamResolver, DefaultFopURIResolver, DefaultResourceStreamResolver, DefaultStylesheetResourceStreamResolver, DefaultXmlFoToPDF, FopURIResolver, StylesheetResourceStreamResolver, XmlFoToPDF}
 import views.html.templates.{LayoutProvider, NewLayoutProvider, OldLayoutProvider}
 
@@ -28,6 +28,7 @@ import java.time.{Clock, ZoneOffset}
 class Module(environment: Environment, config: Configuration) extends AbstractModule {
 
   private val scaWrapperEnabled = config.getOptional[Boolean]("features.sca-wrapper-enabled").getOrElse(false)
+  private val encryptionEnabled = config.get[Boolean]("mongodb.encryption.enabled")
   override def configure(): Unit = {
 
     bind(classOf[DataRetrievalAction]).to(classOf[DataRetrievalActionImpl]).asEagerSingleton()
@@ -48,19 +49,12 @@ class Module(environment: Environment, config: Configuration) extends AbstractMo
     } else {
       bind(classOf[LayoutProvider]).to(classOf[OldLayoutProvider]).asEagerSingleton()
     }
-
-      //   if (encryptionEnabled) {
-      //      bind(classOf[IndividualDetailsRepoTrait])
-      //        .to(classOf[EncryptedIndividualDetailsRepository]).asEagerSingleton()
-      //      bind(classOf[PersonalDetailsValidationRepoTrait])
-      //        .to(classOf[EncryptedPersonalDetailsValidationRepository]).asEagerSingleton()
-      //    } else {
+    if (encryptionEnabled) {
+      bind(classOf[IndividualDetailsRepoTrait])
+        .to(classOf[EncryptedIndividualDetailsRepository]).asEagerSingleton()
+    } else {
       bind(classOf[IndividualDetailsRepoTrait])
         .to(classOf[IndividualDetailsRepository]).asEagerSingleton()
-      //      bind(classOf[PersonalDetailsValidationRepoTrait])
-      //        .to(classOf[PersonalDetailsValidationRepository]).asEagerSingleton()
-      //    }
-      //
-
+    }
   }
 }

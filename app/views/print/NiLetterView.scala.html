@@ -44,7 +44,7 @@ implicit request: Request[_], messages: play.api.i18n.Messages)
                     <address>
                         <span>@individualDetailsDataCache.getInitialsName</span>
                         @individualDetailsDataCache.getAddressLines.map { line => <span>@line</span> }
-                        <span>@individualDetailsDataCache.getPostCode.toUpperCase</span>
+                        <span>@individualDetailsDataCache.getPostCode.getOrElse("").toUpperCase</span>
                     </address>
                 }.getOrElse(<address></address>)
             </div>

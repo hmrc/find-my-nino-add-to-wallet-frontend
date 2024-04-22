@@ -36,7 +36,6 @@ import util.Fixtures.{fakeIndividualDetails, fakeIndividualDetailsDataCache}
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
 import util.TestData.{NinoUser, NinoUser_With_CL50}
 import views.html._
-import views.html.identity.TechnicalIssuesView
 
 import java.util.Base64
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -84,7 +83,6 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
   lazy val view = applicationWithConfig.injector.instanceOf[AppleWalletView]
   lazy val errview = applicationWithConfig.injector.instanceOf[ErrorTemplate]
   lazy val redirectview = applicationWithConfig.injector.instanceOf[RedirectToPostalFormView]
-  lazy val technicalIssuesView = applicationWithConfig.injector.instanceOf[TechnicalIssuesView]
   lazy val passIdNotFoundView = applicationWithConfig.injector.instanceOf[PassIdNotFoundView]
   lazy val qrCodeNotFoundView = applicationWithConfig.injector.instanceOf[QRCodeNotFoundView]
 
@@ -120,11 +118,8 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
 
         val result = route(application, request).value
 
-        status(result) mustEqual INTERNAL_SERVER_ERROR
-        contentAsString(result) mustEqual (technicalIssuesView("Failed to get individual details from cache")(request,
-          frontendAppConfig,
-          messages(application)))
-          .toString()
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
       }
       reset(mockIndividualDetailsService)
     }

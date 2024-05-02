@@ -72,7 +72,7 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec
     val nino = "testNino"
     when(mockConnector.getIndividualDetails(any, any)(any, any))
       .thenReturn(Future.successful(uk.gov.hmrc.http.HttpResponse(200, jsonResponse)))
-    val result = service.getIndividualDetails(nino).map(
+    val result = service.fetchIndividualDetails(nino).map(
       _.fold(
         error => Left(error),
         individualDetails => Right(individualDetails)
@@ -90,7 +90,7 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec
 
     when(mockRepository.insertOrReplaceIndividualDetailsDataCache(any)(any[ExecutionContext]))
       .thenReturn(Future.successful("testNino"))
-    val result = service.createIndividualDetailsDataCache(sessionId, fakeIndividualDetails)
+    val result = service.insertOrReplaceIndividualDetailsDataCache(sessionId, fakeIndividualDetails)
     assert(result.isCompleted)
   }
 

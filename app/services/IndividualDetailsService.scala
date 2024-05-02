@@ -31,11 +31,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @ImplementedBy(classOf[IndividualDetailsServiceImpl])
 trait IndividualDetailsService {
-  def createIndividualDetailsDataCache(sessionId: String, individualDetails: IndividualDetails): Future[String]
-
-  def getIndividualDetails(nino: String)(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[Either[IndividualDetailsError, IndividualDetails]]
-
-  def getIdDataFromCache(nino: String): Future[Either[String, IndividualDetailsDataCache]]
+  def getIdDataFromCache(nino: String, sessionId: String)(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[Either[String, IndividualDetailsDataCache]]
 }
 
 
@@ -45,9 +41,11 @@ class IndividualDetailsServiceImpl @Inject()(
                                             )(implicit ec: ExecutionContext)
   extends IndividualDetailsService with Logging {
 
-  override def createIndividualDetailsDataCache(sessionId: String, individualDetails: IndividualDetails): Future[String] = {
+  implicit val hc: HeaderCarrier = HeaderCarrier()
+
+  private def insertOrReplaceIndividualDetailsDataCache(sessionId: String, individualDetails: IndividualDetails): Future[String] = {
     individualDetailsRepository.insertOrReplaceIndividualDetailsDataCache(
-      getIndividualDetailsData(sessionId, individualDetails)
+      getIndividualDetailsDataCache(sessionId, individualDetails)
     )
   }
 
@@ -61,7 +59,7 @@ class IndividualDetailsServiceImpl @Inject()(
         None
     })
 
-  private def getIndividualDetailsData(sessionId: String, individualDetails: IndividualDetails): IndividualDetailsDataCache = {
+  private def getIndividualDetailsDataCache(sessionId: String, individualDetails: IndividualDetails): IndividualDetailsDataCache = {
 
     val iDetails = IndividualDetailsData(
       individualDetails.getFullName,
@@ -78,8 +76,8 @@ class IndividualDetailsServiceImpl @Inject()(
     )
   }
 
-  def getIndividualDetails(nino: String
-                          )(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[Either[IndividualDetailsError, IndividualDetails]] = {
+  private def fetchIndividualDetails(nino: String)(
+    implicit ec: ExecutionContext, hc: HeaderCarrier): Future[Either[IndividualDetailsError, IndividualDetails]] = {
     individualDetailsConnector.getIndividualDetails(nino, "Y").flatMap(handleResponse(nino))
   }
 
@@ -92,15 +90,31 @@ class IndividualDetailsServiceImpl @Inject()(
     }
   }
 
+  private def createNewIndividualDataCache(nino: String, sessionId: String)(
+    implicit ec: ExecutionContext, hc: HeaderCarrier
+  ): Future[Either[String, IndividualDetailsDataCache]] = {
+    fetchIndividualDetails(nino)(ec,hc).flatMap {
+      case Right(individualDetails) =>
+        insertOrReplaceIndividualDetailsDataCache(sessionId, individualDetails).map { ninoStr =>
+          if(ninoStr.nonEmpty)
+            Right(getIndividualDetailsDataCache(sessionId, individualDetails))
+          else
+            Left("Failed to create individual details data cache")
+        }
+      case Left(error) =>
+        Future.successful(Left(s"Failed to fetch individual details: ${error.toString}"))
+    }
+  }
 
-  def getIdDataFromCache(nino: String): Future[Either[String, IndividualDetailsDataCache]] = {
-    getIndividualDetailsDataCache(nino).map {
+  def getIdDataFromCache(nino: String, sessionId: String)(implicit ec: ExecutionContext,
+                                                          hc: HeaderCarrier): Future[Either[String, IndividualDetailsDataCache]] = {
+    getIndividualDetailsDataCache(nino).flatMap {
       case Some(individualDetailsDataCache) =>
         logger.info(s"Individual details found in cache for Nino: ${nino}")
-        Right(individualDetailsDataCache)
+        Future.successful(Right(individualDetailsDataCache))
       case None =>
-        logger.info("Individual details not found in cache")
-        Left("Individual details not found in cache")
+        logger.warn("Individual details data cache not found, potentially expired, attempting to fetch from external service and recreate cache.")
+        createNewIndividualDataCache(nino, sessionId)
     }
   }
 

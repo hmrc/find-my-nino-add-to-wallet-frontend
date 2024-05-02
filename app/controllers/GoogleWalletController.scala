@@ -55,17 +55,15 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
       implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(authContext.request, authContext.request.session)
       implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
 
-      individualDetailsService.getIdDataFromCache(authContext.nino.nino).flatMap {
+      individualDetailsService.getIdDataFromCache(authContext.nino.nino, hc.sessionId.get.value).flatMap {
         case Right(individualDetailsDataCache) =>
           auditGoogleWallet("ViewWalletPage", individualDetailsDataCache, hc)
           val formattedNino = individualDetailsDataCache.getNino.grouped(2).mkString(" ")
           val fullName = individualDetailsDataCache.getFullName
-          for{
+          for {
             pId: Some[String] <- googleWalletConnector.createGooglePass(fullName, formattedNino)
           } yield Ok(view(pId.value, isMobileDisplay(authContext.request))(authContext.request, messages))
         case Left("Individual details not found in cache") => Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad(None)))
-        case _ => Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad(None)))
-
       }
     }
   }
@@ -88,7 +86,7 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
       implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(authContext.request, authContext.request.session)
       implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
 
-      individualDetailsService.getIdDataFromCache(authContext.nino.nino).flatMap {
+      individualDetailsService.getIdDataFromCache(authContext.nino.nino, hc.sessionId.get.value).flatMap {
         case Right(individualDetailsDataCache) =>
           googleWalletConnector.getGooglePassUrl(passId).map {
             case Some(data) =>
@@ -110,7 +108,7 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
     authContext => {
       implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(authContext.request, authContext.request.session)
       implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
-      individualDetailsService.getIdDataFromCache(authContext.nino.nino).flatMap {
+      individualDetailsService.getIdDataFromCache(authContext.nino.nino, hc.sessionId.get.value).flatMap {
         case Right(individualDetailsDataCache) =>
           googleWalletConnector.getGooglePassQrCode(passId).map {
             case Some(data) =>

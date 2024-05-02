@@ -31,7 +31,7 @@ class IndividualDetailsConnector @Inject()(
 
   def getIndividualDetails(nino: String, resolveMerge: String
                           )(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
-    val url = s"${appConfig.individualDetailsServiceUrl}/find-my-nino-add-to-wallet/individuals/details/NINO/${nino}/$resolveMerge"
+    val url = s"${appConfig.individualDetailsServiceUrl}/find-my-nino-add-to-wallet/individuals/details/NINO/${nino.take(8)}/$resolveMerge"
     httpClient.GET[HttpResponse](url)(implicitly, implicitly, implicitly)
   }
 }

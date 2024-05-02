@@ -61,7 +61,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
     reset(mockIndividualDetailsService)
     when(mockIndividualDetailsService.getIdDataFromCache(any()))
       .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCache)))
-    when(mockIndividualDetailsService.getIndividualDetails(any())(any(), any()))
+    when(mockIndividualDetailsService.fetchIndividualDetails(any())(any(), any()))
       .thenReturn(Future.successful(Right(fakeIndividualDetails)))
 
     reset(mockIdentityVerificationFrontendConnector)

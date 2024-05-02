@@ -69,7 +69,7 @@ class GetPersonDetailsFromAuthAction @Inject()(cc: ControllerComponents,
         lastName,
         None, None, None, None, None,
         Some(Nino(authContext.nino.nino))
-      ), 
+      ),
       None,
       None
     )

@@ -54,15 +54,15 @@ class NinoLetterController @Inject()(
       implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(authContext.request, authContext.request.session)
       implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
 
-      individualDetailsService.getIdDataFromCache(authContext.nino.nino).flatMap {
+      val nino: String = authContext.nino.nino
+      val ninoFormatted = nino.grouped(2).mkString(" ")
+      val sessionId = hc.sessionId.get.value
+
+      individualDetailsService.getIdDataFromCache(nino, sessionId) flatMap {
         case Right(individualDetailsDataCache) =>
           auditNinoLetter("ViewNinoLetter", individualDetailsDataCache, hc)
-          val formattedNino = individualDetailsDataCache.getNino.grouped(2).mkString(" ")
-          Future.successful(Ok(view(
-            individualDetailsDataCache,
-            LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
-            true,
-            formattedNino)(authContext.request, messages)))
+          Future.successful(Ok(view(individualDetailsDataCache, LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
+            true, ninoFormatted)(authContext.request, messages)))
         case Left("Individual details not found in cache") => Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad(None)))
         case _ => Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad(None)))
       }
@@ -75,7 +75,11 @@ class NinoLetterController @Inject()(
       implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
       val filename = messagesApi.preferred(authContext.request).messages("label.your_national_insurance_number_letter")
 
-      individualDetailsService.getIdDataFromCache(authContext.nino.nino).flatMap {
+      val nino: String = authContext.nino.nino
+      val ninoFormatted = nino.grouped(2).mkString(" ")
+      val sessionId = hc.sessionId.get.value
+
+      individualDetailsService.getIdDataFromCache(nino, sessionId).flatMap {
         case Right(individualDetailsDataCache) => {
           auditNinoLetter("DownloadNinoLetter", individualDetailsDataCache, hc)
           val pdf = createPDF(individualDetailsDataCache, messages)
@@ -83,8 +87,6 @@ class NinoLetterController @Inject()(
             .withHeaders(CONTENT_TYPE -> "application/x-download", CONTENT_DISPOSITION -> s"attachment; filename=${filename.replaceAll(" ", "-")}.pdf"))
         }
         case Left("Individual details not found in cache") => Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad(None)))
-        case _ => Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad(None)))
-
       }
     }
   }

@@ -20,21 +20,25 @@ import config.FrontendAppConfig
 import controllers.bindable.Origin
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
+import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl.idFunctor
+import uk.gov.hmrc.play.bootstrap.binders.{OnlyRelative, RedirectUrl}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import uk.gov.hmrc.sca.services.WrapperService
 
 import javax.inject.Inject
 
 class AuthController @Inject()(
                                 val controllerComponents: MessagesControllerComponents,
                                 frontendAppConfig: FrontendAppConfig,
-                                wrapperService: WrapperService
                               ) extends FrontendBaseController with I18nSupport {
 
   def signout(continueUrl: Option[RedirectUrl], origin: Option[Origin]): Action[AnyContent] =
-    Action {
-      val safeUrl = wrapperService.safeSignoutUrl(continueUrl)
+    Action { implicit request =>
+      val safeUrl = continueUrl.flatMap { redirectUrl =>
+        redirectUrl.getEither(OnlyRelative) match {
+          case Right(safeRedirectUrl) => Some(safeRedirectUrl.url)
+          case _ => Some(frontendAppConfig.getFeedbackSurveyUrl(frontendAppConfig.defaultOrigin))
+        }
+      }
       safeUrl
         .orElse(origin.map(frontendAppConfig.getFeedbackSurveyUrl))
         .fold(BadRequest("Missing origin")) { url: String =>

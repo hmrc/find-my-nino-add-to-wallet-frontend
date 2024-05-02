@@ -16,13 +16,9 @@
 
 package views.html.templates
 
-import play.api.Logging
 import play.api.i18n.Messages
 import play.api.mvc.Request
 import play.twirl.api.{Html, HtmlFormat}
-import uk.gov.hmrc.play.http.HeaderCarrierConverter
-import uk.gov.hmrc.sca.services.WrapperService
-import views.html.components.{AdditionalScript, HeadBlock}
 
 import javax.inject.Inject
 
@@ -59,28 +55,5 @@ class OldLayoutProvider @Inject()(layout: views.html.templates.Layout) extends L
                     (implicit request: Request[_], messages: Messages): HtmlFormat.Appendable = {
     layout(pageTitle, showBackLink, timeout, showSignOut, stylesheets, fullWidth, accountHome, yourProfileActive,
       hideAccountMenu, backLinkID, backLinkUrl, disableSessionExpired, sidebarContent, messagesActive)(contentBlock)
-  }
-}
-
-class NewLayoutProvider @Inject()(wrapperService: WrapperService, additionalScript: AdditionalScript,
-                                  headBlock: HeadBlock) extends LayoutProvider with Logging {
-
-  //noinspection ScalaStyle
-  override def apply(pageTitle: String, showBackLink: Boolean, timeout: Boolean, showSignOut: Boolean,
-                     stylesheets: Option[Html], fullWidth: Boolean, accountHome: Boolean, yourProfileActive: Boolean,
-                     hideAccountMenu: Boolean, backLinkID: Boolean, backLinkUrl: String,
-                     disableSessionExpired: Boolean, sidebarContent: Option[Html], messagesActive: Boolean)(contentBlock: Html)
-                    (implicit request: Request[_], messages: Messages): HtmlFormat.Appendable = {
-    wrapperService.layout(
-      disableSessionExpired = disableSessionExpired,
-      content = contentBlock,
-      pageTitle = Some(pageTitle),
-      showBackLinkJS = showBackLink,
-      serviceNameUrl = Some("/personal-account"),
-      scripts = Seq(additionalScript()),
-      styleSheets = stylesheets.toSeq :+ headBlock(),
-      fullWidth = fullWidth,
-      hideMenuBar = hideAccountMenu
-    )(messages, HeaderCarrierConverter.fromRequest(request), request)
   }
 }

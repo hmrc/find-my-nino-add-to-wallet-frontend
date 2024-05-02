@@ -20,7 +20,7 @@ import com.google.inject.AbstractModule
 import controllers.actions._
 import play.api.{Configuration, Environment}
 import util._
-import views.html.templates.{LayoutProvider, OldLayoutProvider}
+import views.html.templates.{LayoutProvider, NewLayoutProvider}
 
 import java.time.{Clock, ZoneOffset}
 
@@ -40,6 +40,6 @@ class Module(environment: Environment, config: Configuration) extends AbstractMo
     bind(classOf[FopURIResolver]).to(classOf[DefaultFopURIResolver])
     bind(classOf[BaseResourceStreamResolver]).to(classOf[DefaultResourceStreamResolver])
 
-    bind(classOf[LayoutProvider]).to(classOf[OldLayoutProvider]).asEagerSingleton()
+    bind(classOf[LayoutProvider]).to(classOf[NewLayoutProvider]).asEagerSingleton()
   }
 }

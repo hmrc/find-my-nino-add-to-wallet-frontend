@@ -48,6 +48,7 @@ trait LayoutProvider {
              , messages: Messages
            ): HtmlFormat.Appendable
 }
+
 class NewLayoutProvider @Inject()(wrapperService: WrapperService, additionalScript: AdditionalScript,
                                   headBlock: HeadBlock) extends LayoutProvider with Logging {
 
@@ -68,5 +69,6 @@ class NewLayoutProvider @Inject()(wrapperService: WrapperService, additionalScri
       fullWidth = fullWidth,
       hideMenuBar = hideAccountMenu
     )(messages, HeaderCarrierConverter.fromRequest(request), request)
+
   }
 }

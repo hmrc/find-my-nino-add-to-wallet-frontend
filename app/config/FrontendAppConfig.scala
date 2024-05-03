@@ -58,10 +58,6 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
   val signOutUrl: String                = configuration.get[String]("urls.signOut")
   lazy val findMyNinoServiceUrl: String = servicesConfig.baseUrl("find-my-nino-add-to-wallet-service")
 
-
-  val languageTranslationEnabled: Boolean =
-    configuration.get[Boolean]("features.welsh-translation")
-
   def languageMap: Map[String, Lang] = Map(
     "en" -> Lang("en"),
     "cy" -> Lang("cy")

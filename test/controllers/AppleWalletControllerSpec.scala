@@ -17,8 +17,7 @@
 package controllers
 
 import base.SpecBase
-import connectors.{CitizenDetailsConnector, IdentityVerificationFrontendConnector, PersonDetailsErrorResponse,
-  PersonDetailsSuccessResponse, AppleWalletConnector}
+import connectors._
 import controllers.auth.requests.UserRequest
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
@@ -34,11 +33,11 @@ import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
 import util.CDFixtures
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
 import util.TestData.{NinoUser, NinoUser_With_CL50}
+import views.html._
 
 import java.util.Base64
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import views.html.{AppleWalletView, ErrorTemplate, PassIdNotFoundView, QRCodeNotFoundView, RedirectToPostalFormView}
 
 class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSugar {
 
@@ -101,7 +100,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
             inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector),
             inject.bind[IdentityVerificationFrontendConnector].toInstance(mockIdentityVerificationFrontendConnector)
           )
-          .configure("features.sca-wrapper-enabled" -> false)
+
           .build()
 
       when(mockCitizenDetailsConnector.personDetails(any())(any(), any()))
@@ -120,27 +119,6 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
     }
 
     "must return OK and the correct view for a GET" in {
-      val application =
-        applicationBuilderWithConfig()
-          .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
-            inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
-            inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
-          )
-          .configure("features.sca-wrapper-enabled" -> false)
-          .build()
-
-      running(application) {
-        userLoggedInFMNUser(NinoUser)
-        val request = FakeRequest(GET, routes.AppleWalletController.onPageLoad.url)
-          .withSession(("authToken", "Bearer 123"))
-        val result = route(application, request).value
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual (view(passId, false)(request, messages(application))).toString
-      }
-    }
-
-    "must return OK and the correct view for a GET when using the wrapper" in {
       val application =
         applicationBuilderWithConfig()
           .overrides(
@@ -171,7 +149,6 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
         inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
         inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
       )
-        .configure("features.sca-wrapper-enabled" -> false)
         .build()
 
       running(application) {
@@ -193,7 +170,6 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
         inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
         inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
       )
-        .configure("features.sca-wrapper-enabled" -> false)
         .build()
 
       running(application) {
@@ -220,7 +196,6 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
           inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
           inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
         )
-        .configure("features.sca-wrapper-enabled" -> false)
         .build()
 
       running(application) {
@@ -242,7 +217,6 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
         inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
         inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
       )
-        .configure("features.sca-wrapper-enabled" -> false)
         .build()
 
       running(application) {
@@ -268,7 +242,6 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
           inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
           inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
         )
-        .configure("features.sca-wrapper-enabled" -> false)
         .build()
 
       running(application) {
@@ -287,7 +260,6 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
           inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
           inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
         )
-        .configure("features.sca-wrapper-enabled" -> false)
         .build()
 
       running(application) {

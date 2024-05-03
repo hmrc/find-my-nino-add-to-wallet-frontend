@@ -24,7 +24,6 @@ import play.api.inject
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
-import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
 import views.html.UnauthorisedView
 
 import scala.concurrent.Future
@@ -51,7 +50,6 @@ class UnauthorisedControllerSpec extends SpecBase with MockitoSugar {
           .overrides(
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
           )
-          .configure("features.sca-wrapper-enabled" -> false)
           .build()
 
       running(application) {
@@ -63,32 +61,6 @@ class UnauthorisedControllerSpec extends SpecBase with MockitoSugar {
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view()(request, messages(application)).toString
-      }
-    }
-
-    "must return OK and the correct view for a GET when using the wrapper" in {
-
-      val mockSessionRepository = mock[SessionRepository]
-      when(mockSessionRepository.get(any())) thenReturn Future.successful(Some(emptyUserAnswers))
-
-      val application =
-        applicationBuilder(userAnswers = Some(emptyUserAnswers))
-          .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
-            inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector)
-          )
-          .configure("features.sca-wrapper-enabled" -> true)
-          .build()
-
-      running(application) {
-        val request = FakeRequest(GET, routes.UnauthorisedController.onPageLoad.url).withSession("authToken" -> "123abc")
-
-        val result = route(application, request).value
-
-        val view = application.injector.instanceOf[UnauthorisedView]
-
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view()(request.withAttrs(requestAttributeMap), messages(application)).toString
       }
     }
   }

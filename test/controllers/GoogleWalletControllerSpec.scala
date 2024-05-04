@@ -63,7 +63,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
     when(mockSessionRepository.get(any())) thenReturn Future.successful(Some(emptyUserAnswers))
 
     reset(mockIndividualDetailsService)
-    when(mockIndividualDetailsService.getIdDataFromCache(any()))
+    when(mockIndividualDetailsService.getIdDataFromCache(any(),any())(any(),any()))
       .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCache)))
 
     reset(mockIdentityVerificationFrontendConnector)
@@ -107,7 +107,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           .configure("features.sca-wrapper-enabled" -> false)
           .build()
 
-      when(mockIndividualDetailsService.getIdDataFromCache(any()))
+      when(mockIndividualDetailsService.getIdDataFromCache(any(),any())(any(),any()))
         .thenReturn(Future.successful(Left("Individual details not found in cache")))
 
       running(application) {

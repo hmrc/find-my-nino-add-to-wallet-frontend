@@ -64,7 +64,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
     when(mockSessionRepository.get(any())) thenReturn Future.successful(Some(emptyUserAnswers))
 
     reset(mockIndividualDetailsService)
-    when(mockIndividualDetailsService.getIdDataFromCache(any()))
+    when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(),any()))
       .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCache)))
 
     reset(mockIdentityVerificationFrontendConnector)
@@ -108,7 +108,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .configure("features.sca-wrapper-enabled" -> false)
           .build()
 
-      when(mockIndividualDetailsService.getIdDataFromCache(any()))
+      when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(),any()))
         .thenReturn(Future.successful(Left("Individual details not found in cache")))
 
       running(application) {
@@ -136,7 +136,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .configure("features.sca-wrapper-enabled" -> false)
           .build()
 
-      when(mockIndividualDetailsService.getIdDataFromCache(any()))
+      when(mockIndividualDetailsService.getIdDataFromCache(any(),any())(any(),any()))
         .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCache)))
 
       running(application) {
@@ -161,7 +161,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .configure("features.sca-wrapper-enabled" -> true)
           .build()
 
-      when(mockIndividualDetailsService.getIdDataFromCache(any()))
+      when(mockIndividualDetailsService.getIdDataFromCache(any(),any())(any(),any()))
         .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCache)))
 
       val view = application.injector.instanceOf[AppleWalletView]

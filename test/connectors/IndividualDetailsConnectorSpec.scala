@@ -50,7 +50,7 @@ class IndividualDetailsConnectorSpec
     verify(mockHttpClient).GET[HttpResponse](urlCaptor.capture(),any,any)(any, any, any)
 
     val capturedUrl = urlCaptor.getValue
-    assert(capturedUrl == "http://localhost:8080/find-my-nino-add-to-wallet/individuals/details/NINO/QQ000003B/Y")
+    assert(capturedUrl == "http://localhost:8080/find-my-nino-add-to-wallet/individuals/details/NINO/QQ000003/Y")
     result.futureValue.status shouldBe 200
   }
 

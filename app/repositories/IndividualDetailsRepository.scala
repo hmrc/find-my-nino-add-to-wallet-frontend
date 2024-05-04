@@ -70,14 +70,14 @@ class IndividualDetailsRepository @Inject()(mongoComponent: MongoComponent,
 
   def findIndividualDetailsDataByNino(nino: String)
                                (implicit ec: ExecutionContext): Future[Option[IndividualDetailsDataCache]] = {
-    logger.info(s"find one in $collectionName table")
+    //logger.info(s"find one in $collectionName table")
     val filter = Filters.equal("individualDetails.nino", nino)
     collection.find(filter)
       .toFuture()
       .map(_.headOption)
   } recoverWith {
     case e: Throwable =>
-      logger.info(s"Failed finding Individual Details Data by Nino: $nino")
+      logger.warn(s"Failed finding Individual Details Data by Nino: $nino")
       Future.failed(e)
   }
 

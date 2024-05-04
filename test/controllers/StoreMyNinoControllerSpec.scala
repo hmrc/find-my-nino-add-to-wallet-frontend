@@ -19,6 +19,7 @@ package controllers
 import base.SpecBase
 import connectors._
 import controllers.auth.requests.UserRequestNew
+import models.individualDetails.IndividualDetails
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.{reset, when}
@@ -54,15 +55,11 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
     reset(mockSessionRepository)
     when(mockSessionRepository.get(any())) thenReturn Future.successful(Some(emptyUserAnswers))
 
-    reset(mockIndividualDetailsConnector)
-    when(mockIndividualDetailsConnector.getIndividualDetails(any(), any())(any(), any()))
-      .thenReturn(Future.successful(HttpResponse(OK, Json.toJson(fakeIndividualDetails).toString())))
 
     reset(mockIndividualDetailsService)
-    when(mockIndividualDetailsService.getIdDataFromCache(any()))
+    when(mockIndividualDetailsService.getIdDataFromCache(any(),any())(any(),any()))
       .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCache)))
-    when(mockIndividualDetailsService.fetchIndividualDetails(any())(any(), any()))
-      .thenReturn(Future.successful(Right(fakeIndividualDetails)))
+
 
     reset(mockIdentityVerificationFrontendConnector)
     when(mockIdentityVerificationFrontendConnector.getIVJourneyStatus(any())(any(), any()))
@@ -98,7 +95,6 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
   lazy val errview = applicationWithConfig.injector.instanceOf[ErrorTemplate]
 
   val mockSessionRepository = mock[SessionRepository]
-  val mockIndividualDetailsConnector = mock[IndividualDetailsConnector]
   val mockIndividualDetailsService = mock[IndividualDetailsService]
   val mockIdentityVerificationFrontendConnector = mock[IdentityVerificationFrontendConnector]
   lazy val redirectview = applicationWithConfig.injector.instanceOf[RedirectToPostalFormView]
@@ -109,12 +105,17 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
 
   "StoreMyNino Controller" - {
 
-    "must return ErrorView and the correct view for a GET" in {
+    "must redirect to p$p when invalid nino " in {
+
+      reset(mockIndividualDetailsService)
+      when(mockIndividualDetailsService.getIdDataFromCache(any(),any())(any(),any()))
+        .thenReturn(Future.successful(Left("Individual details not found in cache")))
+
       val application =
         applicationBuilderWithConfig()
           .overrides(
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
-            inject.bind[IndividualDetailsConnector].toInstance(mockIndividualDetailsConnector),
+            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
             inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
             inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
             inject.bind[IdentityVerificationFrontendConnector].toInstance(mockIdentityVerificationFrontendConnector)
@@ -122,19 +123,17 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .configure("features.sca-wrapper-enabled" -> false)
           .build()
 
-      when(mockIndividualDetailsConnector.getIndividualDetails(any(), any())(any(), any()))
-        .thenReturn(Future.successful(HttpResponse(INTERNAL_SERVER_ERROR, Json.toJson(fakeIndividualDetails).toString())))
+
 
       running(application) {
         userLoggedInFMNUser(NinoUser)
         val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
-        status(result) mustEqual INTERNAL_SERVER_ERROR
+        status(result) mustEqual 303
 
-        contentAsString(result) mustEqual redirectview()(request, frontendAppConfig, messages(application)).toString()
       }
-      reset(mockIndividualDetailsConnector)
+      reset(mockIndividualDetailsService)
     }
 
     "must return OK and the correct view for a GET" in {
@@ -144,7 +143,6 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
             inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
-            inject.bind[IndividualDetailsConnector].toInstance(mockIndividualDetailsConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
           )
           .configure("features.sca-wrapper-enabled" -> false)
@@ -167,7 +165,6 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
             inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
-            inject.bind[IndividualDetailsConnector].toInstance(mockIndividualDetailsConnector),
             inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
           )
@@ -192,7 +189,6 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
         inject.bind[SessionRepository].toInstance(mockSessionRepository),
         inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
         inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
-        inject.bind[IndividualDetailsConnector].toInstance(mockIndividualDetailsConnector),
         inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
       )
         .configure("features.sca-wrapper-enabled" -> false)
@@ -216,7 +212,6 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
         inject.bind[SessionRepository].toInstance(mockSessionRepository),
         inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
         inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
-        inject.bind[IndividualDetailsConnector].toInstance(mockIndividualDetailsConnector),
         inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
       )
         .configure("features.sca-wrapper-enabled" -> false)
@@ -246,7 +241,6 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
         inject.bind[SessionRepository].toInstance(mockSessionRepository),
         inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
         inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
-        inject.bind[IndividualDetailsConnector].toInstance(mockIndividualDetailsConnector),
         inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
       )
         .configure("features.sca-wrapper-enabled" -> false)
@@ -270,7 +264,6 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
         inject.bind[SessionRepository].toInstance(mockSessionRepository),
         inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
         inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
-        inject.bind[IndividualDetailsConnector].toInstance(mockIndividualDetailsConnector),
         inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
       )
         .configure("features.sca-wrapper-enabled" -> false)
@@ -301,7 +294,6 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           inject.bind[SessionRepository].toInstance(mockSessionRepository),
           inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
           inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
-          inject.bind[IndividualDetailsConnector].toInstance(mockIndividualDetailsConnector),
           inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
         )
         .configure("features.sca-wrapper-enabled" -> false)
@@ -322,7 +314,6 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           inject.bind[SessionRepository].toInstance(mockSessionRepository),
           inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
           inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
-          inject.bind[IndividualDetailsConnector].toInstance(mockIndividualDetailsConnector),
           inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
         )
         .configure("features.sca-wrapper-enabled" -> true)

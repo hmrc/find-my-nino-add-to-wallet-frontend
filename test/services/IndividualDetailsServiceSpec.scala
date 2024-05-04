@@ -19,11 +19,13 @@ package services
 import connectors.IndividualDetailsConnector
 import org.mockito.ArgumentMatchersSugar.any
 import org.mockito.Mockito._
+import org.mongodb.scala.MongoException
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatestplus.mockito.MockitoSugar
+import play.api.libs.json.Json
 import repositories.IndividualDetailsRepository
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import util.Fixtures.{fakeIndividualDetails, fakeIndividualDetailsDataCache}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -35,101 +37,60 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec
   with MockitoSugar {
 
   implicit val hc: HeaderCarrier = mock[HeaderCarrier]
-  implicit val defaultPatience: PatienceConfig =
-    PatienceConfig(timeout = 5.seconds, interval = 50.millis) // Increase timeout to 5 seconds
+  implicit val defaultPatience: PatienceConfig = PatienceConfig(timeout = 5.seconds, interval = 50.millis) // Increase timeout to 5 seconds
 
-
-
-  it should "get individual details" in {
-    val jsonResponse = """
-{
-  "details": {
-    "crnIndicator": 1,
-    "dateOfBirth": "2000-01-01",
-    "nino": "testNino"
-  },
-  "addressList": {
-    "addressLine1": "testAddressLine1",
-    "addressLine2": "testAddressLine2",
-    "addressLine3": "testAddressLine3",
-    "addressLine4": "testAddressLine4",
-    "addressLine5": "testAddressLine5",
-    "postcode": "testPostcode",
-    "country": "testCountry"
-  },
-  "nameList": {
-    "nameType": "testNameType",
-    "firstName": "testFirstName",
-    "middleName": "testMiddleName",
-    "lastName": "testLastName"
-  }
-}
-"""
+  "IndividualDetailsService" should "create individual details data cache when the cache has expired and there is a valid nino" in {
     val mockRepository = mock[IndividualDetailsRepository]
     val mockConnector = mock[IndividualDetailsConnector]
     val service = new IndividualDetailsServiceImpl(mockRepository, mockConnector)
 
-    val nino = "testNino"
+    val fakeIndividualDetailsJson = Json.toJson(fakeIndividualDetails).toString()
+
+
+    when(mockRepository.findIndividualDetailsDataByNino(any)(any))
+      .thenReturn(Future.successful(None))
     when(mockConnector.getIndividualDetails(any, any)(any, any))
-      .thenReturn(Future.successful(uk.gov.hmrc.http.HttpResponse(200, jsonResponse)))
-    val result = service.fetchIndividualDetails(nino).map(
-      _.fold(
-        error => Left(error),
-        individualDetails => Right(individualDetails)
-      )
-    )
-    assert(result.futureValue.isRight)
-  }
-
-  "IndividualDetailsService" should "create individual details data cache" in {
-    val mockRepository = mock[IndividualDetailsRepository]
-    val mockConnector = mock[IndividualDetailsConnector]
-    val service = new IndividualDetailsServiceImpl(mockRepository, mockConnector)
-
-    val sessionId = "testSessionId"
-
+      .thenReturn(Future.successful(HttpResponse(200, fakeIndividualDetailsJson)))
     when(mockRepository.insertOrReplaceIndividualDetailsDataCache(any)(any[ExecutionContext]))
       .thenReturn(Future.successful("testNino"))
-    val result = service.insertOrReplaceIndividualDetailsDataCache(sessionId, fakeIndividualDetails)
-    assert(result.isCompleted)
+
+    val result = service.getIdDataFromCache("testNino", "some-fake-Id")
+
+    assert(result.futureValue isRight)
+    assert(result.futureValue.fold( _ => false, _.getNino == "AB123456C"))
   }
 
-  it should "get ID data from cache for correct NINO" in {
+
+
+  "IndividualDetailsService" should "get None from cache for non-existent NINO in cache and from 1694API" in {
     val mockRepository = mock[IndividualDetailsRepository]
     val mockConnector = mock[IndividualDetailsConnector]
     val service = new IndividualDetailsServiceImpl(mockRepository, mockConnector)
 
-    val nino = "testNino"
-    when(mockRepository.findIndividualDetailsDataByNino(any)(any[ExecutionContext]))
-      .thenReturn(Future.successful(Some(fakeIndividualDetailsDataCache)))
-    val result = service.getIdDataFromCache(fakeIndividualDetailsDataCache.getNino)
-    assert(result.futureValue.isRight)
-  }
-
-
-  it should "get None from cache for incorrect NINO" in {
-    val mockRepository = mock[IndividualDetailsRepository]
-    val mockConnector = mock[IndividualDetailsConnector]
-    val service = new IndividualDetailsServiceImpl(mockRepository, mockConnector)
-
-    val nino = "testNino"
-    when(mockRepository.findIndividualDetailsDataByNino(any)(any[ExecutionContext]))
+    when(mockRepository.findIndividualDetailsDataByNino(any)(any))
       .thenReturn(Future.successful(None))
-    val result = service.getIdDataFromCache("incorrectNINO")
+
+    when(mockConnector.getIndividualDetails(any, any)(any, any))
+      .thenReturn(Future.successful(HttpResponse(404, "Not found")))
+
+    val result = service.getIdDataFromCache("testNino","testSessionId")
     assert(result.futureValue.isLeft)
   }
 
-//  it should "handle MongoException" in {
-//    val mockRepository = mock[IndividualDetailsRepository]
-//    val mockConnector = mock[IndividualDetailsConnector]
-//    val service = new IndividualDetailsServiceImpl(mockRepository, mockConnector)
-//
-//    val nino = "testNino"
-//    when(mockRepository.findIndividualDetailsDataByNino(any)(any[ExecutionContext]))
-//      .thenThrow(new MongoException("Test exception"))
-//
-//    val result = service.getIdDataFromCache(nino)
-//    assert(result.futureValue.isLeft)
-//  }
+  "IndividualDetailsService" should "handle MongoException" in {
+    val mockRepository = mock[IndividualDetailsRepository]
+    val mockConnector = mock[IndividualDetailsConnector]
+    val service = new IndividualDetailsServiceImpl(mockRepository, mockConnector)
+
+    val nino = "testNino"
+    when(mockRepository.findIndividualDetailsDataByNino(any)(any))
+      .thenReturn(Future.failed(new MongoException("MongoException")))
+
+    when(mockConnector.getIndividualDetails(any, any)(any, any))
+      .thenReturn(Future.successful(HttpResponse(404, "Not found")))
+
+    val result = service.getIdDataFromCache(nino, "testSessionId")
+    assert(result.futureValue.isLeft)
+  }
 
 }

@@ -43,7 +43,8 @@ class NinoLetterControllerSpec extends SpecBase with CDFixtures with MockitoSuga
   lazy val ninoLetterController = applicationWithConfig.injector.instanceOf[NinoLetterController]
   lazy val view = applicationWithConfig.injector.instanceOf[PrintNationalInsuranceNumberView]
 
-  when(mockIndividualDetailsService.getIdDataFromCache(any()))
+  implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
+  when(mockIndividualDetailsService.getIdDataFromCache(any(),any())(any(), any()))
     .thenReturn(
       Future.successful(Right(fakeIndividualDetailsDataCache))
     )

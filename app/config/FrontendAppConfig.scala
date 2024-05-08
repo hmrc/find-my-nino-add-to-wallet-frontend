@@ -63,9 +63,6 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
     "cy" -> Lang("cy")
   )
 
-  val timeout: Int   = configuration.get[Int]("timeout-dialog.timeout")
-  val countdown: Int = configuration.get[Int]("timeout-dialog.countdown")
-
   val cacheTtl: Int = configuration.get[Int]("mongodb.timeToLiveInSeconds")
 
   lazy val fakeNinoEnabled = configuration.getOptional[Boolean]("features.fake-nino-enabled").getOrElse(false)

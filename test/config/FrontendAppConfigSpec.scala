@@ -51,11 +51,6 @@ class FrontendAppConfigSpec extends SpecBase with MockitoSugar {
     ))
   }
 
-
-  "timeout" in {
-    mockFrontendAppConfig.timeout.isInstanceOf[Int]
-  }
-
   "signOutUrl" in {
     mockFrontendAppConfig.signOutUrl.isInstanceOf[String]
   }
@@ -74,10 +69,6 @@ class FrontendAppConfigSpec extends SpecBase with MockitoSugar {
 
   "appName" in {
     mockFrontendAppConfig.appName.isInstanceOf[String]
-  }
-
-  "countdown" in {
-    mockFrontendAppConfig.countdown.isInstanceOf[Int]
   }
 
   "findMyNinoServiceUrl" in {

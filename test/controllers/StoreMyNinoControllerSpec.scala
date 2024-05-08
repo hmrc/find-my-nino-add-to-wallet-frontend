@@ -186,11 +186,11 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
 
     "must return google pass" in {
       val application = applicationBuilderWithConfig().overrides(
-        inject.bind[SessionRepository].toInstance(mockSessionRepository),
-        inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
-        inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
-        inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-      )
+          inject.bind[SessionRepository].toInstance(mockSessionRepository),
+          inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
+          inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
+          inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+        )
         .configure("features.sca-wrapper-enabled" -> false)
         .build()
 
@@ -209,11 +209,11 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
         .thenReturn(Future(None))
 
       val application = applicationBuilderWithConfig().overrides(
-        inject.bind[SessionRepository].toInstance(mockSessionRepository),
-        inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
-        inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
-        inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-      )
+          inject.bind[SessionRepository].toInstance(mockSessionRepository),
+          inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
+          inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
+          inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+        )
         .configure("features.sca-wrapper-enabled" -> false)
         .build()
 
@@ -223,6 +223,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         val userRequest = UserRequestNew(
+          None,
           None,
           ConfidenceLevel.L200,
           fakeIndividualDetails,
@@ -237,11 +238,11 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
 
     "must return apple pass" in {
       val application = applicationBuilderWithConfig().overrides(
-        inject.bind[SessionRepository].toInstance(mockSessionRepository),
-        inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
-        inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
-        inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-      )
+          inject.bind[SessionRepository].toInstance(mockSessionRepository),
+          inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
+          inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
+          inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+        )
         .configure("features.sca-wrapper-enabled" -> false)
         .build()
 
@@ -260,11 +261,11 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
         .thenReturn(Future(None))
 
       val application = applicationBuilderWithConfig().overrides(
-        inject.bind[SessionRepository].toInstance(mockSessionRepository),
-        inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
-        inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
-        inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-      )
+          inject.bind[SessionRepository].toInstance(mockSessionRepository),
+          inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
+          inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
+          inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+        )
         .configure("features.sca-wrapper-enabled" -> false)
         .build()
 
@@ -274,6 +275,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         val userRequest = UserRequestNew(
+          None,
           None,
           ConfidenceLevel.L200,
           fakeIndividualDetails,

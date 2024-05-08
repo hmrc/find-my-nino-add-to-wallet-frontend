@@ -17,7 +17,7 @@
 package controllers
 
 import config.FrontendAppConfig
-import connectors.{CitizenDetailsConnector, GoogleWalletConnector}
+import connectors.GoogleWalletConnector
 import models.individualDetails.IndividualDetailsDataCache
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc._
@@ -32,8 +32,7 @@ import views.html.{GoogleWalletView, PassIdNotFoundView, QRCodeNotFoundView}
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetailsConnector,
-                                       override val messagesApi: MessagesApi,
+class GoogleWalletController @Inject()(override val messagesApi: MessagesApi,
                                        authConnector: AuthConnector,
                                        view: GoogleWalletView,
                                        googleWalletConnector: GoogleWalletConnector,

@@ -17,7 +17,7 @@
 package controllers
 
 import config.FrontendAppConfig
-import connectors.{AppleWalletConnector, CitizenDetailsConnector, GoogleWalletConnector}
+import connectors.{AppleWalletConnector, GoogleWalletConnector}
 import controllers.auth.requests.UserRequestNew
 import models.individualDetails.IndividualDetailsDataCache
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}

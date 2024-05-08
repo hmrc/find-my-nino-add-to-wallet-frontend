@@ -31,7 +31,7 @@ object Origin {
   val Default: Origin = Origin("unknown")
 
   implicit def queryBinder(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[Origin] = new QueryStringBindable[Origin] {
-    def bind(key: String, params: Map[String, Seq[String]]) = {
+    def bind(key: String, params: Map[String, Seq[String]]): Option[Right[Nothing, Origin]] = {
       val result = stringBinder.bind(key, params).map {
         case Right(s) =>
           Try(Origin(s)) match {

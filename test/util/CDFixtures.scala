@@ -349,7 +349,9 @@ object Fixtures extends CDFixtures  {
     addressLine3 = Some(AddressLine("Faketown")),
     addressLine4 = Some(AddressLine("Fakeshire")),
     addressLine5 = Some(AddressLine("Fakecountry")),
-    addressPostcode = Some(AddressPostcode("AA1 1AA"))
+    addressPostcode = Some(AddressPostcode("AA1 1AA")),
+    addressStartDate = LocalDate.now(),
+    addressType = AddressType.ResidentialAddress
   )
 
   val fakeIndividualDetails: IndividualDetails = IndividualDetails(

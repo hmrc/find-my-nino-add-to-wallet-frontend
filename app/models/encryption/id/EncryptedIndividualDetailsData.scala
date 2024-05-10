@@ -17,13 +17,13 @@
 package models.encryption.id
 
 import models.encryption.EncryptedValueFormat._
-import models.individualDetails.{AddressData, AddressLine, AddressPostcode, IndividualDetailsData, IndividualDetailsDataCache}
+import models.individualDetails.{AddressData, AddressLine, AddressType, AddressPostcode, IndividualDetailsData, IndividualDetailsDataCache}
 import play.api.libs.json.{Format, Json, OFormat, __}
 import uk.gov.hmrc.crypto.{EncryptedValue, SymmetricCryptoFactory}
 import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats.instantFormat
 
-import java.time.{Instant, LocalDateTime, ZoneId, ZoneOffset}
+import java.time.{Instant, LocalDate, LocalDateTime, ZoneId, ZoneOffset}
 
 case class EncryptedIndividualDetailsData(
                                            fullName: EncryptedValue,
@@ -45,7 +45,9 @@ final case class EncryptedAddressData(addressLine1: EncryptedAddressLine,
                                 addressLine3: Option[EncryptedAddressLine],
                                 addressLine4: Option[EncryptedAddressLine],
                                 addressLine5: Option[EncryptedAddressLine],
-                                addressPostcode: Option[EncryptedAddressPostcode])
+                                addressPostcode: Option[EncryptedAddressPostcode],
+                                addressStartDate: EncryptedValue,
+                                addressType: EncryptedAddressType)
 
 object EncryptedAddressData {
   implicit val format: OFormat[EncryptedAddressData] = Json.format[EncryptedAddressData]
@@ -58,6 +60,11 @@ object EncryptedAddressLine {
 final case class EncryptedAddressPostcode(value: EncryptedValue)
 object EncryptedAddressPostcode {
   implicit val format: Format[EncryptedAddressPostcode] = Json.valueFormat[EncryptedAddressPostcode]
+}
+
+final case class EncryptedAddressType(value: EncryptedValue)
+object EncryptedAddressType {
+  implicit val format: Format[EncryptedAddressType] = Json.valueFormat[EncryptedAddressType]
 }
 
 object EncryptedIndividualDetailsDataCache {
@@ -107,7 +114,9 @@ object EncryptedIndividualDetailsDataCache {
                   addr.addressLine3.map(x => EncryptedAddressLine(e(x.value))),
                   addr.addressLine4.map(x => EncryptedAddressLine(e(x.value))),
                   addr.addressLine5.map(x => EncryptedAddressLine(e(x.value))),
-                  addr.addressPostcode.map(x => EncryptedAddressPostcode(e(x.value)))
+                  addr.addressPostcode.map(x => EncryptedAddressPostcode(e(x.value))),
+                  e(addr.addressStartDate.toString),
+                  EncryptedAddressType(e(addr.addressType.toString))
             )
           ))
       }
@@ -137,7 +146,12 @@ object EncryptedIndividualDetailsDataCache {
                   addr.addressLine3.map(x => AddressLine(d(x.value))),
                   addr.addressLine4.map(x => AddressLine(d(x.value))),
                   addr.addressLine5.map(x => AddressLine(d(x.value))),
-                  addr.addressPostcode.map(x => AddressPostcode(d(x.value)))
+                  addr.addressPostcode.map(x => AddressPostcode(d(x.value))),
+                  LocalDate.parse(d(addr.addressStartDate)),
+                  d(addr.addressType.value) match {
+                    case "1" => AddressType.ResidentialAddress
+                    case _   => AddressType.CorrespondenceAddress
+                  }
                 )
             ))
       }

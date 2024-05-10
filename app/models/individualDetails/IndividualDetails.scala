@@ -210,7 +210,9 @@ object IndividualDetails {
         addr.addressLine3,
         addr.addressLine4,
         addr.addressLine5,
-        addr.addressPostcode))
+        addr.addressPostcode,
+        addr.addressStartDate,
+        addr.addressType))
 
     }
 

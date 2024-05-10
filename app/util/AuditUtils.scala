@@ -16,13 +16,13 @@
 
 package util
 
-import models.individualDetails.{AddressData, AddressLine, IndividualDetailsDataCache}
-import play.api.libs.json.{JsValue, Json, OFormat}
+import models.individualDetails.{AddressData, AddressLine, AddressType, IndividualDetailsDataCache}
+import play.api.libs.json.{Format, JsValue, Json, OFormat}
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
 import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
 
 import java.time.format.DateTimeFormatter
-import java.time.ZoneOffset
+import java.time.{LocalDate, ZoneOffset}
 
 object AuditUtils {
 
@@ -33,7 +33,7 @@ object AuditUtils {
                                     formCreationTimestamp: String,
                                     nino: String,
                                     name: String,
-                                    mainAddress: AddressData,
+                                    mainAddress: AuditAddress,
                                     device: Option[String],
                                     language: String = "en",
                                     WalletProvider: Option[String]
@@ -76,13 +76,41 @@ object AuditUtils {
     addressLine3 = None,
     addressLine4 = None,
     addressLine5 = None,
-    addressPostcode = None
+    addressPostcode = None,
+    addressStartDate = LocalDate.now(),
+    addressType = AddressType.ResidentialAddress
   )
 
-  def getIndivudualsAddress(individualDetailsDataCache: IndividualDetailsDataCache): AddressData = {
+  final case class AuditAddress(line1: String,
+                                line2: String,
+                                line3: Option[String],
+                                line4: Option[String],
+                                line5: Option[String],
+                                postcode: Option[String],
+                                startDate: String,
+                                `type`: String)
+
+  object AuditAddress {
+    implicit val format: Format[AuditAddress] = Json.format[AuditAddress]
+  }
+  private def getAuditAddress(addressData: AddressData): AuditAddress = {
+    AuditAddress(line1 = addressData.addressLine1.value,
+      line2 = addressData.addressLine2.value,
+      line3 = addressData.addressLine3.map(x => x.value),
+      line4 = addressData.addressLine4.map(x => x.value),
+      line5 = addressData.addressLine5.map(x => x.value),
+      postcode = addressData.addressPostcode.map(x => x.value),
+      startDate = addressData.addressStartDate.toString,
+      `type` = addressData.addressType match {
+        case AddressType.ResidentialAddress => "Residential"
+        case AddressType.CorrespondenceAddress => "Correspondence"
+      })
+  }
+
+  private def getIndivudualsAddress(individualDetailsDataCache: IndividualDetailsDataCache): AuditAddress = {
     individualDetailsDataCache.getAddress match {
-      case Some(a: AddressData) => a
-      case _ => emptyAddress
+      case Some(a: AddressData) => getAuditAddress(a)
+      case _ => getAuditAddress(emptyAddress)
     }
   }
 

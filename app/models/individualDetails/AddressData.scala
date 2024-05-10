@@ -18,13 +18,17 @@ package models.individualDetails
 
 import play.api.libs.json._
 
+import java.time.LocalDate
+
 final case class AddressData(
     addressLine1:             AddressLine,
     addressLine2:             AddressLine,
     addressLine3:             Option[AddressLine],
     addressLine4:             Option[AddressLine],
     addressLine5:             Option[AddressLine],
-    addressPostcode:          Option[AddressPostcode]
+    addressPostcode:          Option[AddressPostcode],
+    addressStartDate:         LocalDate,
+    addressType:              AddressType
 )
 
 object AddressData {

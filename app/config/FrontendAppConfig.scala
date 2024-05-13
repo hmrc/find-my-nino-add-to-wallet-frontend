@@ -35,12 +35,6 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
   lazy val generalQueriesUrl     = "https://www.gov.uk/contact-hmrc"
   lazy val citizenDetailsServiceUrl: String = servicesConfig.baseUrl("citizen-details-service")
   val serviceName = "save-your-national-insurance-number"
-  lazy val accessibilityBaseUrl: String = servicesConfig.getString("accessibility-statement.baseUrl")
-  lazy private val accessibilityRedirectUrl =
-    servicesConfig.getString("accessibility-statement.redirectUrl")
-
-  def accessibilityStatementUrl(referrer: String) =
-    s"$accessibilityBaseUrl/accessibility-statement$accessibilityRedirectUrl?referrerUrl=${enc(accessibilityBaseUrl + referrer)}"
 
   def getBasGatewayFrontendSignOutUrl(continueUrl: String): String =
     basGatewayFrontendHost + s"/bas-gateway/sign-out-without-state?continue=$continueUrl"

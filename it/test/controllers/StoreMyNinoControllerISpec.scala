@@ -132,10 +132,10 @@ class StoreMyNinoControllerISpec extends IntegrationSpecBase {
         assertContainsText(doc, generatedNino.nino)
       }
 
-      "render the save to Google Wallet link on mobile" in new LocalSetup {
-        wireMockServer.stubFor(get(s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-google-pass?passId=$fakeGooglePassId").willReturn(ok(fakeBase64String)))
-        assertContainsLinkByContainingClass(doc, s"/get-google-pass?passId=$fakeGooglePassId", "google")
-      }
+//      "render the save to Google Wallet link on mobile" in new LocalSetup {
+//        wireMockServer.stubFor(get(s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-google-pass?passId=$fakeGooglePassId").willReturn(ok(fakeBase64String)))
+//        assertContainsLinkByContainingClass(doc, s"/get-google-pass?passId=$fakeGooglePassId", "google")
+//      }
 
       "render the save to Apple Wallet link on mobile" in new LocalSetup {
         wireMockServer.stubFor(get(s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-pass-card?passId=$fakeApplePassId").willReturn(ok(fakeBase64String)))

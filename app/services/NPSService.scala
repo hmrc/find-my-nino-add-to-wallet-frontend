@@ -34,6 +34,8 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class NPSService @Inject()(connector: NPSConnector)(implicit ec: ExecutionContext) extends Logging {
+  
+  val className: String = s"${this.getClass.getName}:upliftCRN"
 
   def upliftCRN(identifier: String, crnUpliftRequest: CRNUpliftRequest)
                (implicit hc: HeaderCarrier): Future[Either[HttpException, Boolean]] = {
@@ -42,19 +44,19 @@ class NPSService @Inject()(connector: NPSConnector)(implicit ec: ExecutionContex
     } yield httpResponse.status match {
       case NO_CONTENT => Right(true)
       case BAD_REQUEST =>
-        logger.warn(s"${this.getClass.getName}-upliftCRN returned: ${httpResponse.status.toString}")
+        logger.warn(s"$className returned: ${httpResponse.status}")
         throw new BadRequestException(httpResponse.body)
       case FORBIDDEN =>
-        logger.warn(s"${this.getClass.getName}-upliftCRN returned: ${httpResponse.status.toString}")
+        logger.warn(s"$className returned: ${httpResponse.status}")
         throw new ForbiddenException(httpResponse.body)
       case UNPROCESSABLE_ENTITY =>
-        logger.warn(s"${this.getClass.getName}-upliftCRN returned: ${httpResponse.status.toString}")
+        logger.warn(s"$className returned: ${httpResponse.status}")
         throw new UnprocessableEntityException(httpResponse.body)
       case NOT_FOUND =>
-        logger.warn(s"${this.getClass.getName}-upliftCRN returned: ${httpResponse.status.toString}")
+        logger.warn(s"$className returned: ${httpResponse.status}")
         throw new NotFoundException(httpResponse.body)
       case INTERNAL_SERVER_ERROR =>
-        logger.error(s"${this.getClass.getName}-upliftCRN returned: ${httpResponse.status.toString}")
+        logger.error(s"$className returned: ${httpResponse.status}")
         throw new InternalServerException(httpResponse.body)
     }
   }

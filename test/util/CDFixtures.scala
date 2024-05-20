@@ -350,6 +350,7 @@ object Fixtures extends CDFixtures  {
     addressLine4 = Some(AddressLine("Fakeshire")),
     addressLine5 = Some(AddressLine("Fakecountry")),
     addressPostcode = Some(AddressPostcode("AA1 1AA")),
+    addressCountry = "GREAT BRITAIN",
     addressStartDate = LocalDate.now(),
     addressType = AddressType.ResidentialAddress
   )

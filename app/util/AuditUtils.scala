@@ -77,6 +77,7 @@ object AuditUtils {
     addressLine4 = None,
     addressLine5 = None,
     addressPostcode = None,
+    addressCountry = "",
     addressStartDate = LocalDate.now(),
     addressType = AddressType.ResidentialAddress
   )
@@ -87,6 +88,7 @@ object AuditUtils {
                                 line4: Option[String],
                                 line5: Option[String],
                                 postcode: Option[String],
+                                country: String,
                                 startDate: String,
                                 `type`: String)
 
@@ -100,6 +102,7 @@ object AuditUtils {
       line4 = addressData.addressLine4.map(x => x.value),
       line5 = addressData.addressLine5.map(x => x.value),
       postcode = addressData.addressPostcode.map(x => x.value),
+      country = addressData.addressCountry,
       startDate = addressData.addressStartDate.toString,
       `type` = addressData.addressType match {
         case AddressType.ResidentialAddress => "Residential"

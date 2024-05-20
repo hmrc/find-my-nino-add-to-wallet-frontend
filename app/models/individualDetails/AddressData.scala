@@ -27,6 +27,7 @@ final case class AddressData(
     addressLine4:             Option[AddressLine],
     addressLine5:             Option[AddressLine],
     addressPostcode:          Option[AddressPostcode],
+    addressCountry:           String,
     addressStartDate:         LocalDate,
     addressType:              AddressType
 )

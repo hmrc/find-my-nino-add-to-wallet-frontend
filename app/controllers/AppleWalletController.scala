@@ -17,7 +17,7 @@
 package controllers
 
 import config.FrontendAppConfig
-import connectors.{CitizenDetailsConnector, AppleWalletConnector}
+import connectors.{AppleWalletConnector, CitizenDetailsConnector}
 import controllers.auth.requests.UserRequest
 import play.api.{Configuration, Environment}
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -28,7 +28,7 @@ import util.AuditUtils
 import views.html.{AppleWalletView, PassIdNotFoundView, QRCodeNotFoundView}
 
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class AppleWalletController @Inject()(val citizenDetailsConnector: CitizenDetailsConnector,
                                       appleWalletConnector: AppleWalletConnector,
@@ -50,10 +50,14 @@ class AppleWalletController @Inject()(val citizenDetailsConnector: CitizenDetail
 
   def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction) async {
     implicit request => {
-      auditService.audit(AuditUtils.buildAuditEvent(request.personDetails, "ViewWalletPage", frontendAppConfig.appName, Some("Apple")))
-      for {
-        pId: Some[String] <- appleWalletConnector.createApplePass(request.personDetails.person.fullName, request.nino.map(_.formatted).getOrElse(""))
-      } yield Ok(view(pId.value, isMobileDisplay(request)))
+      if(frontendAppConfig.appleWalletEnabled) {
+        auditService.audit(AuditUtils.buildAuditEvent(request.personDetails, "ViewWalletPage", frontendAppConfig.appName, Some("Apple")))
+        for {
+          pId: Some[String] <- appleWalletConnector.createApplePass(request.personDetails.person.fullName, request.nino.map(_.formatted).getOrElse(""))
+        } yield Ok(view(pId.value, isMobileDisplay(request)))
+      } else {
+        Future.successful(Redirect(controllers.routes.UnauthorisedController.onPageLoad))
+      }
     }
   }
 

@@ -73,6 +73,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
   val cacheTtl: Int = configuration.get[Int]("mongodb.timeToLiveInSeconds")
 
   lazy val googleWalletEnabled = configuration.getOptional[Boolean]("features.google-wallet-enabled").getOrElse(false)
+  lazy val appleWalletEnabled = configuration.getOptional[Boolean]("features.apple-wallet-enabled").getOrElse(false)
   lazy val SCAWrapperEnabled = configuration.getOptional[Boolean]("features.sca-wrapper-enabled").getOrElse(false)
   lazy val fakeNinoEnabled = configuration.getOptional[Boolean]("features.fake-nino-enabled").getOrElse(false)
 

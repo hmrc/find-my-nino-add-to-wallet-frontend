@@ -20,7 +20,7 @@ import play.api.http.{EnabledFilters, HttpFilters}
 import play.api.mvc.EssentialFilter
 import uk.gov.hmrc.sca.filters.WrapperDataFilter
 
-import javax.inject.{Inject, Singleton};
+import javax.inject.{Inject, Singleton}
 
 @Singleton
 class Filters @Inject()(
@@ -29,7 +29,6 @@ class Filters @Inject()(
                          appConfig: FrontendAppConfig
                        ) extends HttpFilters {
   override val filters: Seq[EssentialFilter] = {
-    defaultFilters.filters ++
-      Option.when(appConfig.SCAWrapperEnabled)(wrapperDataFilter)
+    defaultFilters.filters ++ Option(wrapperDataFilter)
   }
 }

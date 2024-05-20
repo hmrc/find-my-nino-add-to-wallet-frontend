@@ -49,19 +49,6 @@ trait LayoutProvider {
            ): HtmlFormat.Appendable
 }
 
-class OldLayoutProvider @Inject()(layout: views.html.templates.Layout) extends LayoutProvider {
-
-  //noinspection ScalaStyle
-  override def apply(pageTitle: String, showBackLink: Boolean, timeout: Boolean, showSignOut: Boolean,
-                     stylesheets: Option[Html], fullWidth: Boolean, accountHome: Boolean, yourProfileActive: Boolean,
-                     hideAccountMenu: Boolean, backLinkID: Boolean, backLinkUrl: String,
-                     disableSessionExpired: Boolean, sidebarContent: Option[Html], messagesActive: Boolean)(contentBlock: Html)
-                    (implicit request: Request[_], messages: Messages): HtmlFormat.Appendable = {
-    layout(pageTitle, showBackLink, timeout, showSignOut, stylesheets, fullWidth, accountHome, yourProfileActive,
-      hideAccountMenu, backLinkID, backLinkUrl, disableSessionExpired, sidebarContent, messagesActive)(contentBlock)
-  }
-}
-
 class NewLayoutProvider @Inject()(wrapperService: WrapperService, additionalScript: AdditionalScript,
                                   headBlock: HeadBlock) extends LayoutProvider with Logging {
 
@@ -82,5 +69,6 @@ class NewLayoutProvider @Inject()(wrapperService: WrapperService, additionalScri
       fullWidth = fullWidth,
       hideMenuBar = hideAccountMenu
     )(messages, HeaderCarrierConverter.fromRequest(request), request)
+
   }
 }

@@ -21,18 +21,20 @@ import connectors.NPSConnector
 import models.nps.CRNUpliftRequest
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{reset, when}
-import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import play.api.Application
-import play.api.http.Status.{BAD_REQUEST, FORBIDDEN, INTERNAL_SERVER_ERROR, NOT_FOUND, NO_CONTENT, UNPROCESSABLE_ENTITY}
+import play.api.http.Status._
 import play.api.inject.bind
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import uk.gov.hmrc.http.{BadRequestException, ForbiddenException, HeaderCarrier, HttpException, HttpResponse, InternalServerException, NotFoundException, UnprocessableEntityException}
+import uk.gov.hmrc.http.{BadRequestException, ForbiddenException, HeaderCarrier, HttpResponse, InternalServerException, NotFoundException, UnprocessableEntityException}
 
 import scala.concurrent.Future
 
 class NPSServiceSpec extends SpecBase{
 
-  val jsonBadRequest =
+  val nino = "AA000003B"
+  val npsRequest: CRNUpliftRequest = CRNUpliftRequest("test", "test", "01/01/1990")
+
+  val jsonBadRequest: String =
     s"""
        |{
        |  "failures": [
@@ -48,7 +50,7 @@ class NPSServiceSpec extends SpecBase{
        |}
        |""".stripMargin
 
-  val jsonForbidden =
+  val jsonForbidden: String =
     s"""
        |{
        |  "reason": "Forbidden",
@@ -56,7 +58,7 @@ class NPSServiceSpec extends SpecBase{
        |}
        |""".stripMargin
 
-  val jsonUnprocessableEntity =
+  val jsonUnprocessableEntity: String =
     s"""
        |{
        |  "failures": [
@@ -84,12 +86,10 @@ class NPSServiceSpec extends SpecBase{
     reset(mockNPSConnector)
 
   "upliftCRN" - {
+    implicit val hc: HeaderCarrier = HeaderCarrier()
+
     "when back end connector returns 204 (NO_CONTENT)" - {
       "return a right of true" in {
-
-        implicit val hc: HeaderCarrier = HeaderCarrier()
-        val npsRequest = CRNUpliftRequest("test", "test", "01/01/1990")
-        val nino = "AA000003B"
 
         when(mockNPSConnector
           .upliftCRN(any, any)(any, any()))
@@ -102,10 +102,6 @@ class NPSServiceSpec extends SpecBase{
 
     "when back end connector returns 400 (BAD_REQUEST)" - {
       "return a bad request exception (BAD_REQUEST)" in {
-
-        implicit val hc: HeaderCarrier = HeaderCarrier()
-        val npsRequest = CRNUpliftRequest("test", "test", "01/01/1990")
-        val nino = "AA000003B"
 
         val response: HttpResponse = HttpResponse(BAD_REQUEST, jsonBadRequest)
 
@@ -122,10 +118,6 @@ class NPSServiceSpec extends SpecBase{
     "when back end connector returns 403 (FORBIDDEN)" - {
       "return a bad request exception (FORBIDDEN)" in {
 
-        implicit val hc: HeaderCarrier = HeaderCarrier()
-        val npsRequest = CRNUpliftRequest("test", "test", "01/01/1990")
-        val nino = "AA000003B"
-
         val response: HttpResponse = HttpResponse(FORBIDDEN, jsonForbidden)
 
         when(mockNPSConnector
@@ -140,10 +132,6 @@ class NPSServiceSpec extends SpecBase{
 
     "when back end connector returns 422 (UNPROCESSABLE_ENTITY)" - {
       "return a bad request exception (UNPROCESSABLE_ENTITY)" in {
-
-        implicit val hc: HeaderCarrier = HeaderCarrier()
-        val npsRequest = CRNUpliftRequest("test", "test", "01/01/1990")
-        val nino = "AA000003B"
 
         val response: HttpResponse = HttpResponse(UNPROCESSABLE_ENTITY, jsonUnprocessableEntity)
 
@@ -160,10 +148,6 @@ class NPSServiceSpec extends SpecBase{
     "when back end connector returns 404 (NOT_FOUND)" - {
       "return a bad request exception (NOT_FOUND)" in {
 
-        implicit val hc: HeaderCarrier = HeaderCarrier()
-        val npsRequest = CRNUpliftRequest("test", "test", "01/01/1990")
-        val nino = "AA000003B"
-
         val response: HttpResponse = HttpResponse(NOT_FOUND, "")
 
         when(mockNPSConnector
@@ -178,10 +162,6 @@ class NPSServiceSpec extends SpecBase{
 
     "when back end connector returns 500 (INTERNAL_SERVER_ERROR)" - {
       "return a bad request exception (INTERNAL_SERVER_ERROR)" in {
-
-        implicit val hc: HeaderCarrier = HeaderCarrier()
-        val npsRequest = CRNUpliftRequest("test", "test", "01/01/1990")
-        val nino = "AA000003B"
 
         val response: HttpResponse = HttpResponse(INTERNAL_SERVER_ERROR, "Something went wrong")
 

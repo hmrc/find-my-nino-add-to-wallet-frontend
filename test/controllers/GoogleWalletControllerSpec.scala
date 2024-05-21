@@ -17,7 +17,7 @@
 package controllers
 
 import base.SpecBase
-import connectors.{CitizenDetailsConnector, IdentityVerificationFrontendConnector, PersonDetailsErrorResponse, PersonDetailsSuccessResponse, GoogleWalletConnector}
+import connectors._
 import controllers.auth.requests.UserRequest
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
@@ -34,6 +34,7 @@ import util.CDFixtures
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
 import util.TestData.NinoUser
 
+import java.util.Base64
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import views.html.{ErrorTemplate, UnauthorisedView, GoogleWalletView, PassIdNotFoundView, QRCodeNotFoundView, RedirectToPostalFormView}
@@ -104,7 +105,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
               inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
               inject.bind[IdentityVerificationFrontendConnector].toInstance(mockIdentityVerificationFrontendConnector)
             )
-            .configure("features.sca-wrapper-enabled" -> false)
+            .configure("features.google-wallet-enabled" -> true)
             .build()
 
         when(mockCitizenDetailsConnector.personDetails(any())(any(), any()))
@@ -131,8 +132,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
               inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
             )
             .configure(
-              "features.sca-wrapper-enabled" -> false,
-              "google-wallet-enabled" -> true
+              "features.google-wallet-enabled" -> true
             )
             .build()
 
@@ -156,7 +156,6 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
               inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector)
             )
             .configure(
-              "features.sca-wrapper-enabled" -> false,
               "features.google-wallet-enabled" -> true
             )
             .build()
@@ -180,7 +179,6 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
           )
-          .configure("features.sca-wrapper-enabled" -> false)
           .build()
 
         running(application) {
@@ -202,7 +200,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
           )
-          .configure("features.sca-wrapper-enabled" -> false)
+          .configure( "features.google-wallet-enabled" -> true)
           .build()
 
         running(application) {
@@ -228,7 +226,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
           )
-          .configure("features.sca-wrapper-enabled" -> false)
+          .configure( "features.google-wallet-enabled" -> true)
           .build()
 
         running(application) {
@@ -250,7 +248,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
           )
-          .configure("features.sca-wrapper-enabled" -> false)
+          .configure( "features.google-wallet-enabled" -> true)
           .build()
 
         running(application) {
@@ -276,7 +274,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
           )
-          .configure("features.sca-wrapper-enabled" -> false)
+          .configure( "features.google-wallet-enabled" -> true)
           .build()
 
         running(application) {
@@ -299,7 +297,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
               inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
               inject.bind[IdentityVerificationFrontendConnector].toInstance(mockIdentityVerificationFrontendConnector)
             )
-            .configure("features.sca-wrapper-enabled" -> false)
+            .configure("features.google-wallet-enabled" -> false)
             .build()
 
         when(mockCitizenDetailsConnector.personDetails(any())(any(), any()))
@@ -315,6 +313,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           contentAsString(result) mustEqual (redirectview()(request, frontendAppConfig, messages(application))).toString()
         }
         reset(mockCitizenDetailsConnector)
+
       }
 
       "must return OK and the correct view for a GET" in {
@@ -325,10 +324,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
               inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
               inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
             )
-            .configure(
-              "features.sca-wrapper-enabled" -> false,
-              "features.google-wallet-enabled" -> false
-            )
+            .configure("features.google-wallet-enabled" -> false)
             .build()
 
         running(application) {
@@ -339,6 +335,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           status(result) mustEqual SEE_OTHER
           redirectLocation(result).value mustBe routes.UnauthorisedController.onPageLoad.url
         }
+
       }
 
       "must return OK and the correct view for a GET when using the wrapper" in {
@@ -350,10 +347,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
               inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector),
               inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector)
             )
-            .configure(
-              "features.sca-wrapper-enabled" -> false,
-              "features.google-wallet-enabled" -> false
-            )
+            .configure("features.google-wallet-enabled" -> false)
             .build()
 
         running(application) {
@@ -364,7 +358,9 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           status(result) mustEqual SEE_OTHER
           redirectLocation(result).value mustBe routes.UnauthorisedController.onPageLoad.url
         }
+
       }
+
 
       "must return google pass" in {
 
@@ -373,7 +369,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
           )
-          .configure("features.sca-wrapper-enabled" -> false)
+          .configure("features.google-wallet-enabled" -> false)
           .build()
 
         running(application) {
@@ -395,7 +391,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
           )
-          .configure("features.sca-wrapper-enabled" -> false)
+          .configure("features.google-wallet-enabled" -> false)
           .build()
 
         running(application) {
@@ -421,7 +417,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
           )
-          .configure("features.sca-wrapper-enabled" -> false)
+          .configure("features.google-wallet-enabled" -> false)
           .build()
 
         running(application) {
@@ -443,7 +439,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
           )
-          .configure("features.sca-wrapper-enabled" -> false)
+          .configure("features.google-wallet-enabled" -> false)
           .build()
 
         running(application) {
@@ -469,7 +465,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
           )
-          .configure("features.sca-wrapper-enabled" -> false)
+          .configure("features.google-wallet-enabled" -> false)
           .build()
 
         running(application) {
@@ -479,6 +475,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           val result = route(application, request).value
           status(result) mustEqual 500
         }
+
       }
     }
 

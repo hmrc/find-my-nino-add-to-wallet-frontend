@@ -34,12 +34,6 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
   val enc = URLEncoder.encode(_: String, "UTF-8")
   lazy val generalQueriesUrl     = "https://www.gov.uk/contact-hmrc"
   val serviceName = "save-your-national-insurance-number"
-  lazy val accessibilityBaseUrl: String = servicesConfig.getString("accessibility-statement.baseUrl")
-  lazy private val accessibilityRedirectUrl =
-    servicesConfig.getString("accessibility-statement.redirectUrl")
-
-  def accessibilityStatementUrl(referrer: String) =
-    s"$accessibilityBaseUrl/accessibility-statement$accessibilityRedirectUrl?referrerUrl=${enc(accessibilityBaseUrl + referrer)}"
 
   def getBasGatewayFrontendSignOutUrl(continueUrl: String): String =
     basGatewayFrontendHost + s"/bas-gateway/sign-out-without-state?continue=$continueUrl"
@@ -57,22 +51,14 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
   val signOutUrl: String                = configuration.get[String]("urls.signOut")
   lazy val findMyNinoServiceUrl: String = servicesConfig.baseUrl("find-my-nino-add-to-wallet-service")
 
-
-  val languageTranslationEnabled: Boolean =
-    configuration.get[Boolean]("features.welsh-translation")
-
   def languageMap: Map[String, Lang] = Map(
     "en" -> Lang("en"),
     "cy" -> Lang("cy")
   )
 
-  val timeout: Int   = configuration.get[Int]("timeout-dialog.timeout")
-  val countdown: Int = configuration.get[Int]("timeout-dialog.countdown")
-
   val cacheTtl: Int = configuration.get[Int]("mongodb.timeToLiveInSeconds")
   val encryptionKey: String = configuration.get[String]("mongodb.encryption.key")
 
-  lazy val SCAWrapperEnabled = configuration.getOptional[Boolean]("features.sca-wrapper-enabled").getOrElse(false)
   lazy val fakeNinoEnabled = configuration.getOptional[Boolean]("features.fake-nino-enabled").getOrElse(false)
 
   lazy val basGatewayFrontendHost: String     = getExternalUrl(s"bas-gateway-frontend.host").getOrElse("")

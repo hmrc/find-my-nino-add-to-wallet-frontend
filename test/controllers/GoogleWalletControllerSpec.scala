@@ -104,7 +104,6 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[IdentityVerificationFrontendConnector].toInstance(mockIdentityVerificationFrontendConnector)
           )
-          .configure("features.sca-wrapper-enabled" -> false)
           .build()
 
       when(mockIndividualDetailsService.getIdDataFromCache(any(),any())(any(),any()))
@@ -121,7 +120,6 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
       }
     }
 
-
     "must return OK and the correct view for a GET" in {
       val application =
         applicationBuilderWithConfig()
@@ -130,7 +128,6 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
           )
-          .configure("features.sca-wrapper-enabled" -> false)
           .build()
 
       running(application) {
@@ -143,30 +140,6 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
       }
     }
 
-    "must return OK and the correct view for a GET when using the wrapper" in {
-      val application =
-        applicationBuilderWithConfig()
-          .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
-            inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
-            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
-            inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector)
-          )
-          .configure("features.sca-wrapper-enabled" -> true)
-          .build()
-
-      val view = application.injector.instanceOf[GoogleWalletView]
-
-      running(application) {
-        userLoggedInFMNUser(NinoUser)
-        val request = FakeRequest(GET, routes.GoogleWalletController.onPageLoad.url)
-          .withSession(("authToken", "Bearer 123"))
-        val result = route(application, request).value
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual (view(passId, false)(request.withAttrs(requestAttributeMap), messages(application))).toString
-      }
-    }
-
     "must return google pass" in {
 
       val application = applicationBuilderWithConfig().overrides(
@@ -174,7 +147,6 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
         inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
           inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
       )
-        .configure("features.sca-wrapper-enabled" -> false)
         .build()
 
       running(application) {
@@ -196,7 +168,6 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
         inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
           inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
       )
-        .configure("features.sca-wrapper-enabled" -> false)
         .build()
 
       running(application) {
@@ -222,7 +193,6 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
           inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
         )
-        .configure("features.sca-wrapper-enabled" -> false)
         .build()
 
       running(application) {
@@ -244,7 +214,6 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
         inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
           inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
       )
-        .configure("features.sca-wrapper-enabled" -> false)
         .build()
 
       running(application) {
@@ -270,7 +239,6 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
           inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
         )
-        .configure("features.sca-wrapper-enabled" -> false)
         .build()
 
       running(application) {

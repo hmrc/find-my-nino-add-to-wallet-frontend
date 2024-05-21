@@ -88,7 +88,6 @@ class GovUKWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
             inject.bind[GovUKWalletSMNConnector].toInstance(mockGovUKWalletSMNConnector),
             inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
           )
-          .configure("features.sca-wrapper-enabled" -> false)
           .configure("features.govuk-wallet-enabled" -> true)
           .build()
 
@@ -102,31 +101,6 @@ class GovUKWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
       }
     }
 
-    "must return OK and the correct view for a GET when using the wrapper" in {
-      val application =
-        applicationBuilderWithConfig()
-          .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
-            inject.bind[GovUKWalletSMNConnector].toInstance(mockGovUKWalletSMNConnector),
-            inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector),
-            inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector)
-          )
-          .configure("features.sca-wrapper-enabled" -> true)
-          .configure("features.govuk-wallet-enabled" -> true)
-          .build()
-
-      val view = application.injector.instanceOf[GovUKWalletView]
-
-      running(application) {
-        userLoggedInFMNUser(NinoUser)
-        val request = FakeRequest(GET, routes.GovUKWalletController.onPageLoad.url)
-          .withSession(("authToken", "Bearer 123"))
-        val result = route(application, request).value
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual (view(passId, "qrCodeImage", false)(request.withAttrs(requestAttributeMap), messages(application))).toString
-      }
-    }
-
     "must fail to login user" in {
       val application = applicationBuilderWithConfig()
         .overrides(
@@ -134,7 +108,6 @@ class GovUKWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
           inject.bind[GovUKWalletSMNConnector].toInstance(mockGovUKWalletSMNConnector),
           inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
         )
-        .configure("features.sca-wrapper-enabled" -> false)
         .configure("features.govuk-wallet-enabled" -> true)
         .build()
 
@@ -156,7 +129,6 @@ class GovUKWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
             inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector),
             inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector)
           )
-          .configure("features.sca-wrapper-enabled" -> true)
           .configure("features.govuk-wallet-enabled" -> false)
           .build()
 

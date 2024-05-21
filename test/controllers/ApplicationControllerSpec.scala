@@ -88,7 +88,6 @@ class ApplicationControllerSpec extends SpecBase with CDFixtures with MockitoSug
         inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
         inject.bind[IdentityVerificationFrontendConnector].toInstance(mockIdentityVerificationFrontendConnector)
       )
-      .configure("features.sca-wrapper-enabled" -> false)
       .build()
 
     def controller: ApplicationController =

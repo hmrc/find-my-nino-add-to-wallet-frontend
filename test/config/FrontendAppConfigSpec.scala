@@ -23,21 +23,16 @@ import play.api.Configuration
 import play.api.i18n.Lang
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
-class FrontendAppConfigSpec extends SpecBase with MockitoSugar{
+class FrontendAppConfigSpec extends SpecBase with MockitoSugar {
   val mockFrontendAppConfig = mock[FrontendAppConfig]
   when(mockFrontendAppConfig.languageMap).thenReturn(Map(
     "en" -> Lang("en"),
     "cy" -> Lang("cy")
   ))
 
-  "Methods tests" - {
-    "languageTranslationEnabled must return Boolean" in
-      mockFrontendAppConfig.languageTranslationEnabled.isInstanceOf[Boolean]
-    }
-
-    "languageMap" in {
-      mockFrontendAppConfig.languageMap.isInstanceOf[Map[String, Lang]]
-    }
+  "languageMap" in {
+    mockFrontendAppConfig.languageMap.isInstanceOf[Map[String, Lang]]
+  }
 
   "languageMap count is correct" in {
     mockFrontendAppConfig.languageMap.size.equals(2)
@@ -45,7 +40,7 @@ class FrontendAppConfigSpec extends SpecBase with MockitoSugar{
 
   "languageMap returns eng language" in {
     mockFrontendAppConfig.languageMap.get("en").equals(Lang("en"))
-    }
+  }
 
   "languageMap returns welsh language" in {
     mockFrontendAppConfig.languageMap.get("cy").equals(Lang("cy"))
@@ -58,58 +53,36 @@ class FrontendAppConfigSpec extends SpecBase with MockitoSugar{
     ))
   }
 
+  "signOutUrl" in {
+    mockFrontendAppConfig.signOutUrl.isInstanceOf[String]
+  }
 
+  "loginUrl" in {
+    mockFrontendAppConfig.loginUrl.isInstanceOf[String]
+  }
 
-    "return the correct language map" in {
-      val mockConfiguration = mock[Configuration]
-      val mockServicesConfig = mock[ServicesConfig]
+  "host" in {
+    mockFrontendAppConfig.host.isInstanceOf[String]
+  }
 
-      val appConfig = new FrontendAppConfig(mockConfiguration, mockServicesConfig)
+  "cacheTtl" in {
+    mockFrontendAppConfig.cacheTtl.isInstanceOf[Int]
+  }
 
-      val result = appConfig.languageMap
+  "appName" in {
+    mockFrontendAppConfig.appName.isInstanceOf[String]
+  }
 
-      result mustBe Map("en" -> Lang("en"), "cy" -> Lang("cy"))
-    }
+  "findMyNinoServiceUrl" in {
+    mockFrontendAppConfig.findMyNinoServiceUrl.isInstanceOf[String]
+  }
 
+  "loginContinueUrl" in {
+    mockFrontendAppConfig.loginContinueUrl.isInstanceOf[String]
+  }
 
-   "timeout" in {
-     mockFrontendAppConfig.timeout.isInstanceOf[Int]
-    }
-
-    "signOutUrl" in {
-      mockFrontendAppConfig.signOutUrl.isInstanceOf[String]
-    }
-
-    "loginUrl" in {
-      mockFrontendAppConfig.loginUrl.isInstanceOf[String]
-    }
-
-    "host" in {
-      mockFrontendAppConfig.host.isInstanceOf[String]
-    }
-
-    "cacheTtl" in {
-      mockFrontendAppConfig.cacheTtl.isInstanceOf[Int]
-    }
-
-    "appName" in {
-      mockFrontendAppConfig.appName.isInstanceOf[String]
-    }
-
-    "countdown" in {
-      mockFrontendAppConfig.countdown.isInstanceOf[Int]
-    }
-
-    "findMyNinoServiceUrl" in {
-      mockFrontendAppConfig.findMyNinoServiceUrl.isInstanceOf[String]
-    }
-
-    "loginContinueUrl" in {
-      mockFrontendAppConfig.loginContinueUrl.isInstanceOf[String]
-    }
-
-    "container" in {
-      mockFrontendAppConfig.gtmContainer.isInstanceOf[String]
-    }
+  "container" in {
+    mockFrontendAppConfig.gtmContainer.isInstanceOf[String]
+  }
 
 }

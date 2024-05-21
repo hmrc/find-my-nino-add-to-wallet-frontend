@@ -120,7 +120,6 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
             inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
             inject.bind[IdentityVerificationFrontendConnector].toInstance(mockIdentityVerificationFrontendConnector)
           )
-          .configure("features.sca-wrapper-enabled" -> false)
           .build()
 
 
@@ -145,7 +144,6 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
             inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
           )
-          .configure("features.sca-wrapper-enabled" -> false)
           .build()
 
       running(application) {
@@ -158,32 +156,6 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
       }
     }
 
-    "must return OK and the correct view for a GET when using the wrapper" in {
-      val application =
-        applicationBuilderWithConfig()
-          .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
-            inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
-            inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
-            inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),
-            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-          )
-          .configure("features.sca-wrapper-enabled" -> true)
-          .build()
-
-      val view = application.injector.instanceOf[StoreMyNinoView]
-
-      running(application) {
-        userLoggedInFMNUser(NinoUser)
-        val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
-          .withSession(("authToken", "Bearer 123"))
-        val result = route(application, request).value
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(
-          applePassId, googlePassId,"AA 00 00 03 B", displayForMobile = false)(request.withAttrs(requestAttributeMap), messages(application)).toString
-      }
-    }
-
     "must return google pass" in {
       val application = applicationBuilderWithConfig().overrides(
           inject.bind[SessionRepository].toInstance(mockSessionRepository),
@@ -191,7 +163,6 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
           inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
         )
-        .configure("features.sca-wrapper-enabled" -> false)
         .build()
 
       running(application) {
@@ -214,7 +185,6 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
           inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
         )
-        .configure("features.sca-wrapper-enabled" -> false)
         .build()
 
       running(application) {
@@ -243,7 +213,6 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
           inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
         )
-        .configure("features.sca-wrapper-enabled" -> false)
         .build()
 
       running(application) {
@@ -266,7 +235,6 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
           inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
         )
-        .configure("features.sca-wrapper-enabled" -> false)
         .build()
 
       running(application) {
@@ -296,7 +264,6 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
           inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
         )
-        .configure("features.sca-wrapper-enabled" -> false)
         .build()
 
       running(application) {
@@ -316,7 +283,6 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
           inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
         )
-        .configure("features.sca-wrapper-enabled" -> true)
         .build()
 
       running(application) {

@@ -25,7 +25,7 @@ import play.api.Application
 import play.api.http.Status._
 import play.api.inject.bind
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import uk.gov.hmrc.http.{BadRequestException, ForbiddenException, HeaderCarrier, HttpResponse, InternalServerException, NotFoundException, UnprocessableEntityException}
+import uk.gov.hmrc.http.{BadRequestException, ForbiddenException, HeaderCarrier, HttpException, HttpResponse, InternalServerException, NotFoundException, UnprocessableEntityException}
 
 import scala.concurrent.Future
 
@@ -70,6 +70,18 @@ class NPSServiceSpec extends SpecBase{
        |}
        |""".stripMargin
 
+  val jsonUnprocessableEntityAlreadyAdult: String =
+    s"""
+       |{
+       |  "failures": [
+       |    {
+       |      "reason": "Already an adult account",
+       |      "code": "63492"
+       |    }
+       |  ]
+       |}
+       |""".stripMargin
+
 
   private val mockNPSConnector = mock[NPSConnector]
 
@@ -89,14 +101,26 @@ class NPSServiceSpec extends SpecBase{
     implicit val hc: HeaderCarrier = HeaderCarrier()
 
     "when back end connector returns 204 (NO_CONTENT)" - {
-      "return a right of true" in {
+      "return a right of NO_CONTENT" in {
 
         when(mockNPSConnector
           .upliftCRN(any, any)(any, any()))
           .thenReturn(Future.successful(HttpResponse(NO_CONTENT, "")))
 
         val result = npsService.upliftCRN(nino, npsRequest)
-        result.futureValue mustBe Right(true)
+        result.futureValue mustBe Right(NO_CONTENT)
+      }
+    }
+
+    "when back end connector returns 422 (UNPROCESSABLE_ENTITY) with code 63492 (Already an adult account)" - {
+      "return a right of NO_CONTENT" in {
+
+        when(mockNPSConnector
+          .upliftCRN(any, any)(any, any()))
+          .thenReturn(Future.successful(HttpResponse(UNPROCESSABLE_ENTITY, jsonUnprocessableEntityAlreadyAdult)))
+
+        val result = npsService.upliftCRN(nino, npsRequest)
+        result.futureValue mustBe Right(NO_CONTENT)
       }
     }
 
@@ -110,7 +134,7 @@ class NPSServiceSpec extends SpecBase{
           .thenReturn(Future.successful(response))
 
         assertThrows[BadRequestException] {
-          await(npsService.upliftCRN(nino, npsRequest))
+          val response = await(npsService.upliftCRN(nino, npsRequest))
         }
       }
     }

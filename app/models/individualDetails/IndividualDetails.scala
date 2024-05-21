@@ -211,6 +211,7 @@ object IndividualDetails {
         addr.addressLine4,
         addr.addressLine5,
         addr.addressPostcode,
+        CountryCodeLookup.convertCodeToCountryName(addr.countryCode.value),
         addr.addressStartDate,
         addr.addressType))
 

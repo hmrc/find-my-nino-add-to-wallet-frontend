@@ -46,6 +46,7 @@ final case class EncryptedAddressData(addressLine1: EncryptedAddressLine,
                                 addressLine4: Option[EncryptedAddressLine],
                                 addressLine5: Option[EncryptedAddressLine],
                                 addressPostcode: Option[EncryptedAddressPostcode],
+                                addressCountry: EncryptedValue,
                                 addressStartDate: EncryptedValue,
                                 addressType: EncryptedAddressType)
 
@@ -115,6 +116,7 @@ object EncryptedIndividualDetailsDataCache {
                   addr.addressLine4.map(x => EncryptedAddressLine(e(x.value))),
                   addr.addressLine5.map(x => EncryptedAddressLine(e(x.value))),
                   addr.addressPostcode.map(x => EncryptedAddressPostcode(e(x.value))),
+                  e(addr.addressCountry),
                   e(addr.addressStartDate.toString),
                   EncryptedAddressType(e(addr.addressType.toString))
             )
@@ -147,6 +149,7 @@ object EncryptedIndividualDetailsDataCache {
                   addr.addressLine4.map(x => AddressLine(d(x.value))),
                   addr.addressLine5.map(x => AddressLine(d(x.value))),
                   addr.addressPostcode.map(x => AddressPostcode(d(x.value))),
+                  d(addr.addressCountry),
                   LocalDate.parse(d(addr.addressStartDate)),
                   d(addr.addressType.value) match {
                     case "1" => AddressType.ResidentialAddress

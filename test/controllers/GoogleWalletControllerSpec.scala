@@ -126,6 +126,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           .overrides(
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
+            inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
           )
           .build()
@@ -136,7 +137,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         status(result) mustEqual OK
-        contentAsString(result) mustEqual (view(passId, false)(request, messages(application))).toString
+        contentAsString(result) mustEqual (view(passId, false)(request.withAttrs(requestAttributeMap), messages(application))).toString
       }
     }
 

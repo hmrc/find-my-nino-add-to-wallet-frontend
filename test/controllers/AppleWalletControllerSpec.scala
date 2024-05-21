@@ -131,6 +131,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .overrides(
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
+            inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
           )
           .build()
@@ -144,7 +145,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         status(result) mustEqual OK
-        contentAsString(result) mustEqual (view(passId, false)(request, messages(application))).toString
+        contentAsString(result) mustEqual (view(passId, false)(request.withAttrs(requestAttributeMap), messages(application))).toString
       }
     }
 

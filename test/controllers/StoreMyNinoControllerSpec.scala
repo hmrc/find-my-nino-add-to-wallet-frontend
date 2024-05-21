@@ -19,13 +19,11 @@ package controllers
 import base.SpecBase
 import connectors._
 import controllers.auth.requests.UserRequestNew
-import models.individualDetails.IndividualDetails
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.{reset, when}
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject
-import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
@@ -142,6 +140,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
             inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
+            inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
           )
           .build()
@@ -151,7 +150,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
         val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
-        contentAsString(result) mustEqual view(applePassId, googlePassId,"AA 00 00 03 B", displayForMobile = false)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(applePassId, googlePassId,"AA 00 00 03 B", displayForMobile = false)(request.withAttrs(requestAttributeMap), messages(application)).toString
         status(result) mustEqual OK
       }
     }

@@ -109,7 +109,6 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
             inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
             inject.bind[IdentityVerificationFrontendConnector].toInstance(mockIdentityVerificationFrontendConnector)
           )
-          .configure("features.sca-wrapper-enabled" -> false)
           .build()
 
       when(mockCitizenDetailsConnector.personDetails(any())(any(), any()))
@@ -128,28 +127,6 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
     }
 
     "must return OK and the correct view for a GET" in {
-      val application =
-        applicationBuilderWithConfig()
-          .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
-            inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
-            inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
-            inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
-          )
-          .configure("features.sca-wrapper-enabled" -> false)
-          .build()
-
-      running(application) {
-        userLoggedInFMNUser(NinoUser)
-        val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
-          .withSession(("authToken", "Bearer 123"))
-        val result = route(application, request).value
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(applePassId, googlePassId,"AA 00 00 03 B", displayForMobile = false)(request, messages(application)).toString
-      }
-    }
-
-    "must return OK and the correct view for a GET when using the wrapper" in {
       val application =
         applicationBuilderWithConfig()
           .overrides(
@@ -183,7 +160,6 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
         inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
         inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
       )
-        .configure("features.sca-wrapper-enabled" -> false)
         .build()
 
       running(application) {
@@ -206,7 +182,6 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
         inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
         inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
       )
-        .configure("features.sca-wrapper-enabled" -> false)
         .build()
 
       running(application) {
@@ -235,7 +210,6 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
         inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
         inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
       )
-        .configure("features.sca-wrapper-enabled" -> false)
         .build()
 
       running(application) {
@@ -258,7 +232,6 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
         inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
         inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
       )
-        .configure("features.sca-wrapper-enabled" -> false)
         .build()
 
       running(application) {
@@ -287,7 +260,6 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
           inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
         )
-        .configure("features.sca-wrapper-enabled" -> false)
         .build()
 
       running(application) {
@@ -307,7 +279,6 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
           inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
         )
-        .configure("features.sca-wrapper-enabled" -> true)
         .build()
 
       running(application) {

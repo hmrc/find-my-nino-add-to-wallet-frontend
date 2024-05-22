@@ -33,11 +33,13 @@ import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
 import util.CDFixtures
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
 import util.TestData.NinoUser
-import views.html._
 
 import java.util.Base64
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import views.html.{ErrorTemplate, UnauthorisedView, GoogleWalletView, PassIdNotFoundView, QRCodeNotFoundView, RedirectToPostalFormView}
+
+import java.util.Base64
 
 class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSugar {
 
@@ -93,163 +95,389 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
 
   "Google Wallet Controller" - {
 
-    "must return ErrorView and the correct view for a GET" in {
-      val application =
-        applicationBuilderWithConfig()
-          .overrides(
+    "Google Wallet toggle enabled" - {
+      "must return ErrorView and the correct view for a GET" in {
+        val application =
+          applicationBuilderWithConfig()
+            .overrides(
+              inject.bind[SessionRepository].toInstance(mockSessionRepository),
+              inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector),
+              inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
+              inject.bind[IdentityVerificationFrontendConnector].toInstance(mockIdentityVerificationFrontendConnector)
+            )
+            .configure("features.google-wallet-enabled" -> true)
+            .build()
+
+        when(mockCitizenDetailsConnector.personDetails(any())(any(), any()))
+          .thenReturn(Future(PersonDetailsErrorResponse(new RuntimeException("error"))))
+
+        running(application) {
+          userLoggedInFMNUser(NinoUser)
+          val request = FakeRequest(GET, routes.GoogleWalletController.onPageLoad.url)
+            .withSession(("authToken", "Bearer 123"))
+          val result = route(application, request).value
+          status(result) mustEqual INTERNAL_SERVER_ERROR
+
+          contentAsString(result) mustEqual (redirectview()(request, frontendAppConfig, messages(application))).toString()
+        }
+        reset(mockCitizenDetailsConnector)
+      }
+
+      "must return OK and the correct view for a GET" in {
+        val application =
+          applicationBuilderWithConfig()
+            .overrides(
+              inject.bind[SessionRepository].toInstance(mockSessionRepository),
+              inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
+              inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
+            )
+            .configure(
+              "features.google-wallet-enabled" -> true
+            )
+            .build()
+
+        running(application) {
+          userLoggedInFMNUser(NinoUser)
+          val request = FakeRequest(GET, routes.GoogleWalletController.onPageLoad().url)
+            .withSession(("authToken", "Bearer 123"))
+          val result = route(application, request).value
+          status(result) mustEqual OK
+          contentAsString(result) mustEqual (view(passId, false)(request, messages(application))).toString
+        }
+      }
+
+      "must return OK and the correct view for a GET when using the wrapper" in {
+        val application =
+          applicationBuilderWithConfig()
+            .overrides(
+              inject.bind[SessionRepository].toInstance(mockSessionRepository),
+              inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
+              inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector),
+              inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector)
+            )
+            .configure(
+              "features.google-wallet-enabled" -> true
+            )
+            .build()
+
+        val view = application.injector.instanceOf[GoogleWalletView]
+
+        running(application) {
+          userLoggedInFMNUser(NinoUser)
+          val request = FakeRequest(GET, routes.GoogleWalletController.onPageLoad.url)
+            .withSession(("authToken", "Bearer 123"))
+          val result = route(application, request).value
+          status(result) mustEqual OK
+          contentAsString(result) mustEqual (view(passId, false)(request.withAttrs(requestAttributeMap), messages(application))).toString
+        }
+      }
+
+      "must return google pass" in {
+
+        val application = applicationBuilderWithConfig().overrides(
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
-            inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector),
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
-            inject.bind[IdentityVerificationFrontendConnector].toInstance(mockIdentityVerificationFrontendConnector)
+            inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
           )
           .build()
 
-      when(mockCitizenDetailsConnector.personDetails(any())(any(), any()))
-        .thenReturn(Future(PersonDetailsErrorResponse(new RuntimeException("error"))))
-
-      running(application) {
-        userLoggedInFMNUser(NinoUser)
-        val request = FakeRequest(GET, routes.GoogleWalletController.onPageLoad.url)
-          .withSession(("authToken", "Bearer 123"))
-        val result = route(application, request).value
-        status(result) mustEqual INTERNAL_SERVER_ERROR
-
-        contentAsString(result) mustEqual (redirectview()(request, frontendAppConfig, messages(application))).toString()
+        running(application) {
+          userLoggedInFMNUser(NinoUser)
+          val request = FakeRequest(GET, routes.GoogleWalletController.getGooglePass(passId).url)
+            .withSession(("authToken", "Bearer 123"))
+          val result = route(application, request).value
+          status(result) mustEqual 303
+          redirectLocation(result) mustEqual Some(fakeGooglePassSaveUrl)
+        }
       }
-      reset(mockCitizenDetailsConnector)
-    }
 
-    "must return OK and the correct view for a GET" in {
-      val application =
-        applicationBuilderWithConfig()
+      "must redirect to passIdNotFoundView when no Google pass is returned" in {
+        when(mockGooglePassConnector.getGooglePassUrl(eqTo(passId))(any(), any()))
+          .thenReturn(Future(None))
+
+        val application = applicationBuilderWithConfig().overrides(
+            inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
+            inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
+          )
+          .configure( "features.google-wallet-enabled" -> true)
+          .build()
+
+        running(application) {
+          userLoggedInFMNUser(NinoUser)
+          val request = FakeRequest(GET, routes.GoogleWalletController.getGooglePass(passId).url)
+            .withSession(("authToken", "Bearer 123"))
+          val result = route(application, request).value
+          val userRequest = UserRequest(
+            None,
+            ConfidenceLevel.L200,
+            pd,
+            Enrolments(Set(Enrolment("HMRC-PT"))),
+            request
+          )
+          contentAsString(result) mustEqual (passIdNotFoundView()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
+        }
+      }
+
+      "must return QR code" in {
+        val application = applicationBuilderWithConfig()
           .overrides(
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
-            inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector),
-            inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector)
+            inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
           )
+          .configure( "features.google-wallet-enabled" -> true)
           .build()
 
-      val view = application.injector.instanceOf[GoogleWalletView]
+        running(application) {
+          userLoggedInFMNUser(NinoUser)
+          val request = FakeRequest(GET, routes.GoogleWalletController.getGooglePassQrCode(passId).url)
+            .withSession(("authToken", "Bearer 123"))
+          val result = route(application, request).value
+          status(result) mustEqual OK
+          contentAsBytes(result) mustEqual Base64.getDecoder.decode(fakeBase64String)
+        }
+      }
 
-      running(application) {
-        userLoggedInFMNUser(NinoUser)
-        val request = FakeRequest(GET, routes.GoogleWalletController.onPageLoad.url)
-          .withSession(("authToken", "Bearer 123"))
-        val result = route(application, request).value
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual (view(passId, false)(request.withAttrs(requestAttributeMap), messages(application))).toString
+      "must redirect to qrCodeNotFoundView when no Google pass QR code is returned" in {
+        when(mockGooglePassConnector.getGooglePassQrCode(eqTo(passId))(any(), any()))
+          .thenReturn(Future(None))
+
+        val application = applicationBuilderWithConfig().overrides(
+            inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
+            inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
+          )
+          .configure( "features.google-wallet-enabled" -> true)
+          .build()
+
+        running(application) {
+          userLoggedInFMNUser(NinoUser)
+          val request = FakeRequest(GET, routes.GoogleWalletController.getGooglePassQrCode(passId).url)
+            .withSession(("authToken", "Bearer 123"))
+          val result = route(application, request).value
+          val userRequest = UserRequest(
+            None,
+            ConfidenceLevel.L200,
+            pd,
+            Enrolments(Set(Enrolment("HMRC-PT"))),
+            request
+          )
+          contentAsString(result) mustEqual (qrCodeNotFoundView()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
+        }
+      }
+
+      "must fail to login user" in {
+        val application = applicationBuilderWithConfig()
+          .overrides(
+            inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
+            inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
+          )
+          .configure( "features.google-wallet-enabled" -> true)
+          .build()
+
+        running(application) {
+          userLoggedInIsNotFMNUser(NinoUser)
+          val request = FakeRequest(GET, routes.GoogleWalletController.onPageLoad().url)
+            .withSession(("authToken", "Bearer 123"))
+          val result = route(application, request).value
+          status(result) mustEqual 500
+        }
       }
     }
 
-    "must return google pass" in {
+    "Google Wallet toggle disabled" - {
+      "must return ErrorView and the correct view for a GET" in {
+        val application =
+          applicationBuilderWithConfig()
+            .overrides(
+              inject.bind[SessionRepository].toInstance(mockSessionRepository),
+              inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector),
+              inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
+              inject.bind[IdentityVerificationFrontendConnector].toInstance(mockIdentityVerificationFrontendConnector)
+            )
+            .configure("features.google-wallet-enabled" -> false)
+            .build()
 
-      val application = applicationBuilderWithConfig().overrides(
-        inject.bind[SessionRepository].toInstance(mockSessionRepository),
-        inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
-        inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
-      )
-        .build()
+        when(mockCitizenDetailsConnector.personDetails(any())(any(), any()))
+          .thenReturn(Future(PersonDetailsErrorResponse(new RuntimeException("error"))))
 
-      running(application) {
-        userLoggedInFMNUser(NinoUser)
-        val request = FakeRequest(GET, routes.GoogleWalletController.getGooglePass(passId).url)
-          .withSession(("authToken", "Bearer 123"))
-        val result = route(application, request).value
-        status(result) mustEqual 303
-        redirectLocation(result) mustEqual Some(fakeGooglePassSaveUrl)
+        running(application) {
+          userLoggedInFMNUser(NinoUser)
+          val request = FakeRequest(GET, routes.GoogleWalletController.onPageLoad.url)
+            .withSession(("authToken", "Bearer 123"))
+          val result = route(application, request).value
+          status(result) mustEqual INTERNAL_SERVER_ERROR
+
+          contentAsString(result) mustEqual (redirectview()(request, frontendAppConfig, messages(application))).toString()
+        }
+        reset(mockCitizenDetailsConnector)
+
+      }
+
+      "must return OK and the correct view for a GET" in {
+        val application =
+          applicationBuilderWithConfig()
+            .overrides(
+              inject.bind[SessionRepository].toInstance(mockSessionRepository),
+              inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
+              inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
+            )
+            .configure("features.google-wallet-enabled" -> false)
+            .build()
+
+        running(application) {
+          userLoggedInFMNUser(NinoUser)
+          val request = FakeRequest(GET, routes.GoogleWalletController.onPageLoad().url)
+            .withSession(("authToken", "Bearer 123"))
+          val result = route(application, request).value
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustBe routes.UnauthorisedController.onPageLoad.url
+        }
+
+      }
+
+      "must return OK and the correct view for a GET when using the wrapper" in {
+        val application =
+          applicationBuilderWithConfig()
+            .overrides(
+              inject.bind[SessionRepository].toInstance(mockSessionRepository),
+              inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
+              inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector),
+              inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector)
+            )
+            .configure("features.google-wallet-enabled" -> false)
+            .build()
+
+        running(application) {
+          userLoggedInFMNUser(NinoUser)
+          val request = FakeRequest(GET, routes.GoogleWalletController.onPageLoad.url)
+            .withSession(("authToken", "Bearer 123"))
+          val result = route(application, request).value
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustBe routes.UnauthorisedController.onPageLoad.url
+        }
+
+      }
+
+
+      "must return google pass" in {
+
+        val application = applicationBuilderWithConfig().overrides(
+            inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
+            inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
+          )
+          .configure("features.google-wallet-enabled" -> false)
+          .build()
+
+        running(application) {
+          userLoggedInFMNUser(NinoUser)
+          val request = FakeRequest(GET, routes.GoogleWalletController.getGooglePass(passId).url)
+            .withSession(("authToken", "Bearer 123"))
+          val result = route(application, request).value
+          status(result) mustEqual 303
+          redirectLocation(result) mustEqual Some(fakeGooglePassSaveUrl)
+        }
+      }
+
+      "must redirect to passIdNotFoundView when no Google pass is returned" in {
+        when(mockGooglePassConnector.getGooglePassUrl(eqTo(passId))(any(), any()))
+          .thenReturn(Future(None))
+
+        val application = applicationBuilderWithConfig().overrides(
+            inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
+            inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
+          )
+          .configure("features.google-wallet-enabled" -> false)
+          .build()
+
+        running(application) {
+          userLoggedInFMNUser(NinoUser)
+          val request = FakeRequest(GET, routes.GoogleWalletController.getGooglePass(passId).url)
+            .withSession(("authToken", "Bearer 123"))
+          val result = route(application, request).value
+          val userRequest = UserRequest(
+            None,
+            ConfidenceLevel.L200,
+            pd,
+            Enrolments(Set(Enrolment("HMRC-PT"))),
+            request
+          )
+          contentAsString(result) mustEqual (passIdNotFoundView()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
+        }
+      }
+
+      "must return QR code" in {
+        val application = applicationBuilderWithConfig()
+          .overrides(
+            inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
+            inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
+          )
+          .configure("features.google-wallet-enabled" -> false)
+          .build()
+
+        running(application) {
+          userLoggedInFMNUser(NinoUser)
+          val request = FakeRequest(GET, routes.GoogleWalletController.getGooglePassQrCode(passId).url)
+            .withSession(("authToken", "Bearer 123"))
+          val result = route(application, request).value
+          status(result) mustEqual OK
+          contentAsBytes(result) mustEqual Base64.getDecoder.decode(fakeBase64String)
+        }
+      }
+
+      "must redirect to qrCodeNotFoundView when no Google pass QR code is returned" in {
+        when(mockGooglePassConnector.getGooglePassQrCode(eqTo(passId))(any(), any()))
+          .thenReturn(Future(None))
+
+        val application = applicationBuilderWithConfig().overrides(
+            inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
+            inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
+          )
+          .configure("features.google-wallet-enabled" -> false)
+          .build()
+
+        running(application) {
+          userLoggedInFMNUser(NinoUser)
+          val request = FakeRequest(GET, routes.GoogleWalletController.getGooglePassQrCode(passId).url)
+            .withSession(("authToken", "Bearer 123"))
+          val result = route(application, request).value
+          val userRequest = UserRequest(
+            None,
+            ConfidenceLevel.L200,
+            pd,
+            Enrolments(Set(Enrolment("HMRC-PT"))),
+            request
+          )
+          contentAsString(result) mustEqual (qrCodeNotFoundView()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
+        }
+      }
+
+      "must fail to login user" in {
+        val application = applicationBuilderWithConfig()
+          .overrides(
+            inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
+            inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
+          )
+          .configure("features.google-wallet-enabled" -> false)
+          .build()
+
+        running(application) {
+          userLoggedInIsNotFMNUser(NinoUser)
+          val request = FakeRequest(GET, routes.GoogleWalletController.onPageLoad().url)
+            .withSession(("authToken", "Bearer 123"))
+          val result = route(application, request).value
+          status(result) mustEqual 500
+        }
+
       }
     }
 
-    "must redirect to passIdNotFoundView when no Google pass is returned" in {
-      when(mockGooglePassConnector.getGooglePassUrl(eqTo(passId))(any(), any()))
-        .thenReturn(Future(None))
-
-      val application = applicationBuilderWithConfig().overrides(
-        inject.bind[SessionRepository].toInstance(mockSessionRepository),
-        inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
-        inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
-      )
-        .build()
-
-      running(application) {
-        userLoggedInFMNUser(NinoUser)
-        val request = FakeRequest(GET, routes.GoogleWalletController.getGooglePass(passId).url)
-          .withSession(("authToken", "Bearer 123"))
-        val result = route(application, request).value
-        val userRequest = UserRequest(
-          None,
-          ConfidenceLevel.L200,
-          pd,
-          Enrolments(Set(Enrolment("HMRC-PT"))),
-          request
-        )
-        contentAsString(result) mustEqual (passIdNotFoundView()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
-      }
-    }
-
-    "must return QR code" in {
-      val application = applicationBuilderWithConfig()
-        .overrides(
-          inject.bind[SessionRepository].toInstance(mockSessionRepository),
-          inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
-          inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
-        )
-        .build()
-
-      running(application) {
-        userLoggedInFMNUser(NinoUser)
-        val request = FakeRequest(GET, routes.GoogleWalletController.getGooglePassQrCode(passId).url)
-          .withSession(("authToken", "Bearer 123"))
-        val result = route(application, request).value
-        status(result) mustEqual OK
-        contentAsBytes(result) mustEqual Base64.getDecoder.decode(fakeBase64String)
-      }
-    }
-
-    "must redirect to qrCodeNotFoundView when no Google pass QR code is returned" in {
-      when(mockGooglePassConnector.getGooglePassQrCode(eqTo(passId))(any(), any()))
-        .thenReturn(Future(None))
-
-      val application = applicationBuilderWithConfig().overrides(
-        inject.bind[SessionRepository].toInstance(mockSessionRepository),
-        inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
-        inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
-      )
-        .build()
-
-      running(application) {
-        userLoggedInFMNUser(NinoUser)
-        val request = FakeRequest(GET, routes.GoogleWalletController.getGooglePassQrCode(passId).url)
-          .withSession(("authToken", "Bearer 123"))
-        val result = route(application, request).value
-        val userRequest = UserRequest(
-          None,
-          ConfidenceLevel.L200,
-          pd,
-          Enrolments(Set(Enrolment("HMRC-PT"))),
-          request
-        )
-        contentAsString(result) mustEqual (qrCodeNotFoundView()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
-      }
-    }
-
-    "must fail to login user" in {
-      val application = applicationBuilderWithConfig()
-        .overrides(
-          inject.bind[SessionRepository].toInstance(mockSessionRepository),
-          inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
-          inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
-        )
-        .build()
-
-      running(application) {
-        userLoggedInIsNotFMNUser(NinoUser)
-        val request = FakeRequest(GET, routes.GoogleWalletController.onPageLoad().url)
-          .withSession(("authToken", "Bearer 123"))
-        val result = route(application, request).value
-        status(result) mustEqual 500
-      }
-    }
   }
 }

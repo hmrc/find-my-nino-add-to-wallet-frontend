@@ -45,13 +45,17 @@
         <p>@messages("storeMyNino.saveYourNino.yourNinoIs") <span class="govuk-!-font-weight-bold" id="nino">@{nino}</span></p>
         @if(displayForMobile) {
             <div class="show-on-phones">
-                <a href='/@frontendAppConfig.serviceName/get-pass-card?passId=@{applePassId}' id="apple">
-                    <img class="add-wallet-ios" src="/@frontendAppConfig.serviceName/assets/images/apple-pay.svg" alt='@messages("appleWallet.addToWallet.alt")'>
-                </a>
-                <a href='/@frontendAppConfig.serviceName/get-google-pass?passId=@{googlePassId}' id="google">
-                    <img src="/@frontendAppConfig.serviceName/assets/images/google-wallet-condensed.svg" alt='@messages("googleWallet.addToWallet.alt")' class="add-wallet-android-mobile">
-                </a>
-            </div>
+                @if(frontendAppConfig.appleWalletEnabled) {
+                    <a href='/@frontendAppConfig.serviceName/get-pass-card?passId=@{applePassId}' id="apple">
+                        <img class="add-wallet-ios" src="/@frontendAppConfig.serviceName/assets/images/apple-pay.svg" alt='@messages("appleWallet.addToWallet.alt")'>
+                    </a>
+                }
+               @if(frontendAppConfig.googleWalletEnabled) {
+                    <a href='/@frontendAppConfig.serviceName/get-google-pass?passId=@{googlePassId}' id="google">
+                        <img src="/@frontendAppConfig.serviceName/assets/images/google-wallet-condensed.svg" alt='@messages("googleWallet.addToWallet.alt")' class="add-wallet-android-mobile">
+                    </a>
+               }
+           </div>
         }
     </div>
 
@@ -59,12 +63,17 @@
 
     @p("storeMyNino.saveYourNino.p2")
 
-
-    @h2("storeMyNino.saveToWallet.heading")
+    @if(frontendAppConfig.googleWalletEnabled || frontendAppConfig.appleWalletEnabled) {
+        @h2("storeMyNino.saveToWallet.heading")
+    }
 
     <ul class="govuk-list govuk-list--bullet govuk-list--spaced">
-        <li><a class="govuk-link" href='/@frontendAppConfig.serviceName/google-wallet'>@messages("storeMyNino.saveToWallet.googleWallet")</a></li>
-        <li><a class="govuk-link" href='/@frontendAppConfig.serviceName/apple-wallet'>@messages("storeMyNino.saveToWallet.appleWallet")</a></li>
+        @if(frontendAppConfig.googleWalletEnabled) {
+            <li><a class="govuk-link" href='/@frontendAppConfig.serviceName/google-wallet'>@messages("storeMyNino.saveToWallet.googleWallet")</a></li>
+        }
+        @if(frontendAppConfig.appleWalletEnabled) {
+            <li><a class="govuk-link" href='/@frontendAppConfig.serviceName/apple-wallet'>@messages("storeMyNino.saveToWallet.appleWallet")</a></li>
+        }
     </ul>
 
     @h2("storeMyNino.ninoLetter.heading")

@@ -73,9 +73,7 @@ class GoogleWalletControllerISpec extends IntegrationSpecBase {
   val fakePassId = "googlePassId"
   val fakeBase64String = "UEsDBBQACAgIABxqJlYAAAAAAA"
 
-
   override lazy val messagesApi: MessagesApi = app.injector.instanceOf[MessagesApi]
-
 
   implicit lazy val frontendAppConfig: FrontendAppConfig = app.injector.instanceOf[FrontendAppConfig]
   implicit lazy val messages: Messages = MessagesImpl(Lang("en"), messagesApi).messages
@@ -151,6 +149,7 @@ class GoogleWalletControllerISpec extends IntegrationSpecBase {
       }
 
       "render the save to Google Wallet link on mobile" in new LocalSetup {
+
         wireMockServer.stubFor(get(s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-pass-card?passId=$fakePassId").willReturn(ok(fakeBase64String)))
         assertContainsLinkByContainingClass(docMobile, s"/get-google-pass?passId=$fakePassId")
       }

@@ -96,7 +96,7 @@ class CheckChildRecordAction @Inject()(
     implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
     code match
     {
-      case UNAUTHORIZED          => Left(Redirect(controllers.routes.UnauthorisedController.onPageLoad))
+      case UNAUTHORIZED          => Left(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
       case BAD_REQUEST           => Left(InternalServerError(redirectView()(authContext.request, frontendAppConfig, messages)))
       case UNPROCESSABLE_ENTITY  => Left(InternalServerError(redirectView()(authContext.request, frontendAppConfig, messages)))
       case INTERNAL_SERVER_ERROR => Left(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))

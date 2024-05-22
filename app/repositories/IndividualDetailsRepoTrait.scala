@@ -17,6 +17,7 @@
 package repositories
 
 import models.individualDetails.IndividualDetailsDataCache
+import com.mongodb.client.result.DeleteResult
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -27,5 +28,8 @@ trait IndividualDetailsRepoTrait {
 
   def findIndividualDetailsDataByNino(nino: String
                                      )(implicit ec: ExecutionContext): Future[Option[IndividualDetailsDataCache]]
+
+  def deleteIndividualDetailsDataByNino(nino: String)
+                                       (implicit ec: ExecutionContext): Future[DeleteResult]
 
 }

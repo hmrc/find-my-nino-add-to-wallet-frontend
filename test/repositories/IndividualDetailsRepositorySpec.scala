@@ -26,6 +26,9 @@ import org.scalatestplus.mockito.MockitoSugar
 import org.scalatest.matchers.must.Matchers
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 import util.Fixtures.fakeIndividualDetailsData
+import com.mongodb.client.result.DeleteResult
+import play.api.test.DefaultAwaitTimeout
+import play.api.test.Helpers.await
 
 import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -36,13 +39,20 @@ class IndividualDetailsRepositorySpec extends AnyFreeSpec
   with ScalaFutures
   with OptionValues
   with IntegrationPatience
-  with MockitoSugar {
+  with MockitoSugar
+  with DefaultAwaitTimeout {
 
   private val mockAppConfig = mock[FrontendAppConfig]
 
   protected val repository = new IndividualDetailsRepository(
     mongoComponent = mongoComponent,
     appConfig      = mockAppConfig
+  )
+
+  def createFakeIdCache: IndividualDetailsDataCache = IndividualDetailsDataCache(
+    id = "id",
+    individualDetailsData = Some(fakeIndividualDetailsData),
+    lastUpdated = Instant.EPOCH
   )
 
   when(mockAppConfig.cacheTtl) thenReturn 1
@@ -89,6 +99,14 @@ class IndividualDetailsRepositorySpec extends AnyFreeSpec
       val nino = "ZZ999999Z"
       val result = repository.findIndividualDetailsDataByNino(nino).futureValue
       result mustBe None
+    }
+
+    "must delete the cache and return a DeleteResult" in {
+      val nino = "AB123456C"
+      val individualDetailsDataCache = createFakeIdCache
+      repository.insertOrReplaceIndividualDetailsDataCache(individualDetailsDataCache).futureValue mustBe nino
+      await(repository.deleteIndividualDetailsDataByNino(nino)) mustBe DeleteResult.acknowledged(1)
+      await(repository.findIndividualDetailsDataByNino(nino)) mustBe None
     }
   }
 

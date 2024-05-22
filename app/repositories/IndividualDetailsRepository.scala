@@ -24,6 +24,7 @@ import org.mongodb.scala.model._
 import play.api.Logging
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
+import com.mongodb.client.result.DeleteResult
 
 import java.util.concurrent.TimeUnit
 import scala.concurrent.{ExecutionContext, Future}
@@ -78,6 +79,17 @@ class IndividualDetailsRepository @Inject()(mongoComponent: MongoComponent,
   } recoverWith {
     case e: Throwable =>
       logger.warn(s"Failed finding Individual Details Data by Nino: $nino")
+      Future.failed(e)
+  }
+
+  def deleteIndividualDetailsDataByNino(nino: String)
+                                       (implicit ec: ExecutionContext): Future[DeleteResult] = {
+    val filter = Filters.equal("individualDetails.nino", nino)
+    collection.deleteOne(filter)
+      .toFuture()
+  } recoverWith {
+    case e: Exception =>
+      logger.warn(s"Failed deleting Individual Details Data by Nino")
       Future.failed(e)
   }
 

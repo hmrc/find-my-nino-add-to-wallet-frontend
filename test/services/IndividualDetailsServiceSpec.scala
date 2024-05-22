@@ -16,6 +16,7 @@
 
 package services
 
+import com.mongodb.client.result.DeleteResult
 import connectors.IndividualDetailsConnector
 import org.mockito.ArgumentMatchersSugar.any
 import org.mockito.Mockito._
@@ -75,6 +76,18 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec
 
     val result = service.getIdDataFromCache("testNino","testSessionId")
     assert(result.futureValue.isLeft)
+  }
+
+  "IndividualDetailsService" should "return true when an entry has been deleted from the cache" in {
+    val mockRepository = mock[IndividualDetailsRepository]
+    val mockConnector = mock[IndividualDetailsConnector]
+    val service = new IndividualDetailsServiceImpl(mockRepository, mockConnector)
+
+    when(mockRepository.deleteIndividualDetailsDataByNino(any)(any))
+      .thenReturn(Future.successful(DeleteResult.acknowledged(1)))
+
+    val result = service.deleteIdDataFromCache("testNino")
+    assert(result.futureValue)
   }
 
   "IndividualDetailsService" should "handle MongoException" in {

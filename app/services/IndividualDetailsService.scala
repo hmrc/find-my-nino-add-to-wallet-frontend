@@ -32,6 +32,7 @@ import scala.concurrent.{ExecutionContext, Future}
 @ImplementedBy(classOf[IndividualDetailsServiceImpl])
 trait IndividualDetailsService {
   def getIdDataFromCache(nino: String, sessionId: String)(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[Either[String, IndividualDetailsDataCache]]
+  def deleteIdDataFromCache(nino: String)(implicit ec: ExecutionContext): Future[Boolean]
 }
 
 
@@ -115,6 +116,13 @@ class IndividualDetailsServiceImpl @Inject()(
       case None =>
         logger.warn("Individual details data cache not found, potentially expired, attempting to fetch from external service and recreate cache.")
         createNewIndividualDataCache(nino, sessionId)
+    }
+  }
+
+  def deleteIdDataFromCache(nino: String)(implicit ec: ExecutionContext): Future[Boolean] = {
+    individualDetailsRepository.deleteIndividualDetailsDataByNino(nino) map {
+      case r => r.wasAcknowledged()
+      case _ => false
     }
   }
 

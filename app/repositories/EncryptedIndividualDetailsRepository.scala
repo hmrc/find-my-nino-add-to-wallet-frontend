@@ -86,4 +86,15 @@ class EncryptedIndividualDetailsRepository @Inject()(mongoComponent: MongoCompon
         Future.failed(e)
       }
   }
+
+  def deleteIndividualDetailsDataByNino(nino: String)
+                                       (implicit ec: ExecutionContext): Future[com.mongodb.client.result.DeleteResult] = {
+    val filter = Filters.equal("individualDetails.nino", nino)
+    collection.deleteOne(filter)
+      .toFuture()
+  } recoverWith {
+    case e: Exception =>
+      logger.warn(s"Failed deleting Individual Details Data by Nino")
+      Future.failed(e)
+  }
 }

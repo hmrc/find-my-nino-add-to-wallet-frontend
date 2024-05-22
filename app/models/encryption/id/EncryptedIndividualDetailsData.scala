@@ -31,7 +31,8 @@ case class EncryptedIndividualDetailsData(
                                            surname: EncryptedValue,
                                            initialsName: EncryptedValue,
                                            nino: String,
-                                           address: Option[EncryptedAddressData]
+                                           address: Option[EncryptedAddressData],
+                                           crnIndicator: Option[EncryptedValue]
                                 )
 
 case class EncryptedIndividualDetailsDataCache(
@@ -68,6 +69,8 @@ object EncryptedAddressType {
   implicit val format: Format[EncryptedAddressType] = Json.valueFormat[EncryptedAddressType]
 }
 
+
+
 object EncryptedIndividualDetailsDataCache {
 
   private val encryptedIndividualDetailsDataFormat: OFormat[EncryptedIndividualDetailsData] = {
@@ -77,6 +80,7 @@ object EncryptedIndividualDetailsDataCache {
       ~ (__ \ "initialsName").format[EncryptedValue]
       ~ (__ \ "nino").format[String]
       ~ (__ \ "address").formatNullable[EncryptedAddressData]
+      ~ (__ \ "crnIndicator").formatNullable[EncryptedValue]
       )(EncryptedIndividualDetailsData.apply, unlift(EncryptedIndividualDetailsData.unapply))
   }
 
@@ -120,7 +124,7 @@ object EncryptedIndividualDetailsDataCache {
                   e(addr.addressStartDate.toString),
                   EncryptedAddressType(e(addr.addressType.toString))
             )
-          ))
+          ), crnIndicator = id.crnIndicator.map(f => e(f)))
       }
     )
   }
@@ -156,7 +160,9 @@ object EncryptedIndividualDetailsDataCache {
                     case _   => AddressType.CorrespondenceAddress
                   }
                 )
-            ))
+            ),
+            crnIndicator = id.crnIndicator.map(f => d(f))
+          )
       }
     )
   }

@@ -29,7 +29,8 @@ case class IndividualDetailsData(
                               surname: String,
                               initialsName: String,
                               nino: String,
-                              address: Option[AddressData]
+                              address: Option[AddressData],
+                              crnIndicator: Option[String]
                               )
 
 case class IndividualDetailsDataCache(
@@ -46,6 +47,7 @@ object IndividualDetailsDataCache {
       ~ (__ \ "initialsName").format[String]
       ~ (__ \ "nino").format[String]
       ~ (__ \ "address").formatNullable[AddressData]
+      ~ (__ \ "crnIndicator").formatNullable[String]
       )(IndividualDetailsData.apply, unlift(IndividualDetailsData.unapply))
   }
 
@@ -107,6 +109,13 @@ object IndividualDetailsDataCache {
       case Some(id) => id.address.flatMap(addr => addr.addressPostcode.map(postcode => postcode.value))
       case _ => None
     }
+
+
+    def getCrnIndicator: Option[String]= individualDetailsData.individualDetailsData match {
+      case Some(id) => id.crnIndicator
+      case _ => None
+    }
+
 
   }
 

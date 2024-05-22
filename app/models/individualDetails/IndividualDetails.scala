@@ -254,6 +254,10 @@ object IndividualDetails {
 
     }
 
+    def getCrnIndicator: Option[String] = {
+      Some(idData.crnIndicator.asString)
+    }
+
   }
 
 

@@ -68,7 +68,8 @@ class IndividualDetailsServiceImpl @Inject()(
       individualDetails.getLastName,
       individualDetails.getInitialsName,
       individualDetails.getNino,
-      individualDetails.getAddressData
+      individualDetails.getAddressData,
+      individualDetails.getCrnIndicator
       )
 
     IndividualDetailsDataCache(

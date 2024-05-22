@@ -26,18 +26,33 @@ import uk.gov.hmrc.http.{BadRequestException, ForbiddenException, HeaderCarrier,
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
+case class IndividualDetailsDataCache(firstForename: String, surname: String, dateOfBirth: String, crnIndicator: Boolean)
+
+object IndividualDetailsDataCache {}
+
 class NPSService @Inject()(connector: NPSConnector, frontendAppConfig: FrontendAppConfig)
                           (implicit ec: ExecutionContext) extends Logging {
-  
-  val className: String                       = s"${this.getClass.getName}:upliftCRN"
-  private val alreadyAnAdultErrorCode: String = frontendAppConfig.crnUpliftAPIAlreadyAdultErrorCode
-  private val genericErrorResponseBody: String = "Something went wrong"
 
-  // UNPROCESSABLE_ENTITY and BAD_REQUEST are obfuscated in Kibana as a matter of course as
+  // TODO - replace mock individual details call with actual
+  def getIdDataFromCache(nino: String, sessionId: String)(implicit ec: ExecutionContext,
+                                                          hc: HeaderCarrier): Future[Either[HttpException, IndividualDetailsDataCache]] = {
+    Future.successful(
+      Right(
+        new IndividualDetailsDataCache("foo", "bar", "28-09-1978", true)
+      )
+    )
+  }
+
+  // upliftCRN: UNPROCESSABLE_ENTITY and BAD_REQUEST are obfuscated in Kibana as a matter of course as
   // they could contain information about; or from; the request including pii. The CRN uplift API
   // call is audited in the back end under `find-my-nino-add-to-wallet-CRNUplift`
   def upliftCRN(identifier: String, crnUpliftRequest: CRNUpliftRequest)
                (implicit hc: HeaderCarrier): Future[Either[HttpException, Int]] = {
+
+    val className: String                = s"${this.getClass.getName}:upliftCRN"
+    val alreadyAnAdultErrorCode: String  = frontendAppConfig.crnUpliftAPIAlreadyAdultErrorCode
+    val genericErrorResponseBody: String = "Something went wrong"
+
     for {
       httpResponse <- connector.upliftCRN(identifier, crnUpliftRequest)
     } yield httpResponse.status match {

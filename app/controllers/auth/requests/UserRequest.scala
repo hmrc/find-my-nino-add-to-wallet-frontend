@@ -18,6 +18,7 @@ package controllers.auth.requests
 
 import models._
 import play.api.mvc.{Request, WrappedRequest}
+import services.IndividualDetailsDataCache
 import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolments}
 import uk.gov.hmrc.domain.Nino
 
@@ -28,6 +29,16 @@ final case class UserRequest[A](
   enrolments: Enrolments,
   request: Request[A]
 ) extends WrappedRequest[A](request) {
-
   def name: Option[String] = personDetails.person.shortName
 }
+
+final case class UserRequest1694[A](
+                                     nino: Option[Nino],
+                                     confidenceLevel: ConfidenceLevel,
+                                     personDetails: IndividualDetailsDataCache,
+                                     enrolments: Enrolments,
+                                     request: Request[A]
+                                   ) extends WrappedRequest[A](request) {
+  def name: String = personDetails.firstForename.concat(" ").concat(personDetails.surname)
+}
+

@@ -123,31 +123,6 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
             .overrides(
               inject.bind[SessionRepository].toInstance(mockSessionRepository),
               inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
-              inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
-            )
-            .configure(
-              "features.google-wallet-enabled" -> true
-            )
-            .build()
-
-        val view = application.injector.instanceOf[GoogleWalletView]
-
-        running(application) {
-          userLoggedInFMNUser(NinoUser)
-          val request = FakeRequest(GET, routes.GoogleWalletController.onPageLoad().url)
-            .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
-          status(result) mustEqual OK
-          contentAsString(result) mustEqual (view(passId, false)(request, messages(application))).toString
-        }
-      }
-
-      "must return OK and the correct view for a GET when using the wrapper" in {
-        val application =
-          applicationBuilderWithConfig()
-            .overrides(
-              inject.bind[SessionRepository].toInstance(mockSessionRepository),
-              inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
               inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector),
               inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector)
             )

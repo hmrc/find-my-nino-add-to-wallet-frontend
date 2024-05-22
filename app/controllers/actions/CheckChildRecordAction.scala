@@ -17,15 +17,18 @@
 package controllers.actions
 
 import com.google.inject.Inject
+import config.FrontendAppConfig
 import controllers.auth.AuthContext
 import controllers.auth.requests._
 import models.nps.CRNUpliftRequest
 import play.api.http.Status._
-import play.api.i18n.{I18nSupport, MessagesApi}
+import play.api.i18n.{I18nSupport, Messages, MessagesApi}
+import play.api.mvc.Results.{InternalServerError, Redirect}
 import play.api.mvc._
 import services.{IndividualDetailsDataCache, NPSService}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
+import views.html.RedirectToPostalFormView
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -33,6 +36,8 @@ class CheckChildRecordAction @Inject()(
                                         npsService: NPSService,
                                         cc: ControllerComponents,
                                         val messagesApi: MessagesApi,
+                                        redirectView: RedirectToPostalFormView,
+                                        frontendAppConfig: FrontendAppConfig
                                       )(implicit hc: HeaderCarrier, ec: ExecutionContext)
   extends ActionRefiner[AuthContext, UserRequest1694]
     with ActionFunction[AuthContext, UserRequest1694]
@@ -40,31 +45,34 @@ class CheckChildRecordAction @Inject()(
 
   override protected def refine[A](authContext: AuthContext[A]): Future[Either[Result, UserRequest1694[A]]] = {
 
-    val nino: String = authContext.nino.nino
-    val sessionId: String = hc.sessionId.map(_.value).getOrElse(throw new IllegalArgumentException("Session is required"))
+    val identifier: String = authContext.nino.nino
 
-    npsService.getIdDataFromCache(nino, sessionId).flatMap {
+    val sessionId: String = hc.sessionId.map(_.value).getOrElse(
+      throw new IllegalArgumentException("Session is required")
+    )
+
+    npsService.getIdDataFromCache(identifier, sessionId).flatMap {
       case Right(individualDetails) =>
         if (individualDetails.crnIndicator) {
           val request: CRNUpliftRequest = buildCrnUpliftRequest(individualDetails)
-          npsService.upliftCRN("foo", request).map {
+          npsService.upliftCRN(identifier, request).map {
             case Right(_) =>
               Right(
                 UserRequest1694(
-                  Some(Nino(nino)),
+                  Some(Nino(identifier)),
                   authContext.confidenceLevel,
                   individualDetails,
                   authContext.allEnrolments,
                   authContext.request
                 )
               )
-            case Left(error) => handleError(error.responseCode)
+            case Left(error) => handleError(error.responseCode, authContext, frontendAppConfig)
           }
         } else {
           Future.successful(
             Right(
               UserRequest1694(
-                Some(Nino(nino)),
+                Some(Nino(identifier)),
                 authContext.confidenceLevel,
                 individualDetails,
                 authContext.allEnrolments,
@@ -73,7 +81,7 @@ class CheckChildRecordAction @Inject()(
             )
           )
         }
-      case Left(error) => handleError(error.responseCode)
+      case Left(error) => Future.successful(handleError(error.responseCode, authContext, frontendAppConfig))
     }
   }
 
@@ -84,13 +92,17 @@ class CheckChildRecordAction @Inject()(
       individualDetails.dateOfBirth
     )
 
-  private def handleError(code: Int) =
+  private def handleError[A](code: Int, authContext: AuthContext[A], frontendAppConfig: FrontendAppConfig): Left[Result, Nothing] = {
+    implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
     code match
     {
-      case INTERNAL_SERVER_ERROR => ??? // Standard error redirect
-      case BAD_REQUEST => ??? // Contact redirect
-      case UNPROCESSABLE_ENTITY => ??? // Contact redirect
+      case UNAUTHORIZED          => Left(Redirect(controllers.routes.UnauthorisedController.onPageLoad))
+      case BAD_REQUEST           => Left(InternalServerError(redirectView()(authContext.request, frontendAppConfig, messages)))
+      case UNPROCESSABLE_ENTITY  => Left(InternalServerError(redirectView()(authContext.request, frontendAppConfig, messages)))
+      case INTERNAL_SERVER_ERROR => Left(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+      case _                     => Left(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
     }
+  }
 
   override protected def executionContext: ExecutionContext = cc.executionContext
 }

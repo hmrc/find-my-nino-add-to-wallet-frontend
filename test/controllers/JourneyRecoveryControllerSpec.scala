@@ -66,7 +66,7 @@ class JourneyRecoveryControllerSpec extends SpecBase with MockitoSugar {
           val continueView = application.injector.instanceOf[JourneyRecoveryContinueView]
 
           status(result) mustEqual OK
-          contentAsString(result) mustEqual continueView(continueUrl.unsafeValue)(request, messages(application)).toString
+          contentAsString(result).removeAllNonces mustEqual continueView(continueUrl.unsafeValue)(request, messages(application)).toString
         }
       }
     }
@@ -95,7 +95,7 @@ class JourneyRecoveryControllerSpec extends SpecBase with MockitoSugar {
           val startAgainView = application.injector.instanceOf[JourneyRecoveryStartAgainView]
 
           status(result) mustEqual OK
-          contentAsString(result) mustEqual startAgainView()(request, messages(application)).toString
+          contentAsString(result).removeAllNonces mustEqual startAgainView()(request, messages(application)).toString
         }
       }
     }
@@ -123,7 +123,7 @@ class JourneyRecoveryControllerSpec extends SpecBase with MockitoSugar {
           val startAgainView = application.injector.instanceOf[JourneyRecoveryStartAgainView]
 
           status(result) mustEqual OK
-          contentAsString(result) mustEqual startAgainView()(request, messages(application)).toString
+          contentAsString(result).removeAllNonces mustEqual startAgainView()(request, messages(application)).toString
         }
       }
     }

@@ -121,7 +121,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
         val result = route(application, request).value
         status(result) mustEqual INTERNAL_SERVER_ERROR
 
-        contentAsString(result) mustEqual redirectview()(request, frontendAppConfig, messages(application)).toString()
+        contentAsString(result).removeAllNonces mustEqual redirectview()(request, frontendAppConfig, messages(application)).toString()
       }
       reset(mockCitizenDetailsConnector)
     }
@@ -147,7 +147,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(
+        contentAsString(result).removeAllNonces mustEqual view(
           applePassId, googlePassId,"AA 00 00 03 B", displayForMobile = false)(request.withAttrs(requestAttributeMap), messages(application)).toString
       }
     }
@@ -196,7 +196,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           Enrolments(Set(Enrolment("HMRC-PT"))),
           request
         )
-        contentAsString(result) mustEqual passIdNotFoundView()(
+        contentAsString(result).removeAllNonces mustEqual passIdNotFoundView()(
           userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString
       }
 
@@ -246,7 +246,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           Enrolments(Set(Enrolment("HMRC-PT"))),
           request
         )
-        contentAsString(result) mustEqual passIdNotFoundView()(
+        contentAsString(result).removeAllNonces mustEqual passIdNotFoundView()(
           userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString
       }
 

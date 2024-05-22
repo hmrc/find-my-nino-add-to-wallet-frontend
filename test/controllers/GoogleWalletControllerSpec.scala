@@ -118,7 +118,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           val result = route(application, request).value
           status(result) mustEqual INTERNAL_SERVER_ERROR
 
-          contentAsString(result) mustEqual (redirectview()(request, frontendAppConfig, messages(application))).toString()
+          contentAsString(result).removeAllNonces mustEqual (redirectview()(request, frontendAppConfig, messages(application))).toString()
         }
         reset(mockCitizenDetailsConnector)
       }
@@ -142,7 +142,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
             .withSession(("authToken", "Bearer 123"))
           val result = route(application, request).value
           status(result) mustEqual OK
-          contentAsString(result) mustEqual (view(passId, false)(request, messages(application))).toString
+          contentAsString(result).removeAllNonces mustEqual (view(passId, false)(request, messages(application))).toString
         }
       }
 
@@ -168,7 +168,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
             .withSession(("authToken", "Bearer 123"))
           val result = route(application, request).value
           status(result) mustEqual OK
-          contentAsString(result) mustEqual (view(passId, false)(request.withAttrs(requestAttributeMap), messages(application))).toString
+          contentAsString(result).removeAllNonces mustEqual (view(passId, false)(request.withAttrs(requestAttributeMap), messages(application))).toString
         }
       }
 
@@ -215,7 +215,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
             Enrolments(Set(Enrolment("HMRC-PT"))),
             request
           )
-          contentAsString(result) mustEqual (passIdNotFoundView()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
+          contentAsString(result).removeAllNonces mustEqual (passIdNotFoundView()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
         }
       }
 
@@ -263,7 +263,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
             Enrolments(Set(Enrolment("HMRC-PT"))),
             request
           )
-          contentAsString(result) mustEqual (qrCodeNotFoundView()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
+          contentAsString(result).removeAllNonces mustEqual (qrCodeNotFoundView()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
         }
       }
 
@@ -310,7 +310,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           val result = route(application, request).value
           status(result) mustEqual INTERNAL_SERVER_ERROR
 
-          contentAsString(result) mustEqual (redirectview()(request, frontendAppConfig, messages(application))).toString()
+          contentAsString(result).removeAllNonces mustEqual (redirectview()(request, frontendAppConfig, messages(application))).toString()
         }
         reset(mockCitizenDetailsConnector)
 
@@ -406,7 +406,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
             Enrolments(Set(Enrolment("HMRC-PT"))),
             request
           )
-          contentAsString(result) mustEqual (passIdNotFoundView()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
+          contentAsString(result).removeAllNonces mustEqual (passIdNotFoundView()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
         }
       }
 
@@ -454,7 +454,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
             Enrolments(Set(Enrolment("HMRC-PT"))),
             request
           )
-          contentAsString(result) mustEqual (qrCodeNotFoundView()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
+          contentAsString(result).removeAllNonces mustEqual (qrCodeNotFoundView()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
         }
       }
 

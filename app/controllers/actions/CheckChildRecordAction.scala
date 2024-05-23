@@ -59,7 +59,7 @@ class CheckChildRecordAction @Inject()(
         if (isFullNino(individualDetails)) {
           fullNino(authContext, individualDetails)
         } else {
-          actionCrnUpgrade(identifier, authContext, individualDetails, sessionId)
+          actionCrnUplift(identifier, authContext, individualDetails, sessionId)
         }
       case Left(_) => Future.successful(throw new NotFoundException("Individual details not found"))
     }
@@ -81,11 +81,11 @@ class CheckChildRecordAction @Inject()(
       )
     )
 
-  private def actionCrnUpgrade[A](identifier: String, authContext: AuthContext[A], individualDetails: IndividualDetailsDataCache, sessionId: String)
+  private def actionCrnUplift[A](identifier: String, authContext: AuthContext[A], individualDetails: IndividualDetailsDataCache, sessionId: String)
                                  (implicit hc:HeaderCarrier): Future[Either[Result, UserRequestNew[A]]] = {
     val request: CRNUpliftRequest = buildCrnUpliftRequest(individualDetails)
     npsService.upliftCRN(identifier, request).map {
-      case Right(_) => handleCrnUpliftSuccess(authContext, individualDetails, sessionId)
+      case Right(_)     => handleCrnUpliftSuccess(authContext, individualDetails, sessionId)
       case Left(status) => handleError(status, authContext, frontendAppConfig)
     }
   }
@@ -116,11 +116,12 @@ class CheckChildRecordAction @Inject()(
                                (implicit hc: HeaderCarrier): Future[Boolean] =
     individualDetailsService.getIdDataFromCache(nino, sessionId).flatMap {
       case Right(individualDetails) =>
-        if (individualDetails.individualDetailsData.get.crnIndicator.equals("true")) {
-          throw new RuntimeException("CRN indicator still set to true after successful CRN uplift")
-        } else {
+        if (isFullNino(individualDetails)) {
           Future.successful(true)
+        } else {
+          throw new RuntimeException("CRN indicator still set to true after successful CRN uplift")
         }
+      case _ => Future.successful(throw new NotFoundException("Individual details not found"))
     }
 
   private def invalidateCache(individualDetails: IndividualDetailsDataCache): Future[Unit] =

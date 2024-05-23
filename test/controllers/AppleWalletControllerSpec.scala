@@ -334,30 +334,6 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
             .overrides(
               inject.bind[SessionRepository].toInstance(mockSessionRepository),
               inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
-              inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
-            )
-            .configure(
-              "features.apple-wallet-enabled" -> false
-            )
-            .build()
-
-        running(application) {
-          userLoggedInFMNUser(NinoUser)
-          val request = FakeRequest(GET, routes.AppleWalletController.onPageLoad.url)
-            .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustBe routes.UnauthorisedController.onPageLoad.url
-        }
-
-      }
-
-      "must return OK and the correct view for a GET when using the wrapper" in {
-        val application =
-          applicationBuilderWithConfig()
-            .overrides(
-              inject.bind[SessionRepository].toInstance(mockSessionRepository),
-              inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
               inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector),
               inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector)
             )

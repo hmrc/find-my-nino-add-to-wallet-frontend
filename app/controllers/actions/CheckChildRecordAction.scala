@@ -56,13 +56,13 @@ class CheckChildRecordAction @Inject()(
 
     individualDetailsService.getIdDataFromCache(identifier, sessionId).flatMap {
       case Right(individualDetails) =>
-        if (individualDetails.individualDetailsData.get.crnIndicator.equals("true")) {
+        if (!isFullNino(individualDetails)) {
           val request: CRNUpliftRequest = buildCrnUpliftRequest(individualDetails)
 
           for {
-            a <- npsService.upliftCRN(identifier, request)
-            _ = if (a.isRight) verifyCrnUplift(individualDetails, sessionId)
-          } yield a match {
+            upliftResult <- npsService.upliftCRN(identifier, request)
+            _            = if (upliftResult.isRight) verifyCrnUplift(individualDetails, sessionId)
+          } yield upliftResult match {
             case Left(status) => handleError(status, authContext, frontendAppConfig)
             case Right(_) =>
               Right(
@@ -100,7 +100,7 @@ class CheckChildRecordAction @Inject()(
       crnIndicatorUpdated <- validateCrnUplift(individualDetails.getNino, sessionId)
     } yield (cacheInvalidated, crnIndicatorUpdated) match {
       case (true, true) => true
-      case _            => throw new NotFoundException("Failed to verify the CRN uplift")
+      case _            => throw new InternalServerException("Failed to verify the CRN uplift")
     }
   }
 

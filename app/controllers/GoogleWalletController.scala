@@ -50,19 +50,22 @@ class GoogleWalletController @Inject()(override val messagesApi: MessagesApi,
 
   def onPageLoad: Action[AnyContent] = authorisedAsFMNUser async {
     authContext => {
+      if (frontendAppConfig.googleWalletEnabled) {
+        implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(authContext.request, authContext.request.session)
+        implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
 
-      implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(authContext.request, authContext.request.session)
-      implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
-
-      individualDetailsService.getIdDataFromCache(authContext.nino.nino, hc.sessionId.get.value).flatMap {
-        case Right(individualDetailsDataCache) =>
-          auditGoogleWallet("ViewWalletPage", individualDetailsDataCache, hc)
-          val formattedNino = individualDetailsDataCache.getNino.grouped(2).mkString(" ")
-          val fullName = individualDetailsDataCache.getFullName
-          for {
-            pId: Some[String] <- googleWalletConnector.createGooglePass(fullName, formattedNino)
-          } yield Ok(view(pId.value, isMobileDisplay(authContext.request))(authContext.request, messages))
-        case Left("Individual details not found in cache") => Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad(None)))
+        individualDetailsService.getIdDataFromCache(authContext.nino.nino, hc.sessionId.get.value).flatMap {
+          case Right(individualDetailsDataCache) =>
+            auditGoogleWallet("ViewWalletPage", individualDetailsDataCache, hc)
+            val formattedNino = individualDetailsDataCache.getNino.grouped(2).mkString(" ")
+            val fullName = individualDetailsDataCache.getFullName
+            for {
+              pId: Some[String] <- googleWalletConnector.createGooglePass(fullName, formattedNino)
+            } yield Ok(view(pId.value, isMobileDisplay(authContext.request))(authContext.request, messages))
+          case Left("Individual details not found in cache") => Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad(None)))
+        }
+      } else {
+        Future.successful(Redirect(controllers.routes.UnauthorisedController.onPageLoad))
       }
     }
   }

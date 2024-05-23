@@ -43,8 +43,6 @@ import scala.concurrent.Future
 
 class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSugar {
 
-
-
   override protected def beforeEach(): Unit = {
     reset(mockScaWrapperDataConnector)
     when(mockScaWrapperDataConnector.wrapperData()(any(), any(), any()))
@@ -64,7 +62,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
     when(mockSessionRepository.get(any())) thenReturn Future.successful(Some(emptyUserAnswers))
 
     reset(mockIndividualDetailsService)
-    when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(),any()))
+    when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
       .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCache)))
 
     reset(mockIdentityVerificationFrontendConnector)
@@ -80,12 +78,6 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
   val pd = buildPersonDetails
   val controller = applicationWithConfig.injector.instanceOf[AppleWalletController]
 
-  lazy val view = applicationWithConfig.injector.instanceOf[AppleWalletView]
-  lazy val errview = applicationWithConfig.injector.instanceOf[ErrorTemplate]
-  lazy val redirectview = applicationWithConfig.injector.instanceOf[RedirectToPostalFormView]
-  lazy val passIdNotFoundView = applicationWithConfig.injector.instanceOf[PassIdNotFoundView]
-  lazy val qrCodeNotFoundView = applicationWithConfig.injector.instanceOf[QRCodeNotFoundView]
-
   val mockSessionRepository = mock[SessionRepository]
   val mockApplePassConnector = mock[AppleWalletConnector]
 
@@ -96,187 +88,422 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
 
   "Apple Wallet Controller" - {
 
-    "must return ErrorView and the correct view for a GET" in {
-      val application =
-        applicationBuilderWithConfig()
-          .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
-            inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
-            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
-            inject.bind[IdentityVerificationFrontendConnector].toInstance(mockIdentityVerificationFrontendConnector)
+    "Apple wallet enabled" - {
+
+      "must return ErrorView and the correct view for a GET" in {
+        val application =
+          applicationBuilderWithConfig()
+            .overrides(
+              inject.bind[SessionRepository].toInstance(mockSessionRepository),
+              inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
+              inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
+              inject.bind[IdentityVerificationFrontendConnector].toInstance(mockIdentityVerificationFrontendConnector)
+            ).configure(
+            "features.apple-wallet-enabled" -> true
           )
 
+            .build()
+
+        when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
+          .thenReturn(Future.successful(Left("Individual details not found in cache")))
+
+        running(application) {
+          userLoggedInFMNUser(NinoUser)
+          val request = FakeRequest(GET, routes.AppleWalletController.onPageLoad.url)
+            .withSession(("authToken", "Bearer 123"))
+
+          val result = route(application, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        }
+        reset(mockIndividualDetailsService)
+      }
+
+
+      "must return OK and the correct view for a GET" in {
+        val application =
+          applicationBuilderWithConfig()
+            .overrides(
+              inject.bind[SessionRepository].toInstance(mockSessionRepository),
+              inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
+              inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),
+              inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+            ).configure(
+            "features.apple-wallet-enabled" -> true
+          )
+            .build()
+
+        val view = application.injector.instanceOf[AppleWalletView]
+
+        when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
+          .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCache)))
+
+        running(application) {
+          userLoggedInFMNUser(NinoUser)
+          val request = FakeRequest(GET, routes.AppleWalletController.onPageLoad.url)
+            .withSession(("authToken", "Bearer 123"))
+          val result = route(application, request).value
+          status(result) mustEqual OK
+          contentAsString(result) mustEqual (view(passId, false)(request.withAttrs(requestAttributeMap), messages(application))).toString
+        }
+      }
+
+      "must return apple pass" in {
+
+        val application = applicationBuilderWithConfig().overrides(
+          inject.bind[SessionRepository].toInstance(mockSessionRepository),
+          inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
+          inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+        )
+          .configure(
+            "features.apple-wallet-enabled" -> true
+          )
           .build()
 
-      when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(),any()))
-        .thenReturn(Future.successful(Left("Individual details not found in cache")))
-
-      running(application) {
-        userLoggedInFMNUser(NinoUser)
-        val request = FakeRequest(GET, routes.AppleWalletController.onPageLoad.url)
-          .withSession(("authToken", "Bearer 123"))
-
-        val result = route(application, request).value
-
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        running(application) {
+          userLoggedInFMNUser(NinoUser)
+          val request = FakeRequest(GET, routes.AppleWalletController.getPassCard(passId).url)
+            .withSession(("authToken", "Bearer 123"))
+          val result = route(application, request).value
+          status(result) mustEqual OK
+          contentAsBytes(result) mustEqual Base64.getDecoder.decode(fakeBase64String)
+        }
       }
-      reset(mockIndividualDetailsService)
-    }
 
+      "must redirect to passIdNotFoundView when no Apple pass is returned" in {
+        when(mockApplePassConnector.getApplePass(eqTo(passId))(any(), any()))
+          .thenReturn(Future(None))
 
-    "must return OK and the correct view for a GET" in {
-      val application =
-        applicationBuilderWithConfig()
+        val application = applicationBuilderWithConfig().overrides(
+          inject.bind[SessionRepository].toInstance(mockSessionRepository),
+          inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
+          inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+        )
+          .configure(
+            "features.apple-wallet-enabled" -> true
+          )
+          .build()
+
+        val view = application.injector.instanceOf[PassIdNotFoundView]
+
+        running(application) {
+          userLoggedInFMNUser(NinoUser)
+          val request = FakeRequest(GET, routes.AppleWalletController.getPassCard(passId).url)
+            .withSession(("authToken", "Bearer 123"))
+          val result = route(application, request).value
+          val userRequest = UserRequestNew(
+            None,
+            None,
+            ConfidenceLevel.L200,
+            fakeIndividualDetails,
+            Enrolments(Set(Enrolment("HMRC-PT"))),
+            request
+          )
+          contentAsString(result) mustEqual (view()(userRequest, messages(application), scala.concurrent.ExecutionContext.global).toString)
+        }
+
+      }
+
+      "must return QR code" in {
+        val application = applicationBuilderWithConfig()
           .overrides(
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
-            inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+          ).configure(
+          "features.apple-wallet-enabled" -> true
+        )
+          .build()
+
+        running(application) {
+          userLoggedInFMNUser(NinoUser)
+          val request = FakeRequest(GET, routes.AppleWalletController.getQrCode(passId).url)
+            .withSession(("authToken", "Bearer 123"))
+          val result = route(application, request).value
+          status(result) mustEqual OK
+          contentAsBytes(result) mustEqual Base64.getDecoder.decode(fakeBase64String)
+        }
+      }
+
+      "must redirect to qrCodeNotFoundView when no Apple pass QR code is returned" in {
+        when(mockApplePassConnector.getAppleQrCode(eqTo(passId))(any(), any()))
+          .thenReturn(Future(None))
+
+        val application = applicationBuilderWithConfig().overrides(
+          inject.bind[SessionRepository].toInstance(mockSessionRepository),
+          inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
+          inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+        ).configure(
+          "features.apple-wallet-enabled" -> true
+        )
+          .build()
+
+        val view = application.injector.instanceOf[QRCodeNotFoundView]
+
+        running(application) {
+          userLoggedInFMNUser(NinoUser)
+          val request = FakeRequest(GET, routes.AppleWalletController.getQrCode(passId).url)
+            .withSession(("authToken", "Bearer 123"))
+          val result = route(application, request).value
+          val userRequest = UserRequestNew(
+            None,
+            None,
+            ConfidenceLevel.L200,
+            fakeIndividualDetails,
+            Enrolments(Set(Enrolment("HMRC-PT"))),
+            request
+          )
+          contentAsString(result) mustEqual (view()(userRequest, messages(application), scala.concurrent.ExecutionContext.global).toString)
+        }
+      }
+
+      "must fail to login user" in {
+        val application = applicationBuilderWithConfig()
+          .overrides(
+            inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
+            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+          ).configure(
+          "features.apple-wallet-enabled" -> true
+        )
+          .build()
+
+        running(application) {
+          userLoggedInIsNotFMNUser(NinoUser)
+          val request = FakeRequest(GET, routes.AppleWalletController.getQrCode(passId).url)
+            .withSession(("authToken", "Bearer 123"))
+          val result = route(application, request).value
+          status(result) mustEqual 500
+        }
+      }
+
+      "must fail to login user2" in {
+        val application = applicationBuilderWithConfig()
+          .overrides(
+            inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
+            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+          ).configure(
+          "features.apple-wallet-enabled" -> true
+        )
+          .build()
+
+        running(application) {
+          userLoggedInIsNotFMNUser(NinoUser_With_CL50)
+          val request = FakeRequest(GET, routes.AppleWalletController.getQrCode(passId).url)
+            .withSession(("authToken", "Bearer 123"))
+          val result = route(application, request).value
+          status(result) mustEqual 500
+        }
+      }
+    }
+
+    "Apple wallet disabled" - {
+
+      "must return ErrorView and the correct view for a GET" in {
+        val application =
+          applicationBuilderWithConfig()
+            .overrides(
+              inject.bind[SessionRepository].toInstance(mockSessionRepository),
+              inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
+              inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
+              inject.bind[IdentityVerificationFrontendConnector].toInstance(mockIdentityVerificationFrontendConnector)
+            ).configure(
+            "features.apple-wallet-enabled" -> true
+          )
+
+            .build()
+
+        when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
+          .thenReturn(Future.successful(Left("Individual details not found in cache")))
+
+        running(application) {
+          userLoggedInFMNUser(NinoUser)
+          val request = FakeRequest(GET, routes.AppleWalletController.onPageLoad.url)
+            .withSession(("authToken", "Bearer 123"))
+
+          val result = route(application, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        }
+        reset(mockIndividualDetailsService)
+      }
+
+      "must return OK and the correct view for a GET" in {
+        val application =
+          applicationBuilderWithConfig()
+            .overrides(
+              inject.bind[SessionRepository].toInstance(mockSessionRepository),
+              inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
+              inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),
+              inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+            ).configure(
+            "features.apple-wallet-enabled" -> false
+          )
+            .build()
+
+        when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
+          .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCache)))
+
+        running(application) {
+          userLoggedInFMNUser(NinoUser)
+          val request = FakeRequest(GET, routes.AppleWalletController.onPageLoad.url)
+            .withSession(("authToken", "Bearer 123"))
+          val result = route(application, request).value
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustBe routes.UnauthorisedController.onPageLoad.url
+        }
+      }
+
+      "must return apple pass" in {
+
+        val application = applicationBuilderWithConfig().overrides(
+          inject.bind[SessionRepository].toInstance(mockSessionRepository),
+          inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
+          inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+        )
+          .configure(
+            "features.apple-wallet-enabled" -> false
           )
           .build()
 
-      when(mockIndividualDetailsService.getIdDataFromCache(any(),any())(any(),any()))
-        .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCache)))
-
-      running(application) {
-        userLoggedInFMNUser(NinoUser)
-        val request = FakeRequest(GET, routes.AppleWalletController.onPageLoad.url)
-          .withSession(("authToken", "Bearer 123"))
-        val result = route(application, request).value
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual (view(passId, false)(request.withAttrs(requestAttributeMap), messages(application))).toString
+        running(application) {
+          userLoggedInFMNUser(NinoUser)
+          val request = FakeRequest(GET, routes.AppleWalletController.getPassCard(passId).url)
+            .withSession(("authToken", "Bearer 123"))
+          val result = route(application, request).value
+          status(result) mustEqual OK
+          contentAsBytes(result) mustEqual Base64.getDecoder.decode(fakeBase64String)
+        }
       }
-    }
 
-    "must return apple pass" in {
+      "must redirect to passIdNotFoundView when no Apple pass is returned" in {
+        when(mockApplePassConnector.getApplePass(eqTo(passId))(any(), any()))
+          .thenReturn(Future(None))
 
-      val application = applicationBuilderWithConfig().overrides(
+        val application = applicationBuilderWithConfig().overrides(
           inject.bind[SessionRepository].toInstance(mockSessionRepository),
           inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
           inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
         )
-        .build()
+          .configure(
+            "features.apple-wallet-enabled" -> false
+          )
+          .build()
 
-      running(application) {
-        userLoggedInFMNUser(NinoUser)
-        val request = FakeRequest(GET, routes.AppleWalletController.getPassCard(passId).url)
-          .withSession(("authToken", "Bearer 123"))
-        val result = route(application, request).value
-        status(result) mustEqual OK
-        contentAsBytes(result) mustEqual Base64.getDecoder.decode(fakeBase64String)
+        val view = application.injector.instanceOf[PassIdNotFoundView]
+
+        running(application) {
+          userLoggedInFMNUser(NinoUser)
+          val request = FakeRequest(GET, routes.AppleWalletController.getPassCard(passId).url)
+            .withSession(("authToken", "Bearer 123"))
+          val result = route(application, request).value
+          val userRequest = UserRequestNew(
+            None,
+            None,
+            ConfidenceLevel.L200,
+            fakeIndividualDetails,
+            Enrolments(Set(Enrolment("HMRC-PT"))),
+            request
+          )
+          contentAsString(result) mustEqual (view()(userRequest, messages(application), scala.concurrent.ExecutionContext.global).toString)
+        }
+
       }
-    }
 
-    "must redirect to passIdNotFoundView when no Apple pass is returned" in {
-      when(mockApplePassConnector.getApplePass(eqTo(passId))(any(), any()))
-        .thenReturn(Future(None))
+      "must return QR code" in {
+        val application = applicationBuilderWithConfig()
+          .overrides(
+            inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
+            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+          ).configure(
+          "features.apple-wallet-enabled" -> false
+        )
+          .build()
 
-      val application = applicationBuilderWithConfig().overrides(
+        running(application) {
+          userLoggedInFMNUser(NinoUser)
+          val request = FakeRequest(GET, routes.AppleWalletController.getQrCode(passId).url)
+            .withSession(("authToken", "Bearer 123"))
+          val result = route(application, request).value
+          status(result) mustEqual OK
+          contentAsBytes(result) mustEqual Base64.getDecoder.decode(fakeBase64String)
+        }
+      }
+
+      "must redirect to qrCodeNotFoundView when no Apple pass QR code is returned" in {
+        when(mockApplePassConnector.getAppleQrCode(eqTo(passId))(any(), any()))
+          .thenReturn(Future(None))
+
+        val application = applicationBuilderWithConfig().overrides(
           inject.bind[SessionRepository].toInstance(mockSessionRepository),
           inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
           inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+        ).configure(
+          "features.apple-wallet-enabled" -> false
         )
-        .build()
+          .build()
 
-      running(application) {
-        userLoggedInFMNUser(NinoUser)
-        val request = FakeRequest(GET, routes.AppleWalletController.getPassCard(passId).url)
-          .withSession(("authToken", "Bearer 123"))
-        val result = route(application, request).value
-        val userRequest = UserRequestNew(
-          None,
-          None,
-          ConfidenceLevel.L200,
-          fakeIndividualDetails,
-          Enrolments(Set(Enrolment("HMRC-PT"))),
-          request
-        )
-        contentAsString(result) mustEqual (passIdNotFoundView()(userRequest, messages(application), scala.concurrent.ExecutionContext.global).toString)
+        val view = application.injector.instanceOf[QRCodeNotFoundView]
+
+        running(application) {
+          userLoggedInFMNUser(NinoUser)
+          val request = FakeRequest(GET, routes.AppleWalletController.getQrCode(passId).url)
+            .withSession(("authToken", "Bearer 123"))
+          val result = route(application, request).value
+          val userRequest = UserRequestNew(
+            None,
+            None,
+            ConfidenceLevel.L200,
+            fakeIndividualDetails,
+            Enrolments(Set(Enrolment("HMRC-PT"))),
+            request
+          )
+          contentAsString(result) mustEqual (view()(userRequest, messages(application), scala.concurrent.ExecutionContext.global).toString)
+        }
       }
 
-    }
-
-    "must return QR code" in {
-      val application = applicationBuilderWithConfig()
-        .overrides(
-          inject.bind[SessionRepository].toInstance(mockSessionRepository),
-          inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
-          inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+      "must fail to login user" in {
+        val application = applicationBuilderWithConfig()
+          .overrides(
+            inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
+            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+          ).configure(
+          "features.apple-wallet-enabled" -> false
         )
-        .build()
+          .build()
 
-      running(application) {
-        userLoggedInFMNUser(NinoUser)
-        val request = FakeRequest(GET, routes.AppleWalletController.getQrCode(passId).url)
-          .withSession(("authToken", "Bearer 123"))
-        val result = route(application, request).value
-        status(result) mustEqual OK
-        contentAsBytes(result) mustEqual Base64.getDecoder.decode(fakeBase64String)
+        running(application) {
+          userLoggedInIsNotFMNUser(NinoUser)
+          val request = FakeRequest(GET, routes.AppleWalletController.getQrCode(passId).url)
+            .withSession(("authToken", "Bearer 123"))
+          val result = route(application, request).value
+          status(result) mustEqual 500
+        }
       }
-    }
 
-    "must redirect to qrCodeNotFoundView when no Apple pass QR code is returned" in {
-      when(mockApplePassConnector.getAppleQrCode(eqTo(passId))(any(), any()))
-        .thenReturn(Future(None))
-
-      val application = applicationBuilderWithConfig().overrides(
-          inject.bind[SessionRepository].toInstance(mockSessionRepository),
-          inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
-          inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+      "must fail to login user2" in {
+        val application = applicationBuilderWithConfig()
+          .overrides(
+            inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
+            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+          ).configure(
+          "features.apple-wallet-enabled" -> false
         )
-        .build()
+          .build()
 
-      running(application) {
-        userLoggedInFMNUser(NinoUser)
-        val request = FakeRequest(GET, routes.AppleWalletController.getQrCode(passId).url)
-          .withSession(("authToken", "Bearer 123"))
-        val result = route(application, request).value
-        val userRequest = UserRequestNew(
-          None,
-          None,
-          ConfidenceLevel.L200,
-          fakeIndividualDetails,
-          Enrolments(Set(Enrolment("HMRC-PT"))),
-          request
-        )
-        contentAsString(result) mustEqual (qrCodeNotFoundView()(userRequest, messages(application), scala.concurrent.ExecutionContext.global).toString)
-      }
-    }
-
-    "must fail to login user" in {
-      val application = applicationBuilderWithConfig()
-        .overrides(
-          inject.bind[SessionRepository].toInstance(mockSessionRepository),
-          inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
-          inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-        )
-        .build()
-
-      running(application) {
-        userLoggedInIsNotFMNUser(NinoUser)
-        val request = FakeRequest(GET, routes.AppleWalletController.getQrCode(passId).url)
-          .withSession(("authToken", "Bearer 123"))
-        val result = route(application, request).value
-        status(result) mustEqual 500
-      }
-    }
-
-    "must fail to login user2" in {
-      val application = applicationBuilderWithConfig()
-        .overrides(
-          inject.bind[SessionRepository].toInstance(mockSessionRepository),
-          inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
-          inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-        )
-        .build()
-
-      running(application) {
-        userLoggedInIsNotFMNUser(NinoUser_With_CL50)
-        val request = FakeRequest(GET, routes.AppleWalletController.getQrCode(passId).url)
-          .withSession(("authToken", "Bearer 123"))
-        val result = route(application, request).value
-        status(result) mustEqual 500
+        running(application) {
+          userLoggedInIsNotFMNUser(NinoUser_With_CL50)
+          val request = FakeRequest(GET, routes.AppleWalletController.getQrCode(passId).url)
+            .withSession(("authToken", "Bearer 123"))
+          val result = route(application, request).value
+          status(result) mustEqual 500
+        }
       }
     }
   }

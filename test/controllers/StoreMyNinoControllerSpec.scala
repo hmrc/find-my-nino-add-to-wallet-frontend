@@ -120,7 +120,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
         val result = route(application, request).value
         status(result) mustEqual INTERNAL_SERVER_ERROR
 
-        contentAsString(result).removeAllNonce mustEqual view()(request, frontendAppConfig, messages(application)).toString()
+        contentAsString(result).removeAllNonces mustEqual view()(request, frontendAppConfig, messages(application)).toString()
       }
       reset(mockCitizenDetailsConnector)
     }
@@ -198,7 +198,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           request
         )
 
-        contentAsString(result).removeAllNonce mustEqual view()(
+        contentAsString(result).removeAllNonces mustEqual view()(
           userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString
       }
 
@@ -251,7 +251,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           request
         )
 
-        contentAsString(result).removeAllNonce mustEqual view()(
+        contentAsString(result).removeAllNonces mustEqual view()(
           userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString
       }
 

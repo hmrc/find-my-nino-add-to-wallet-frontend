@@ -112,8 +112,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
           val result = route(application, request).value
           status(result) mustEqual INTERNAL_SERVER_ERROR
 
-          contentAsString(result).removeAllNonce mustEqual (view()(request, frontendAppConfig, messages(application))).toString()
-
+          contentAsString(result).removeAllNonces mustEqual (view()(request, frontendAppConfig, messages(application))).toString()
         }
         reset(mockCitizenDetailsConnector)
       }
@@ -195,8 +194,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
             request
           )
 
-          contentAsString(result).removeAllNonce mustEqual (view()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
-
+          contentAsString(result).removeAllNonces mustEqual (view()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
         }
 
       }
@@ -252,8 +250,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
             request
           )
 
-          contentAsString(result).removeAllNonce mustEqual (view()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
-
+          contentAsString(result).removeAllNonces mustEqual (view()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
         }
       }
 
@@ -327,8 +324,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
           val result = route(application, request).value
           status(result) mustEqual INTERNAL_SERVER_ERROR
 
-          contentAsString(result).removeAllNonce mustEqual (view()(request, frontendAppConfig, messages(application))).toString()
-
+          contentAsString(result).removeAllNonces mustEqual (view()(request, frontendAppConfig, messages(application))).toString()
         }
         reset(mockCitizenDetailsConnector)
 
@@ -356,7 +352,8 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
             .withSession(("authToken", "Bearer 123"))
           val result = route(application, request).value
           status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustBe routes.UnauthorisedController.onPageLoad.url        }
+          redirectLocation(result).value mustBe routes.UnauthorisedController.onPageLoad.url
+        }
       }
 
       "must return apple pass" in {
@@ -467,7 +464,6 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
           )
 
           contentAsString(result).removeAllNonces mustEqual (view()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
-
         }
       }
 

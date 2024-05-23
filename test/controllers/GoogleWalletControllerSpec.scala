@@ -112,8 +112,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           val result = route(application, request).value
           status(result) mustEqual INTERNAL_SERVER_ERROR
 
-          contentAsString(result).removeAllNonce mustEqual (view()(request, frontendAppConfig, messages(application))).toString()
-
+          contentAsString(result).removeAllNonces mustEqual (view()(request, frontendAppConfig, messages(application))).toString()
         }
         reset(mockCitizenDetailsConnector)
       }
@@ -190,8 +189,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
             request
           )
 
-          contentAsString(result).removeAllNonce mustEqual (view()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
-
+          contentAsString(result).removeAllNonces mustEqual (view()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
         }
       }
 
@@ -242,8 +240,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
             request
           )
 
-          contentAsString(result).removeAllNonce mustEqual (view()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
-
+          contentAsString(result).removeAllNonces mustEqual (view()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
         }
       }
 
@@ -292,11 +289,9 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           val result = route(application, request).value
           status(result) mustEqual INTERNAL_SERVER_ERROR
 
-          contentAsString(result).removeAllNonce mustEqual (view()(request, frontendAppConfig, messages(application))).toString()
-
+          contentAsString(result).removeAllNonces mustEqual (view()(request, frontendAppConfig, messages(application))).toString()
         }
         reset(mockCitizenDetailsConnector)
-
       }
 
       "must return OK and the correct view for a GET" in {
@@ -319,7 +314,6 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           status(result) mustEqual SEE_OTHER
           redirectLocation(result).value mustBe routes.UnauthorisedController.onPageLoad.url
         }
-
       }
 
 
@@ -370,8 +364,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
             request
           )
 
-          contentAsString(result).removeAllNonce mustEqual (view()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
-
+          contentAsString(result).removeAllNonces mustEqual (view()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
         }
       }
 
@@ -422,8 +415,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
             request
           )
 
-          contentAsString(result).removeAllNonce mustEqual (view()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
-
+          contentAsString(result).removeAllNonces mustEqual (view()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
         }
       }
 

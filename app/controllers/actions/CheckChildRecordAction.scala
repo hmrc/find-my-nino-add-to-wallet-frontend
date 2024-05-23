@@ -56,7 +56,7 @@ class CheckChildRecordAction @Inject()(
 
     individualDetailsService.getIdDataFromCache(identifier, sessionId).flatMap {
       case Right(individualDetails) =>
-        if (isCrn(individualDetails)) {
+        if (isFullNino(individualDetails)) {
           fullNino(authContext, individualDetails)
         } else {
           actionCrnUpgrade(identifier, authContext, individualDetails, sessionId)
@@ -65,7 +65,7 @@ class CheckChildRecordAction @Inject()(
     }
   }
 
-  private def isCrn(individualDetails: IndividualDetailsDataCache): Boolean =
+  private def isFullNino(individualDetails: IndividualDetailsDataCache): Boolean =
     individualDetails.individualDetailsData.get.crnIndicator.toLowerCase.equals("false")
 
   private def fullNino[A](authContext: AuthContext[A], individualDetails: IndividualDetailsDataCache): Future[Right[Nothing, UserRequestNew[A]]] =

@@ -375,9 +375,10 @@ object Fixtures extends CDFixtures  {
     firstForename = "Firstname",
     surname = "Lastname",
     initialsName = "FML",
+    dateOfBirth = LocalDate.now(),
     nino = "AB123456C",
     address = Some(fakeAddressData),
-    crnIndicator = Some("false")
+    crnIndicator = "false"
   )
 
   val fakeIndividualDetailsDataCache = IndividualDetailsDataCache(

@@ -24,15 +24,15 @@ import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.{reset, when}
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject
-import play.api.test.FakeRequest
+import play.api.test.{DefaultAwaitTimeout, FakeRequest}
 import play.api.test.Helpers._
 import repositories.SessionRepository
 import services.IndividualDetailsService
 import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolment, Enrolments}
-import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HttpResponse, NotFoundException, UpstreamErrorResponse}
 import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
 import util.CDFixtures
-import util.Fixtures.{fakeIndividualDetails, fakeIndividualDetailsDataCache}
+import util.Fixtures.{fakeIndividualDetails, fakeIndividualDetailsData, fakeIndividualDetailsDataCache}
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
 import util.TestData.{NinoUser, NinoUser_With_CL50}
 import views.html.{ErrorTemplate, PassIdNotFoundView, RedirectToPostalFormView, StoreMyNinoView}
@@ -41,7 +41,7 @@ import java.util.Base64
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSugar {
+class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSugar with DefaultAwaitTimeout {
 
   override protected def beforeEach(): Unit = {
     reset(mockScaWrapperDataConnector)
@@ -119,9 +119,9 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
         userLoggedInFMNUser(NinoUser)
         val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
-        val result = route(application, request).value
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        assertThrows[NotFoundException] {
+          await(route(application, request).value)
+        }
       }
       reset(mockIndividualDetailsService)
     }
@@ -190,9 +190,8 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
         val result = route(application, request).value
         val userRequest = UserRequestNew(
           None,
-          None,
           ConfidenceLevel.L200,
-          fakeIndividualDetails,
+          fakeIndividualDetailsDataCache,
           Enrolments(Set(Enrolment("HMRC-PT"))),
           request
         )
@@ -240,9 +239,8 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
         val result = route(application, request).value
         val userRequest = UserRequestNew(
           None,
-          None,
           ConfidenceLevel.L200,
-          fakeIndividualDetails,
+          fakeIndividualDetailsDataCache,
           Enrolments(Set(Enrolment("HMRC-PT"))),
           request
         )

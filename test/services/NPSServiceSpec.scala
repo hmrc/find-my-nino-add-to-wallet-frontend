@@ -24,8 +24,7 @@ import org.mockito.Mockito.{reset, when}
 import play.api.Application
 import play.api.http.Status._
 import play.api.inject.bind
-import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import uk.gov.hmrc.http.{BadRequestException, ForbiddenException, HeaderCarrier, HttpException, HttpResponse, InternalServerException, NotFoundException, UnprocessableEntityException}
+import uk.gov.hmrc.http._
 
 import scala.concurrent.Future
 
@@ -133,8 +132,8 @@ class NPSServiceSpec extends SpecBase{
           .upliftCRN(any, any)(any, any()))
           .thenReturn(Future.successful(response))
 
-        assertThrows[BadRequestException] {
-          val response = await(npsService.upliftCRN(nino, npsRequest))
+        val result = npsService.upliftCRN(nino, npsRequest)
+        result.futureValue mustEqual Left(new HttpException(jsonBadRequest, BAD_REQUEST))
         }
       }
     }
@@ -148,9 +147,8 @@ class NPSServiceSpec extends SpecBase{
           .upliftCRN(any, any)(any, any()))
           .thenReturn(Future.successful(response))
 
-        assertThrows[ForbiddenException] {
-          await(npsService.upliftCRN(nino, npsRequest))
-        }
+        val result = npsService.upliftCRN(nino, npsRequest)
+        result.futureValue mustEqual Left(new HttpException(jsonForbidden, FORBIDDEN))
       }
     }
 
@@ -163,9 +161,9 @@ class NPSServiceSpec extends SpecBase{
           .upliftCRN(any, any)(any, any()))
           .thenReturn(Future.successful(response))
 
-        assertThrows[UnprocessableEntityException] {
-          await(npsService.upliftCRN(nino, npsRequest))
-        }
+        val result = npsService.upliftCRN(nino, npsRequest)
+        val ex = new HttpException("Something went wrong", UNPROCESSABLE_ENTITY)
+        result.futureValue mustEqual Left(ex)
       }
     }
 
@@ -178,9 +176,9 @@ class NPSServiceSpec extends SpecBase{
           .upliftCRN(any, any)(any, any()))
           .thenReturn(Future.successful(response))
 
-        assertThrows[NotFoundException] {
-          await(npsService.upliftCRN(nino, npsRequest))
-        }
+        val result = npsService.upliftCRN(nino, npsRequest)
+        val ex = new HttpException("", NOT_FOUND)
+        result.futureValue mustBe
       }
     }
 
@@ -193,10 +191,8 @@ class NPSServiceSpec extends SpecBase{
           .upliftCRN(any, any)(any, any()))
           .thenReturn(Future.successful(response))
 
-        assertThrows[InternalServerException] {
-          await(npsService.upliftCRN(nino, npsRequest))
-        }
-      }
+        val result = npsService.upliftCRN(nino, npsRequest)
+        result.futureValue mustBe Left(new HttpException("Something went wrong", INTERNAL_SERVER_ERROR))
     }
   }
 }

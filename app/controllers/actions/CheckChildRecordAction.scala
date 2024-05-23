@@ -28,7 +28,8 @@ import play.api.mvc.Results.{InternalServerError, Redirect}
 import play.api.mvc._
 import services.{IndividualDetailsService, NPSService}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
+import uk.gov.hmrc.http.{HeaderCarrier, InternalServerException, NotFoundException}
+import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import views.html.RedirectToPostalFormView
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -40,13 +41,13 @@ class CheckChildRecordAction @Inject()(
                                         val messagesApi: MessagesApi,
                                         redirectView: RedirectToPostalFormView,
                                         frontendAppConfig: FrontendAppConfig
-                                      )(implicit hc: HeaderCarrier, ec: ExecutionContext)
+                                      )(implicit ec: ExecutionContext)
   extends ActionRefiner[AuthContext, UserRequestNew]
     with ActionFunction[AuthContext, UserRequestNew]
     with I18nSupport {
 
   override protected def refine[A](authContext: AuthContext[A]): Future[Either[Result, UserRequestNew[A]]] = {
-
+    implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(authContext.request, authContext.request.session)
     val identifier: String = authContext.nino.nino
 
     val sessionId: String = hc.sessionId.map(_.value).getOrElse(
@@ -98,11 +99,9 @@ class CheckChildRecordAction @Inject()(
     implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
     code match
     {
-      case UNAUTHORIZED          => Left(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
       case BAD_REQUEST           => Left(InternalServerError(redirectView()(authContext.request, frontendAppConfig, messages)))
       case UNPROCESSABLE_ENTITY  => Left(InternalServerError(redirectView()(authContext.request, frontendAppConfig, messages)))
-      case INTERNAL_SERVER_ERROR => Left(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
-      case _                     => Left(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+      case _                     => throw new InternalServerException("Something went wrong")
     }
   }
 

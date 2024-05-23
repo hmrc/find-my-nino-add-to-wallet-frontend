@@ -21,14 +21,15 @@ import connectors.NPSConnector
 import models.nps.CRNUpliftRequest
 import play.api.Logging
 import play.api.http.Status._
-import uk.gov.hmrc.http.{BadRequestException, ForbiddenException, HeaderCarrier, HttpException, InternalServerException, NotFoundException, UnprocessableEntityException}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpException}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class NPSService @Inject()(connector: NPSConnector, frontendAppConfig: FrontendAppConfig)
                           (implicit ec: ExecutionContext) extends Logging {
-  
+  implicit val hc: HeaderCarrier = HeaderCarrier()
+
   val className: String                       = s"${this.getClass.getName}:upliftCRN"
   private val alreadyAnAdultErrorCode: String = frontendAppConfig.crnUpliftAPIAlreadyAdultErrorCode
   private val genericErrorResponseBody: String = "Something went wrong"
@@ -47,19 +48,19 @@ class NPSService @Inject()(connector: NPSConnector, frontendAppConfig: FrontendA
         Right(NO_CONTENT)
       case UNPROCESSABLE_ENTITY =>
         logger.warn(s"$className returned: ${httpResponse.status}")
-          throw new UnprocessableEntityException(genericErrorResponseBody)
+        Left(new HttpException(genericErrorResponseBody, UNPROCESSABLE_ENTITY))
       case BAD_REQUEST =>
         logger.warn(s"$className returned: ${httpResponse.status}")
-        throw new BadRequestException(genericErrorResponseBody)
+        Left(new HttpException(genericErrorResponseBody, BAD_REQUEST))
       case FORBIDDEN =>
         logger.warn(s"$className returned: ${httpResponse.status}")
-        throw new ForbiddenException(httpResponse.body)
+        Left(new HttpException(httpResponse.body, FORBIDDEN))
       case NOT_FOUND =>
         logger.warn(s"$className returned: ${httpResponse.status}")
-        throw new NotFoundException(httpResponse.body)
+        Left(new HttpException(httpResponse.body, NOT_FOUND))
       case INTERNAL_SERVER_ERROR =>
         logger.error(s"$className returned: ${httpResponse.status}")
-        throw new InternalServerException(httpResponse.body)
+        Left(new HttpException(httpResponse.body, INTERNAL_SERVER_ERROR))
     }
   }
 }

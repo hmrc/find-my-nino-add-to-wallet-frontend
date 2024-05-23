@@ -29,6 +29,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import util.AuditUtils
 import views.html.StoreMyNinoView
+import controllers.actions.CheckChildRecordAction
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -40,7 +41,8 @@ class StoreMyNinoController @Inject()(
                                        auditService: AuditService,
                                        individualDetailsService: IndividualDetailsService,
                                        override val messagesApi: MessagesApi,
-                                       view: StoreMyNinoView
+                                       view: StoreMyNinoView,
+                                       checkChildRecordAction: CheckChildRecordAction
                                      )(implicit config: Configuration,
                                        env: Environment,
                                        ec: ExecutionContext,
@@ -50,28 +52,23 @@ class StoreMyNinoController @Inject()(
 
   implicit val loginContinueUrl: Call = routes.StoreMyNinoController.onPageLoad
 
-  def onPageLoad: Action[AnyContent] = authorisedAsFMNUser async {
-    implicit authContext => {
+  def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen checkChildRecordAction) async {
+    implicit userRequestNew => {
+      implicit val messages: Messages = cc.messagesApi.preferred(userRequestNew.request)
 
-      implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(authContext.request, authContext.request.session)
-      implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
-
-      val nino: String = authContext.nino.nino
+      val nino: String = userRequestNew.nino.getOrElse(throw new IllegalArgumentException("No nino found")).nino
       val ninoFormatted: String = nino.grouped(2).mkString(" ")
-      val sessionId: String = hc.sessionId.get.value
 
-      individualDetailsService.getIdDataFromCache(nino, sessionId).flatMap {
-        case Right(individualDetailsDataCache) =>
-          auditSMNLandingPage("ViewNinoLanding", individualDetailsDataCache, hc)
-          val fullName = individualDetailsDataCache.getFullName
-          val googleIdf = googleWalletConnector.createGooglePass(fullName, ninoFormatted)
-          val appleIdf = appleWalletConnector.createApplePass(fullName, ninoFormatted)
-          googleIdf.flatMap { googleId =>
-            appleIdf.map { appleId =>
-              Ok(view(appleId.value, googleId.value, ninoFormatted, isMobileDisplay(authContext.request))(authContext.request, messages))
-            }
-          }
-        case Left("Individual details not found in cache") => Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad(None)))
+      auditSMNLandingPage("ViewNinoLanding", userRequestNew.individualDetails, hc)
+
+      val fullName = userRequestNew.individualDetails.getFullName
+      val googleIdf = googleWalletConnector.createGooglePass(fullName, ninoFormatted)
+      val appleIdf = appleWalletConnector.createApplePass(fullName, ninoFormatted)
+
+      googleIdf.flatMap { googleId =>
+        appleIdf.map { appleId =>
+          Ok(view(appleId.value, googleId.value, ninoFormatted, isMobileDisplay(userRequestNew.request))(userRequestNew.request, messages))
+        }
       }
     }
   }

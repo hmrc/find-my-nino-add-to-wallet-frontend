@@ -56,36 +56,53 @@ class CheckChildRecordAction @Inject()(
 
     individualDetailsService.getIdDataFromCache(identifier, sessionId).flatMap {
       case Right(individualDetails) =>
-        if (individualDetails.individualDetailsData.get.crnIndicator.equals("true")) {
-          val request: CRNUpliftRequest = buildCrnUpliftRequest(individualDetails)
-          npsService.upliftCRN(identifier, request).map {
-            case Right(_) =>
-              Right(
-                UserRequestNew(
-                  Some(Nino(identifier)),
-                  authContext.confidenceLevel,
-                  individualDetails,
-                  authContext.allEnrolments,
-                  authContext.request
-                )
-              )
-            case Left(status) => handleError(status, authContext, frontendAppConfig)
-          }
+        if (isCrn(individualDetails)) {
+          fullNino(authContext, individualDetails)
         } else {
-          Future.successful(
-            Right(
-              UserRequestNew(
-                Some(Nino(identifier)),
-                authContext.confidenceLevel,
-                individualDetails,
-                authContext.allEnrolments,
-                authContext.request
-              )
-            )
-          )
+          actionCrnUpgrade(identifier, authContext, individualDetails, sessionId)
         }
       case Left(_) => Future.successful(throw new NotFoundException("Individual details not found"))
     }
+  }
+
+  private def isCrn(individualDetails: IndividualDetailsDataCache): Boolean =
+    individualDetails.individualDetailsData.get.crnIndicator.toLowerCase.equals("false")
+
+  private def fullNino[A](authContext: AuthContext[A], individualDetails: IndividualDetailsDataCache): Future[Right[Nothing, UserRequestNew[A]]] =
+    Future.successful(
+      Right(
+        UserRequestNew(
+          Some(Nino(individualDetails.getNino)),
+          authContext.confidenceLevel,
+          individualDetails,
+          authContext.allEnrolments,
+          authContext.request
+        )
+      )
+    )
+
+  private def actionCrnUpgrade[A](identifier: String, authContext: AuthContext[A], individualDetails: IndividualDetailsDataCache, sessionId: String)
+                                 (implicit hc:HeaderCarrier): Future[Either[Result, UserRequestNew[A]]] = {
+    val request: CRNUpliftRequest = buildCrnUpliftRequest(individualDetails)
+    npsService.upliftCRN(identifier, request).map {
+      case Right(_) => handleCrnUpliftSuccess(authContext, individualDetails, sessionId)
+      case Left(status) => handleError(status, authContext, frontendAppConfig)
+    }
+  }
+
+  private def handleCrnUpliftSuccess[A](authContext: AuthContext[A], individualDetails: IndividualDetailsDataCache, sessionId: String)
+                                       (implicit hc: HeaderCarrier): Right[Nothing, UserRequestNew[A]] = {
+    invalidateCache(individualDetails)
+    validateCrnUplift(individualDetails.getNino, sessionId)
+    Right(
+      UserRequestNew(
+        Some(Nino(individualDetails.getNino)),
+        authContext.confidenceLevel,
+        individualDetails,
+        authContext.allEnrolments,
+        authContext.request
+      )
+    )
   }
 
   private def buildCrnUpliftRequest(individualDetails: IndividualDetailsDataCache) =
@@ -93,6 +110,24 @@ class CheckChildRecordAction @Inject()(
       individualDetails.individualDetailsData.get.firstForename,
       individualDetails.individualDetailsData.get.surname,
       individualDetails.individualDetailsData.get.dateOfBirth.toString
+    )
+
+  private def validateCrnUplift(nino: String, sessionId: String)
+                               (implicit hc: HeaderCarrier): Future[Boolean] =
+    individualDetailsService.getIdDataFromCache(nino, sessionId).flatMap {
+      case Right(individualDetails) =>
+        if (individualDetails.individualDetailsData.get.crnIndicator.equals("true")) {
+          throw new RuntimeException("CRN indicator still set to true after successful CRN uplift")
+        } else {
+          Future.successful(true)
+        }
+    }
+
+  private def invalidateCache(individualDetails: IndividualDetailsDataCache): Future[Unit] =
+    individualDetailsService.deleteIdDataFromCache(individualDetails.getNino).map(
+      deleted => if (!deleted) {
+        throw new RuntimeException("Could not invalidate the cache after CRN uplift")
+      }
     )
 
   private def handleError[A](status: Int, authContext: AuthContext[A], frontendAppConfig: FrontendAppConfig): Left[Result, Nothing] = {

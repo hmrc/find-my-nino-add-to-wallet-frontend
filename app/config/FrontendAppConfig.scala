@@ -59,10 +59,10 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
   val cacheTtl: Int = configuration.get[Int]("mongodb.timeToLiveInSeconds")
   val encryptionKey: String = configuration.get[String]("mongodb.encryption.key")
 
+  val crnUpliftAPIAlreadyAdultErrorCode: String = configuration.get[String]("crnUpliftAPI.alreadyAnAdultErrorCode")
+
   lazy val googleWalletEnabled = configuration.getOptional[Boolean]("features.google-wallet-enabled").getOrElse(false)
   lazy val appleWalletEnabled = configuration.getOptional[Boolean]("features.apple-wallet-enabled").getOrElse(false)
-
-  lazy val fakeNinoEnabled = configuration.getOptional[Boolean]("features.fake-nino-enabled").getOrElse(false)
 
   lazy val basGatewayFrontendHost: String     = getExternalUrl(s"bas-gateway-frontend.host").getOrElse("")
   lazy val multiFactorAuthenticationUpliftUrl = s"$basGatewayFrontendHost/bas-gateway/uplift-mfa"

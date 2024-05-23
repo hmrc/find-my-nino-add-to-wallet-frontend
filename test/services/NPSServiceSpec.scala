@@ -133,7 +133,7 @@ class NPSServiceSpec extends SpecBase{
           .thenReturn(Future.successful(response))
 
         val result = npsService.upliftCRN(nino, npsRequest)
-        result.futureValue mustEqual Left(new HttpException(jsonBadRequest, BAD_REQUEST))
+        result.futureValue mustBe Left(BAD_REQUEST)
         }
       }
     }
@@ -148,7 +148,7 @@ class NPSServiceSpec extends SpecBase{
           .thenReturn(Future.successful(response))
 
         val result = npsService.upliftCRN(nino, npsRequest)
-        result.futureValue mustEqual Left(new HttpException(jsonForbidden, FORBIDDEN))
+        result.futureValue mustBe Left(FORBIDDEN)
       }
     }
 
@@ -162,8 +162,7 @@ class NPSServiceSpec extends SpecBase{
           .thenReturn(Future.successful(response))
 
         val result = npsService.upliftCRN(nino, npsRequest)
-        val ex = new HttpException("Something went wrong", UNPROCESSABLE_ENTITY)
-        result.futureValue mustEqual Left(ex)
+        result.futureValue mustBe Left(UNPROCESSABLE_ENTITY)
       }
     }
 
@@ -177,8 +176,7 @@ class NPSServiceSpec extends SpecBase{
           .thenReturn(Future.successful(response))
 
         val result = npsService.upliftCRN(nino, npsRequest)
-        val ex = new HttpException("", NOT_FOUND)
-        result.futureValue mustBe
+        result.futureValue mustBe Left(NOT_FOUND)
       }
     }
 
@@ -192,7 +190,7 @@ class NPSServiceSpec extends SpecBase{
           .thenReturn(Future.successful(response))
 
         val result = npsService.upliftCRN(nino, npsRequest)
-        result.futureValue mustBe Left(new HttpException("Something went wrong", INTERNAL_SERVER_ERROR))
+        result.futureValue mustBe Left(INTERNAL_SERVER_ERROR)
     }
   }
 }

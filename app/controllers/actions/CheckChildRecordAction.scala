@@ -69,7 +69,7 @@ class CheckChildRecordAction @Inject()(
                   authContext.request
                 )
               )
-            case Left(error) => handleError(error.responseCode, authContext, frontendAppConfig)
+            case Left(error) => handleError(error, authContext, frontendAppConfig)
           }
         } else {
           Future.successful(

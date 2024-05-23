@@ -32,13 +32,8 @@ class NPSService @Inject()(connector: NPSConnector, frontendAppConfig: FrontendA
 
   val className: String                       = s"${this.getClass.getName}:upliftCRN"
   private val alreadyAnAdultErrorCode: String = frontendAppConfig.crnUpliftAPIAlreadyAdultErrorCode
-  private val genericErrorResponseBody: String = "Something went wrong"
-
-  // UNPROCESSABLE_ENTITY and BAD_REQUEST are obfuscated in Kibana as a matter of course as
-  // they could contain information about; or from; the request including pii. The CRN uplift API
-  // call is audited in the back end under `find-my-nino-add-to-wallet-CRNUplift`
   def upliftCRN(identifier: String, crnUpliftRequest: CRNUpliftRequest)
-               (implicit hc: HeaderCarrier): Future[Either[HttpException, Int]] = {
+               (implicit hc: HeaderCarrier): Future[Either[Int, Int]] = {
     for {
       httpResponse <- connector.upliftCRN(identifier, crnUpliftRequest)
     } yield httpResponse.status match {
@@ -46,21 +41,9 @@ class NPSService @Inject()(connector: NPSConnector, frontendAppConfig: FrontendA
         Right(NO_CONTENT)
       case UNPROCESSABLE_ENTITY if httpResponse.body.contains(alreadyAnAdultErrorCode) =>
         Right(NO_CONTENT)
-      case UNPROCESSABLE_ENTITY =>
+      case _ =>
         logger.warn(s"$className returned: ${httpResponse.status}")
-        Left(new HttpException(genericErrorResponseBody, UNPROCESSABLE_ENTITY))
-      case BAD_REQUEST =>
-        logger.warn(s"$className returned: ${httpResponse.status}")
-        Left(new HttpException(genericErrorResponseBody, BAD_REQUEST))
-      case FORBIDDEN =>
-        logger.warn(s"$className returned: ${httpResponse.status}")
-        Left(new HttpException(httpResponse.body, FORBIDDEN))
-      case NOT_FOUND =>
-        logger.warn(s"$className returned: ${httpResponse.status}")
-        Left(new HttpException(httpResponse.body, NOT_FOUND))
-      case INTERNAL_SERVER_ERROR =>
-        logger.error(s"$className returned: ${httpResponse.status}")
-        Left(new HttpException(httpResponse.body, INTERNAL_SERVER_ERROR))
+        Left(httpResponse.status)
     }
   }
 }

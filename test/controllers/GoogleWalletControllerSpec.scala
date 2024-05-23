@@ -33,13 +33,11 @@ import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
 import util.CDFixtures
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
 import util.TestData.NinoUser
+import views.html._
 
 import java.util.Base64
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import views.html.{ErrorTemplate, UnauthorisedView, GoogleWalletView, PassIdNotFoundView, QRCodeNotFoundView, RedirectToPostalFormView}
-
-import java.util.Base64
 
 class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSugar {
 
@@ -78,16 +76,10 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
   val personDetailsId = "pdId"
   val controller = applicationWithConfig.injector.instanceOf[GoogleWalletController]
 
-  lazy val view = applicationWithConfig.injector.instanceOf[GoogleWalletView]
-  lazy val errview = applicationWithConfig.injector.instanceOf[ErrorTemplate]
-
   val mockSessionRepository = mock[SessionRepository]
   val mockGooglePassConnector = mock[GoogleWalletConnector]
   val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
   val mockIdentityVerificationFrontendConnector = mock[IdentityVerificationFrontendConnector]
-  lazy val redirectview = applicationWithConfig.injector.instanceOf[RedirectToPostalFormView]
-  lazy val passIdNotFoundView = applicationWithConfig.injector.instanceOf[PassIdNotFoundView]
-  lazy val qrCodeNotFoundView = applicationWithConfig.injector.instanceOf[QRCodeNotFoundView]
 
 
   val fakeBase64String = "UEsDBBQACAgIABxqJlYAAAAAAA"
@@ -108,6 +100,8 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
             .configure("features.google-wallet-enabled" -> true)
             .build()
 
+        val view = application.injector.instanceOf[RedirectToPostalFormView]
+
         when(mockCitizenDetailsConnector.personDetails(any())(any(), any()))
           .thenReturn(Future(PersonDetailsErrorResponse(new RuntimeException("error"))))
 
@@ -118,35 +112,13 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           val result = route(application, request).value
           status(result) mustEqual INTERNAL_SERVER_ERROR
 
-          contentAsString(result).removeAllNonces mustEqual (redirectview()(request, frontendAppConfig, messages(application))).toString()
+          contentAsString(result).removeAllNonce mustEqual (view()(request, frontendAppConfig, messages(application))).toString()
+
         }
         reset(mockCitizenDetailsConnector)
       }
 
       "must return OK and the correct view for a GET" in {
-        val application =
-          applicationBuilderWithConfig()
-            .overrides(
-              inject.bind[SessionRepository].toInstance(mockSessionRepository),
-              inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
-              inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
-            )
-            .configure(
-              "features.google-wallet-enabled" -> true
-            )
-            .build()
-
-        running(application) {
-          userLoggedInFMNUser(NinoUser)
-          val request = FakeRequest(GET, routes.GoogleWalletController.onPageLoad().url)
-            .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
-          status(result) mustEqual OK
-          contentAsString(result).removeAllNonces mustEqual (view(passId, false)(request, messages(application))).toString
-        }
-      }
-
-      "must return OK and the correct view for a GET when using the wrapper" in {
         val application =
           applicationBuilderWithConfig()
             .overrides(
@@ -203,6 +175,8 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           .configure( "features.google-wallet-enabled" -> true)
           .build()
 
+        val view = application.injector.instanceOf[PassIdNotFoundView]
+
         running(application) {
           userLoggedInFMNUser(NinoUser)
           val request = FakeRequest(GET, routes.GoogleWalletController.getGooglePass(passId).url)
@@ -215,7 +189,9 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
             Enrolments(Set(Enrolment("HMRC-PT"))),
             request
           )
-          contentAsString(result).removeAllNonces mustEqual (passIdNotFoundView()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
+
+          contentAsString(result).removeAllNonce mustEqual (view()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
+
         }
       }
 
@@ -251,6 +227,8 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           .configure( "features.google-wallet-enabled" -> true)
           .build()
 
+        val view = application.injector.instanceOf[QRCodeNotFoundView]
+
         running(application) {
           userLoggedInFMNUser(NinoUser)
           val request = FakeRequest(GET, routes.GoogleWalletController.getGooglePassQrCode(passId).url)
@@ -263,7 +241,9 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
             Enrolments(Set(Enrolment("HMRC-PT"))),
             request
           )
-          contentAsString(result).removeAllNonces mustEqual (qrCodeNotFoundView()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
+
+          contentAsString(result).removeAllNonce mustEqual (view()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
+
         }
       }
 
@@ -300,6 +280,8 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
             .configure("features.google-wallet-enabled" -> false)
             .build()
 
+        val view = application.injector.instanceOf[RedirectToPostalFormView]
+
         when(mockCitizenDetailsConnector.personDetails(any())(any(), any()))
           .thenReturn(Future(PersonDetailsErrorResponse(new RuntimeException("error"))))
 
@@ -310,35 +292,14 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           val result = route(application, request).value
           status(result) mustEqual INTERNAL_SERVER_ERROR
 
-          contentAsString(result).removeAllNonces mustEqual (redirectview()(request, frontendAppConfig, messages(application))).toString()
+          contentAsString(result).removeAllNonce mustEqual (view()(request, frontendAppConfig, messages(application))).toString()
+
         }
         reset(mockCitizenDetailsConnector)
 
       }
 
       "must return OK and the correct view for a GET" in {
-        val application =
-          applicationBuilderWithConfig()
-            .overrides(
-              inject.bind[SessionRepository].toInstance(mockSessionRepository),
-              inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
-              inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
-            )
-            .configure("features.google-wallet-enabled" -> false)
-            .build()
-
-        running(application) {
-          userLoggedInFMNUser(NinoUser)
-          val request = FakeRequest(GET, routes.GoogleWalletController.onPageLoad().url)
-            .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustBe routes.UnauthorisedController.onPageLoad.url
-        }
-
-      }
-
-      "must return OK and the correct view for a GET when using the wrapper" in {
         val application =
           applicationBuilderWithConfig()
             .overrides(
@@ -394,6 +355,8 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           .configure("features.google-wallet-enabled" -> false)
           .build()
 
+        val view = application.injector.instanceOf[PassIdNotFoundView]
+
         running(application) {
           userLoggedInFMNUser(NinoUser)
           val request = FakeRequest(GET, routes.GoogleWalletController.getGooglePass(passId).url)
@@ -406,7 +369,9 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
             Enrolments(Set(Enrolment("HMRC-PT"))),
             request
           )
-          contentAsString(result).removeAllNonces mustEqual (passIdNotFoundView()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
+
+          contentAsString(result).removeAllNonce mustEqual (view()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
+
         }
       }
 
@@ -442,6 +407,8 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           .configure("features.google-wallet-enabled" -> false)
           .build()
 
+        val view = application.injector.instanceOf[QRCodeNotFoundView]
+
         running(application) {
           userLoggedInFMNUser(NinoUser)
           val request = FakeRequest(GET, routes.GoogleWalletController.getGooglePassQrCode(passId).url)
@@ -454,7 +421,9 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
             Enrolments(Set(Enrolment("HMRC-PT"))),
             request
           )
-          contentAsString(result).removeAllNonces mustEqual (qrCodeNotFoundView()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
+
+          contentAsString(result).removeAllNonce mustEqual (view()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
+
         }
       }
 

@@ -76,12 +76,6 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
   val pd = buildPersonDetails
   val controller = applicationWithConfig.injector.instanceOf[AppleWalletController]
 
-  lazy val view = applicationWithConfig.injector.instanceOf[AppleWalletView]
-  lazy val errview = applicationWithConfig.injector.instanceOf[ErrorTemplate]
-  lazy val redirectview = applicationWithConfig.injector.instanceOf[RedirectToPostalFormView]
-  lazy val passIdNotFoundView = applicationWithConfig.injector.instanceOf[PassIdNotFoundView]
-  lazy val qrCodeNotFoundView = applicationWithConfig.injector.instanceOf[QRCodeNotFoundView]
-
   val mockSessionRepository = mock[SessionRepository]
   val mockApplePassConnector = mock[AppleWalletConnector]
   val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
@@ -106,6 +100,8 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
             )
             .build()
 
+        val view = application.injector.instanceOf[RedirectToPostalFormView]
+
         when(mockCitizenDetailsConnector.personDetails(any())(any(), any()))
           .thenReturn(Future(PersonDetailsErrorResponse(new RuntimeException("error"))))
 
@@ -116,35 +112,13 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
           val result = route(application, request).value
           status(result) mustEqual INTERNAL_SERVER_ERROR
 
-          contentAsString(result).removeAllNonces mustEqual (redirectview()(request, frontendAppConfig, messages(application))).toString()
+          contentAsString(result).removeAllNonce mustEqual (view()(request, frontendAppConfig, messages(application))).toString()
+
         }
         reset(mockCitizenDetailsConnector)
       }
 
       "must return OK and the correct view for a GET" in {
-        val application =
-          applicationBuilderWithConfig()
-            .overrides(
-              inject.bind[SessionRepository].toInstance(mockSessionRepository),
-              inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
-              inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
-            )
-            .configure(
-              "features.apple-wallet-enabled" -> true
-            )
-            .build()
-
-        running(application) {
-          userLoggedInFMNUser(NinoUser)
-          val request = FakeRequest(GET, routes.AppleWalletController.onPageLoad.url)
-            .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
-          status(result) mustEqual OK
-          contentAsString(result).removeAllNonces mustEqual (view(passId, false)(request, messages(application))).toString
-        }
-      }
-
-      "must return OK and the correct view for a GET when using the wrapper" in {
         val application =
           applicationBuilderWithConfig()
             .overrides(
@@ -206,6 +180,8 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
           )
           .build()
 
+        val view = application.injector.instanceOf[PassIdNotFoundView]
+
         running(application) {
           userLoggedInFMNUser(NinoUser)
           val request = FakeRequest(GET, routes.AppleWalletController.getPassCard(passId).url)
@@ -218,7 +194,9 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
             Enrolments(Set(Enrolment("HMRC-PT"))),
             request
           )
-          contentAsString(result).removeAllNonces mustEqual (passIdNotFoundView()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
+
+          contentAsString(result).removeAllNonce mustEqual (view()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
+
         }
 
       }
@@ -259,6 +237,8 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
           )
           .build()
 
+        val view = application.injector.instanceOf[QRCodeNotFoundView]
+
         running(application) {
           userLoggedInFMNUser(NinoUser)
           val request = FakeRequest(GET, routes.AppleWalletController.getQrCode(passId).url)
@@ -271,7 +251,9 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
             Enrolments(Set(Enrolment("HMRC-PT"))),
             request
           )
-          contentAsString(result).removeAllNonces mustEqual (qrCodeNotFoundView()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
+
+          contentAsString(result).removeAllNonce mustEqual (view()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
+
         }
       }
 
@@ -333,6 +315,8 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
             )
             .build()
 
+        val view = application.injector.instanceOf[RedirectToPostalFormView]
+
         when(mockCitizenDetailsConnector.personDetails(any())(any(), any()))
           .thenReturn(Future(PersonDetailsErrorResponse(new RuntimeException("error"))))
 
@@ -343,37 +327,14 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
           val result = route(application, request).value
           status(result) mustEqual INTERNAL_SERVER_ERROR
 
-          contentAsString(result).removeAllNonces mustEqual (redirectview()(request, frontendAppConfig, messages(application))).toString()
+          contentAsString(result).removeAllNonce mustEqual (view()(request, frontendAppConfig, messages(application))).toString()
+
         }
         reset(mockCitizenDetailsConnector)
 
       }
 
       "must return OK and the correct view for a GET" in {
-        val application =
-          applicationBuilderWithConfig()
-            .overrides(
-              inject.bind[SessionRepository].toInstance(mockSessionRepository),
-              inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
-              inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
-            )
-            .configure(
-              "features.apple-wallet-enabled" -> false
-            )
-            .build()
-
-        running(application) {
-          userLoggedInFMNUser(NinoUser)
-          val request = FakeRequest(GET, routes.AppleWalletController.onPageLoad.url)
-            .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustBe routes.UnauthorisedController.onPageLoad.url
-        }
-
-      }
-
-      "must return OK and the correct view for a GET when using the wrapper" in {
         val application =
           applicationBuilderWithConfig()
             .overrides(
@@ -435,6 +396,8 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
           )
           .build()
 
+        val view = application.injector.instanceOf[PassIdNotFoundView]
+
         running(application) {
           userLoggedInFMNUser(NinoUser)
           val request = FakeRequest(GET, routes.AppleWalletController.getPassCard(passId).url)
@@ -447,7 +410,8 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
             Enrolments(Set(Enrolment("HMRC-PT"))),
             request
           )
-          contentAsString(result).removeAllNonces mustEqual (passIdNotFoundView()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
+
+          contentAsString(result).removeAllNonces mustEqual (view()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
         }
       }
 
@@ -487,6 +451,8 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
           )
           .build()
 
+        val view = application.injector.instanceOf[QRCodeNotFoundView]
+
         running(application) {
           userLoggedInFMNUser(NinoUser)
           val request = FakeRequest(GET, routes.AppleWalletController.getQrCode(passId).url)
@@ -499,7 +465,9 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
             Enrolments(Set(Enrolment("HMRC-PT"))),
             request
           )
-          contentAsString(result).removeAllNonces mustEqual (qrCodeNotFoundView()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
+
+          contentAsString(result).removeAllNonces mustEqual (view()(userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString)
+
         }
       }
 

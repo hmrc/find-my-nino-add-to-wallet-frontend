@@ -86,13 +86,10 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
   val mockGoogleWalletConnector = mock[GoogleWalletConnector]
 
   lazy val view = applicationWithConfig.injector.instanceOf[StoreMyNinoView]
-  lazy val errview = applicationWithConfig.injector.instanceOf[ErrorTemplate]
 
   val mockSessionRepository = mock[SessionRepository]
   val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
   val mockIdentityVerificationFrontendConnector = mock[IdentityVerificationFrontendConnector]
-  lazy val redirectview = applicationWithConfig.injector.instanceOf[RedirectToPostalFormView]
-  lazy val passIdNotFoundView = applicationWithConfig.injector.instanceOf[PassIdNotFoundView]
 
   val fakeBase64String = "UEsDBBQACAgIABxqJlYAAAAAAA"
   val fakeGooglePassSaveUrl = "testURL"
@@ -111,6 +108,8 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           )
           .build()
 
+      val view = application.injector.instanceOf[RedirectToPostalFormView]
+
       when(mockCitizenDetailsConnector.personDetails(any())(any(), any()))
         .thenReturn(Future(PersonDetailsErrorResponse(new RuntimeException("error"))))
 
@@ -121,7 +120,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
         val result = route(application, request).value
         status(result) mustEqual INTERNAL_SERVER_ERROR
 
-        contentAsString(result).removeAllNonces mustEqual redirectview()(request, frontendAppConfig, messages(application)).toString()
+        contentAsString(result).removeAllNonce mustEqual view()(request, frontendAppConfig, messages(application)).toString()
       }
       reset(mockCitizenDetailsConnector)
     }
@@ -184,6 +183,8 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
       )
         .build()
 
+      val view = application.injector.instanceOf[PassIdNotFoundView]
+
       running(application) {
         userLoggedInFMNUser(NinoUser)
         val request = FakeRequest(GET, routes.GoogleWalletController.getGooglePass(googlePassId).url)
@@ -196,7 +197,8 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           Enrolments(Set(Enrolment("HMRC-PT"))),
           request
         )
-        contentAsString(result).removeAllNonces mustEqual passIdNotFoundView()(
+
+        contentAsString(result).removeAllNonce mustEqual view()(
           userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString
       }
 
@@ -234,6 +236,8 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
       )
         .build()
 
+      val view = application.injector.instanceOf[PassIdNotFoundView]
+
       running(application) {
         userLoggedInFMNUser(NinoUser)
         val request = FakeRequest(GET, routes.AppleWalletController.getPassCard(applePassId).url)
@@ -246,7 +250,8 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           Enrolments(Set(Enrolment("HMRC-PT"))),
           request
         )
-        contentAsString(result).removeAllNonces mustEqual passIdNotFoundView()(
+
+        contentAsString(result).removeAllNonce mustEqual view()(
           userRequest, frontendAppConfig, messages(application), scala.concurrent.ExecutionContext.global).toString
       }
 

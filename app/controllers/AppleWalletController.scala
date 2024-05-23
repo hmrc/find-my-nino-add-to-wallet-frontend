@@ -18,7 +18,7 @@ package controllers
 
 import config.FrontendAppConfig
 import connectors.AppleWalletConnector
-import controllers.auth.AuthContext
+import controllers.actions.CheckChildRecordAction
 import models.individualDetails.IndividualDetailsDataCache
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc._
@@ -40,7 +40,8 @@ class AppleWalletController @Inject()(val appleWalletConnector: AppleWalletConne
                                       individualDetailsService: IndividualDetailsService,
                                       view: AppleWalletView,
                                       passIdNotFoundView: PassIdNotFoundView,
-                                      qrCodeNotFoundView: QRCodeNotFoundView
+                                      qrCodeNotFoundView: QRCodeNotFoundView,
+                                      checkChildRecordAction: CheckChildRecordAction
                                      )(implicit config: Configuration,
                                        env: Environment,
                                        ec: ExecutionContext,
@@ -50,22 +51,19 @@ class AppleWalletController @Inject()(val appleWalletConnector: AppleWalletConne
   implicit val loginContinueUrl: Call = routes.StoreMyNinoController.onPageLoad
   private val passFileName = "National-Insurance-number-card.pkpass"
 
-  def onPageLoad: Action[AnyContent] = authorisedAsFMNUser async {
-    authContext => {
+  def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen checkChildRecordAction) async {
+    implicit userRequestNew => {
       if (frontendAppConfig.appleWalletEnabled) {
-        implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(authContext.request, authContext.request.session)
-        implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
+        implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(userRequestNew.request, userRequestNew.request.session)
+        implicit val messages: Messages = cc.messagesApi.preferred(userRequestNew.request)
 
-        individualDetailsService.getIdDataFromCache(authContext.nino.nino, hc.sessionId.get.value).flatMap {
-          case Right(individualDetailsDataCache) =>
-            auditApple("ViewWalletPage", individualDetailsDataCache, hc)
-            val formattedNino = individualDetailsDataCache.getNino.grouped(2).mkString(" ")
-            val fullName = individualDetailsDataCache.getFullName
-            for {
-              pId: Some[String] <- appleWalletConnector.createApplePass(fullName, formattedNino)
-            } yield Ok(view(pId.value, isMobileDisplay(authContext.request))(authContext.request, messages))
-          case Left("Individual details not found in cache") => Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad(None)))
-        }
+        auditApple("ViewWalletPage", userRequestNew.individualDetails, hc)
+        val nino: String = userRequestNew.nino.getOrElse(throw new IllegalArgumentException("No nino found")).nino
+        val ninoFormatted = nino.grouped(2).mkString(" ")
+        val fullName = userRequestNew.individualDetails.getFullName
+        for {
+          pId: Some[String] <- appleWalletConnector.createApplePass(fullName, ninoFormatted)
+        } yield Ok(view(pId.value, isMobileDisplay(userRequestNew.request))(userRequestNew.request, messages))
       }
       else {
         Future.successful(Redirect(controllers.routes.UnauthorisedController.onPageLoad))
@@ -73,28 +71,22 @@ class AppleWalletController @Inject()(val appleWalletConnector: AppleWalletConne
     }
   }
 
-  def getPassCard(passId: String): Action[AnyContent] = authorisedAsFMNUser async {
-    authContext => {
-      implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(authContext.request, authContext.request.session)
-      implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
+  def getPassCard(passId: String): Action[AnyContent] = (authorisedAsFMNUser andThen checkChildRecordAction) async {
+    implicit userRequestNew => {
+      implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(userRequestNew.request, userRequestNew.request.session)
+      implicit val messages: Messages = cc.messagesApi.preferred(userRequestNew.request)
 
-      individualDetailsService.getIdDataFromCache(authContext.nino.nino, hc.sessionId.get.value).flatMap {
-        case Right(individualDetailsDataCache) => getApplePass(passId, individualDetailsDataCache, authContext, hc, messages)
-        case Left("Individual details not found in cache") => Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad(None)))
-      }
+      getApplePass(passId, userRequestNew.individualDetails, userRequestNew.request, hc, messages)
     }
   }
 
-  def getQrCode(passId: String): Action[AnyContent] = authorisedAsFMNUser async {
+  def getQrCode(passId: String): Action[AnyContent] = (authorisedAsFMNUser andThen checkChildRecordAction) async {
 
-    authContext => {
-      implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(authContext.request, authContext.request.session)
-      implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
+    userRequestNew => {
+      implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(userRequestNew.request, userRequestNew.request.session)
+      implicit val messages: Messages = cc.messagesApi.preferred(userRequestNew.request)
 
-      individualDetailsService.getIdDataFromCache(authContext.nino.nino, hc.sessionId.get.value).flatMap {
-        case Right(individualDetailsDataCache) => getAppleQRCode(passId, individualDetailsDataCache, authContext, hc, messages)
-        case Left("Individual details not found in cache") => Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad(None)))
-      }
+      getAppleQRCode(passId, userRequestNew.individualDetails, userRequestNew.request, hc, messages)
     }
   }
 
@@ -114,28 +106,28 @@ class AppleWalletController @Inject()(val appleWalletConnector: AppleWalletConne
   }
 
   private def getApplePass(passId: String, individualDetailsDataCache: IndividualDetailsDataCache,
-                           authContext: AuthContext[AnyContent], hc:HeaderCarrier, messages: Messages): Future[Result] = {
+                           request: Request[AnyContent], hc:HeaderCarrier, messages: Messages): Future[Result] = {
     appleWalletConnector.getApplePass(passId)(ec, hc).map {
       case Some(data) =>
-        val eventType = authContext.request.getQueryString("qr-code") match {
+        val eventType = request.getQueryString("qr-code") match {
           case Some("true") => "AddNinoToWalletFromQRCode"
           case _ => "AddNinoToWallet"
         }
         auditApple(eventType, individualDetailsDataCache, hc)
         Ok(data).withHeaders("Content-Disposition" -> s"attachment; filename=$passFileName")
       case _ =>
-        NotFound(passIdNotFoundView()(authContext.request, messages, ec))
+        NotFound(passIdNotFoundView()(request, messages, ec))
     }
   }
 
   private def getAppleQRCode(passId: String, individualDetailsDataCache: IndividualDetailsDataCache,
-                             authContext: AuthContext[AnyContent], hc:HeaderCarrier, messages: Messages): Future[Result] = {
+                             request: Request[AnyContent], hc:HeaderCarrier, messages: Messages): Future[Result] = {
     appleWalletConnector.getAppleQrCode(passId)(ec, hc).map {
       case Some(data) =>
         auditApple("DisplayQRCode", individualDetailsDataCache, hc)
         Ok(data).withHeaders("Content-Disposition" -> s"attachment; filename=$passFileName")
       case _ =>
-        NotFound(qrCodeNotFoundView()(authContext.request, messages, ec))
+        NotFound(qrCodeNotFoundView()(request, messages, ec))
     }
   }
 
@@ -147,5 +139,4 @@ class AppleWalletController @Inject()(val appleWalletConnector: AppleWalletConne
       Some("Apple")
     )(hc))(hc)
   }
-
 }

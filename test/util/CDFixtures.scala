@@ -386,4 +386,8 @@ object Fixtures extends CDFixtures  {
     Some(fakeIndividualDetailsData),
     LocalDateTime.now(ZoneId.systemDefault()).toInstant(ZoneOffset.UTC)
   )
+
+  val fakeIndividualDetailsDataWithCRN = fakeIndividualDetailsData.copy(crnIndicator = "true")
+
+  val fakeIndividualDetailsDataCacheWithCRN = fakeIndividualDetailsDataCache.copy(individualDetailsData = Some(fakeIndividualDetailsDataWithCRN))
 }

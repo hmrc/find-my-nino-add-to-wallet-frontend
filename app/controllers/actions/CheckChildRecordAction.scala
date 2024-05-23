@@ -69,7 +69,7 @@ class CheckChildRecordAction @Inject()(
                   authContext.request
                 )
               )
-            case Left(error) => handleError(error, authContext, frontendAppConfig)
+            case Left(status) => handleError(status, authContext, frontendAppConfig)
           }
         } else {
           Future.successful(
@@ -95,9 +95,9 @@ class CheckChildRecordAction @Inject()(
       individualDetails.individualDetailsData.get.dateOfBirth.toString
     )
 
-  private def handleError[A](code: Int, authContext: AuthContext[A], frontendAppConfig: FrontendAppConfig): Left[Result, Nothing] = {
+  private def handleError[A](status: Int, authContext: AuthContext[A], frontendAppConfig: FrontendAppConfig): Left[Result, Nothing] = {
     implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
-    code match
+    status match
     {
       case BAD_REQUEST           => Left(InternalServerError(redirectView()(authContext.request, frontendAppConfig, messages)))
       case UNPROCESSABLE_ENTITY  => Left(InternalServerError(redirectView()(authContext.request, frontendAppConfig, messages)))

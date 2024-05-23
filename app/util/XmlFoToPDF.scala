@@ -138,7 +138,7 @@ trait XmlFoToPDF extends Logging{
       <initials-name>{individualDetailsDataCache.getInitialsName}</initials-name>
       <full-name>{individualDetailsDataCache.getFullName}</full-name>
       {addressElem}
-      <nino>{individualDetailsDataCache.getNino}</nino>
+      <nino>{individualDetailsDataCache.getNino.grouped(2).mkString(" ")}</nino>
       <date>{date}</date>
     </root>
     val maxWidth = 80

@@ -18,28 +18,25 @@ package controllers
 
 import config.FrontendAppConfig
 import connectors.{AppleWalletConnector, GoogleWalletConnector}
-import controllers.auth.requests.UserRequestNew
 import models.individualDetails.IndividualDetailsDataCache
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc._
 import play.api.{Configuration, Environment}
-import services.{AuditService, IndividualDetailsService}
+import services.AuditService
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import util.AuditUtils
 import views.html.StoreMyNinoView
 import controllers.actions.CheckChildRecordAction
 
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class StoreMyNinoController @Inject()(
                                        val appleWalletConnector: AppleWalletConnector,
                                        val googleWalletConnector: GoogleWalletConnector,
                                        authConnector: AuthConnector,
                                        auditService: AuditService,
-                                       individualDetailsService: IndividualDetailsService,
                                        override val messagesApi: MessagesApi,
                                        view: StoreMyNinoView,
                                        checkChildRecordAction: CheckChildRecordAction

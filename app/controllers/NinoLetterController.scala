@@ -17,15 +17,15 @@
 package controllers
 
 import config.FrontendAppConfig
+import controllers.actions.CheckChildRecordAction
 import models.individualDetails.IndividualDetailsDataCache
 import org.apache.xmlgraphics.util.MimeConstants
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
 import play.api.{Configuration, Environment}
-import services.{AuditService, IndividualDetailsService}
+import services.AuditService
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import util.{AuditUtils, XmlFoToPDF}
 import views.html.print.PrintNationalInsuranceNumberView
 
@@ -39,7 +39,7 @@ class NinoLetterController @Inject()(
                                       authConnector: AuthConnector,
                                       auditService: AuditService,
                                       view: PrintNationalInsuranceNumberView,
-                                      individualDetailsService: IndividualDetailsService,
+                                      checkChildRecordAction: CheckChildRecordAction,
                                       xmlFoToPDF: XmlFoToPDF
                                     )(implicit config: Configuration,
                                       env: Environment,
@@ -49,45 +49,28 @@ class NinoLetterController @Inject()(
 
   implicit val loginContinueUrl: Call = routes.StoreMyNinoController.onPageLoad
 
-  def onPageLoad: Action[AnyContent] = authorisedAsFMNUser async {
-    authContext => {
-      implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(authContext.request, authContext.request.session)
-      implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
+  def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen checkChildRecordAction) async {
+    implicit userRequestNew => {
+      implicit val messages: Messages = cc.messagesApi.preferred(userRequestNew.request)
 
-      val nino: String = authContext.nino.nino
+      val nino: String = userRequestNew.nino.getOrElse(throw new IllegalArgumentException("No nino found")).nino
       val ninoFormatted = nino.grouped(2).mkString(" ")
-      val sessionId = hc.sessionId.get.value
 
-      individualDetailsService.getIdDataFromCache(nino, sessionId) flatMap {
-        case Right(individualDetailsDataCache) =>
-          auditNinoLetter("ViewNinoLetter", individualDetailsDataCache, hc)
-          Future.successful(Ok(view(individualDetailsDataCache, LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
-            true, ninoFormatted)(authContext.request, messages)))
-        case Left("Individual details not found in cache") => Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad(None)))
-        case _ => Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad(None)))
-      }
+      auditNinoLetter("ViewNinoLetter", userRequestNew.individualDetails, hc)
+      Future.successful(Ok(view(userRequestNew.individualDetails, LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
+        true, ninoFormatted)(userRequestNew.request, messages)))
     }
   }
 
-  def saveNationalInsuranceNumberAsPdf: Action[AnyContent] = authorisedAsFMNUser async {
-    authContext => {
-      implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(authContext.request, authContext.request.session)
-      implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
-      val filename = messagesApi.preferred(authContext.request).messages("label.your_national_insurance_number_letter")
+  def saveNationalInsuranceNumberAsPdf: Action[AnyContent] = (authorisedAsFMNUser andThen checkChildRecordAction) async {
+    implicit userRequestNew => {
+      implicit val messages: Messages = cc.messagesApi.preferred(userRequestNew.request)
+      val filename = messagesApi.preferred(userRequestNew.request).messages("label.your_national_insurance_number_letter")
 
-      val nino: String = authContext.nino.nino
-      val ninoFormatted = nino.grouped(2).mkString(" ")
-      val sessionId = hc.sessionId.get.value
-
-      individualDetailsService.getIdDataFromCache(nino, sessionId).flatMap {
-        case Right(individualDetailsDataCache) => {
-          auditNinoLetter("DownloadNinoLetter", individualDetailsDataCache, hc)
-          val pdf = createPDF(individualDetailsDataCache, messages)
-          Future.successful(Ok(pdf).as(MimeConstants.MIME_PDF)
-            .withHeaders(CONTENT_TYPE -> "application/x-download", CONTENT_DISPOSITION -> s"attachment; filename=${filename.replaceAll(" ", "-")}.pdf"))
-        }
-        case Left("Individual details not found in cache") => Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad(None)))
-      }
+      auditNinoLetter("DownloadNinoLetter", userRequestNew.individualDetails, hc)
+      val pdf = createPDF(userRequestNew.individualDetails, messages)
+      Future.successful(Ok(pdf).as(MimeConstants.MIME_PDF)
+        .withHeaders(CONTENT_TYPE -> "application/x-download", CONTENT_DISPOSITION -> s"attachment; filename=${filename.replaceAll(" ", "-")}.pdf"))
     }
   }
 

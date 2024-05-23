@@ -247,18 +247,17 @@ object IndividualDetails {
     }
 
     def getInitialsName: String = {
-
       List(getTitle, getFirstForename.toUpperCase().take(1), getSecondForename.toUpperCase().take(1), getLastName.toUpperCase(), getHonours)
         .filter(_.nonEmpty)
         .mkString(" ")
-
     }
 
-    def getCrnIndicator: Option[String] = {
-      Some(idData.crnIndicator.asString)
+    def getCrnIndicator: String = {
+      idData.crnIndicator.asString
     }
 
+    def getDateOfBirth: LocalDate = {
+      idData.dateOfBirth
+    }
   }
-
-
 }

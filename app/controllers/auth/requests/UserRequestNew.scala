@@ -16,17 +16,15 @@
 
 package controllers.auth.requests
 
-import models._
-import models.individualDetails.IndividualDetails
+import models.individualDetails.IndividualDetailsDataCache
 import play.api.mvc.{Request, WrappedRequest}
 import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolments}
 import uk.gov.hmrc.domain.Nino
 
 final case class UserRequestNew[A](
   nino: Option[Nino],
-  retrievedName: Option[UserName],
   confidenceLevel: ConfidenceLevel,
-  individualDetails: IndividualDetails,
+  individualDetails: IndividualDetailsDataCache,
   enrolments: Enrolments,
   request: Request[A]
 ) extends WrappedRequest[A](request) {

@@ -30,9 +30,10 @@ case class EncryptedIndividualDetailsData(
                                            firstForename: EncryptedValue,
                                            surname: EncryptedValue,
                                            initialsName: EncryptedValue,
+                                           dateOfBirth: EncryptedValue,
                                            nino: String,
                                            address: Option[EncryptedAddressData],
-                                           crnIndicator: Option[EncryptedValue]
+                                           crnIndicator: EncryptedValue
                                 )
 
 case class EncryptedIndividualDetailsDataCache(
@@ -78,9 +79,10 @@ object EncryptedIndividualDetailsDataCache {
       ~ (__ \ "firstForename").format[EncryptedValue]
       ~ (__ \ "surname").format[EncryptedValue]
       ~ (__ \ "initialsName").format[EncryptedValue]
+      ~ (__ \ "dateOfBirth").format[EncryptedValue]
       ~ (__ \ "nino").format[String]
       ~ (__ \ "address").formatNullable[EncryptedAddressData]
-      ~ (__ \ "crnIndicator").formatNullable[EncryptedValue]
+      ~ (__ \ "crnIndicator").format[EncryptedValue]
       )(EncryptedIndividualDetailsData.apply, unlift(EncryptedIndividualDetailsData.unapply))
   }
 
@@ -110,6 +112,7 @@ object EncryptedIndividualDetailsDataCache {
             firstForename = e(id.firstForename),
             surname = e(id.surname),
             initialsName = e(id.initialsName),
+            dateOfBirth = e(id.dateOfBirth.toString),
             nino = id.nino,
             address = id.address.map(
               addr =>
@@ -123,8 +126,9 @@ object EncryptedIndividualDetailsDataCache {
                   e(addr.addressCountry),
                   e(addr.addressStartDate.toString),
                   EncryptedAddressType(e(addr.addressType.toString))
-            )
-          ), crnIndicator = id.crnIndicator.map(f => e(f)))
+            )),
+            crnIndicator = e(id.crnIndicator)
+          )
       }
     )
   }
@@ -143,6 +147,7 @@ object EncryptedIndividualDetailsDataCache {
             firstForename = d(id.firstForename),
             surname = d(id.surname),
             initialsName = d(id.initialsName),
+            dateOfBirth = LocalDate.parse(d(id.dateOfBirth)),
             nino = id.nino,
             address = id.address.map(
               addr =>
@@ -159,9 +164,8 @@ object EncryptedIndividualDetailsDataCache {
                     case "1" => AddressType.ResidentialAddress
                     case _   => AddressType.CorrespondenceAddress
                   }
-                )
-            ),
-            crnIndicator = id.crnIndicator.map(f => d(f))
+                )),
+            crnIndicator = d(id.crnIndicator)
           )
       }
     )

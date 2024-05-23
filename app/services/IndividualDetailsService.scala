@@ -67,6 +67,7 @@ class IndividualDetailsServiceImpl @Inject()(
       individualDetails.getFirstForename,
       individualDetails.getLastName,
       individualDetails.getInitialsName,
+      individualDetails.getDateOfBirth,
       individualDetails.getNino,
       individualDetails.getAddressData,
       individualDetails.getCrnIndicator
@@ -79,16 +80,16 @@ class IndividualDetailsServiceImpl @Inject()(
   }
 
   private def fetchIndividualDetails(nino: String)(
-    implicit ec: ExecutionContext, hc: HeaderCarrier): Future[Either[IndividualDetailsError, IndividualDetails]] = {
-    individualDetailsConnector.getIndividualDetails(nino, "Y").flatMap(handleResponse(nino))
+    implicit ec: ExecutionContext, hc: HeaderCarrier): Future[Either[HttpResponse, IndividualDetails]] = {
+    individualDetailsConnector.getIndividualDetails(nino, "Y").flatMap(handleResponse())
   }
 
-  private def handleResponse(str: String)(response: HttpResponse): Future[Either[IndividualDetailsError, IndividualDetails]] = {
+  private def handleResponse()(response: HttpResponse): Future[Either[HttpResponse, IndividualDetails]] = {
     response.status match {
       case OK =>
         Future.successful(Right(response.json.as[IndividualDetails]))
       case _ =>
-        Future.successful(Left(ConnectorError(response.status, response.body)))
+        Future.successful(Left(response))
     }
   }
 

@@ -21,16 +21,17 @@ import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
 import play.api.libs.json.{OFormat, __}
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats.instantFormat
 
-import java.time.{Instant, LocalDateTime, ZoneId, ZoneOffset}
+import java.time.{Instant, LocalDate, LocalDateTime, ZoneId, ZoneOffset}
 
 case class IndividualDetailsData(
                               fullName: String,
                               firstForename: String,
                               surname: String,
                               initialsName: String,
+                              dateOfBirth: LocalDate,
                               nino: String,
                               address: Option[AddressData],
-                              crnIndicator: Option[String]
+                              crnIndicator: String
                               )
 
 case class IndividualDetailsDataCache(
@@ -45,9 +46,10 @@ object IndividualDetailsDataCache {
       ~ (__ \ "firstForename").format[String]
       ~ (__ \ "surname").format[String]
       ~ (__ \ "initialsName").format[String]
+      ~ (__ \ "dateOfBirth").format[LocalDate]
       ~ (__ \ "nino").format[String]
       ~ (__ \ "address").formatNullable[AddressData]
-      ~ (__ \ "crnIndicator").formatNullable[String]
+      ~ (__ \ "crnIndicator").format[String]
       )(IndividualDetailsData.apply, unlift(IndividualDetailsData.unapply))
   }
 
@@ -72,22 +74,27 @@ object IndividualDetailsDataCache {
 
     def getFirstForename: String = individualDetailsData.individualDetailsData match {
       case Some(id) => id.firstForename
-      case _        => StringUtils.EMPTY
+      case _        => throw new IllegalArgumentException("Individual details data not found")
     }
 
     def getLastName: String = individualDetailsData.individualDetailsData match {
       case Some(id) => id.surname
-      case _        => StringUtils.EMPTY
+      case _        => throw new IllegalArgumentException("Individual details data not found")
     }
 
     def getInitialsName: String = individualDetailsData.individualDetailsData match {
       case Some(id) => id.initialsName
-      case _        => StringUtils.EMPTY
+      case _        => throw new IllegalArgumentException("Individual details data not found")
+    }
+
+    def getDateOfBirth: LocalDate = individualDetailsData.individualDetailsData match {
+      case Some(id) => id.dateOfBirth
+      case _        => throw new IllegalArgumentException("Individual details data not found")
     }
 
     def getAddress: Option[AddressData] = individualDetailsData.individualDetailsData match {
       case Some(id) => id.address
-      case _        => None
+      case _        => throw new IllegalArgumentException("Individual details data not found")
     }
 
     def getAddressLines: List[String] = individualDetailsData.individualDetailsData match {
@@ -102,21 +109,17 @@ object IndividualDetailsDataCache {
           ).filter(_.nonEmpty)
         case _ => List.empty
       }
-      case _ => List.empty
+      case _ => throw new IllegalArgumentException("Individual details data not found")
     }
 
     def getPostCode: Option[String] = individualDetailsData.individualDetailsData match {
       case Some(id) => id.address.flatMap(addr => addr.addressPostcode.map(postcode => postcode.value))
-      case _ => None
+      case _ => throw new IllegalArgumentException("Individual details data not found")
     }
 
-
-    def getCrnIndicator: Option[String]= individualDetailsData.individualDetailsData match {
+    def getCrnIndicator: String = individualDetailsData.individualDetailsData match {
       case Some(id) => id.crnIndicator
-      case _ => None
+      case _ => throw new IllegalArgumentException("Individual details data not found")
     }
-
-
   }
-
 }

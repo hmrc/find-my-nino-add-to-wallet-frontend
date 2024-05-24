@@ -58,7 +58,7 @@ class StoreMyNinoController @Inject()(
 
       googleIdf.flatMap { googleId =>
         appleIdf.map { appleId =>
-          Ok(view(appleId.value, googleId.value, nino, isMobileDisplay(request)))
+          Ok(view(appleId.value, googleId.value, "QQ123456A", isMobileDisplay(request)))
         }
       }
     }

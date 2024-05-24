@@ -23,7 +23,6 @@ import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
 import play.api.{Configuration, Environment}
 import services.AuditService
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.domain.Nino
 import util.{AuditUtils, XmlFoToPDF}
 import views.html.print.PrintNationalInsuranceNumberView
 
@@ -54,7 +53,7 @@ class NinoLetterController @Inject()(
           request.personDetails,
           LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
           true,
-          request.personDetails.person.nino.getOrElse(Nino("")).formatted))
+          "QQ123456A"))
       }
     }
 

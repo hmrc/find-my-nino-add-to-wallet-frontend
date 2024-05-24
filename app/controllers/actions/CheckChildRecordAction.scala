@@ -64,7 +64,7 @@ class CheckChildRecordAction @Inject()(
             preFlightChecks <- preFlightChecks(upliftResult.isRight, individualDetails, sessionId)
           } yield (upliftResult, preFlightChecks) match {
             case (Left(status), _) => handleError(status, authContext, frontendAppConfig)
-            case (Right(_), _) =>
+            case (Right(_), true) =>
               Right(
                 UserRequestNew(
                   Some(Nino(identifier)),
@@ -74,7 +74,7 @@ class CheckChildRecordAction @Inject()(
                   authContext.request
                 )
               )
-            case (Right(_), _) => Left(throw new InternalServerException("Failed to verify CRN uplift"))
+            case (Right(_), false) => Left(throw new InternalServerException("Failed to verify CRN uplift"))
             case _             => Left(throw new InternalServerException("Failed to uplift CRN"))
           }
         } else {

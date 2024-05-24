@@ -290,7 +290,10 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
 
     "must uplift a CRN" in {
       when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
-        .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCacheWithCRN)))
+        .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCacheWithCRN)),
+          Future.successful(Right(fakeIndividualDetailsDataCache)))
+      when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
+        .thenReturn(Future.successful(true))
       when(mockNPSService.upliftCRN(any(), any())(any())).thenReturn(Future.successful(Right(NO_CONTENT)))
 
       val application =

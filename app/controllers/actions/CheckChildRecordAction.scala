@@ -60,11 +60,11 @@ class CheckChildRecordAction @Inject()(
           val request: CRNUpliftRequest = buildCrnUpliftRequest(individualDetails)
 
           for {
-            upliftResult <- npsService.upliftCRN(identifier, request)
-            _            = if (upliftResult.isRight) verifyCrnUplift(individualDetails, sessionId)
-          } yield upliftResult match {
-            case Left(status) => handleError(status, authContext, frontendAppConfig)
-            case Right(_) =>
+            upliftResult    <- npsService.upliftCRN(identifier, request)
+            preFlightChecks <- preFlightChecks(upliftResult.isRight, individualDetails, sessionId)
+          } yield (upliftResult, preFlightChecks) match {
+            case (Left(status), _) => handleError(status, authContext, frontendAppConfig)
+            case (Right(_), _) =>
               Right(
                 UserRequestNew(
                   Some(Nino(identifier)),
@@ -74,7 +74,8 @@ class CheckChildRecordAction @Inject()(
                   authContext.request
                 )
               )
-            case _ => Left(throw new NotFoundException("Individual details not found"))
+            case (Right(_), _) => Left(throw new InternalServerException("Failed to verify CRN uplift"))
+            case _             => Left(throw new InternalServerException("Failed to uplift CRN"))
           }
         } else {
           Future.successful(
@@ -93,14 +94,18 @@ class CheckChildRecordAction @Inject()(
     }
   }
 
-  private def verifyCrnUplift(individualDetails: IndividualDetailsDataCache, sessionId: String)
+  private def preFlightChecks(upliftSuccess: Boolean, individualDetails: IndividualDetailsDataCache, sessionId: String)
                     (implicit hc: HeaderCarrier): Future[Boolean] = {
-    for {
-      cacheInvalidated    <- individualDetailsService.deleteIdDataFromCache(individualDetails.getNino)
-      crnIndicatorUpdated <- validateCrnUplift(individualDetails.getNino, sessionId)
-    } yield (cacheInvalidated, crnIndicatorUpdated) match {
-      case (true, true) => true
-      case _            => throw new InternalServerException("Failed to verify the CRN uplift")
+    if(upliftSuccess) {
+      for {
+        cacheInvalidated <- individualDetailsService.deleteIdDataFromCache(individualDetails.getNino)
+        crnIndicatorUpdated <- validateCrnUplift(individualDetails.getNino, sessionId)
+      } yield (cacheInvalidated, crnIndicatorUpdated) match {
+        case (true, true) => true
+        case _ => false
+      }
+    } else {
+      Future.successful(true)
     }
   }
 

@@ -56,10 +56,15 @@ class CheckChildRecordAction @Inject()(
 
     individualDetailsService.getIdDataFromCache(identifier, sessionId).flatMap {
       case Right(individualDetails) =>
-        if (individualDetails.individualDetailsData.get.crnIndicator.equals("true")) {
+        if (!isFullNino(individualDetails)) {
           val request: CRNUpliftRequest = buildCrnUpliftRequest(individualDetails)
-          npsService.upliftCRN(identifier, request).map {
-            case Right(_) =>
+
+          for {
+            upliftResult    <- npsService.upliftCRN(identifier, request)
+            preFlightChecks <- preFlightChecks(upliftResult.isRight, individualDetails, sessionId)
+          } yield (upliftResult, preFlightChecks) match {
+            case (Left(status), _) => handleError(status, authContext, frontendAppConfig)
+            case (Right(_), true) =>
               Right(
                 UserRequestNew(
                   Some(Nino(identifier)),
@@ -69,7 +74,8 @@ class CheckChildRecordAction @Inject()(
                   authContext.request
                 )
               )
-            case Left(status) => handleError(status, authContext, frontendAppConfig)
+            case (Right(_), false) => Left(throw new InternalServerException("Failed to verify CRN uplift"))
+            case _             => Left(throw new InternalServerException("Failed to uplift CRN"))
           }
         } else {
           Future.successful(
@@ -87,6 +93,31 @@ class CheckChildRecordAction @Inject()(
       case Left(_) => Future.successful(throw new NotFoundException("Individual details not found"))
     }
   }
+
+  private def preFlightChecks(upliftSuccess: Boolean, individualDetails: IndividualDetailsDataCache, sessionId: String)
+                    (implicit hc: HeaderCarrier): Future[Boolean] = {
+    if(upliftSuccess) {
+      for {
+        cacheInvalidated <- individualDetailsService.deleteIdDataFromCache(individualDetails.getNino)
+        crnIndicatorUpdated <- validateCrnUplift(individualDetails.getNino, sessionId)
+      } yield (cacheInvalidated, crnIndicatorUpdated) match {
+        case (true, true) => true
+        case _ => false
+      }
+    } else {
+      Future.successful(true)
+    }
+  }
+
+  private def isFullNino(individualDetails: IndividualDetailsDataCache): Boolean =
+    individualDetails.individualDetailsData.get.crnIndicator.toLowerCase.equals("false")
+
+  private def validateCrnUplift(nino: String, sessionId: String)
+                               (implicit hc: HeaderCarrier): Future[Boolean] =
+    individualDetailsService.getIdDataFromCache(nino, sessionId).flatMap {
+      case Right(individualDetails) => Future.successful(isFullNino(individualDetails))
+      case _                        => Future.successful(throw new NotFoundException("Individual details not found"))
+    }
 
   private def buildCrnUpliftRequest(individualDetails: IndividualDetailsDataCache) =
     new CRNUpliftRequest(

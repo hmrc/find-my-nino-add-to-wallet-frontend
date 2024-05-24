@@ -19,7 +19,7 @@
 @import components.{H1, P, Link}
 
 @this(
-    layout: templates.Layout,
+    layout: templates.LayoutProvider,
     h1: H1,
     p: P,
     link: Link
@@ -28,7 +28,7 @@
 @(retryUrl: String)(implicit request: Request[_], frontendAppConfig: FrontendAppConfig, messages: play.api.i18n.Messages)
 
 @layout(
-    pageTitle = messages("label.service_unavailable"),
+    pageTitle = titleNoForm(messages("label.service_unavailable")),
     showBackLink = false,
     hideAccountMenu = true
 ) {

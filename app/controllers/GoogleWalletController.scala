@@ -28,7 +28,7 @@ import util.AuditUtils
 import views.html.{GoogleWalletView, PassIdNotFoundView, QRCodeNotFoundView}
 
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetailsConnector,
                                        override val messagesApi: MessagesApi,
@@ -49,12 +49,16 @@ class GoogleWalletController @Inject()(val citizenDetailsConnector: CitizenDetai
 
   def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction) async {
     implicit request => {
-      auditService.audit(AuditUtils.buildAuditEvent(request.personDetails, "ViewWalletPage", frontendAppConfig.appName, Some("Google")))
-      for {
-        pId: Some[String] <- googleWalletConnector.createGooglePass(
-          request.personDetails.person.fullName,
-          request.nino.map(_.formatted).getOrElse(""))
-      } yield Ok(view(pId.value, isMobileDisplay(request)))
+      if(frontendAppConfig.googleWalletEnabled) {
+        auditService.audit(AuditUtils.buildAuditEvent(request.personDetails, "ViewWalletPage", frontendAppConfig.appName, Some("Google")))
+        for {
+          pId: Some[String] <- googleWalletConnector.createGooglePass(
+            request.personDetails.person.fullName,
+            request.nino.map(_.formatted).getOrElse(""))
+        } yield Ok(view(pId.value, isMobileDisplay(request)))
+      } else {
+        Future.successful(Redirect(controllers.routes.UnauthorisedController.onPageLoad))
+      }
     }
   }
 

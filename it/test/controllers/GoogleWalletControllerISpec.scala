@@ -21,7 +21,7 @@ import com.github.tomakehurst.wiremock.client.WireMock._
 import config.FrontendAppConfig
 import controllers.auth.requests.UserRequest
 import controllers.auth.routes
-import models.{Address, Person, PersonDetails, UserName}
+import models.{Address, Person, PersonDetails}
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.scalatest.Assertion
@@ -29,7 +29,6 @@ import play.api.i18n.{Lang, Messages, MessagesApi, MessagesImpl}
 import play.api.mvc.{AnyContentAsEmpty, Request}
 import play.api.test.FakeRequest
 import play.twirl.api.Html
-import uk.gov.hmrc.auth.core.retrieve.Name
 import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolment, Enrolments}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
@@ -74,9 +73,7 @@ class GoogleWalletControllerISpec extends IntegrationSpecBase {
   val fakePassId = "googlePassId"
   val fakeBase64String = "UEsDBBQACAgIABxqJlYAAAAAAA"
 
-
   override lazy val messagesApi: MessagesApi = app.injector.instanceOf[MessagesApi]
-
 
   implicit lazy val frontendAppConfig: FrontendAppConfig = app.injector.instanceOf[FrontendAppConfig]
   implicit lazy val messages: Messages = MessagesImpl(Lang("en"), messagesApi).messages
@@ -84,14 +81,12 @@ class GoogleWalletControllerISpec extends IntegrationSpecBase {
   trait LocalSetup {
     def buildUserRequest[A](
                              nino: Option[Nino] = Some(generatedNino),
-                             userName: Option[UserName] = Some(UserName(Name(Some("Firstname"), Some("Lastname")))),
                              confidenceLevel: ConfidenceLevel = ConfidenceLevel.L200,
                              personDetails: PersonDetails = fakePersonDetails,
                              request: Request[A] = FakeRequest().asInstanceOf[Request[A]]
                            ): UserRequest[A] =
       UserRequest(
         nino,
-        userName,
         confidenceLevel,
         personDetails,
         Enrolments(Set(Enrolment("HMRC-PT"))),
@@ -154,6 +149,7 @@ class GoogleWalletControllerISpec extends IntegrationSpecBase {
       }
 
       "render the save to Google Wallet link on mobile" in new LocalSetup {
+
         wireMockServer.stubFor(get(s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-pass-card?passId=$fakePassId").willReturn(ok(fakeBase64String)))
         assertContainsLinkByContainingClass(docMobile, s"/get-google-pass?passId=$fakePassId")
       }

@@ -29,10 +29,10 @@ import play.api.test.Helpers._
 import repositories.SessionRepository
 import services.IndividualDetailsService
 import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolment, Enrolments}
-import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HttpResponse, NotFoundException, UpstreamErrorResponse}
 import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
 import util.CDFixtures
-import util.Fixtures.{fakeIndividualDetails, fakeIndividualDetailsDataCache}
+import util.Fixtures.fakeIndividualDetailsDataCache
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
 import util.TestData.NinoUser
 import views.html._
@@ -42,7 +42,6 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSugar {
-
 
   override protected def beforeEach(): Unit = {
     reset(mockScaWrapperDataConnector)
@@ -63,34 +62,32 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
     when(mockSessionRepository.get(any())) thenReturn Future.successful(Some(emptyUserAnswers))
 
     reset(mockIndividualDetailsService)
-    when(mockIndividualDetailsService.getIdDataFromCache(any(),any())(any(),any()))
+    when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
       .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCache)))
 
     reset(mockIdentityVerificationFrontendConnector)
     when(mockIdentityVerificationFrontendConnector.getIVJourneyStatus(any())(any(), any()))
       .thenReturn(cats.data.EitherT.right[UpstreamErrorResponse](Future.successful(HttpResponse(OK, ""))))
 
-
     super.beforeEach()
   }
 
   val passId = "googlePassId"
-  val personDetailsId = "pdId"
-  val controller = applicationWithConfig.injector.instanceOf[GoogleWalletController]
-
-  val mockSessionRepository = mock[SessionRepository]
-  val mockGooglePassConnector = mock[GoogleWalletConnector]
-  val mockIndividualDetailsService = mock[IndividualDetailsService]
-  val mockIdentityVerificationFrontendConnector = mock[IdentityVerificationFrontendConnector]
-
   val fakeBase64String = "UEsDBBQACAgIABxqJlYAAAAAAA"
   val fakeGooglePassSaveUrl = "testURL"
+
+  val controller: GoogleWalletController = applicationWithConfig.injector.instanceOf[GoogleWalletController]
+
+  val mockSessionRepository: SessionRepository = mock[SessionRepository]
+  val mockGooglePassConnector: GoogleWalletConnector = mock[GoogleWalletConnector]
+  val mockIndividualDetailsService: IndividualDetailsService = mock[IndividualDetailsService]
+  val mockIdentityVerificationFrontendConnector: IdentityVerificationFrontendConnector = mock[IdentityVerificationFrontendConnector]
 
   "Google Wallet Controller" - {
 
     "Google Wallet toggle enabled" - {
 
-      "must return ErrorView and the correct view for a GET" in {
+      "must throw NotFoundException when ID cache is not found" in {
         val application =
           applicationBuilderWithConfig()
             .overrides(
@@ -98,8 +95,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
               inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
               inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
               inject.bind[IdentityVerificationFrontendConnector].toInstance(mockIdentityVerificationFrontendConnector)
-            )
-            .configure("features.google-wallet-enabled" -> true)
+            ).configure("features.google-wallet-enabled" -> true)
             .build()
 
         when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
@@ -109,10 +105,9 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           userLoggedInFMNUser(NinoUser)
           val request = FakeRequest(GET, routes.GoogleWalletController.onPageLoad.url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
-          reset(mockIndividualDetailsService)
+          assertThrows[NotFoundException] {
+            await(route(application, request).value)
+          }
         }
       }
 
@@ -124,8 +119,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
               inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
               inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),
               inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-            )
-            .configure("features.google-wallet-enabled" -> true)
+            ).configure("features.google-wallet-enabled" -> true)
             .build()
 
         val view = application.injector.instanceOf[GoogleWalletView]
@@ -143,11 +137,10 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
       "must return google pass" in {
 
         val application = applicationBuilderWithConfig().overrides(
-          inject.bind[SessionRepository].toInstance(mockSessionRepository),
-          inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
-          inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-        )
-          .configure("features.google-wallet-enabled" -> true)
+            inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
+            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+          ).configure("features.google-wallet-enabled" -> true)
           .build()
 
         running(application) {
@@ -165,11 +158,10 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           .thenReturn(Future(None))
 
         val application = applicationBuilderWithConfig().overrides(
-          inject.bind[SessionRepository].toInstance(mockSessionRepository),
-          inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
-          inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-        )
-          .configure("features.google-wallet-enabled" -> true)
+            inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
+            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+          ).configure("features.google-wallet-enabled" -> true)
           .build()
 
         val view = application.injector.instanceOf[PassIdNotFoundView]
@@ -196,8 +188,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-          )
-          .configure("features.google-wallet-enabled" -> true)
+          ).configure("features.google-wallet-enabled" -> true)
           .build()
 
         running(application) {
@@ -215,11 +206,10 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           .thenReturn(Future(None))
 
         val application = applicationBuilderWithConfig().overrides(
-          inject.bind[SessionRepository].toInstance(mockSessionRepository),
-          inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
-          inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-        )
-          .configure("features.google-wallet-enabled" -> true)
+            inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
+            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+          ).configure("features.google-wallet-enabled" -> true)
           .build()
 
         val view = application.injector.instanceOf[QRCodeNotFoundView]
@@ -246,8 +236,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-          )
-          .configure("features.google-wallet-enabled" -> true)
+          ).configure("features.google-wallet-enabled" -> true)
           .build()
 
         running(application) {
@@ -262,7 +251,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
 
     "Google Wallet toggle disabled" - {
 
-      "must return ErrorView and the correct view for a GET" in {
+      "must throw NotFoundException when ID cache is not found" in {
         val application =
           applicationBuilderWithConfig()
             .overrides(
@@ -270,21 +259,19 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
               inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
               inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
               inject.bind[IdentityVerificationFrontendConnector].toInstance(mockIdentityVerificationFrontendConnector)
-            )
-            .configure("features.google-wallet-enabled" -> true)
+            ).configure("features.google-wallet-enabled" -> true)
             .build()
 
-        when(mockIndividualDetailsService.getIdDataFromCache(any(),any())(any(),any()))
+        when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
           .thenReturn(Future.successful(Left("Individual details not found in cache")))
 
         running(application) {
           userLoggedInFMNUser(NinoUser)
           val request = FakeRequest(GET, routes.GoogleWalletController.onPageLoad.url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
-          reset(mockIndividualDetailsService)
+          assertThrows[NotFoundException] {
+            await(route(application, request).value)
+          }
         }
       }
 
@@ -296,8 +283,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
               inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
               inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),
               inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-            )
-            .configure("features.google-wallet-enabled" -> false)
+            ).configure("features.google-wallet-enabled" -> false)
             .build()
 
         running(application) {
@@ -313,11 +299,10 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
       "must return google pass" in {
 
         val application = applicationBuilderWithConfig().overrides(
-          inject.bind[SessionRepository].toInstance(mockSessionRepository),
-          inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
-          inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-        )
-          .configure("features.google-wallet-enabled" -> false)
+            inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
+            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+          ).configure("features.google-wallet-enabled" -> false)
           .build()
 
         running(application) {
@@ -335,11 +320,10 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           .thenReturn(Future(None))
 
         val application = applicationBuilderWithConfig().overrides(
-          inject.bind[SessionRepository].toInstance(mockSessionRepository),
-          inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
-          inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-        )
-          .configure("features.google-wallet-enabled" -> false)
+            inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
+            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+          ).configure("features.google-wallet-enabled" -> false)
           .build()
 
         val view = application.injector.instanceOf[PassIdNotFoundView]
@@ -385,11 +369,10 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           .thenReturn(Future(None))
 
         val application = applicationBuilderWithConfig().overrides(
-          inject.bind[SessionRepository].toInstance(mockSessionRepository),
-          inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
-          inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-        )
-          .configure("features.google-wallet-enabled" -> false)
+            inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
+            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+          ).configure("features.google-wallet-enabled" -> false)
           .build()
 
         val view = application.injector.instanceOf[QRCodeNotFoundView]
@@ -416,8 +399,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-          )
-          .configure("features.google-wallet-enabled" -> false)
+          ).configure("features.google-wallet-enabled" -> false)
           .build()
 
         running(application) {

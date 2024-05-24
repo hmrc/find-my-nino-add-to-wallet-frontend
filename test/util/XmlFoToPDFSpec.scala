@@ -43,7 +43,7 @@ class XmlFoToPDFSpec extends SpecBase with MockitoSugar with CDFixtures {
       <address-line>Fakecountry</address-line>
     </address>
     <postcode>AA1 1AA</postcode>
-    <nino>{fakeIndividualDetails.getNino}</nino>
+    <nino>{fakeIndividualDetails.getNino.grouped(2).mkString(" ")}</nino>
     <date>01/23</date>
   </root>
 

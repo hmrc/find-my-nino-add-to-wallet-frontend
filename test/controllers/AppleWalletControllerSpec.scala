@@ -29,10 +29,10 @@ import play.api.test.Helpers._
 import repositories.SessionRepository
 import services.IndividualDetailsService
 import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolment, Enrolments}
-import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HttpResponse, NotFoundException, UpstreamErrorResponse}
 import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
 import util.CDFixtures
-import util.Fixtures.{fakeIndividualDetails, fakeIndividualDetailsDataCache}
+import util.Fixtures.fakeIndividualDetailsDataCache
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
 import util.TestData.{NinoUser, NinoUser_With_CL50}
 import views.html._
@@ -73,51 +73,43 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
   }
 
   val passId = "applePassId"
-  val notApplePassId = ""
-  val personDetailsId = "pdId"
-  val pd = buildPersonDetails
-  val controller = applicationWithConfig.injector.instanceOf[AppleWalletController]
-
-  val mockSessionRepository = mock[SessionRepository]
-  val mockApplePassConnector = mock[AppleWalletConnector]
-
-  val mockIndividualDetailsService = mock[IndividualDetailsService]
-  val mockIdentityVerificationFrontendConnector = mock[IdentityVerificationFrontendConnector]
-
   val fakeBase64String = "UEsDBBQACAgIABxqJlYAAAAAAA"
+
+  val controller: AppleWalletController = applicationWithConfig.injector.instanceOf[AppleWalletController]
+
+  val mockSessionRepository: SessionRepository = mock[SessionRepository]
+  val mockApplePassConnector: AppleWalletConnector = mock[AppleWalletConnector]
+  val mockIndividualDetailsService: IndividualDetailsService = mock[IndividualDetailsService]
+  val mockIdentityVerificationFrontendConnector: IdentityVerificationFrontendConnector = mock[IdentityVerificationFrontendConnector]
 
   "Apple Wallet Controller" - {
 
     "Apple wallet enabled" - {
 
-      "must return ErrorView and the correct view for a GET" in {
-        val application =
-          applicationBuilderWithConfig()
-            .overrides(
-              inject.bind[SessionRepository].toInstance(mockSessionRepository),
-              inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
-              inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
-              inject.bind[IdentityVerificationFrontendConnector].toInstance(mockIdentityVerificationFrontendConnector)
-            ).configure(
-            "features.apple-wallet-enabled" -> true
-          )
-
-            .build()
+      "must throw NotFoundException when ID cache is not found" in {
 
         when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
           .thenReturn(Future.successful(Left("Individual details not found in cache")))
+
+        val application = applicationBuilderWithConfig()
+          .overrides(
+            inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
+            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
+            inject.bind[IdentityVerificationFrontendConnector].toInstance(mockIdentityVerificationFrontendConnector)
+          ).configure("features.apple-wallet-enabled" -> true)
+          .build()
 
         running(application) {
           userLoggedInFMNUser(NinoUser)
           val request = FakeRequest(GET, routes.AppleWalletController.onPageLoad.url)
             .withSession(("authToken", "Bearer 123"))
 
-          val result = route(application, request).value
+          assertThrows[NotFoundException] {
+            await(route(application, request).value)
+          }
 
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
         }
-        reset(mockIndividualDetailsService)
       }
 
 
@@ -130,8 +122,8 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
               inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),
               inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
             ).configure(
-            "features.apple-wallet-enabled" -> true
-          )
+              "features.apple-wallet-enabled" -> true
+            )
             .build()
 
         val view = application.injector.instanceOf[AppleWalletView]
@@ -152,10 +144,10 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
       "must return apple pass" in {
 
         val application = applicationBuilderWithConfig().overrides(
-          inject.bind[SessionRepository].toInstance(mockSessionRepository),
-          inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
-          inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-        )
+            inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
+            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+          )
           .configure(
             "features.apple-wallet-enabled" -> true
           )
@@ -176,10 +168,10 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .thenReturn(Future(None))
 
         val application = applicationBuilderWithConfig().overrides(
-          inject.bind[SessionRepository].toInstance(mockSessionRepository),
-          inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
-          inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-        )
+            inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
+            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+          )
           .configure(
             "features.apple-wallet-enabled" -> true
           )
@@ -210,9 +202,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-          ).configure(
-          "features.apple-wallet-enabled" -> true
-        )
+          ).configure("features.apple-wallet-enabled" -> true)
           .build()
 
         running(application) {
@@ -230,12 +220,12 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .thenReturn(Future(None))
 
         val application = applicationBuilderWithConfig().overrides(
-          inject.bind[SessionRepository].toInstance(mockSessionRepository),
-          inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
-          inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-        ).configure(
-          "features.apple-wallet-enabled" -> true
-        )
+            inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
+            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+          ).configure(
+            "features.apple-wallet-enabled" -> true
+          )
           .build()
 
         val view = application.injector.instanceOf[QRCodeNotFoundView]
@@ -263,8 +253,8 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
             inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
           ).configure(
-          "features.apple-wallet-enabled" -> true
-        )
+            "features.apple-wallet-enabled" -> true
+          )
           .build()
 
         running(application) {
@@ -283,8 +273,8 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
             inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
           ).configure(
-          "features.apple-wallet-enabled" -> true
-        )
+            "features.apple-wallet-enabled" -> true
+          )
           .build()
 
         running(application) {
@@ -299,7 +289,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
 
     "Apple wallet disabled" - {
 
-      "must return ErrorView and the correct view for a GET" in {
+      "must throw NotFoundException when ID cache is not found" in {
         val application =
           applicationBuilderWithConfig()
             .overrides(
@@ -307,10 +297,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
               inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
               inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
               inject.bind[IdentityVerificationFrontendConnector].toInstance(mockIdentityVerificationFrontendConnector)
-            ).configure(
-            "features.apple-wallet-enabled" -> true
-          )
-
+            ).configure("features.apple-wallet-enabled" -> true)
             .build()
 
         when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
@@ -320,13 +307,10 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
           userLoggedInFMNUser(NinoUser)
           val request = FakeRequest(GET, routes.AppleWalletController.onPageLoad.url)
             .withSession(("authToken", "Bearer 123"))
-
-          val result = route(application, request).value
-
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+          assertThrows[NotFoundException] {
+            await(route(application, request).value)
+          }
         }
-        reset(mockIndividualDetailsService)
       }
 
       "must return OK and the correct view for a GET" in {
@@ -337,9 +321,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
               inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
               inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),
               inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-            ).configure(
-            "features.apple-wallet-enabled" -> false
-          )
+            ).configure("features.apple-wallet-enabled" -> false)
             .build()
 
         when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
@@ -358,13 +340,10 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
       "must return apple pass" in {
 
         val application = applicationBuilderWithConfig().overrides(
-          inject.bind[SessionRepository].toInstance(mockSessionRepository),
-          inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
-          inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-        )
-          .configure(
-            "features.apple-wallet-enabled" -> false
-          )
+            inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
+            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+          ).configure("features.apple-wallet-enabled" -> false)
           .build()
 
         running(application) {
@@ -382,13 +361,10 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .thenReturn(Future(None))
 
         val application = applicationBuilderWithConfig().overrides(
-          inject.bind[SessionRepository].toInstance(mockSessionRepository),
-          inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
-          inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-        )
-          .configure(
-            "features.apple-wallet-enabled" -> false
-          )
+            inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
+            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+          ).configure("features.apple-wallet-enabled" -> false)
           .build()
 
         val view = application.injector.instanceOf[PassIdNotFoundView]
@@ -417,8 +393,8 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
             inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
           ).configure(
-          "features.apple-wallet-enabled" -> false
-        )
+            "features.apple-wallet-enabled" -> false
+          )
           .build()
 
         running(application) {
@@ -436,12 +412,12 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .thenReturn(Future(None))
 
         val application = applicationBuilderWithConfig().overrides(
-          inject.bind[SessionRepository].toInstance(mockSessionRepository),
-          inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
-          inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-        ).configure(
-          "features.apple-wallet-enabled" -> false
-        )
+            inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
+            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+          ).configure(
+            "features.apple-wallet-enabled" -> false
+          )
           .build()
 
         val view = application.injector.instanceOf[QRCodeNotFoundView]
@@ -469,8 +445,8 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
             inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
           ).configure(
-          "features.apple-wallet-enabled" -> false
-        )
+            "features.apple-wallet-enabled" -> false
+          )
           .build()
 
         running(application) {
@@ -489,8 +465,8 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
             inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
           ).configure(
-          "features.apple-wallet-enabled" -> false
-        )
+            "features.apple-wallet-enabled" -> false
+          )
           .build()
 
         running(application) {

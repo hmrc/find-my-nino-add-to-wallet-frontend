@@ -67,7 +67,7 @@ class CheckChildRecordAction @Inject()(
             case (Right(_), true) =>
               Right(
                 UserRequestNew(
-                  Some(Nino(identifier)),
+                  Some(Nino(individualDetails.getNino)),
                   authContext.confidenceLevel,
                   individualDetails,
                   authContext.allEnrolments,
@@ -81,7 +81,7 @@ class CheckChildRecordAction @Inject()(
           Future.successful(
             Right(
               UserRequestNew(
-                Some(Nino(identifier)),
+                Some(Nino(individualDetails.getNino)),
                 authContext.confidenceLevel,
                 individualDetails,
                 authContext.allEnrolments,

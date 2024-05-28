@@ -146,7 +146,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(applePassId, googlePassId, "AA 00 00 03 B", displayForMobile = false)(request.withAttrs(requestAttributeMap), messages(application)).toString
+        contentAsString(result) mustEqual view(applePassId, googlePassId, "AB 12 34 56 C", displayForMobile = false)(request.withAttrs(requestAttributeMap), messages(application)).toString
         verify(mockNPSService, times(0)).upliftCRN(any(), any())(any())
       }
     }
@@ -316,7 +316,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(applePassId, googlePassId, "AA 00 00 03 B", displayForMobile = false)(request.withAttrs(requestAttributeMap), messages(application)).toString
+        contentAsString(result) mustEqual view(applePassId, googlePassId, "AB 12 34 56 C", displayForMobile = false)(request.withAttrs(requestAttributeMap), messages(application)).toString
         verify(mockNPSService, times(1)).upliftCRN(any(), any())(any())
       }
     }

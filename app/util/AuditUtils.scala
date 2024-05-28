@@ -16,8 +16,8 @@
 
 package util
 
-import models.{Address, PersonDetails}
-import play.api.libs.json.{JsValue, Json, OFormat}
+import models.individualDetails.{AddressData, AddressLine, AddressType, IndividualDetailsDataCache}
+import play.api.libs.json.{Format, JsValue, Json, OFormat}
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
 import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
 
@@ -33,7 +33,7 @@ object AuditUtils {
                                     formCreationTimestamp: String,
                                     nino: String,
                                     name: String,
-                                    mainAddress: Address,
+                                    mainAddress: AuditAddress,
                                     device: Option[String],
                                     language: String = "en",
                                     WalletProvider: Option[String]
@@ -69,13 +69,54 @@ object AuditUtils {
 
   def getReferer(hc: HeaderCarrier): String = hc.otherHeaders.toMap.getOrElse("Referer", "")
 
-  def getPersonAddress(personDetails: PersonDetails): Address = {
-    personDetails.address match {
-      case Some(a: Address) => a
-      case _ => Address.apply(Some(""), Some(""), Some(""), Some(""), Some(""),
-        Some(""), Some(""), Some(LocalDate.now()), Some(LocalDate.now()), Some(""), true)
+
+  private def emptyAddress = AddressData(
+    addressLine1 = AddressLine(""),
+    addressLine2 = AddressLine(""),
+    addressLine3 = None,
+    addressLine4 = None,
+    addressLine5 = None,
+    addressPostcode = None,
+    addressCountry = "",
+    addressStartDate = LocalDate.now(),
+    addressType = AddressType.ResidentialAddress
+  )
+
+  final case class AuditAddress(line1: String,
+                                line2: String,
+                                line3: Option[String],
+                                line4: Option[String],
+                                line5: Option[String],
+                                postcode: Option[String],
+                                country: String,
+                                startDate: String,
+                                `type`: String)
+
+  object AuditAddress {
+    implicit val format: Format[AuditAddress] = Json.format[AuditAddress]
+  }
+  private def getAuditAddress(addressData: AddressData): AuditAddress = {
+    AuditAddress(line1 = addressData.addressLine1.value,
+      line2 = addressData.addressLine2.value,
+      line3 = addressData.addressLine3.map(x => x.value),
+      line4 = addressData.addressLine4.map(x => x.value),
+      line5 = addressData.addressLine5.map(x => x.value),
+      postcode = addressData.addressPostcode.map(x => x.value),
+      country = addressData.addressCountry,
+      startDate = addressData.addressStartDate.toString,
+      `type` = addressData.addressType match {
+        case AddressType.ResidentialAddress => "Residential"
+        case AddressType.CorrespondenceAddress => "Correspondence"
+      })
+  }
+
+  private def getIndivudualsAddress(individualDetailsDataCache: IndividualDetailsDataCache): AuditAddress = {
+    individualDetailsDataCache.getAddress match {
+      case Some(a: AddressData) => getAuditAddress(a)
+      case _ => getAuditAddress(emptyAddress)
     }
   }
+
 
   private def buildDataEvent(auditType: String, transactionName: String, detail: JsValue)(implicit
                                                                                           hc: HeaderCarrier
@@ -99,25 +140,25 @@ object AuditUtils {
     )
   }
 
-  private def buildDetails(personDetails: PersonDetails, journeyId: String, hc: HeaderCarrier, walletProvider: Option[String]): YourDetailsAuditEvent = {
-    val person = personDetails.person
-    val mainAddress = getPersonAddress(personDetails)
+  private def buildDetails(individualDetailsDataCache: IndividualDetailsDataCache, journeyId: String, hc: HeaderCarrier, walletProvider: Option[String]): YourDetailsAuditEvent = {
+
+    val mainAddress = getIndivudualsAddress(individualDetailsDataCache)
     val strLang = getLanguageFromCookieStr(hc)
     val strDevice = getUserDevice(hc)
 
-    person.nino match {
-      case Some(ninoValue) =>
+    individualDetailsDataCache.getNino match {
+      case (nino:String) =>
         YourDetailsAuditEvent(
           journeyId,
           timestamp(),
-          ninoValue.nino,
-          name = person.fullName,
+          nino,
+          name = individualDetailsDataCache.getFullName,
           mainAddress = mainAddress,
           device = Some(strDevice),
           language = strLang,
           walletProvider
         )
-      case None => throw new NotFoundException("Nino not found for person when building audit event")
+      case _ => throw new NotFoundException("Nino not found for person when building audit event")
     }
 
 
@@ -126,12 +167,12 @@ object AuditUtils {
   private def timestamp(): String =
     java.time.Instant.now().atOffset(ZoneOffset.UTC).format(DateTimeFormatter.ISO_DATE_TIME)
 
-  def buildAuditEvent(personDetails: PersonDetails,
+  def buildAuditEvent(individualDetailsDataCache: IndividualDetailsDataCache,
                      auditType: String,
                       appName: String,
                       walletProvider: Option[String])(implicit hc: HeaderCarrier): ExtendedDataEvent = {
         buildDataEvent(auditType, s"$appName-$auditType",
-          Json.toJson(buildDetails(personDetails, auditType, hc, walletProvider)))
+          Json.toJson(buildDetails(individualDetailsDataCache, auditType, hc, walletProvider)))
     }
 
 }

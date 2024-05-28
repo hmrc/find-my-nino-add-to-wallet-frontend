@@ -90,6 +90,19 @@ trait ConnectorSpec
     )
   }
 
+  def stubPut(url: String,
+              responseStatus: Int,
+              requestBody: Option[String],
+              responseBody: Option[String]
+             ): StubMapping = server.stubFor {
+    val baseResponse = aResponse().withStatus(responseStatus).withHeader(CONTENT_TYPE, JSON)
+    val response = responseBody.fold(baseResponse)(body => baseResponse.withBody(body))
+
+    requestBody.fold(put(url).willReturn(response))(requestBody =>
+      put(url).withRequestBody(equalToJson(requestBody)).willReturn(response)
+    )
+  }
+
   def stubWithFault(url: String, requestBody: Option[String], fault: Fault): StubMapping = server.stubFor {
     val response = aResponse().withFault(fault)
 

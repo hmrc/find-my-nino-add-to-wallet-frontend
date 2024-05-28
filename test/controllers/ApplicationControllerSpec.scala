@@ -19,7 +19,7 @@ package controllers
 import base.SpecBase
 import cats.data.EitherT
 import config.FrontendAppConfig
-import connectors.{CitizenDetailsConnector, IdentityVerificationFrontendConnector, PersonDetailsSuccessResponse}
+import connectors.IdentityVerificationFrontendConnector
 import org.mockito.ArgumentMatchers.any
 import org.mockito.MockitoSugar.{reset, when}
 import org.scalatestplus.mockito.MockitoSugar
@@ -28,7 +28,7 @@ import play.api.mvc.{AnyContentAsEmpty, MessagesControllerComponents, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
-import services.{FailedMatching, IdentityVerificationFrontendService, IdentityVerificationResponse, Incomplete, InsufficientEvidence, LockedOut, PrecondFailed, Success, TechnicalIssue, Timeout, UserAborted}
+import services._
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.UpstreamErrorResponse
 import uk.gov.hmrc.http.HttpResponse
@@ -37,7 +37,7 @@ import views.html.identity._
 import cats.instances.future._
 import models.{ActivatedOnlineFilerSelfAssessmentUser, PersonDetails, SelfAssessmentUserType}
 import uk.gov.hmrc.domain.{Nino, SaUtr, SaUtrGenerator}
-import util.Fixtures.buildFakeRequestWithAuth
+import util.Fixtures.{buildFakeRequestWithAuth, fakeIndividualDetailsDataCache}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -51,9 +51,9 @@ class ApplicationControllerSpec extends SpecBase with CDFixtures with MockitoSug
     reset(mockSessionRepository)
     when(mockSessionRepository.get(any())) thenReturn Future.successful(Some(emptyUserAnswers))
 
-    reset(mockCitizenDetailsConnector)
-    when(mockCitizenDetailsConnector.personDetails(any())(any(), any()))
-      .thenReturn(Future(PersonDetailsSuccessResponse(pd)))
+    reset(mockIndividualDetailsService)
+    when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
+      .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCache)))
 
     reset(mockIdentityVerificationFrontendConnector)
     when(mockIdentityVerificationFrontendConnector.getIVJourneyStatus(any())(any(), any()))
@@ -61,7 +61,7 @@ class ApplicationControllerSpec extends SpecBase with CDFixtures with MockitoSug
   }
 
   val mockSessionRepository: SessionRepository = mock[SessionRepository]
-  val mockCitizenDetailsConnector: CitizenDetailsConnector = mock[CitizenDetailsConnector]
+  val mockIndividualDetailsService = mock[IndividualDetailsService]
   val mockIdentityVerificationFrontendConnector: IdentityVerificationFrontendConnector = mock[IdentityVerificationFrontendConnector]
   val mockIdentityVerificationFrontendService: IdentityVerificationFrontendService = mock[IdentityVerificationFrontendService]
 
@@ -85,7 +85,7 @@ class ApplicationControllerSpec extends SpecBase with CDFixtures with MockitoSug
     lazy val application = applicationBuilderWithConfig()
       .overrides(
         inject.bind[SessionRepository].toInstance(mockSessionRepository),
-        inject.bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector),
+        inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
         inject.bind[IdentityVerificationFrontendConnector].toInstance(mockIdentityVerificationFrontendConnector)
       )
       .build()

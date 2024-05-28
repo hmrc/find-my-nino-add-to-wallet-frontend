@@ -18,6 +18,7 @@ package util
 
 import controllers.auth.requests.UserRequest
 import models._
+import models.individualDetails.{Address, _}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatest.concurrent.{PatienceConfiguration, ScalaFutures}
@@ -37,7 +38,7 @@ import uk.gov.hmrc.domain.{Generator, Nino, SaUtrGenerator}
 import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
 import uk.gov.hmrc.play.partials.FormPartialRetriever
 
-import java.time.LocalDate
+import java.time.{LocalDate, LocalDateTime, ZoneId, ZoneOffset}
 import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
@@ -111,7 +112,7 @@ trait CDFixtures {
       None
     )
 
-  def buildFakeAddress: Address = Address(
+  def buildFakeAddress: models.Address = models.Address(
     Some("1 Fake Street"),
     Some("Fake Town"),
     Some("Fake City"),
@@ -125,7 +126,7 @@ trait CDFixtures {
     false
   )
 
-  def buildFakeCorrespondenceAddress: Address = Address(
+  def buildFakeCorrespondenceAddress: models.Address = models.Address(
     Some("2 Fake Street"),
     Some("Fake Town"),
     Some("Fake City"),
@@ -139,7 +140,7 @@ trait CDFixtures {
     false
   )
 
-  def buildFakeAddressWithEndDate: Address = Address(
+  def buildFakeAddressWithEndDate: models.Address = models.Address(
     Some("1 Fake Street"),
     Some("Fake Town"),
     Some("Fake City"),
@@ -174,7 +175,7 @@ trait BaseSpec
   when(mockPartialRetriever.getPartialContent(any(), any(), any())(any(), any())) thenReturn Html("")
 
 
-  val configValues =
+  val configValues: Map[String, Any] =
     Map(
       "cookie.encryption.key"         -> "gvBoGdgzqG1AarzF1LY0zQ==",
       "sso.encryption.key"            -> "gvBoGdgzqG1AarzF1LY0zQ==",
@@ -308,4 +309,85 @@ object Fixtures extends CDFixtures  {
       Some(Fixtures.fakeNino)
     )*/
 
+  val fakeName: Name = models.individualDetails.Name(
+    nameSequenceNumber = NameSequenceNumber(1),
+    nameType = NameType.RealName,
+    titleType = Some(TitleType.Dr),
+    requestedName = Some(RequestedName("Firstname Middlename")),
+    nameStartDate = NameStartDate(LocalDate.of(2000, 1, 1)),
+    nameEndDate = Some(NameEndDate(LocalDate.of(2022, 12, 31))),
+    otherTitle = Some(OtherTitle("Sir")),
+    honours = Some(Honours("PhD")),
+    firstForename = FirstForename("Firstname"),
+    secondForename = Some(SecondForename("Middlename")),
+    surname = Surname("Lastname")
+  )
+
+  val fakeAddress: Address = Address(
+    addressSequenceNumber = AddressSequenceNumber(0),
+    addressSource = Some(AddressSource.Customer),
+    countryCode = CountryCode(826),
+    addressType = AddressType.ResidentialAddress,
+    addressStatus = Some(AddressStatus.NotDlo),
+    addressStartDate = LocalDate.of(2000, 1, 1),
+    addressEndDate = Some(LocalDate.of(2022, 12, 31)),
+    addressLastConfirmedDate = Some(LocalDate.of(2022, 1, 1)),
+    vpaMail = Some(VpaMail(1)),
+    deliveryInfo = Some(DeliveryInfo("Delivery info")),
+    pafReference = Some(PafReference("PAF reference")),
+    addressLine1 = AddressLine("123 Fake Street"),
+    addressLine2 = AddressLine("Apt 4B"),
+    addressLine3 = Some(AddressLine("Faketown")),
+    addressLine4 = Some(AddressLine("Fakeshire")),
+    addressLine5 = Some(AddressLine("Fakecountry")),
+    addressPostcode = Some(AddressPostcode("AA1 1AA"))
+  )
+
+  val fakeAddressData: AddressData = AddressData(
+    addressLine1 = AddressLine("123 Fake Street"),
+    addressLine2 = AddressLine("Apt 4B"),
+    addressLine3 = Some(AddressLine("Faketown")),
+    addressLine4 = Some(AddressLine("Fakeshire")),
+    addressLine5 = Some(AddressLine("Fakecountry")),
+    addressPostcode = Some(AddressPostcode("AA1 1AA")),
+    addressCountry = "GREAT BRITAIN",
+    addressStartDate = LocalDate.now(),
+    addressType = AddressType.ResidentialAddress
+  )
+
+  val fakeIndividualDetails: IndividualDetails = IndividualDetails(
+    ninoWithoutSuffix = "AB123456",
+    ninoSuffix = Some(NinoSuffix("C")),
+    accountStatusType = Some(AccountStatusType.FullLive),
+    dateOfEntry = Some(LocalDate.of(2000, 1, 1)),
+    dateOfBirth = LocalDate.of(1990, 1, 1),
+    dateOfBirthStatus = Some(DateOfBirthStatus.Verified),
+    dateOfDeath = None,
+    dateOfDeathStatus = None,
+    dateOfRegistration = Some(LocalDate.of(2000, 1, 1)),
+    crnIndicator = CrnIndicator.False,
+    nameList = NameList(Some(List(fakeName))),
+    addressList = AddressList(Some(List(fakeAddress)))
+  )
+
+  val fakeIndividualDetailsData = IndividualDetailsData(
+    fullName = "Dr Firstname Middlename Lastname Phd.",
+    firstForename = "Firstname",
+    surname = "Lastname",
+    initialsName = "FML",
+    dateOfBirth = LocalDate.now(),
+    nino = "AB123456C",
+    address = Some(fakeAddressData),
+    crnIndicator = "false"
+  )
+
+  val fakeIndividualDetailsDataCache = IndividualDetailsDataCache(
+    "some-fake-Id",
+    Some(fakeIndividualDetailsData),
+    LocalDateTime.now(ZoneId.systemDefault()).toInstant(ZoneOffset.UTC)
+  )
+
+  val fakeIndividualDetailsDataWithCRN = fakeIndividualDetailsData.copy(crnIndicator = "true")
+
+  val fakeIndividualDetailsDataCacheWithCRN = fakeIndividualDetailsDataCache.copy(individualDetailsData = Some(fakeIndividualDetailsDataWithCRN))
 }

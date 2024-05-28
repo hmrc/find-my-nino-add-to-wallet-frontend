@@ -16,18 +16,19 @@
 
 package util
 
-import models.PersonDetails
+import models.individualDetails.IndividualDetailsDataCache
+import org.apache.fop.apps._
+import org.apache.fop.events.model.EventSeverity
+import org.apache.fop.events.{Event, EventFormatter, EventListener}
+import org.apache.xmlgraphics.util.MimeConstants
+import play.api.Logging
+import play.api.i18n.Messages
+
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, File}
 import javax.inject.{Inject, Singleton}
 import javax.xml.transform.sax.SAXResult
-import javax.xml.transform.{ErrorListener, Transformer, TransformerException, TransformerFactory}
 import javax.xml.transform.stream.StreamSource
-import org.apache.fop.apps._
-import org.apache.xmlgraphics.util.MimeConstants
-import org.apache.fop.events.{Event, EventFormatter, EventListener}
-import org.apache.fop.events.model.EventSeverity
-import play.api.Logging
-import play.api.i18n.Messages
+import javax.xml.transform.{ErrorListener, Transformer, TransformerException, TransformerFactory}
 import scala.xml.PrettyPrinter
 
 @Singleton
@@ -43,9 +44,9 @@ trait XmlFoToPDF extends Logging{
   private val fopConfigFilePath = "pdf/fop.xconf"
   private val niLetterXSLFilePath = "pdf/niLetterXSL.xsl"
 
-  def createPDF(personDetails: PersonDetails, date: String, messages: Messages): Array[Byte] = {
+  def createPDF(individualDetailsDataCache: IndividualDetailsDataCache, date: String, messages: Messages): Array[Byte] = {
     val xmlStream: StreamSource = new StreamSource(
-      new ByteArrayInputStream(getXMLSource(personDetails, date))
+      new ByteArrayInputStream(getXMLSource(individualDetailsDataCache, date))
     )
     val pdfOutStream = new ByteArrayOutputStream()
     createTransformer(messages).transform(xmlStream, new SAXResult(fop(pdfOutStream).getDefaultHandler))
@@ -123,32 +124,21 @@ trait XmlFoToPDF extends Logging{
     transformer.setErrorListener(errorListener)
   }
 
-  def getXMLSource(personDetails: PersonDetails, date: String): Array[Byte] = {
+  def getXMLSource(individualDetailsDataCache: IndividualDetailsDataCache, date: String): Array[Byte] = {
     val addressElem =
-      personDetails.correspondenceAddress.map { correspondenceAddress =>
-        <address>
-          {
-          correspondenceAddress.lines.map { line =>
-          <address-line>{line}</address-line>
-        }}
-      </address>
-      <postcode>{correspondenceAddress.postcode.getOrElse("")}</postcode>
-    }.getOrElse {
-        personDetails.address.map { residentialAddress =>
           <address>
-          {residentialAddress.lines.map { line =>
+          {individualDetailsDataCache.getAddressLines.map { line =>
             <address-line>{line}</address-line>
           }}
           </address>
-          <postcode>{residentialAddress.postcode.getOrElse("")}</postcode>
-        }.getOrElse("")
-      }
+          <postcode>{individualDetailsDataCache.getPostCode.getOrElse("").toUpperCase}</postcode>
+
 
     val xmlElem = <root>
-      <initials-name>{personDetails.person.initialsName}</initials-name>
-      <full-name>{personDetails.person.fullName}</full-name>
+      <initials-name>{individualDetailsDataCache.getInitialsName}</initials-name>
+      <full-name>{individualDetailsDataCache.getFullName}</full-name>
       {addressElem}
-      <nino>{personDetails.person.nino.map(_.formatted).getOrElse("")}</nino>
+      <nino>{individualDetailsDataCache.getNino.grouped(2).mkString(" ")}</nino>
       <date>{date}</date>
     </root>
     val maxWidth = 80

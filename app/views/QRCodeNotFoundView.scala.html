@@ -25,7 +25,7 @@
     p: P,
     link: Link
 )
-@()(implicit request: UserRequest[_], frontendAppConfig: FrontendAppConfig, messages: play.api.i18n.Messages, ec: ExecutionContext)
+@()(implicit request: Request[_], messages: play.api.i18n.Messages, ec: ExecutionContext)
 
 @layout(pageTitle = titleNoForm(messages("apple.qrcode.notfound")), hideAccountMenu = true, showBackLink = false) {
     @h1(messages(s"apple.qrcode.notfound"))

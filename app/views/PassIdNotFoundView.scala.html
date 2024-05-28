@@ -26,7 +26,7 @@
     link: Link,
     govukButton: GovukButton
 )
-@()(implicit request: UserRequest[_], frontendAppConfig: FrontendAppConfig, messages: play.api.i18n.Messages, ec: ExecutionContext)
+@()(implicit request: Request[_], messages: play.api.i18n.Messages, ec: ExecutionContext)
 
 
 @layout(pageTitle = titleNoForm(messages("apple.passid.notfound")), hideAccountMenu = true, showBackLink = false) {

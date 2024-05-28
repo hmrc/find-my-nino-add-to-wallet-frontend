@@ -17,27 +17,29 @@
 package controllers
 
 import config.FrontendAppConfig
+import controllers.actions.CheckChildRecordAction
+import models.individualDetails.IndividualDetailsDataCache
 import org.apache.xmlgraphics.util.MimeConstants
-import play.api.i18n.{I18nSupport, MessagesApi}
+import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
 import play.api.{Configuration, Environment}
 import services.AuditService
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.http.HeaderCarrier
 import util.{AuditUtils, XmlFoToPDF}
 import views.html.print.PrintNationalInsuranceNumberView
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class NinoLetterController @Inject()(
                                       override val messagesApi: MessagesApi,
                                       authConnector: AuthConnector,
                                       auditService: AuditService,
                                       view: PrintNationalInsuranceNumberView,
-                                      getPersonDetailsAction: GetPersonDetailsAction,
+                                      checkChildRecordAction: CheckChildRecordAction,
                                       xmlFoToPDF: XmlFoToPDF
                                     )(implicit config: Configuration,
                                       env: Environment,
@@ -47,33 +49,40 @@ class NinoLetterController @Inject()(
 
   implicit val loginContinueUrl: Call = routes.StoreMyNinoController.onPageLoad
 
-  def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction) {
-    implicit request => {
-        auditService.audit(AuditUtils.buildAuditEvent(request.personDetails, "ViewNinoLetter", frontendAppConfig.appName, None))
-        Ok(view(
-          request.personDetails,
-          LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
-          true,
-          request.personDetails.person.nino.getOrElse(Nino("")).formatted))
-      }
+  def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen checkChildRecordAction) async {
+    implicit userRequestNew => {
+      implicit val messages: Messages = cc.messagesApi.preferred(userRequestNew.request)
+
+      val nino: String = userRequestNew.nino.getOrElse(throw new IllegalArgumentException("No nino found")).nino
+      val ninoFormatted = nino.grouped(2).mkString(" ")
+
+      auditNinoLetter("ViewNinoLetter", userRequestNew.individualDetails, hc)
+      Future.successful(Ok(view(userRequestNew.individualDetails, LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
+        true, ninoFormatted)(userRequestNew.request, messages)))
     }
-
-    def saveNationalInsuranceNumberAsPdf: Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction) {
-    implicit request => {
-      auditService.audit(AuditUtils.buildAuditEvent(request.personDetails, "DownloadNinoLetter", frontendAppConfig.appName, None))
-      val pdf = xmlFoToPDF.createPDF(request.personDetails,
-        LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
-        messagesApi.preferred(request)
-      )
-
-      val filename = messagesApi.preferred(request).messages("label.your_national_insurance_number_letter")
-
-      Ok(pdf).as(MimeConstants.MIME_PDF)
-        .withHeaders(
-          CONTENT_TYPE -> "application/x-download",
-          CONTENT_DISPOSITION -> s"attachment; filename=${filename.replaceAll(" ", "-")}.pdf")
-      }
   }
 
-}
+  def saveNationalInsuranceNumberAsPdf: Action[AnyContent] = (authorisedAsFMNUser andThen checkChildRecordAction) async {
+    implicit userRequestNew => {
+      implicit val messages: Messages = cc.messagesApi.preferred(userRequestNew.request)
+      val filename = messagesApi.preferred(userRequestNew.request).messages("label.your_national_insurance_number_letter")
 
+      auditNinoLetter("DownloadNinoLetter", userRequestNew.individualDetails, hc)
+      val pdf = createPDF(userRequestNew.individualDetails, messages)
+      Future.successful(Ok(pdf).as(MimeConstants.MIME_PDF)
+        .withHeaders(CONTENT_TYPE -> "application/x-download", CONTENT_DISPOSITION -> s"attachment; filename=${filename.replaceAll(" ", "-")}.pdf"))
+    }
+  }
+
+  private def createPDF(individualDetailsDataCache: IndividualDetailsDataCache, messages: Messages): Array[Byte] = {
+    xmlFoToPDF.createPDF(
+      individualDetailsDataCache,
+      LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
+      messages
+    )
+  }
+
+  private def auditNinoLetter(eventType: String, individualDetailsDataCache: IndividualDetailsDataCache, hc: HeaderCarrier): Unit = {
+    auditService.audit(AuditUtils.buildAuditEvent(individualDetailsDataCache, eventType, frontendAppConfig.appName, None)(hc))(hc)
+  }
+}

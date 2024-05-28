@@ -381,7 +381,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
       }
     }
 
-    "must redirect to postal form view for NOT_FOUND from CRN uplift" in {
+    "must return internal server error for NOT_FOUND from CRN uplift" in {
       when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
         .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCacheWithCRN)))
       when(mockNPSService.upliftCRN(any(), any())(any())).thenReturn(Future.successful(Left(NOT_FOUND)))

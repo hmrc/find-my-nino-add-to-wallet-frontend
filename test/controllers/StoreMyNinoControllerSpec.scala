@@ -324,7 +324,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(applePassId, googlePassId, "AB 12 34 56 C", displayForMobile = false)(request.withAttrs(requestAttributeMap), messages(application)).toString
+        contentAsString(result).removeAllNonces mustEqual view(applePassId, googlePassId, "AB 12 34 56 C", displayForMobile = false)(request.withAttrs(requestAttributeMap), messages(application)).toString
         verify(mockNPSService, times(1)).upliftCRN(any(), any())(any())
       }
     }
@@ -354,7 +354,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         status(result) mustEqual INTERNAL_SERVER_ERROR
-        contentAsString(result) mustEqual view()(request.withAttrs(requestAttributeMap), frontendAppConfig, messages(application)).toString
+        contentAsString(result).removeAllNonces mustEqual view()(request.withAttrs(requestAttributeMap), frontendAppConfig, messages(application)).toString
         verify(mockNPSService, times(1)).upliftCRN(any(), any())(any())
       }
     }
@@ -384,7 +384,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         status(result) mustEqual INTERNAL_SERVER_ERROR
-        contentAsString(result) mustEqual view()(request.withAttrs(requestAttributeMap), frontendAppConfig, messages(application)).toString
+        contentAsString(result).removeAllNonces mustEqual view()(request.withAttrs(requestAttributeMap), frontendAppConfig, messages(application)).toString
         verify(mockNPSService, times(1)).upliftCRN(any(), any())(any())
       }
     }

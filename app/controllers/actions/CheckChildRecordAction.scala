@@ -24,7 +24,7 @@ import models.individualDetails.IndividualDetailsDataCache
 import models.nps.CRNUpliftRequest
 import play.api.http.Status._
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
-import play.api.mvc.Results.{InternalServerError, Redirect}
+import play.api.mvc.Results.InternalServerError
 import play.api.mvc._
 import services.{IndividualDetailsService, NPSService}
 import uk.gov.hmrc.domain.Nino

@@ -17,28 +17,29 @@
 package controllers
 
 import config.FrontendAppConfig
-import connectors.{AppleWalletConnector, GoogleWalletConnector,CitizenDetailsConnector}
-import controllers.auth.requests.UserRequest
-import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
+import connectors.{AppleWalletConnector, GoogleWalletConnector}
+import models.individualDetails.IndividualDetailsDataCache
+import play.api.i18n.{I18nSupport, Messages, MessagesApi}
+import play.api.mvc._
 import play.api.{Configuration, Environment}
 import services.AuditService
 import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.http.HeaderCarrier
 import util.AuditUtils
 import views.html.StoreMyNinoView
+import controllers.actions.CheckChildRecordAction
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
 class StoreMyNinoController @Inject()(
-                                       val citizenDetailsConnector: CitizenDetailsConnector,
                                        val appleWalletConnector: AppleWalletConnector,
                                        val googleWalletConnector: GoogleWalletConnector,
                                        authConnector: AuthConnector,
                                        auditService: AuditService,
                                        override val messagesApi: MessagesApi,
-                                       getPersonDetailsAction: GetPersonDetailsAction,
-                                       view: StoreMyNinoView
+                                       view: StoreMyNinoView,
+                                       checkChildRecordAction: CheckChildRecordAction
                                      )(implicit config: Configuration,
                                        env: Environment,
                                        ec: ExecutionContext,
@@ -48,23 +49,28 @@ class StoreMyNinoController @Inject()(
 
   implicit val loginContinueUrl: Call = routes.StoreMyNinoController.onPageLoad
 
-  def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen getPersonDetailsAction) async {
-    implicit request => {
-      auditService.audit(AuditUtils.buildAuditEvent(request.personDetails, "ViewNinoLanding", frontendAppConfig.appName, None))
-      val fullName: String = request.personDetails.person.fullName
-      val nino: String = request.nino.map(_.formatted).getOrElse("")
-      val googleIdf = googleWalletConnector.createGooglePass(fullName, nino)
-      val appleIdf = appleWalletConnector.createApplePass(fullName, nino)
+  def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen checkChildRecordAction) async {
+    implicit userRequestNew => {
+      implicit val messages: Messages = cc.messagesApi.preferred(userRequestNew.request)
+
+      val nino: String = userRequestNew.nino.getOrElse(throw new IllegalArgumentException("No nino found")).nino
+      val ninoFormatted: String = nino.grouped(2).mkString(" ")
+
+      auditSMNLandingPage("ViewNinoLanding", userRequestNew.individualDetails, hc)
+
+      val fullName = userRequestNew.individualDetails.getFullName
+      val googleIdf = googleWalletConnector.createGooglePass(fullName, ninoFormatted)
+      val appleIdf = appleWalletConnector.createApplePass(fullName, ninoFormatted)
 
       googleIdf.flatMap { googleId =>
         appleIdf.map { appleId =>
-          Ok(view(appleId.value, googleId.value, nino, isMobileDisplay(request)))
+          Ok(view(appleId.value, googleId.value, ninoFormatted, isMobileDisplay(userRequestNew.request))(userRequestNew.request, messages))
         }
       }
     }
   }
 
-  private def isMobileDisplay(request: UserRequest[AnyContent]): Boolean = {
+  private def isMobileDisplay(request: Request[AnyContent]): Boolean = {
     val strUserAgent = request.headers.get("http_user_agent")
       .getOrElse(request.headers.get("User-Agent")
         .getOrElse(""))
@@ -74,5 +80,10 @@ class StoreMyNinoController @Inject()(
       case Some(_) => true
       case None => false
     }
+  }
+
+  private def auditSMNLandingPage(event: String, individualDetailsDataCache: IndividualDetailsDataCache,
+                                  hc: HeaderCarrier): Unit = {
+    auditService.audit(AuditUtils.buildAuditEvent(individualDetailsDataCache, event, frontendAppConfig.appName, None)(hc))(hc)
   }
 }

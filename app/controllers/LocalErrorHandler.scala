@@ -18,12 +18,20 @@ package controllers
 
 import com.google.inject.Singleton
 import play.api.http.HttpErrorHandler
+import play.api.mvc.Results.{InternalServerError, Status}
 import play.api.mvc._
 
 import scala.concurrent.Future
 
 @Singleton
 class LocalErrorHandler extends HttpErrorHandler {
-  override def onClientError(request: RequestHeader, statusCode: Int, message: String): Future[Result] = null
-  override def onServerError(request: RequestHeader, exception: Throwable): Future[Result] = null
+  override def onClientError(request: RequestHeader,
+                             statusCode: Int, message: String): Future[Result] = {
+    Future.successful(Status(statusCode)("A client error occurred: " + message))
+  }
+
+  override def onServerError(request: RequestHeader,
+                             exception: Throwable): Future[Result] = {
+    Future.successful(InternalServerError("A server error occurred" ))
+  }
 }

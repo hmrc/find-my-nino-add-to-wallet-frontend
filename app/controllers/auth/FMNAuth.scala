@@ -104,6 +104,8 @@ trait FMNAuth extends AuthorisedFunctions with Logging {
         )
       )
     )
+
+
   private object GTOE200 {
     def unapply(confLevel: ConfidenceLevel): Option[ConfidenceLevel] =
       if (confLevel.level >= ConfidenceLevel.L200.level) Some(confLevel) else None
@@ -229,6 +231,7 @@ trait FMNAuth extends AuthorisedFunctions with Logging {
         false
     }
   }
+
 }
 
 object FMNAuth {

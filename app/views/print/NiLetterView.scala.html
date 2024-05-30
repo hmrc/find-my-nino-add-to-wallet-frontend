@@ -17,9 +17,8 @@
 @import tags._
 @import components.{H2,H3, P}
 @this(h2: H2, h3: H3, p: P)
-@(personDetails: models.PersonDetails,
-dateString: String,
-nino: String)(implicit request: Request[_], messages: play.api.i18n.Messages)
+@(individualDetailsDataCache: models.individualDetails.IndividualDetailsDataCache,dateString: String,nino: String)(
+implicit request: Request[_], messages: play.api.i18n.Messages)
 
 
 <section aria-label='@messages("label.your_national_insurance_number_letter_preview")'>
@@ -41,25 +40,13 @@ nino: String)(implicit request: Request[_], messages: play.api.i18n.Messages)
 
         <div class="grid-row document-address">
             <div class="govuk-grid-column-one-half govuk-body document-address__recipient">
-                @personDetails.correspondenceAddress.map { correspondenceAddress =>
+                @individualDetailsDataCache.getAddress.map { residentialAddress =>
                     <address>
-                        <span>@personDetails.person.initialsName</span>
-                        @correspondenceAddress.lines.map { line =>
-                            <span>@line</span>
-                        }
-                        <span>@correspondenceAddress.postcode.map(_.toUpperCase)</span>
-                    </address>
-                }.getOrElse {
-                    @personDetails.address.map { residentialAddress =>
-                    <address>
-                        <span>@personDetails.person.initialsName</span>
-                        @residentialAddress.lines.map { line =>
-                            <span>@line</span>
-                        }
-                        <span>@residentialAddress.postcode.map(_.toUpperCase)</span>
+                        <span>@individualDetailsDataCache.getInitialsName</span>
+                        @individualDetailsDataCache.getAddressLines.map { line => <span>@line</span> }
+                        <span>@individualDetailsDataCache.getPostCode.getOrElse("").toUpperCase</span>
                     </address>
                 }.getOrElse(<address></address>)
-                }
             </div>
 
             <div class="govuk-grid-column-one-half document-address__sender">
@@ -87,7 +74,7 @@ nino: String)(implicit request: Request[_], messages: play.api.i18n.Messages)
         <div class="grid-row main-content">
             <div class="govuk-grid-column-full">
 
-                <p class="name govuk-body">@personDetails.person.fullName</p>
+                <p class="name govuk-body">@individualDetailsDataCache.getFullName</p>
                 <div class="print-document__information-box">
                     <h2 class="govuk-body insurance-number-text govuk-!-font-size-27 govuk-!-font-weight-bold">@messages("label.your_national_insurance_number_is")</h2>
                     <span class="govuk-body insurance-number govuk-!-font-size-36 govuk-!-font-weight-bold">@nino</span>

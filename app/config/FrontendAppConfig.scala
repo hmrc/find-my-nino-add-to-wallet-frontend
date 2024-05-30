@@ -33,7 +33,6 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
   lazy val gtmContainer: String = configuration.get[String]("tracking-consent-frontend.gtm.container")
   val enc = URLEncoder.encode(_: String, "UTF-8")
   lazy val generalQueriesUrl     = "https://www.gov.uk/contact-hmrc"
-  lazy val citizenDetailsServiceUrl: String = servicesConfig.baseUrl("citizen-details-service")
   val serviceName = "save-your-national-insurance-number"
 
   def getBasGatewayFrontendSignOutUrl(continueUrl: String): String =
@@ -58,11 +57,12 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
   )
 
   val cacheTtl: Int = configuration.get[Int]("mongodb.timeToLiveInSeconds")
+  val encryptionKey: String = configuration.get[String]("mongodb.encryption.key")
+
+  val crnUpliftAPIAlreadyAdultErrorCode: String = configuration.get[String]("crnUpliftAPI.alreadyAnAdultErrorCode")
 
   lazy val googleWalletEnabled = configuration.getOptional[Boolean]("features.google-wallet-enabled").getOrElse(false)
   lazy val appleWalletEnabled = configuration.getOptional[Boolean]("features.apple-wallet-enabled").getOrElse(false)
-
-  lazy val fakeNinoEnabled = configuration.getOptional[Boolean]("features.fake-nino-enabled").getOrElse(false)
 
   lazy val basGatewayFrontendHost: String     = getExternalUrl(s"bas-gateway-frontend.host").getOrElse("")
   lazy val multiFactorAuthenticationUpliftUrl = s"$basGatewayFrontendHost/bas-gateway/uplift-mfa"
@@ -82,5 +82,11 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
 
   def getTaxEnrolmentAssignmentRedirectUrl(url: String): String =
     s"$taxEnrolmentAssignmentFrontendHost/protect-tax-info?redirectUrl=${enc(url)}"
+
+  lazy val individualDetailsProtocol: String = configuration.get[String]("microservice.services.individual-details.protocol")
+  lazy val individualDetailsHost: String = configuration.get[String]("microservice.services.individual-details.host")
+  lazy val individualDetailsPort: String = configuration.get[String]("microservice.services.individual-details.port")
+  val individualDetailsServiceUrl: String = s"$individualDetailsProtocol://$individualDetailsHost:$individualDetailsPort"
+
 
 }

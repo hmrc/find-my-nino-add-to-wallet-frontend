@@ -24,7 +24,7 @@
     niLetter: views.html.print.NiLetterView
 )
 
-@(personDetails: models.PersonDetails, dateString: String, saveNiLetterAsPdfLinkEnabled: Boolean, nino : String)(implicit request: Request[_], messages: Messages)
+@(individualDetailsDataCache: models.individualDetails.IndividualDetailsDataCache, dateString: String, saveNiLetterAsPdfLinkEnabled: Boolean, nino : String)(implicit request: Request[_], messages: Messages)
 
 @stylesheet = {
     <link rel="stylesheet" href='@routes.Assets.versioned("stylesheets/partials/print-this-document.css")'>
@@ -50,5 +50,5 @@
         </div>
     </div>
 
-    @niLetter(personDetails, dateString, nino)
+    @niLetter(individualDetailsDataCache, dateString, nino)
 }

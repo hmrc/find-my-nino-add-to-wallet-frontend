@@ -17,43 +17,49 @@
 package controllers
 
 import base.SpecBase
-import connectors.{CitizenDetailsConnector, PersonDetailsSuccessResponse}
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
+import org.mockito.Mockito.{reset, times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
+import play.api.http.Status.NO_CONTENT
 import play.api.inject.bind
-import play.api.libs.json.{JsString, Json}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import services.{IndividualDetailsService, NPSService}
 import util.CDFixtures
+import util.Fixtures.{fakeIndividualDetailsDataCache, fakeIndividualDetailsDataCacheWithCRN}
 import util.Stubs.userLoggedInFMNUser
 import util.TestData.NinoUser
 import views.html.print.PrintNationalInsuranceNumberView
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class NinoLetterControllerSpec extends SpecBase with CDFixtures with MockitoSugar {
 
-  val pd = buildPersonDetails
-  val jsonPd: JsString = JsString(Json.toJson(pd).toString())
+  override protected def beforeEach(): Unit = {
+    reset(mockIndividualDetailsService)
+  }
 
   val personDetailsId = "pdId"
 
-  lazy val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
+  lazy val mockIndividualDetailsService = mock[IndividualDetailsService]
+  val mockNPSService = mock[NPSService]
   lazy val ninoLetterController = applicationWithConfig.injector.instanceOf[NinoLetterController]
   lazy val view = applicationWithConfig.injector.instanceOf[PrintNationalInsuranceNumberView]
 
-  when(mockCitizenDetailsConnector.personDetails(any())(any(), any()))
-    .thenReturn(Future(PersonDetailsSuccessResponse(buildPersonDetails)))
+  implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
+
 
   "NinoLetter Controller" - {
     "must return OK and the correct view for a GET" in {
       userLoggedInFMNUser(NinoUser)
-      
+      when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
+        .thenReturn(
+          Future.successful(Right(fakeIndividualDetailsDataCache))
+        )
+
       val application = applicationBuilderWithConfig()
         .overrides(
-          bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
+          bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
         )
         .build()
 
@@ -65,15 +71,45 @@ class NinoLetterControllerSpec extends SpecBase with CDFixtures with MockitoSuga
         status(result) mustEqual OK
       }
     }
+
+    "must uplift CRN and return OK and the correct view for a GET" in {
+      userLoggedInFMNUser(NinoUser)
+      when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
+        .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCacheWithCRN)),
+          Future.successful(Right(fakeIndividualDetailsDataCache)))
+      when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
+        .thenReturn(Future.successful(true))
+      when(mockNPSService.upliftCRN(any(), any())(any())).thenReturn(Future.successful(Right(NO_CONTENT)))
+
+      val application = applicationBuilderWithConfig()
+        .overrides(
+          bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
+          bind[NPSService].toInstance(mockNPSService)
+        )
+        .build()
+
+      running(application) {
+        val request = FakeRequest(GET, routes.NinoLetterController.onPageLoad.url)
+          .withSession(("authToken", "Bearer 123"))
+
+        val result = route(application, request).value
+        status(result) mustEqual OK
+        verify(mockNPSService, times(1)).upliftCRN(any(), any())(any())
+      }
+    }
   }
 
   "NinoLetterController saveNationalInsuranceNumberAsPdf" - {
     "must return OK and pdf file with correct content" in {
       userLoggedInFMNUser(NinoUser)
+      when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
+        .thenReturn(
+          Future.successful(Right(fakeIndividualDetailsDataCache))
+        )
 
       val application = applicationBuilderWithConfig()
         .overrides(
-          bind[CitizenDetailsConnector].toInstance(mockCitizenDetailsConnector)
+          bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
         )
         .build()
 

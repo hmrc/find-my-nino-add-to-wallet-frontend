@@ -19,12 +19,16 @@ package config
 import com.google.inject.AbstractModule
 import controllers.actions._
 import play.api.{Configuration, Environment}
+import repositories.{EncryptedIndividualDetailsRepository, IndividualDetailsRepoTrait, IndividualDetailsRepository}
 import util._
 import views.html.templates.{LayoutProvider, NewLayoutProvider}
 
 import java.time.{Clock, ZoneOffset}
 
 class Module(environment: Environment, config: Configuration) extends AbstractModule {
+
+  private val encryptionEnabled = config.get[Boolean]("mongodb.encryption.enabled")
+  
   override def configure(): Unit = {
 
     bind(classOf[DataRetrievalAction]).to(classOf[DataRetrievalActionImpl]).asEagerSingleton()
@@ -40,6 +44,14 @@ class Module(environment: Environment, config: Configuration) extends AbstractMo
     bind(classOf[FopURIResolver]).to(classOf[DefaultFopURIResolver])
     bind(classOf[BaseResourceStreamResolver]).to(classOf[DefaultResourceStreamResolver])
 
+
     bind(classOf[LayoutProvider]).to(classOf[NewLayoutProvider]).asEagerSingleton()
+    if (encryptionEnabled) {
+      bind(classOf[IndividualDetailsRepoTrait])
+        .to(classOf[EncryptedIndividualDetailsRepository]).asEagerSingleton()
+    } else {
+      bind(classOf[IndividualDetailsRepoTrait])
+        .to(classOf[IndividualDetailsRepository]).asEagerSingleton()
+    }
   }
 }

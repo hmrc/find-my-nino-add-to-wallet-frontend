@@ -37,7 +37,7 @@ class FMNAuthTest extends SpecBase {
   // Mock configuration values
   val mockConfig: FrontendAppConfig = mock[FrontendAppConfig]
   val mockIdentityVerificationFrontendService: IdentityVerificationFrontendService = mock[IdentityVerificationFrontendService]
-  implicit lazy val ec = app.injector.instanceOf[ExecutionContext]
+  implicit lazy val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
 
   when(mockConfig.identityVerificationUpliftUrl).thenReturn("/save-your-national-insurance-number")
   when(mockConfig.origin).thenReturn("http://example.com")

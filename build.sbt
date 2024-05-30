@@ -23,7 +23,7 @@ lazy val scoverageSettings = {
 addCommandAlias("report", ";clean; coverage; test; it/test; coverageReport")
 
 lazy val root = (project in file("."))
-  .enablePlugins(PlayScala, SbtAutoBuildPlugin, SbtDistributablesPlugin)
+  .enablePlugins(PlayScala, SbtDistributablesPlugin)
   .disablePlugins(JUnitXmlReportPlugin) //Required to prevent https://github.com/scalatest/scalatest/issues/1427
   .settings(inConfig(Test)(testSettings): _*)
   .settings(ThisBuild / useSuperShell := false)

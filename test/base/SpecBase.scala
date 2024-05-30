@@ -127,6 +127,9 @@ class SpecBase extends WireMockSupport with MockitoSugar with GuiceOneAppPerSuit
     Keys.wrapperDataKey -> wrapperDataResponse,
     Keys.messageDataKey -> messageDataResponse,
     RequestAttrKey.Cookies -> Cell(Cookies(Seq(Cookie("PLAY_LANG", "en")))))
+
+  implicit class StringOps(s: String) {
+    def removeAllNonces(): String = s.replaceAll("""nonce="[^"]*"""", "")
+  }
+
 }
-
-

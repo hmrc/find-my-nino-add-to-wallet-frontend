@@ -120,9 +120,11 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
         userLoggedInFMNUser(NinoUser)
         val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
+
         assertThrows[NotFoundException] {
           await(route(application, request).value)
         }
+
       }
     }
 
@@ -146,8 +148,10 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(applePassId, googlePassId, "AB 12 34 56 C", displayForMobile = false)(request.withAttrs(requestAttributeMap), messages(application)).toString
+
+        contentAsString(result).removeAllNonces mustEqual view(applePassId, googlePassId, "AB 12 34 56 C", displayForMobile = false)(request.withAttrs(requestAttributeMap), messages(application)).toString
         verify(mockNPSService, times(0)).upliftCRN(any(), any())(any())
+
       }
     }
 
@@ -196,7 +200,9 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           Enrolments(Set(Enrolment("HMRC-PT"))),
           request
         )
-        contentAsString(result) mustEqual (view()(userRequest, messages(application), scala.concurrent.ExecutionContext.global).toString)
+
+        contentAsString(result).removeAllNonces mustEqual (view()(userRequest, messages(application), scala.concurrent.ExecutionContext.global).toString)
+
       }
     }
 
@@ -245,7 +251,9 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           Enrolments(Set(Enrolment("HMRC-PT"))),
           request
         )
-        contentAsString(result) mustEqual (view()(userRequest, messages(application), scala.concurrent.ExecutionContext.global).toString)
+
+        contentAsString(result).removeAllNonces mustEqual (view()(userRequest, messages(application), scala.concurrent.ExecutionContext.global).toString)
+
       }
 
     }
@@ -316,7 +324,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(applePassId, googlePassId, "AB 12 34 56 C", displayForMobile = false)(request.withAttrs(requestAttributeMap), messages(application)).toString
+        contentAsString(result).removeAllNonces mustEqual view(applePassId, googlePassId, "AB 12 34 56 C", displayForMobile = false)(request.withAttrs(requestAttributeMap), messages(application)).toString
         verify(mockNPSService, times(1)).upliftCRN(any(), any())(any())
       }
     }
@@ -346,7 +354,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         status(result) mustEqual INTERNAL_SERVER_ERROR
-        contentAsString(result) mustEqual view()(request.withAttrs(requestAttributeMap), frontendAppConfig, messages(application)).toString
+        contentAsString(result).removeAllNonces mustEqual view()(request.withAttrs(requestAttributeMap), frontendAppConfig, messages(application)).toString
         verify(mockNPSService, times(1)).upliftCRN(any(), any())(any())
       }
     }
@@ -376,7 +384,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         status(result) mustEqual INTERNAL_SERVER_ERROR
-        contentAsString(result) mustEqual view()(request.withAttrs(requestAttributeMap), frontendAppConfig, messages(application)).toString
+        contentAsString(result).removeAllNonces mustEqual view()(request.withAttrs(requestAttributeMap), frontendAppConfig, messages(application)).toString
         verify(mockNPSService, times(1)).upliftCRN(any(), any())(any())
       }
     }

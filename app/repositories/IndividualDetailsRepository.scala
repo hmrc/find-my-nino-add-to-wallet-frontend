@@ -72,7 +72,7 @@ class IndividualDetailsRepository @Inject()(mongoComponent: MongoComponent,
   def findIndividualDetailsDataByNino(nino: String)
                                (implicit ec: ExecutionContext): Future[Option[IndividualDetailsDataCache]] = {
     //logger.info(s"find one in $collectionName table")
-    val filter = Filters.equal("individualDetails.nino", nino)
+    val filter = Filters.regex("individualDetails.nino", nino.take(8).r)
     collection.find(filter)
       .toFuture()
       .map(_.headOption)
@@ -84,7 +84,7 @@ class IndividualDetailsRepository @Inject()(mongoComponent: MongoComponent,
 
   def deleteIndividualDetailsDataByNino(nino: String)
                                        (implicit ec: ExecutionContext): Future[DeleteResult] = {
-    val filter = Filters.equal("individualDetails.nino", nino)
+    val filter = Filters.regex("individualDetails.nino", nino.take(8).r)
     collection.deleteOne(filter)
       .toFuture()
   } recoverWith {

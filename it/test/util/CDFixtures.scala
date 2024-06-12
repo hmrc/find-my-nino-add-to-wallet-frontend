@@ -235,20 +235,4 @@ object Fixtures extends CDFixtures  {
   }
 
 
-
-  /*def buildFakePersonDetails: PersonDetails = PersonDetails(buildFakePerson, None, None)
-
-  def buildFakePerson: Person =
-    Person(
-      Some("Firstname"),
-      Some("Middlename"),
-      Some("Lastname"),
-      Some("FML"),
-      Some("Mr"),
-      None,
-      Some("M"),
-      Some(LocalDate.parse("1931-01-17")),
-      Some(Fixtures.fakeNino)
-    )*/
-
 }

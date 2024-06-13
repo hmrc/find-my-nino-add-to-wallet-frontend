@@ -13,6 +13,7 @@ The service consists of only 4 pages allowing you to:
 
 ## How to run locally
 - Make sure you have sm2 (service manager 2 installed and workspace directory configured)
+- Make sure you are running an instance of MongoDB at the default port.
 - Update service manager config: cd $WORKSPACE/service-manager-config && git pull
 - Start the services: sm2 --start FMN_ALL
 - Service should be now available at http://localhost:14006/save-your-national-insurance-number

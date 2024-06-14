@@ -12,16 +12,16 @@ The service consists of only 4 pages allowing you to:
 - Add your National Insurance number to your Google Wallet and Apple Wallet
 
 ## How to run locally
-- Make sure you have sm2 (service manager 2 installed and workspace directory configured)
+- Make sure you have service manager 2 installed and workspace directory configured
 - Make sure you are running an instance of MongoDB at the default port.
 - Update service manager config: cd $WORKSPACE/service-manager-config && git pull
 - Start the services: sm2 --start FMN_ALL
 - Service should be now available at http://localhost:14006/save-your-national-insurance-number
 - In the browser use the url above. if you are not already logged in, you will be redirected to the http://localhost:9949/auth-login-stub/gg-sign-in?continue=http%3A%2F%2Flocalhost%3A14006%2Fsave-your-national-insurance-number&origin=find-my-nino-add-to-wallet-frontend, which allows you to create a auth session for testing with enrollments and correct confidence levels etc.
 - On the auth page enter Confidence Level: 200
-- Enter AA000003B as test Nino
+- Enter a test National Insurance Number (this should be available to you already as test data to be used)
 - Enter these values for Enrollment on the page:
-- Enrollment Key: HMRC-PT, Identifier Name: NINO, Identifier Value: AA000003B
+- Enrollment Key: HMRC-PT, Identifier Name: NINO, Identifier Value: test National Insurance Number
 - Click the green submit button
 - You should be redirected to: http://localhost:14006/save-your-national-insurance-number
 

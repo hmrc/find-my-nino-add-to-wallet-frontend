@@ -31,7 +31,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @ImplementedBy(classOf[IndividualDetailsServiceImpl])
 trait IndividualDetailsService {
-  def getIdDataFromCache(nino: String, sessionId: String)(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[Either[String, IndividualDetailsDataCache]]
+  def getIdDataFromCache(nino: String, sessionId: String)(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[Either[Int, IndividualDetailsDataCache]]
   def deleteIdDataFromCache(nino: String)(implicit ec: ExecutionContext): Future[Boolean]
 }
 
@@ -95,22 +95,22 @@ class IndividualDetailsServiceImpl @Inject()(
 
   private def createNewIndividualDataCache(nino: String, sessionId: String)(
     implicit ec: ExecutionContext, hc: HeaderCarrier
-  ): Future[Either[String, IndividualDetailsDataCache]] = {
+  ): Future[Either[Int, IndividualDetailsDataCache]] = {
     fetchIndividualDetails(nino)(ec,hc).flatMap {
       case Right(individualDetails) =>
         insertOrReplaceIndividualDetailsDataCache(sessionId, individualDetails).map { ninoStr =>
           if(ninoStr.nonEmpty)
             Right(getIndividualDetailsDataCache(sessionId, individualDetails))
           else
-            Left("Failed to create individual details data cache")
+            throw new RuntimeException("Failed to create individual details data cache")
         }
-      case Left(error) =>
-        Future.successful(Left(s"Failed to fetch individual details: ${error.toString}"))
+      case Left(httpResponse) =>
+        Future.successful(Left(httpResponse.status))
     }
   }
 
   def getIdDataFromCache(nino: String, sessionId: String)(implicit ec: ExecutionContext,
-                                                          hc: HeaderCarrier): Future[Either[String, IndividualDetailsDataCache]] = {
+                                                          hc: HeaderCarrier): Future[Either[Int, IndividualDetailsDataCache]] = {
     getIndividualDetailsDataCache(nino).flatMap {
       case Some(individualDetailsDataCache) =>
         logger.info(s"Individual details found in cache for Nino: ${nino}")

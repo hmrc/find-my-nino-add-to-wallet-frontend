@@ -101,33 +101,6 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
 
   "StoreMyNino Controller" - {
 
-    "must return ErrorView and the correct view for a GET" in {
-      when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
-        .thenReturn(Future.successful(Left("Individual details not found in cache")))
-
-      val application =
-        applicationBuilderWithConfig()
-          .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
-            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
-            inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
-            inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
-            inject.bind[IdentityVerificationFrontendConnector].toInstance(mockIdentityVerificationFrontendConnector)
-          )
-          .build()
-
-      running(application) {
-        userLoggedInFMNUser(NinoUser)
-        val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
-          .withSession(("authToken", "Bearer 123"))
-
-        assertThrows[NotFoundException] {
-          await(route(application, request).value)
-        }
-
-      }
-    }
-
     "must return OK and the correct view for a GET" in {
       val application =
         applicationBuilderWithConfig()
@@ -152,6 +125,32 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
         contentAsString(result).removeAllNonces mustEqual view(applePassId, googlePassId, "AB 12 34 56 C", displayForMobile = false)(request.withAttrs(requestAttributeMap), messages(application)).toString
         verify(mockNPSService, times(0)).upliftCRN(any(), any())(any())
 
+      }
+    }
+
+    "must throw a NotFoundException when individual details not found" in {
+      when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
+        .thenReturn(Future.successful(Left(NOT_FOUND)))
+
+      val application =
+        applicationBuilderWithConfig()
+          .overrides(
+            inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
+            inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
+            inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
+            inject.bind[IdentityVerificationFrontendConnector].toInstance(mockIdentityVerificationFrontendConnector)
+          )
+          .build()
+
+      running(application) {
+        userLoggedInFMNUser(NinoUser)
+        val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
+          .withSession(("authToken", "Bearer 123"))
+
+        assertThrows[NotFoundException] {
+          await(route(application, request).value)
+        }
       }
     }
 
@@ -353,7 +352,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
         val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
-        status(result) mustEqual INTERNAL_SERVER_ERROR
+        status(result) mustEqual BAD_REQUEST
         contentAsString(result).removeAllNonces mustEqual view()(request.withAttrs(requestAttributeMap), frontendAppConfig, messages(application)).toString
         verify(mockNPSService, times(1)).upliftCRN(any(), any())(any())
       }
@@ -383,7 +382,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
         val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
-        status(result) mustEqual INTERNAL_SERVER_ERROR
+        status(result) mustEqual UNPROCESSABLE_ENTITY
         contentAsString(result).removeAllNonces mustEqual view()(request.withAttrs(requestAttributeMap), frontendAppConfig, messages(application)).toString
         verify(mockNPSService, times(1)).upliftCRN(any(), any())(any())
       }
@@ -406,13 +405,15 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           )
           .build()
 
+      val view = application.injector.instanceOf[RedirectToPostalFormView]
+
       running(application) {
         userLoggedInFMNUser(NinoUser)
         val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
-        assertThrows[InternalServerException] {
-          await(route(application, request).value)
-        }
+        val result = route(application, request).value
+        status(result) mustEqual NOT_FOUND
+        contentAsString(result).removeAllNonces mustEqual view()(request.withAttrs(requestAttributeMap), frontendAppConfig, messages(application)).toString
         verify(mockNPSService, times(1)).upliftCRN(any(), any())(any())
       }
     }

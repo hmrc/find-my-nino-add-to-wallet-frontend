@@ -24,11 +24,11 @@ import models.individualDetails.IndividualDetailsDataCache
 import models.nps.CRNUpliftRequest
 import play.api.http.Status._
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
-import play.api.mvc.Results.InternalServerError
+import play.api.mvc.Results.{BadRequest, NotFound, UnprocessableEntity}
 import play.api.mvc._
 import services.{IndividualDetailsService, NPSService}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HeaderCarrier, InternalServerException, NotFoundException}
+import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HttpResponse, InternalServerException, NotFoundException, UnprocessableEntityException}
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import views.html.RedirectToPostalFormView
 
@@ -63,7 +63,7 @@ class CheckChildRecordAction @Inject()(
             upliftResult    <- npsService.upliftCRN(identifier, request)
             preFlightChecks <- preFlightChecks(upliftResult.isRight, individualDetails, sessionId)
           } yield (upliftResult, preFlightChecks) match {
-            case (Left(status), _) => handleError(status, authContext, frontendAppConfig)
+            case (Left(status), _) => handleErrorCrnUplift(status, authContext, frontendAppConfig)
             case (Right(_), true) =>
               Right(
                 UserRequestNew(
@@ -90,7 +90,7 @@ class CheckChildRecordAction @Inject()(
             )
           )
         }
-      case Left(_) => Future.successful(throw new NotFoundException("Individual details not found"))
+      case Left(httpStatus) => Future.successful(handleErrorIndividualDetails(httpStatus, authContext))
     }
   }
 
@@ -126,13 +126,23 @@ class CheckChildRecordAction @Inject()(
       individualDetails.individualDetailsData.get.dateOfBirth.toString
     )
 
-  private def handleError[A](status: Int, authContext: AuthContext[A], frontendAppConfig: FrontendAppConfig): Left[Result, Nothing] = {
+  private def handleErrorCrnUplift[A](status: Int, authContext: AuthContext[A], frontendAppConfig: FrontendAppConfig): Left[Result, Nothing] = {
     implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
     status match
     {
-      case BAD_REQUEST           => Left(InternalServerError(redirectView()(authContext.request, frontendAppConfig, messages)))
-      case UNPROCESSABLE_ENTITY  => Left(InternalServerError(redirectView()(authContext.request, frontendAppConfig, messages)))
+      case BAD_REQUEST           => Left(BadRequest(redirectView()(authContext.request, frontendAppConfig, messages)))
+      case UNPROCESSABLE_ENTITY  => Left(UnprocessableEntity(redirectView()(authContext.request, frontendAppConfig, messages)))
+      case NOT_FOUND             => Left(NotFound(redirectView()(authContext.request, frontendAppConfig, messages)))
       case _                     => throw new InternalServerException("Something went wrong")
+    }
+  }
+
+  private def handleErrorIndividualDetails[A](status: Int, authContext: AuthContext[A]): Left[Result, Nothing] = {
+    status match {
+      case BAD_REQUEST => throw new BadRequestException("Individual details call returned bad request")
+      case UNPROCESSABLE_ENTITY => throw new UnprocessableEntityException("Individual details call returned unprocessable entity")
+      case NOT_FOUND => throw new NotFoundException("Individual details call returned not found")
+      case _ => throw new InternalServerException("Something went wrong")
     }
   }
 

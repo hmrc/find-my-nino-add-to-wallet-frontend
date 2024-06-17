@@ -89,7 +89,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
       "must throw NotFoundException when ID cache is not found" in {
 
         when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
-          .thenReturn(Future.successful(Left("Individual details not found in cache")))
+          .thenReturn(Future.successful(Left(NOT_FOUND)))
 
         val application = applicationBuilderWithConfig()
           .overrides(
@@ -108,10 +108,8 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
           assertThrows[NotFoundException] {
             await(route(application, request).value)
           }
-
         }
       }
-
 
       "must return OK and the correct view for a GET" in {
         val application =
@@ -305,7 +303,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
             .build()
 
         when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
-          .thenReturn(Future.successful(Left("Individual details not found in cache")))
+          .thenReturn(Future.successful(Left(NOT_FOUND)))
 
         running(application) {
           userLoggedInFMNUser(NinoUser)
@@ -315,7 +313,6 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
           assertThrows[NotFoundException] {
             await(route(application, request).value)
           }
-
         }
       }
 

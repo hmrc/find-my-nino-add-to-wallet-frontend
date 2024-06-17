@@ -99,7 +99,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
             .build()
 
         when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
-          .thenReturn(Future.successful(Left("Individual details not found in cache")))
+          .thenReturn(Future.successful(Left(NOT_FOUND)))
 
         running(application) {
           userLoggedInFMNUser(NinoUser)
@@ -269,7 +269,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
             .build()
 
         when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
-          .thenReturn(Future.successful(Left("Individual details not found in cache")))
+          .thenReturn(Future.successful(Left(NOT_FOUND)))
 
         running(application) {
           userLoggedInFMNUser(NinoUser)

@@ -77,7 +77,7 @@ To create a Google Cloud service account key for testing:
 
 
 ## How to run service locally
-## How to run locally
+
 - Make sure you have service manager 2 installed and workspace directory configured
 - Make sure you are running an instance of MongoDB at the default port.
 - Update service manager config: cd $WORKSPACE/service-manager-config && git pull

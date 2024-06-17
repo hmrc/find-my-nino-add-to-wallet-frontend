@@ -2,15 +2,13 @@
 
 
 ## About
-This is the frontend repository for the Save your National Insurance number service.
-It provides the pages to allow an authenticated PTA user to view, download or print their national insurance number
+This is the frontend repository for the 'Save your National Insurance number' service.
+It allows authenticated user with PTA enrollment to view, download or print their national insurance number
 letter as a PDF, or save the number to a digital wallet card.
 
-The service consists of 4 pages:
-- Save your National Insurance number
-- Your National Insurance number letter
-- Add your National Insurance number to your Google Wallet
-- Add your National Insurance number to your Apple Wallet
+The service consists of only 4 pages allowing you to:
+- Generate and save your National Insurance number letter in PDF or HTML
+- Add your National Insurance number to your Google Wallet and Apple Wallet
 
 ## Prerequisites:
 
@@ -79,9 +77,19 @@ To create a Google Cloud service account key for testing:
 
 
 ## How to run service locally
-1. Use the service manager to start the auth and other supporting services
-2. Use service manager to start this service locally
-3. Use the authority wizard to create a session and authorization token
+## How to run locally
+- Make sure you have service manager 2 installed and workspace directory configured
+- Make sure you are running an instance of MongoDB at the default port.
+- Update service manager config: cd $WORKSPACE/service-manager-config && git pull
+- Start the services: sm2 --start FMN_ALL
+- Service should be now available at http://localhost:14006/save-your-national-insurance-number
+- In the browser use the url above. if you are not already logged in, you will be redirected to the http://localhost:9949/auth-login-stub/gg-sign-in?continue=http%3A%2F%2Flocalhost%3A14006%2Fsave-your-national-insurance-number&origin=find-my-nino-add-to-wallet-frontend, which allows you to create a auth session for testing with enrollments and correct confidence levels etc.
+- On the auth page enter Confidence Level: 200
+- Enter a test National Insurance Number (this should be available to you already as test data to be used)
+- Enter these values for Enrollment on the page:
+- Enrollment Key: HMRC-PT, Identifier Name: NINO, Identifier Value: test National Insurance Number
+- Click the green submit button
+- You should be redirected to: http://localhost:14006/save-your-national-insurance-number
 
 ## License
 

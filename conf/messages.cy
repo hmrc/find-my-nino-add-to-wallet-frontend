@@ -9,7 +9,7 @@ site.signIn=Mewngofnodi
 site.govuk=GOV.UK
 site.continue = Rhowch gynnig arall
 
-error.browser.title.prefix=Gwall:
+error.prefix=Gwall:
 error.summary.title=Mae problem wedi codi
 unauthorised.title=Ni allwch gael mynediad at y gwasanaeth hwn gyda’r cyfrif hwn
 unauthorised.heading=Ni allwch gael mynediad at y gwasanaeth hwn gyda’r cyfrif hwn
@@ -105,7 +105,7 @@ label.you_have_tried_to_confirm_your_identity_=Rydych wedi ceisio rhoi prawf o b
 label.try_again_in_24_hours=Rhowch gynnig arall arni mewn 24 awr.
 label.we_have_confirmed_your_identity=Rydym wedi cadarnhau pwy ydych
 label.you_can_sign_in_to_your_personal_tax_account=Gallwch bellach fewngofnodi i’ch cyfrif treth personol.
-global.label.continue_button=Continue
+global.label.continue_button=Yn eich blaen
 
 label.confirmNINO.heading = Mae angen i chi gadarnhau’ch rhif Yswiriant Gwladol
 label.confirmNINO.p1 = Mae dwy ffordd y gallwch ei gadarnhau:

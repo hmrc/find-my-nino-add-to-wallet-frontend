@@ -10,7 +10,7 @@ site.signIn = Sign in
 site.govuk = GOV.UK
 site.continue = Try again
 
-error.browser.title.prefix = Error:
+error.prefix = Error:
 error.summary.title = There is a problem
 
 unauthorised.title = You cannot access this service with this account

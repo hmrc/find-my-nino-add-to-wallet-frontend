@@ -139,10 +139,10 @@ class CheckChildRecordAction @Inject()(
 
   private def handleErrorIndividualDetails[A](status: Int): Left[Result, Nothing] = {
     status match {
-      case BAD_REQUEST => throw new BadRequestException("Individual details call returned bad request")
+      case BAD_REQUEST          => throw new BadRequestException("Individual details call returned bad request")
       case UNPROCESSABLE_ENTITY => throw new UnprocessableEntityException("Individual details call returned unprocessable entity")
-      case NOT_FOUND => throw new NotFoundException("Individual details call returned not found")
-      case _ => throw new InternalServerException("Something went wrong")
+      case NOT_FOUND            => throw new NotFoundException("Individual details call returned not found")
+      case _                    => throw new InternalServerException("Something went wrong")
     }
   }
 

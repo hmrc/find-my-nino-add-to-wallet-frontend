@@ -28,7 +28,7 @@ import play.api.mvc.Results.{BadRequest, NotFound, UnprocessableEntity}
 import play.api.mvc._
 import services.{IndividualDetailsService, NPSService}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HttpResponse, InternalServerException, NotFoundException, UnprocessableEntityException}
+import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, InternalServerException, NotFoundException, UnprocessableEntityException}
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import views.html.RedirectToPostalFormView
 
@@ -137,7 +137,7 @@ class CheckChildRecordAction @Inject()(
     }
   }
 
-  private def handleErrorIndividualDetails[A](status: Int, authContext: AuthContext[A]): Left[Result, Nothing] = {
+  private def handleErrorIndividualDetails[A](status: Int): Left[Result, Nothing] = {
     status match {
       case BAD_REQUEST => throw new BadRequestException("Individual details call returned bad request")
       case UNPROCESSABLE_ENTITY => throw new UnprocessableEntityException("Individual details call returned unprocessable entity")

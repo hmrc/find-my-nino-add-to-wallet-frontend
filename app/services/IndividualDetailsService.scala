@@ -90,7 +90,7 @@ class IndividualDetailsServiceImpl @Inject()(
       case OK =>
         Future.successful(Right(response.json.as[IndividualDetails]))
       case status =>
-        logger.warn(s"$className::upliftCRN returned: $status")
+        logger.warn(s"$className returned: $status")
         Future.successful(Left(response))
     }
   }

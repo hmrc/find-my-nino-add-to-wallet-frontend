@@ -74,8 +74,8 @@ class CheckChildRecordAction @Inject()(
                   authContext.request
                 )
               )
-            case (Right(_), false) => Left(throw new RuntimeException("Failed to verify CRN uplift"))
-            case _                 => Left(throw new RuntimeException("Failed to uplift CRN"))
+            case (Right(_), false) => Left(throw new InternalServerException("Failed to verify CRN uplift"))
+            case _                 => Left(throw new InternalServerException("Failed to uplift CRN"))
           }
         } else {
           Future.successful(

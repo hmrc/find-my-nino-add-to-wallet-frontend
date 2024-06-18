@@ -90,7 +90,7 @@ class CheckChildRecordAction @Inject()(
             )
           )
         }
-      case Left(httpStatus) => Future.successful(handleErrorIndividualDetails(httpStatus, authContext))
+      case Left(httpStatus) => Future.successful(handleErrorIndividualDetails(httpStatus))
     }
   }
 
@@ -137,7 +137,7 @@ class CheckChildRecordAction @Inject()(
     }
   }
 
-  private def handleErrorIndividualDetails[A](status: Int): Left[Result, Nothing] = {
+  private def handleErrorIndividualDetails(status: Int): Left[Result, Nothing] = {
     status match {
       case BAD_REQUEST          => throw new BadRequestException("Individual details call returned bad request")
       case UNPROCESSABLE_ENTITY => throw new UnprocessableEntityException("Individual details call returned unprocessable entity")

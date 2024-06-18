@@ -54,11 +54,11 @@ class IndividualDetailsServiceImpl @Inject()(
     individualDetailsRepository.findIndividualDetailsDataByNino(nino) map {
       case Some(individualDetailsData) => Some(individualDetailsData)
       case _ => None
-    } recover({
+    } recover{
       case e: MongoException =>
         logger.warn(s"Failed finding Individual Details Data by NINO: $nino, ${e.getMessage}")
         None
-    })
+    }
 
   private def getIndividualDetailsDataCache(sessionId: String, individualDetails: IndividualDetails): IndividualDetailsDataCache = {
 
@@ -85,10 +85,12 @@ class IndividualDetailsServiceImpl @Inject()(
   }
 
   private def handleResponse()(response: HttpResponse): Future[Either[HttpResponse, IndividualDetails]] = {
+    val className: String = s"${this.getClass.getName}:handleResponse"
     response.status match {
       case OK =>
         Future.successful(Right(response.json.as[IndividualDetails]))
-      case _ =>
+      case status =>
+        logger.warn(s"$className::upliftCRN returned: $status")
         Future.successful(Left(response))
     }
   }

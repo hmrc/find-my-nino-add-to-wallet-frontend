@@ -25,18 +25,18 @@ import org.mockito.Mockito.{reset, times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.http.Status.NO_CONTENT
 import play.api.inject
-import play.api.test.{DefaultAwaitTimeout, FakeRequest}
 import play.api.test.Helpers._
+import play.api.test.{DefaultAwaitTimeout, FakeRequest}
 import repositories.SessionRepository
 import services.{IndividualDetailsService, NPSService}
 import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolment, Enrolments}
-import uk.gov.hmrc.http.{HttpResponse, InternalServerException, NotFoundException, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HttpException, HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
 import util.CDFixtures
-import util.Fixtures.{fakeIndividualDetails, fakeIndividualDetailsData, fakeIndividualDetailsDataCache, fakeIndividualDetailsDataCacheWithCRN}
+import util.Fixtures.{fakeIndividualDetailsDataCache, fakeIndividualDetailsDataCacheWithCRN}
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
 import util.TestData.{NinoUser, NinoUser_With_CL50}
-import views.html.{ErrorTemplate, PassIdNotFoundView, RedirectToPostalFormView, StoreMyNinoView}
+import views.html.{PassIdNotFoundView, RedirectToPostalFormView, StoreMyNinoView}
 
 import java.util.Base64
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -148,7 +148,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
         val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
 
-        assertThrows[NotFoundException] {
+        assertThrows[HttpException] {
           await(route(application, request).value)
         }
       }
@@ -328,7 +328,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
       }
     }
 
-    "must redirect to postal form view for BAD_REQUEST from CRN uplift" in {
+    "must return OK and RedirectToPostalFormView for BAD_REQUEST from CRN uplift" in {
       when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
         .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCacheWithCRN)))
       when(mockNPSService.upliftCRN(any(), any())(any())).thenReturn(Future.successful(Left(BAD_REQUEST)))
@@ -352,13 +352,13 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
         val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
-        status(result) mustEqual BAD_REQUEST
+        status(result) mustEqual OK
         contentAsString(result).removeAllNonces mustEqual view()(request.withAttrs(requestAttributeMap), frontendAppConfig, messages(application)).toString
         verify(mockNPSService, times(1)).upliftCRN(any(), any())(any())
       }
     }
 
-    "must redirect to postal form view for UNPROCESSABLE_ENTITY from CRN uplift" in {
+    "must return OK and RedirectToPostalFormView for UNPROCESSABLE_ENTITY from CRN uplift" in {
       when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
         .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCacheWithCRN)))
       when(mockNPSService.upliftCRN(any(), any())(any())).thenReturn(Future.successful(Left(UNPROCESSABLE_ENTITY)))
@@ -382,13 +382,13 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
         val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
-        status(result) mustEqual UNPROCESSABLE_ENTITY
+        status(result) mustEqual OK
         contentAsString(result).removeAllNonces mustEqual view()(request.withAttrs(requestAttributeMap), frontendAppConfig, messages(application)).toString
         verify(mockNPSService, times(1)).upliftCRN(any(), any())(any())
       }
     }
 
-    "must return internal server error for NOT_FOUND from CRN uplift" in {
+    "must return OK and RedirectToPostalFormView for NOT_FOUND from CRN uplift" in {
       when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
         .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCacheWithCRN)))
       when(mockNPSService.upliftCRN(any(), any())(any())).thenReturn(Future.successful(Left(NOT_FOUND)))
@@ -412,7 +412,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
         val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
-        status(result) mustEqual NOT_FOUND
+        status(result) mustEqual OK
         contentAsString(result).removeAllNonces mustEqual view()(request.withAttrs(requestAttributeMap), frontendAppConfig, messages(application)).toString
         verify(mockNPSService, times(1)).upliftCRN(any(), any())(any())
       }

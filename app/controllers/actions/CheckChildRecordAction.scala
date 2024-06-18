@@ -24,11 +24,11 @@ import models.individualDetails.IndividualDetailsDataCache
 import models.nps.CRNUpliftRequest
 import play.api.http.Status._
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
-import play.api.mvc.Results.{BadRequest, NotFound, UnprocessableEntity}
+import play.api.mvc.Results.Ok
 import play.api.mvc._
 import services.{IndividualDetailsService, NPSService}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, InternalServerException, NotFoundException, UnprocessableEntityException}
+import uk.gov.hmrc.http.{HeaderCarrier, InternalServerException, NotFoundException}
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import views.html.RedirectToPostalFormView
 
@@ -39,7 +39,7 @@ class CheckChildRecordAction @Inject()(
                                         individualDetailsService: IndividualDetailsService,
                                         cc: ControllerComponents,
                                         val messagesApi: MessagesApi,
-                                        redirectView: RedirectToPostalFormView,
+                                        postalFormView: RedirectToPostalFormView,
                                         frontendAppConfig: FrontendAppConfig
                                       )(implicit ec: ExecutionContext)
   extends ActionRefiner[AuthContext, UserRequestNew]
@@ -74,8 +74,8 @@ class CheckChildRecordAction @Inject()(
                   authContext.request
                 )
               )
-            case (Right(_), false) => Left(throw new InternalServerException("Failed to verify CRN uplift"))
-            case _             => Left(throw new InternalServerException("Failed to uplift CRN"))
+            case (Right(_), false) => Left(throw new RuntimeException("Failed to verify CRN uplift"))
+            case _                 => Left(throw new RuntimeException("Failed to uplift CRN"))
           }
         } else {
           Future.successful(
@@ -90,7 +90,7 @@ class CheckChildRecordAction @Inject()(
             )
           )
         }
-      case Left(httpStatus) => Future.successful(handleErrorIndividualDetails(httpStatus))
+      case Left(_) => throw new InternalServerException("Failed to get individuals details")
     }
   }
 
@@ -130,19 +130,10 @@ class CheckChildRecordAction @Inject()(
     implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
     status match
     {
-      case BAD_REQUEST           => Left(BadRequest(redirectView()(authContext.request, frontendAppConfig, messages)))
-      case UNPROCESSABLE_ENTITY  => Left(UnprocessableEntity(redirectView()(authContext.request, frontendAppConfig, messages)))
-      case NOT_FOUND             => Left(NotFound(redirectView()(authContext.request, frontendAppConfig, messages)))
-      case _                     => throw new InternalServerException("Something went wrong")
-    }
-  }
-
-  private def handleErrorIndividualDetails(status: Int): Left[Result, Nothing] = {
-    status match {
-      case BAD_REQUEST          => throw new BadRequestException("Individual details call returned bad request")
-      case UNPROCESSABLE_ENTITY => throw new UnprocessableEntityException("Individual details call returned unprocessable entity")
-      case NOT_FOUND            => throw new NotFoundException("Individual details call returned not found")
-      case _                    => throw new InternalServerException("Something went wrong")
+      case BAD_REQUEST           => Left(Ok(postalFormView()(authContext.request, frontendAppConfig, messages)))
+      case UNPROCESSABLE_ENTITY  => Left(Ok(postalFormView()(authContext.request, frontendAppConfig, messages)))
+      case NOT_FOUND             => Left(Ok(postalFormView()(authContext.request, frontendAppConfig, messages)))
+      case _                     => throw new InternalServerException("Failed to uplift CRN")
     }
   }
 

@@ -29,7 +29,7 @@ import play.api.test.Helpers._
 import repositories.SessionRepository
 import services.IndividualDetailsService
 import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolment, Enrolments}
-import uk.gov.hmrc.http.{HttpResponse, NotFoundException, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HttpException, HttpResponse, NotFoundException, UpstreamErrorResponse}
 import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
 import util.CDFixtures
 import util.Fixtures.fakeIndividualDetailsDataCache
@@ -105,7 +105,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
           val request = FakeRequest(GET, routes.AppleWalletController.onPageLoad.url)
             .withSession(("authToken", "Bearer 123"))
 
-          assertThrows[NotFoundException] {
+          assertThrows[HttpException] {
             await(route(application, request).value)
           }
         }
@@ -310,7 +310,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
           val request = FakeRequest(GET, routes.AppleWalletController.onPageLoad.url)
             .withSession(("authToken", "Bearer 123"))
 
-          assertThrows[NotFoundException] {
+          assertThrows[HttpException] {
             await(route(application, request).value)
           }
         }

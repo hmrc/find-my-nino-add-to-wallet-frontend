@@ -20,12 +20,14 @@ import com.google.inject.Inject
 import config.FrontendAppConfig
 import controllers.auth.AuthContext
 import controllers.auth.requests._
+import handlers.ErrorHandler
 import models.individualDetails.IndividualDetailsDataCache
 import models.nps.CRNUpliftRequest
 import play.api.http.Status._
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
-import play.api.mvc.Results.InternalServerError
+import play.api.mvc.Results.{FailedDependency, InternalServerError, Redirect}
 import play.api.mvc._
+import play.api.routing.Router.empty.routes
 import services.{IndividualDetailsService, NPSService}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, InternalServerException, NotFoundException}
@@ -40,7 +42,8 @@ class CheckChildRecordAction @Inject()(
                                         cc: ControllerComponents,
                                         val messagesApi: MessagesApi,
                                         redirectView: RedirectToPostalFormView,
-                                        frontendAppConfig: FrontendAppConfig
+                                        frontendAppConfig: FrontendAppConfig,
+                                        errorHandler: ErrorHandler
                                       )(implicit ec: ExecutionContext)
   extends ActionRefiner[AuthContext, UserRequestNew]
     with ActionFunction[AuthContext, UserRequestNew]
@@ -90,7 +93,13 @@ class CheckChildRecordAction @Inject()(
             )
           )
         }
-      case Left(_) => Future.successful(throw new NotFoundException("Individual details not found"))
+      case Left(_) => Future.successful(Left(FailedDependency(
+        errorHandler.standardErrorTemplate(
+          "Something went wrong",
+          "Something went wrong",
+          "Please try again after a few minutes"
+        )(authContext.request)
+      )))
     }
   }
 

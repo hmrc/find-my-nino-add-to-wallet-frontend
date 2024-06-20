@@ -101,7 +101,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
 
   "StoreMyNino Controller" - {
 
-    "must return ErrorView and the correct view for a GET" in {
+    "must redirect to ErrorView and the correct view for a GET" in {
       when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
         .thenReturn(Future.successful(Left("Individual details not found in cache")))
 
@@ -121,9 +121,12 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
         val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
 
-        assertThrows[NotFoundException] {
-          await(route(application, request).value)
-        }
+        val result = route(application, request).value
+
+        status(result) mustEqual FAILED_DEPENDENCY
+        contentAsString(result) must include("Something went wrong")
+        contentAsString(result) must include("Please try again after a few minutes")
+
 
       }
     }

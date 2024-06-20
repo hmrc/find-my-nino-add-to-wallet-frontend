@@ -86,7 +86,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
 
     "Apple wallet enabled" - {
 
-      "must throw NotFoundException when ID cache is not found" in {
+      "must redirect to errorHandler.standardErrorTemplate when ID cache is not found" in {
 
         when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
           .thenReturn(Future.successful(Left("Individual details not found in cache")))
@@ -105,9 +105,12 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
           val request = FakeRequest(GET, routes.AppleWalletController.onPageLoad.url)
             .withSession(("authToken", "Bearer 123"))
 
-          assertThrows[NotFoundException] {
-            await(route(application, request).value)
-          }
+          val result = route(application, request).value
+
+          status(result) mustEqual FAILED_DEPENDENCY
+          contentAsString(result) must include("Sorry, we’re experiencing technical difficulties")
+          contentAsString(result) must include("Please try again in a few minutes")
+
 
         }
       }
@@ -293,7 +296,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
 
     "Apple wallet disabled" - {
 
-      "must throw NotFoundException when ID cache is not found" in {
+      "must redirect to errorHandler.standardErrorTemplate when ID cache is not found" in {
         val application =
           applicationBuilderWithConfig()
             .overrides(
@@ -312,9 +315,11 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
           val request = FakeRequest(GET, routes.AppleWalletController.onPageLoad.url)
             .withSession(("authToken", "Bearer 123"))
 
-          assertThrows[NotFoundException] {
-            await(route(application, request).value)
-          }
+          val result = route(application, request).value
+
+          status(result) mustEqual FAILED_DEPENDENCY
+          contentAsString(result) must include("Sorry, we’re experiencing technical difficulties")
+          contentAsString(result) must include("Please try again in a few minutes")
 
         }
       }

@@ -87,7 +87,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
 
     "Google Wallet toggle enabled" - {
 
-      "must throw NotFoundException when ID cache is not found" in {
+      "must redirect to error view when ID cache is not found" in {
         val application =
           applicationBuilderWithConfig()
             .overrides(
@@ -106,9 +106,12 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           val request = FakeRequest(GET, routes.GoogleWalletController.onPageLoad.url)
             .withSession(("authToken", "Bearer 123"))
 
-          assertThrows[NotFoundException] {
-            await(route(application, request).value)
-          }
+          val result = route(application, request).value
+
+          status(result) mustEqual FAILED_DEPENDENCY
+          contentAsString(result) must include("Sorry, we’re experiencing technical difficulties")
+          contentAsString(result) must include("Please try again in a few minutes")
+
 
         }
       }
@@ -257,7 +260,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
 
     "Google Wallet toggle disabled" - {
 
-      "must throw NotFoundException when ID cache is not found" in {
+      "must redirect to error view when ID cache is not found" in {
         val application =
           applicationBuilderWithConfig()
             .overrides(
@@ -276,9 +279,12 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           val request = FakeRequest(GET, routes.GoogleWalletController.onPageLoad.url)
             .withSession(("authToken", "Bearer 123"))
 
-          assertThrows[NotFoundException] {
-            await(route(application, request).value)
-          }
+          val result = route(application, request).value
+
+          status(result) mustEqual FAILED_DEPENDENCY
+          contentAsString(result) must include("Sorry, we’re experiencing technical difficulties")
+          contentAsString(result) must include("Please try again in a few minutes")
+
         }
 
       }

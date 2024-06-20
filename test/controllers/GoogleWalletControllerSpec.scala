@@ -109,8 +109,8 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           val result = route(application, request).value
 
           status(result) mustEqual FAILED_DEPENDENCY
-          contentAsString(result) must include("Something went wrong")
-          contentAsString(result) must include("Please try again after a few minutes")
+          contentAsString(result) must include("Sorry, we’re experiencing technical difficulties")
+          contentAsString(result) must include("Please try again in a few minutes")
 
 
         }
@@ -282,8 +282,8 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           val result = route(application, request).value
 
           status(result) mustEqual FAILED_DEPENDENCY
-          contentAsString(result) must include("Something went wrong")
-          contentAsString(result) must include("Please try again after a few minutes")
+          contentAsString(result) must include("Sorry, we’re experiencing technical difficulties")
+          contentAsString(result) must include("Please try again in a few minutes")
 
         }
 

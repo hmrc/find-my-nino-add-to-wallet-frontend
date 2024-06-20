@@ -27,7 +27,6 @@ import play.api.http.Status._
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc.Results.{FailedDependency, InternalServerError, Redirect}
 import play.api.mvc._
-import play.api.routing.Router.empty.routes
 import services.{IndividualDetailsService, NPSService}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, InternalServerException, NotFoundException}
@@ -51,6 +50,7 @@ class CheckChildRecordAction @Inject()(
 
   override protected def refine[A](authContext: AuthContext[A]): Future[Either[Result, UserRequestNew[A]]] = {
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(authContext.request, authContext.request.session)
+    implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
     val identifier: String = authContext.nino.nino
 
     val sessionId: String = hc.sessionId.map(_.value).getOrElse(
@@ -95,9 +95,9 @@ class CheckChildRecordAction @Inject()(
         }
       case Left(_) => Future.successful(Left(FailedDependency(
         errorHandler.standardErrorTemplate(
-          "Something went wrong",
-          "Something went wrong",
-          "Please try again after a few minutes"
+          Messages("global.error.InternalServerError500.title"),
+          Messages("global.error.InternalServerError500.heading"),
+          Messages("global.error.InternalServerError500.message")
         )(authContext.request)
       )))
     }

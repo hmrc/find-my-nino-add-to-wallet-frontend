@@ -103,7 +103,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
 
         running(application) {
           userLoggedInFMNUser(NinoUser)
-          val request = FakeRequest(GET, routes.GoogleWalletController.onPageLoad.url)
+          val request = FakeRequest(GET, routes.GoogleWalletController.onPageLoad().url)
             .withSession(("authToken", "Bearer 123"))
 
           val result = route(application, request).value
@@ -135,7 +135,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
             .withSession(("authToken", "Bearer 123"))
           val result = route(application, request).value
           status(result) mustEqual OK
-          contentAsString(result).removeAllNonces mustEqual (view(passId, false)(request.withAttrs(requestAttributeMap), messages(application))).toString
+          contentAsString(result).removeAllNonces() mustEqual (view(passId, false)(request.withAttrs(requestAttributeMap), messages(application)).toString())
         }
       }
 
@@ -184,7 +184,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
             request
           )
 
-          contentAsString(result).removeAllNonces mustEqual (view()(userRequest, messages(application), scala.concurrent.ExecutionContext.global).toString)
+          contentAsString(result).removeAllNonces() mustEqual (view()(userRequest, messages(application), scala.concurrent.ExecutionContext.global).toString())
 
         }
       }
@@ -234,7 +234,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
             request
           )
 
-          contentAsString(result).removeAllNonces mustEqual (view()(userRequest, messages(application), scala.concurrent.ExecutionContext.global).toString)
+          contentAsString(result).removeAllNonces() mustEqual (view()(userRequest, messages(application), scala.concurrent.ExecutionContext.global).toString())
 
         }
       }
@@ -276,7 +276,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
 
         running(application) {
           userLoggedInFMNUser(NinoUser)
-          val request = FakeRequest(GET, routes.GoogleWalletController.onPageLoad.url)
+          val request = FakeRequest(GET, routes.GoogleWalletController.onPageLoad().url)
             .withSession(("authToken", "Bearer 123"))
 
           val result = route(application, request).value
@@ -355,7 +355,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
             request
           )
 
-          contentAsString(result).removeAllNonces mustEqual (view()(userRequest, messages(application), scala.concurrent.ExecutionContext.global).toString)
+          contentAsString(result).removeAllNonces() mustEqual (view()(userRequest, messages(application), scala.concurrent.ExecutionContext.global).toString())
 
         }
       }
@@ -406,7 +406,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
             request
           )
 
-          contentAsString(result).removeAllNonces mustEqual (view()(userRequest, messages(application), scala.concurrent.ExecutionContext.global).toString)
+          contentAsString(result).removeAllNonces() mustEqual (view()(userRequest, messages(application), scala.concurrent.ExecutionContext.global).toString())
 
         }
       }

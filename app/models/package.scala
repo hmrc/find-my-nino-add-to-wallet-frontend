@@ -141,6 +141,7 @@ package object models {
                 }
               }
           }
+        case _ => JsError("path and value could not be parsed")
       }
     }
   }

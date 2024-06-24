@@ -102,7 +102,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
 
         running(application) {
           userLoggedInFMNUser(NinoUser)
-          val request = FakeRequest(GET, routes.AppleWalletController.onPageLoad.url)
+          val request = FakeRequest(GET, routes.AppleWalletController.onPageLoad().url)
             .withSession(("authToken", "Bearer 123"))
 
           val result = route(application, request).value
@@ -136,11 +136,11 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
 
         running(application) {
           userLoggedInFMNUser(NinoUser)
-          val request = FakeRequest(GET, routes.AppleWalletController.onPageLoad.url)
+          val request = FakeRequest(GET, routes.AppleWalletController.onPageLoad().url)
             .withSession(("authToken", "Bearer 123"))
           val result = route(application, request).value
           status(result) mustEqual OK
-          contentAsString(result).removeAllNonces mustEqual (view(passId, false)(request.withAttrs(requestAttributeMap), messages(application))).toString
+          contentAsString(result).removeAllNonces() mustEqual (view(passId, false)(request.withAttrs(requestAttributeMap), messages(application)).toString())
         }
       }
 
@@ -195,7 +195,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
             request
           )
 
-          contentAsString(result).removeAllNonces mustEqual (view()(userRequest, messages(application), scala.concurrent.ExecutionContext.global).toString)
+          contentAsString(result).removeAllNonces() mustEqual (view()(userRequest, messages(application), scala.concurrent.ExecutionContext.global).toString())
 
         }
 
@@ -248,7 +248,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
             request
           )
 
-          contentAsString(result).removeAllNonces mustEqual (view()(userRequest, messages(application), scala.concurrent.ExecutionContext.global).toString)
+          contentAsString(result).removeAllNonces() mustEqual (view()(userRequest, messages(application), scala.concurrent.ExecutionContext.global).toString())
 
         }
       }
@@ -312,7 +312,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
 
         running(application) {
           userLoggedInFMNUser(NinoUser)
-          val request = FakeRequest(GET, routes.AppleWalletController.onPageLoad.url)
+          val request = FakeRequest(GET, routes.AppleWalletController.onPageLoad().url)
             .withSession(("authToken", "Bearer 123"))
 
           val result = route(application, request).value
@@ -340,7 +340,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
 
         running(application) {
           userLoggedInFMNUser(NinoUser)
-          val request = FakeRequest(GET, routes.AppleWalletController.onPageLoad.url)
+          val request = FakeRequest(GET, routes.AppleWalletController.onPageLoad().url)
             .withSession(("authToken", "Bearer 123"))
           val result = route(application, request).value
           status(result) mustEqual SEE_OTHER
@@ -393,7 +393,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
             request
           )
 
-          contentAsString(result).removeAllNonces mustEqual (view()(userRequest, messages(application), scala.concurrent.ExecutionContext.global).toString)
+          contentAsString(result).removeAllNonces() mustEqual (view()(userRequest, messages(application), scala.concurrent.ExecutionContext.global).toString())
 
         }
 
@@ -448,7 +448,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
             request
           )
 
-          contentAsString(result).removeAllNonces mustEqual (view()(userRequest, messages(application), scala.concurrent.ExecutionContext.global).toString)
+          contentAsString(result).removeAllNonces() mustEqual (view()(userRequest, messages(application), scala.concurrent.ExecutionContext.global).toString())
 
         }
       }

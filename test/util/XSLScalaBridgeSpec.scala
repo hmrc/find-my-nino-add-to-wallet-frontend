@@ -19,14 +19,15 @@ package util
 import base.SpecBase
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.i18n.{I18nSupport, Lang, Messages, MessagesApi}
+import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 
 class XSLScalaBridgeSpec extends SpecBase with MockitoSugar with I18nSupport {
 
   implicit val messagesApi: MessagesApi = application.injector.instanceOf[MessagesApi]
-  implicit val request = FakeRequest()
+  implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
   val messages: Messages = messagesApi.preferred(request)
-  implicit val lang = Lang.defaultLang
+  implicit val lang: Lang = Lang.defaultLang
 
   "XSLScalaBridge getMessagesText" - {
     "must return the correct string" in {

@@ -225,15 +225,18 @@ object IndividualDetails {
     private def getSecondForename: String = idData.nameList.name.flatMap(_.drop(1).headOption).map(_.firstForename.value).getOrElse("")
     def getLastName: String = idData.nameList.name.flatMap(_.headOption).map(_.surname.value).getOrElse("")
 
-    def getTitle: String = idData.nameList.name.flatMap(_.headOption).map(_.titleType).getOrElse(TitleType.NotKnown) match {
-      case Some(TitleType.Mr) => "Mr"
-      case Some(TitleType.Mrs) => "Mrs"
-      case Some(TitleType.Miss) => "Miss"
-      case Some(TitleType.Ms) => "Ms"
-      case Some(TitleType.Dr) => "Dr"
-      case Some(TitleType.Rev) => "Rev"
-      case Some(OtherTitle(title)) => title
-      case _ => ""
+    def getTitle: String = {
+      val name: Option[Name] = idData.nameList.name.flatMap(_.headOption)
+      val titleType: Option[TitleType] = name.map(_.titleType).getOrElse(Some(TitleType.NotKnown))
+      titleType match {
+        case Some(TitleType.Mr) => "Mr"
+        case Some(TitleType.Mrs) => "Mrs"
+        case Some(TitleType.Miss) => "Miss"
+        case Some(TitleType.Ms) => "Ms"
+        case Some(TitleType.Dr) => "Dr"
+        case Some(TitleType.Rev) => "Rev"
+        case _ => ""
+      }
     }
 
     def getHonours: String = {

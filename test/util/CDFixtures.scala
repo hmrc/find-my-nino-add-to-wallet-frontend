@@ -170,9 +170,10 @@ trait BaseSpec
   this: Suite =>
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
+  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
 
   val mockPartialRetriever = mock[FormPartialRetriever]
-  when(mockPartialRetriever.getPartialContent(any(), any(), any())(any(), any())) thenReturn Html("")
+  when(mockPartialRetriever.getPartialContentAsync(any(), any(), any())(any(), any())) thenReturn Future(Html(""))
 
 
   val configValues: Map[String, Any] =

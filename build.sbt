@@ -48,15 +48,15 @@ lazy val root = (project in file("."))
           "uk.gov.hmrc.play.bootstrap.binders._",
       ),
       PlayKeys.playDefaultPort := 14006,
-      scalacOptions ++= Seq(
-          "-feature",
-          "-language:postfixOps",
-          "-rootdir",
-          baseDirectory.value.getCanonicalPath,
-          "-Wconf:cat=deprecation:ws,cat=feature:ws,cat=optimizer:ws,src=target/.*:s"
-      ),
+    scalacOptions ++= Seq(
+      "-Wconf:cat=deprecation:ws,cat=feature:ws,cat=optimizer:ws,src=target/.*:s",
+      "-unchecked",
+      "-deprecation",
+      "-feature"
+    ),
       libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test,
       retrieveManaged := true,
+      Global / excludeLintKeys += update / evictionWarningOptions,
       update / evictionWarningOptions :=
         EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
       resolvers ++= Seq(Resolver.jcenterRepo),

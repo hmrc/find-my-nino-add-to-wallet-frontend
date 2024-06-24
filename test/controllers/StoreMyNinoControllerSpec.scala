@@ -30,7 +30,7 @@ import play.api.test.{DefaultAwaitTimeout, FakeRequest}
 import repositories.SessionRepository
 import services.{IndividualDetailsService, NPSService}
 import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolment, Enrolments}
-import uk.gov.hmrc.http.{HttpException, HttpResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
 import util.CDFixtures
 import util.Fixtures.{fakeIndividualDetailsDataCache, fakeIndividualDetailsDataCacheWithCRN}
@@ -128,7 +128,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
       }
     }
 
-    "must throw a NotFoundException when individual details not found" in {
+    "must redirect to ErrorView when individuals details could not be found" in {
       when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
         .thenReturn(Future.successful(Left(NOT_FOUND)))
 
@@ -148,9 +148,13 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
         val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
 
-        assertThrows[HttpException] {
-          await(route(application, request).value)
-        }
+        val result = route(application, request).value
+
+        status(result) mustEqual FAILED_DEPENDENCY
+        contentAsString(result) must include("Sorry, we’re experiencing technical difficulties")
+        contentAsString(result) must include("Please try again in a few minutes")
+
+
       }
     }
 

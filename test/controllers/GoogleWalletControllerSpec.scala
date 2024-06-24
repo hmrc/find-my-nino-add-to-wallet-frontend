@@ -29,7 +29,7 @@ import play.api.test.Helpers._
 import repositories.SessionRepository
 import services.IndividualDetailsService
 import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolment, Enrolments}
-import uk.gov.hmrc.http.{HttpException, HttpResponse, NotFoundException, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
 import util.CDFixtures
 import util.Fixtures.fakeIndividualDetailsDataCache
@@ -87,7 +87,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
 
     "Google Wallet toggle enabled" - {
 
-      "must throw NotFoundException when ID cache is not found" in {
+      "must redirect to error view when ID cache is not found" in {
         val application =
           applicationBuilderWithConfig()
             .overrides(
@@ -106,10 +106,11 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           val request = FakeRequest(GET, routes.GoogleWalletController.onPageLoad.url)
             .withSession(("authToken", "Bearer 123"))
 
-          assertThrows[HttpException] {
-            await(route(application, request).value)
-          }
+          val result = route(application, request).value
 
+          status(result) mustEqual FAILED_DEPENDENCY
+          contentAsString(result) must include("Sorry, we’re experiencing technical difficulties")
+          contentAsString(result) must include("Please try again in a few minutes")
         }
       }
 
@@ -257,7 +258,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
 
     "Google Wallet toggle disabled" - {
 
-      "must throw NotFoundException when ID cache is not found" in {
+      "must redirect to error view when ID cache is not found" in {
         val application =
           applicationBuilderWithConfig()
             .overrides(
@@ -276,11 +277,12 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           val request = FakeRequest(GET, routes.GoogleWalletController.onPageLoad.url)
             .withSession(("authToken", "Bearer 123"))
 
-          assertThrows[HttpException] {
-            await(route(application, request).value)
-          }
-        }
+          val result = route(application, request).value
 
+          status(result) mustEqual FAILED_DEPENDENCY
+          contentAsString(result) must include("Sorry, we’re experiencing technical difficulties")
+          contentAsString(result) must include("Please try again in a few minutes")
+        }
       }
 
       "must return OK and the correct view for a GET" in {

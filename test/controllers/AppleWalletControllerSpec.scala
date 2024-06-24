@@ -29,7 +29,7 @@ import play.api.test.Helpers._
 import repositories.SessionRepository
 import services.IndividualDetailsService
 import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolment, Enrolments}
-import uk.gov.hmrc.http.{HttpException, HttpResponse, NotFoundException, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
 import util.CDFixtures
 import util.Fixtures.fakeIndividualDetailsDataCache
@@ -86,7 +86,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
 
     "Apple wallet enabled" - {
 
-      "must throw NotFoundException when ID cache is not found" in {
+      "must redirect to errorHandler.standardErrorTemplate when ID cache is not found" in {
 
         when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
           .thenReturn(Future.successful(Left(NOT_FOUND)))
@@ -105,9 +105,11 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
           val request = FakeRequest(GET, routes.AppleWalletController.onPageLoad.url)
             .withSession(("authToken", "Bearer 123"))
 
-          assertThrows[HttpException] {
-            await(route(application, request).value)
-          }
+          val result = route(application, request).value
+
+          status(result) mustEqual FAILED_DEPENDENCY
+          contentAsString(result) must include("Sorry, we’re experiencing technical difficulties")
+          contentAsString(result) must include("Please try again in a few minutes")
         }
       }
 
@@ -291,7 +293,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
 
     "Apple wallet disabled" - {
 
-      "must throw NotFoundException when ID cache is not found" in {
+      "must redirect to errorHandler.standardErrorTemplate when ID cache is not found" in {
         val application =
           applicationBuilderWithConfig()
             .overrides(
@@ -310,9 +312,11 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
           val request = FakeRequest(GET, routes.AppleWalletController.onPageLoad.url)
             .withSession(("authToken", "Bearer 123"))
 
-          assertThrows[HttpException] {
-            await(route(application, request).value)
-          }
+          val result = route(application, request).value
+
+          status(result) mustEqual FAILED_DEPENDENCY
+          contentAsString(result) must include("Sorry, we’re experiencing technical difficulties")
+          contentAsString(result) must include("Please try again in a few minutes")
         }
       }
 

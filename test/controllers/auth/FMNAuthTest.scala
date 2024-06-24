@@ -20,7 +20,7 @@ import base.SpecBase
 import config.FrontendAppConfig
 import controllers.ApplicationController
 import org.mockito.MockitoSugar.when
-import play.api.http.Status.{SEE_OTHER, FAILED_DEPENDENCY}
+import play.api.http.Status.{FAILED_DEPENDENCY, SEE_OTHER}
 import play.api.mvc.MessagesControllerComponents
 import play.api.test.FakeRequest
 import services.IdentityVerificationFrontendService
@@ -30,7 +30,7 @@ import views.html.identity.{CannotConfirmIdentityView, FailedIvIncompleteView, L
 
 import scala.concurrent.ExecutionContext
 import play.api.test.Helpers.{defaultAwaitTimeout, redirectLocation, status}
-import uk.gov.hmrc.play.bootstrap.binders.SafeRedirectUrl
+import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
 
 class FMNAuthTest extends SpecBase {
 
@@ -73,7 +73,7 @@ class FMNAuthTest extends SpecBase {
 
     "showUpliftJourneyOutcome 2" in {
       val fakeRequest = FakeRequest(GET, "/save-your-national-insurance-number")
-      val url = SafeRedirectUrl("/save-your-national-insurance-number")
+      val url = RedirectUrl("/save-your-national-insurance-number")
       val result = controller.showUpliftJourneyOutcome(Some(url))(fakeRequest)
       status(result) mustBe FAILED_DEPENDENCY
     }

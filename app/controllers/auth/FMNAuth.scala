@@ -29,7 +29,7 @@ import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.domain
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
-import uk.gov.hmrc.play.bootstrap.binders.{RedirectUrl, SafeRedirectUrl}
+import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 
@@ -85,10 +85,10 @@ trait FMNAuth extends AuthorisedFunctions with Logging {
           "origin"          -> Seq(config.defaultOrigin.origin),
           "confidenceLevel" -> Seq(ConfidenceLevel.L200.toString),
           "completionURL"   -> Seq(config.saveYourNationalNumberFrontendHost +
-              routes.ApplicationController.showUpliftJourneyOutcome(Some(SafeRedirectUrl(request.uri)))
+              routes.ApplicationController.showUpliftJourneyOutcome(Some(RedirectUrl(request.uri)))
           ),
           "failureURL"      -> Seq(config.saveYourNationalNumberFrontendHost +
-            routes.ApplicationController.showUpliftJourneyOutcome(Some(SafeRedirectUrl(request.uri))))
+            routes.ApplicationController.showUpliftJourneyOutcome(Some(RedirectUrl(request.uri))))
         )
       )
     )

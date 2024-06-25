@@ -197,10 +197,11 @@ object IndividualDetails {
 
   implicit class IndividualDetailsOps(idData: IndividualDetails) {
 
-    private def getResidenceAddress: Option[Address] = idData.addressList.getAddress.filter(_.addressType.equals(ResidentialAddress)).headOption
+    private def getResidenceAddress: Option[Address] = idData.addressList.getAddress
+      .find(_.addressType.equals(ResidentialAddress))
 
-    private def getCorrespondenceAddress: Option[Address] = idData.addressList.getAddress.filter(
-      _.addressType.equals(AddressType.CorrespondenceAddress)).headOption
+    private def getCorrespondenceAddress: Option[Address] = idData.addressList.getAddress
+      .find(_.addressType.equals(AddressType.CorrespondenceAddress))
 
     private def getAddress: Option[Address] = getCorrespondenceAddress.orElse(getResidenceAddress)
 
@@ -225,21 +226,23 @@ object IndividualDetails {
     private def getSecondForename: String = idData.nameList.name.flatMap(_.drop(1).headOption).map(_.firstForename.value).getOrElse("")
     def getLastName: String = idData.nameList.name.flatMap(_.headOption).map(_.surname.value).getOrElse("")
 
-    def getTitle: String = {
-      val name: Option[Name] = idData.nameList.name.flatMap(_.headOption)
-      val titleType: Option[TitleType] = name.map(_.titleType).getOrElse(Some(TitleType.NotKnown))
-      titleType match {
+    private def getTitle: String =  {
+      val maybeTitle: Object = idData.nameList.name.flatMap(_.headOption)
+        .map(_.titleType).getOrElse(TitleType.NotKnown)
+
+      maybeTitle match {
         case Some(TitleType.Mr) => "Mr"
         case Some(TitleType.Mrs) => "Mrs"
         case Some(TitleType.Miss) => "Miss"
         case Some(TitleType.Ms) => "Ms"
         case Some(TitleType.Dr) => "Dr"
         case Some(TitleType.Rev) => "Rev"
+        case Some(OtherTitle(title)) => title
         case _ => ""
       }
     }
 
-    def getHonours: String = {
+    private def getHonours: String = {
       idData.nameList.name.flatMap(_.headOption.flatMap(_.honours.map(_.value))).getOrElse("")
     }
 

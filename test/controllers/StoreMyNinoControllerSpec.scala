@@ -25,18 +25,18 @@ import org.mockito.Mockito.{reset, times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.http.Status.NO_CONTENT
 import play.api.inject
-import play.api.test.{DefaultAwaitTimeout, FakeRequest}
 import play.api.test.Helpers._
+import play.api.test.{DefaultAwaitTimeout, FakeRequest}
 import repositories.SessionRepository
 import services.{IndividualDetailsService, NPSService}
 import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolment, Enrolments}
-import uk.gov.hmrc.http.{HttpResponse, InternalServerException, NotFoundException, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
 import util.CDFixtures
-import util.Fixtures.{fakeIndividualDetails, fakeIndividualDetailsData, fakeIndividualDetailsDataCache, fakeIndividualDetailsDataCacheWithCRN}
+import util.Fixtures.{fakeIndividualDetailsDataCache, fakeIndividualDetailsDataCacheWithCRN}
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
 import util.TestData.{NinoUser, NinoUser_With_CL50}
-import views.html.{ErrorTemplate, PassIdNotFoundView, RedirectToPostalFormView, StoreMyNinoView}
+import views.html.{PassIdNotFoundView, RedirectToPostalFormView, StoreMyNinoView}
 
 import java.util.Base64
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -101,36 +101,6 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
 
   "StoreMyNino Controller" - {
 
-    "must redirect to ErrorView and the correct view for a GET" in {
-      when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
-        .thenReturn(Future.successful(Left("Individual details not found in cache")))
-
-      val application =
-        applicationBuilderWithConfig()
-          .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
-            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
-            inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
-            inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
-            inject.bind[IdentityVerificationFrontendConnector].toInstance(mockIdentityVerificationFrontendConnector)
-          )
-          .build()
-
-      running(application) {
-        userLoggedInFMNUser(NinoUser)
-        val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
-          .withSession(("authToken", "Bearer 123"))
-
-        val result = route(application, request).value
-
-        status(result) mustEqual FAILED_DEPENDENCY
-        contentAsString(result) must include("Sorry, we’re experiencing technical difficulties")
-        contentAsString(result) must include("Please try again in a few minutes")
-
-
-      }
-    }
-
     "must return OK and the correct view for a GET" in {
       val application =
         applicationBuilderWithConfig()
@@ -154,6 +124,36 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
 
         contentAsString(result).removeAllNonces mustEqual view(applePassId, googlePassId, "AB 12 34 56 C", displayForMobile = false)(request.withAttrs(requestAttributeMap), messages(application)).toString
         verify(mockNPSService, times(0)).upliftCRN(any(), any())(any())
+
+      }
+    }
+
+    "must redirect to ErrorView when individuals details could not be found" in {
+      when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
+        .thenReturn(Future.successful(Left(NOT_FOUND)))
+
+      val application =
+        applicationBuilderWithConfig()
+          .overrides(
+            inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
+            inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
+            inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
+            inject.bind[IdentityVerificationFrontendConnector].toInstance(mockIdentityVerificationFrontendConnector)
+          )
+          .build()
+
+      running(application) {
+        userLoggedInFMNUser(NinoUser)
+        val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
+          .withSession(("authToken", "Bearer 123"))
+
+        val result = route(application, request).value
+
+        status(result) mustEqual FAILED_DEPENDENCY
+        contentAsString(result) must include("Sorry, we’re experiencing technical difficulties")
+        contentAsString(result) must include("Please try again in a few minutes")
+
 
       }
     }
@@ -332,7 +332,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
       }
     }
 
-    "must redirect to postal form view for BAD_REQUEST from CRN uplift" in {
+    "must return OK and RedirectToPostalFormView for BAD_REQUEST from CRN uplift" in {
       when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
         .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCacheWithCRN)))
       when(mockNPSService.upliftCRN(any(), any())(any())).thenReturn(Future.successful(Left(BAD_REQUEST)))
@@ -356,13 +356,13 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
         val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
-        status(result) mustEqual INTERNAL_SERVER_ERROR
+        status(result) mustEqual OK
         contentAsString(result).removeAllNonces mustEqual view()(request.withAttrs(requestAttributeMap), frontendAppConfig, messages(application)).toString
         verify(mockNPSService, times(1)).upliftCRN(any(), any())(any())
       }
     }
 
-    "must redirect to postal form view for UNPROCESSABLE_ENTITY from CRN uplift" in {
+    "must return OK and RedirectToPostalFormView for UNPROCESSABLE_ENTITY from CRN uplift" in {
       when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
         .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCacheWithCRN)))
       when(mockNPSService.upliftCRN(any(), any())(any())).thenReturn(Future.successful(Left(UNPROCESSABLE_ENTITY)))
@@ -386,13 +386,13 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
         val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
-        status(result) mustEqual INTERNAL_SERVER_ERROR
+        status(result) mustEqual OK
         contentAsString(result).removeAllNonces mustEqual view()(request.withAttrs(requestAttributeMap), frontendAppConfig, messages(application)).toString
         verify(mockNPSService, times(1)).upliftCRN(any(), any())(any())
       }
     }
 
-    "must return internal server error for NOT_FOUND from CRN uplift" in {
+    "must return OK and RedirectToPostalFormView for NOT_FOUND from CRN uplift" in {
       when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
         .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCacheWithCRN)))
       when(mockNPSService.upliftCRN(any(), any())(any())).thenReturn(Future.successful(Left(NOT_FOUND)))
@@ -409,13 +409,15 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           )
           .build()
 
+      val view = application.injector.instanceOf[RedirectToPostalFormView]
+
       running(application) {
         userLoggedInFMNUser(NinoUser)
         val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
-        assertThrows[InternalServerException] {
-          await(route(application, request).value)
-        }
+        val result = route(application, request).value
+        status(result) mustEqual OK
+        contentAsString(result).removeAllNonces mustEqual view()(request.withAttrs(requestAttributeMap), frontendAppConfig, messages(application)).toString
         verify(mockNPSService, times(1)).upliftCRN(any(), any())(any())
       }
     }

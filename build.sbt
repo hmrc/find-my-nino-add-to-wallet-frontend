@@ -49,6 +49,8 @@ lazy val root = (project in file("."))
       ),
       PlayKeys.playDefaultPort := 14006,
       scalacOptions ++= Seq(
+        "-unchecked",
+        "--deprecation",
           "-feature",
           "-language:postfixOps",
           "-rootdir",
@@ -57,9 +59,10 @@ lazy val root = (project in file("."))
       ),
       libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test,
       retrieveManaged := true,
-      update / evictionWarningOptions :=
-        EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
-      resolvers ++= Seq(Resolver.jcenterRepo),
+    Global / excludeLintKeys += update / evictionWarningOptions,
+    update / evictionWarningOptions :=
+      EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
+    resolvers ++= Seq(Resolver.jcenterRepo),
       // concatenate js
       Concat.groups := Seq(
           "javascripts/application.js" ->

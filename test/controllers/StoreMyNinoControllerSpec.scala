@@ -158,6 +158,34 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
       }
     }
 
+    "must redirect to technical error contact hmrc when individuals details could not be parsed" in {
+      when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
+        .thenReturn(Future.successful(Left(UNPROCESSABLE_ENTITY)))
+
+      val application =
+        applicationBuilderWithConfig()
+          .overrides(
+            inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
+            inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
+            inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
+            inject.bind[IdentityVerificationFrontendConnector].toInstance(mockIdentityVerificationFrontendConnector)
+          )
+          .build()
+
+      running(application) {
+        userLoggedInFMNUser(NinoUser)
+        val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
+          .withSession(("authToken", "Bearer 123"))
+
+        val result = route(application, request).value
+
+        status(result) mustEqual OK
+        contentAsString(result) must include("Sorry, we are currently experiencing technical issues.")
+        contentAsString(result) must include("contact HM Revenue and Customs for help")
+      }
+    }
+
     "must return google pass" in {
       val application = applicationBuilderWithConfig().overrides(
         inject.bind[SessionRepository].toInstance(mockSessionRepository),

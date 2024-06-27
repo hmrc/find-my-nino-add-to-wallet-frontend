@@ -100,6 +100,7 @@ label.sorry_we_are_currently_experiencing_technical_issues=Mae’n ddrwg gennym.
 label.you_can=Gallwch wneud y canlynol:
 label.try_confirm_identity_again=ceisio rhoi prawf o bwy ydych eto
 label.contact_hm_revenues_and_customs_for_help=cysylltu â Chyllid a Thollau EM am gymorth
+label.noRetry.contact_hm_revenues_and_customs_for_help=Cysylltu â Chyllid a Thollau EM am gymorth
 label.we_cannot_confirm_your_identity=Ni allwn gadarnhau pwy ydych
 label.you_have_tried_to_confirm_your_identity_=Rydych wedi ceisio rhoi prawf o bwy ydych ormod o weithiau.
 label.try_again_in_24_hours=Rhowch gynnig arall arni mewn 24 awr.

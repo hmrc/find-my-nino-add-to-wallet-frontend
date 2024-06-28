@@ -31,7 +31,7 @@ import util.Stubs.userLoggedInFMNUser
 import util.TestData.NinoUser
 import views.html.print.PrintNationalInsuranceNumberView
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class NinoLetterControllerSpec extends SpecBase with CDFixtures with MockitoSugar {
 
@@ -46,7 +46,7 @@ class NinoLetterControllerSpec extends SpecBase with CDFixtures with MockitoSuga
   lazy val ninoLetterController = applicationWithConfig.injector.instanceOf[NinoLetterController]
   lazy val view = applicationWithConfig.injector.instanceOf[PrintNationalInsuranceNumberView]
 
-  implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
+  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
 
   "NinoLetter Controller" - {

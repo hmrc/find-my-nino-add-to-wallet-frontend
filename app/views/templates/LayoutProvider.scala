@@ -20,6 +20,7 @@ import play.api.Logging
 import play.api.i18n.Messages
 import play.api.mvc.Request
 import play.twirl.api.{Html, HtmlFormat}
+import uk.gov.hmrc.hmrcfrontend.views.viewmodels.hmrcstandardpage.ServiceURLs
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import uk.gov.hmrc.sca.services.WrapperService
 import views.html.components.{AdditionalScript, HeadBlock}
@@ -58,17 +59,18 @@ class NewLayoutProvider @Inject()(wrapperService: WrapperService, additionalScri
                      hideAccountMenu: Boolean, backLinkID: Boolean, backLinkUrl: String,
                      disableSessionExpired: Boolean, sidebarContent: Option[Html], messagesActive: Boolean)(contentBlock: Html)
                     (implicit request: Request[_], messages: Messages): HtmlFormat.Appendable = {
-    wrapperService.layout(
+    wrapperService.standardScaLayout(
       disableSessionExpired = disableSessionExpired,
       content = contentBlock,
       pageTitle = Some(pageTitle),
       showBackLinkJS = showBackLink,
-      serviceNameUrl = Some("/personal-account"),
+      serviceURLs = ServiceURLs(
+        serviceUrl = Some("/personal-account")
+      ),
       scripts = Seq(additionalScript()),
       styleSheets = stylesheets.toSeq :+ headBlock(),
       fullWidth = fullWidth,
       hideMenuBar = hideAccountMenu
     )(messages, HeaderCarrierConverter.fromRequest(request), request)
-
   }
 }

@@ -27,7 +27,8 @@ import org.scalatestplus.mockito.MockitoSugar
 import play.api.libs.json.Json
 import repositories.IndividualDetailsRepository
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
-import util.Fixtures.{fakeIndividualDetails, fakeIndividualDetailsDataCache}
+import util.Fixtures.fakeIndividualDetails
+import scala.language.postfixOps
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt

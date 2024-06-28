@@ -54,7 +54,7 @@ class IndividualDetailsServiceImpl @Inject()(
     individualDetailsRepository.findIndividualDetailsDataByNino(nino) map {
       case Some(individualDetailsData) => Some(individualDetailsData)
       case _ => None
-    } recover{
+    } recover {
       case e: MongoException =>
         logger.warn(s"Failed finding Individual Details Data by NINO: $nino, ${e.getMessage}")
         None
@@ -71,7 +71,7 @@ class IndividualDetailsServiceImpl @Inject()(
       individualDetails.getNino,
       individualDetails.getAddressData,
       individualDetails.getCrnIndicator
-      )
+    )
 
     IndividualDetailsDataCache(
       sessionId,
@@ -95,13 +95,13 @@ class IndividualDetailsServiceImpl @Inject()(
     }
   }
 
-  private def createNewIndividualDataCache(nino: String, sessionId: String)(
-    implicit ec: ExecutionContext, hc: HeaderCarrier
-  ): Future[Either[Int, IndividualDetailsDataCache]] = {
-    fetchIndividualDetails(nino)(ec,hc).flatMap {
+  private def createNewIndividualDataCache(nino: String, sessionId: String)
+                                          (implicit ec: ExecutionContext, hc: HeaderCarrier)
+  : Future[Either[Int, IndividualDetailsDataCache]] = {
+    fetchIndividualDetails(nino)(ec, hc).flatMap {
       case Right(individualDetails) =>
         insertOrReplaceIndividualDetailsDataCache(sessionId, individualDetails).map { ninoStr =>
-          if(ninoStr.nonEmpty)
+          if (ninoStr.nonEmpty)
             Right(getIndividualDetailsDataCache(sessionId, individualDetails))
           else
             throw new RuntimeException("Failed to create individual details data cache")
@@ -125,9 +125,7 @@ class IndividualDetailsServiceImpl @Inject()(
 
   def deleteIdDataFromCache(nino: String)(implicit ec: ExecutionContext): Future[Boolean] = {
     individualDetailsRepository.deleteIndividualDetailsDataByNino(nino) map {
-      case r => r.wasAcknowledged()
-      case _ => false
+      r => r.wasAcknowledged() && r.getDeletedCount > 0
     }
   }
-
 }

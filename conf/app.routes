@@ -22,10 +22,10 @@ GET         /account/signout                             controllers.auth.AuthCo
 GET         /timeout                                     controllers.SessionManagementController.timeOut
 GET         /keep-alive                                  controllers.SessionManagementController.keepAlive
 
-GET         /do-uplift                                   controllers.ApplicationController.uplift(redirectUrl: Option[SafeRedirectUrl])
-GET         /full                                        controllers.ApplicationController.uplift(redirectUrl: Option[SafeRedirectUrl])
-GET         /identity-check-complete                     controllers.ApplicationController.showUpliftJourneyOutcome(continueUrl: Option[SafeRedirectUrl])
-GET         /identity-check-failed                       controllers.ApplicationController.showUpliftJourneyOutcome(continueUrl: Option[SafeRedirectUrl])
+GET         /do-uplift                                   controllers.ApplicationController.uplift(redirectUrl: Option[RedirectUrl])
+GET         /full                                        controllers.ApplicationController.uplift(redirectUrl: Option[RedirectUrl])
+GET         /identity-check-complete                     controllers.ApplicationController.showUpliftJourneyOutcome(continueUrl: Option[RedirectUrl])
+GET         /identity-check-failed                       controllers.ApplicationController.showUpliftJourneyOutcome(continueUrl: Option[RedirectUrl])
 
 GET         /apple-wallet                               controllers.AppleWalletController.onPageLoad()
 GET         /get-pass-card                              controllers.AppleWalletController.getPassCard(passId: String)

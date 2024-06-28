@@ -23,7 +23,8 @@ import play.api.mvc._
 import play.api.{Configuration, Environment}
 import services._
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.play.bootstrap.binders.SafeRedirectUrl
+import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl.idFunctor
+import uk.gov.hmrc.play.bootstrap.binders.{OnlyRelative, RedirectUrl}
 import views.html.identity._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -44,11 +45,11 @@ class ApplicationController @Inject()(
   frontendAppConfig: FrontendAppConfig)
   extends FMNBaseController(authConnector) with I18nSupport {
 
-  def uplift(redirectUrl: Option[SafeRedirectUrl]): Action[AnyContent] = Action.async {
-    Future.successful(Redirect(redirectUrl.map(_.url).getOrElse(routes.StoreMyNinoController.onPageLoad.url)))
+  def uplift(redirectUrl: Option[RedirectUrl]): Action[AnyContent] = Action.async {
+    Future.successful(Redirect(redirectUrl.getOrElse(RedirectUrl(routes.StoreMyNinoController.onPageLoad.url)).get(OnlyRelative).url))
   }
 
-  def showUpliftJourneyOutcome(continueUrl: Option[SafeRedirectUrl]): Action[AnyContent] =
+  def showUpliftJourneyOutcome(continueUrl: Option[RedirectUrl]): Action[AnyContent] =
     Action.async { implicit request =>
       val journeyId =
         List(request.getQueryString("token"), request.getQueryString("journeyId")).flatten.headOption
@@ -61,7 +62,7 @@ class ApplicationController @Inject()(
             .getIVJourneyStatus(jid)
             .map {
               case Success =>
-                Ok(successView(continueUrl.map(_.url).getOrElse(routes.StoreMyNinoController.onPageLoad.url)))
+                Ok(successView(continueUrl.getOrElse(RedirectUrl(routes.StoreMyNinoController.onPageLoad.url)).get(OnlyRelative).url))
 
               case InsufficientEvidence =>
                 Unauthorized(cannotConfirmIdentityView(retryUrl))

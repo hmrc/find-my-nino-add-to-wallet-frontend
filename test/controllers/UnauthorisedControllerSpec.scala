@@ -60,7 +60,7 @@ class UnauthorisedControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[UnauthorisedView]
 
         status(result) mustEqual OK
-        contentAsString(result).removeAllNonces mustEqual view()(request, messages(application)).toString
+        contentAsString(result).removeAllNonces() mustEqual view()(request, messages(application)).toString()
       }
     }
   }

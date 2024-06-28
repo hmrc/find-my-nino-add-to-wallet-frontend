@@ -122,7 +122,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
         val result = route(application, request).value
         status(result) mustEqual OK
 
-        contentAsString(result).removeAllNonces mustEqual view(applePassId, googlePassId, "AB 12 34 56 C", displayForMobile = false)(request.withAttrs(requestAttributeMap), messages(application)).toString
+        contentAsString(result).removeAllNonces() mustEqual view(applePassId, googlePassId, "AB 12 34 56 C", displayForMobile = false)(request.withAttrs(requestAttributeMap), messages(application)).toString()
         verify(mockNPSService, times(0)).upliftCRN(any(), any())(any())
 
       }
@@ -181,8 +181,9 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) must include("Sorry, we are currently experiencing technical issues.")
-        contentAsString(result) must include("contact HM Revenue and Customs for help")
+        contentAsString(result) must include("Sorry, the service is unavailable")
+        contentAsString(result) must include("To get help with this service, you need to")
+        contentAsString(result) must include("contact HMRC")
       }
     }
 
@@ -232,7 +233,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           request
         )
 
-        contentAsString(result).removeAllNonces mustEqual (view()(userRequest, messages(application), scala.concurrent.ExecutionContext.global).toString)
+        contentAsString(result).removeAllNonces() mustEqual (view()(userRequest, messages(application), scala.concurrent.ExecutionContext.global).toString())
 
       }
     }
@@ -283,7 +284,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           request
         )
 
-        contentAsString(result).removeAllNonces mustEqual (view()(userRequest, messages(application), scala.concurrent.ExecutionContext.global).toString)
+        contentAsString(result).removeAllNonces() mustEqual (view()(userRequest, messages(application), scala.concurrent.ExecutionContext.global).toString())
 
       }
 
@@ -355,7 +356,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         status(result) mustEqual OK
-        contentAsString(result).removeAllNonces mustEqual view(applePassId, googlePassId, "AB 12 34 56 C", displayForMobile = false)(request.withAttrs(requestAttributeMap), messages(application)).toString
+        contentAsString(result).removeAllNonces() mustEqual view(applePassId, googlePassId, "AB 12 34 56 C", displayForMobile = false)(request.withAttrs(requestAttributeMap), messages(application)).toString()
         verify(mockNPSService, times(1)).upliftCRN(any(), any())(any())
       }
     }
@@ -384,8 +385,11 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
         val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
+
         status(result) mustEqual OK
-        contentAsString(result).removeAllNonces mustEqual view()(request.withAttrs(requestAttributeMap), frontendAppConfig, messages(application)).toString
+        contentAsString(result).removeAllNonces() mustEqual
+          view()(request.withAttrs(requestAttributeMap), frontendAppConfig, messages(application)).toString
+
         verify(mockNPSService, times(1)).upliftCRN(any(), any())(any())
       }
     }
@@ -414,8 +418,12 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
         val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
+
         status(result) mustEqual OK
-        contentAsString(result).removeAllNonces mustEqual view()(request.withAttrs(requestAttributeMap), frontendAppConfig, messages(application)).toString
+        contentAsString(result).removeAllNonces() mustEqual
+          view()(request.withAttrs(requestAttributeMap), frontendAppConfig, messages(application)).toString
+
+
         verify(mockNPSService, times(1)).upliftCRN(any(), any())(any())
       }
     }
@@ -444,8 +452,11 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
         val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
+
         status(result) mustEqual OK
-        contentAsString(result).removeAllNonces mustEqual view()(request.withAttrs(requestAttributeMap), frontendAppConfig, messages(application)).toString
+        contentAsString(result).removeAllNonces() mustEqual
+          view()(request.withAttrs(requestAttributeMap), frontendAppConfig, messages(application)).toString
+
         verify(mockNPSService, times(1)).upliftCRN(any(), any())(any())
       }
     }

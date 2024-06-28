@@ -19,9 +19,7 @@ package config
 import base.SpecBase
 import org.mockito.MockitoSugar.when
 import org.scalatestplus.mockito.MockitoSugar
-import play.api.Configuration
 import play.api.i18n.Lang
-import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 class FrontendAppConfigSpec extends SpecBase with MockitoSugar {
   val mockFrontendAppConfig = mock[FrontendAppConfig]

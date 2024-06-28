@@ -29,7 +29,7 @@ import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.domain
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
-import uk.gov.hmrc.play.bootstrap.binders.{RedirectUrl, SafeRedirectUrl}
+import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 
@@ -85,10 +85,10 @@ trait FMNAuth extends AuthorisedFunctions with Logging {
           "origin"          -> Seq(config.defaultOrigin.origin),
           "confidenceLevel" -> Seq(ConfidenceLevel.L200.toString),
           "completionURL"   -> Seq(config.saveYourNationalNumberFrontendHost +
-              routes.ApplicationController.showUpliftJourneyOutcome(Some(SafeRedirectUrl(request.uri)))
+              routes.ApplicationController.showUpliftJourneyOutcome(Some(RedirectUrl(request.uri)))
           ),
           "failureURL"      -> Seq(config.saveYourNationalNumberFrontendHost +
-            routes.ApplicationController.showUpliftJourneyOutcome(Some(SafeRedirectUrl(request.uri))))
+            routes.ApplicationController.showUpliftJourneyOutcome(Some(RedirectUrl(request.uri))))
         )
       )
     )
@@ -138,7 +138,7 @@ trait FMNAuth extends AuthorisedFunctions with Logging {
     authorised(AuthPredicate)
       .retrieve(FMNRetrievals) {
         case _ ~ Some(Individual | Organisation) ~ _ ~ _ ~ (Some(CredentialStrength.weak) | Some("none")) ~ _ ~ _ ~ _ ~ _ ~ _ =>
-          upliftCredentialStrength
+          upliftCredentialStrength()
 
         case _ ~ Some(Individual | Organisation) ~ _ ~ _ ~ _ ~ LT200(_) ~ _ ~ _~ _ ~ _ =>
           upliftConfidenceLevel(request)
@@ -206,12 +206,12 @@ trait FMNAuth extends AuthorisedFunctions with Logging {
       Redirect(controllers.routes.UnauthorisedController.onPageLoad)
 
 
-    case _: UpstreamErrorResponse ⇒
+    case _: UpstreamErrorResponse =>
       logger.warn(s"Upstream error due to Auth service connection refused.")
       val retryUrl = routes.NinoLetterController.onPageLoad.url
       Redirect(routes.JourneyRecoveryController.onPageLoad(Some(RedirectUrl(retryUrl))))
 
-    case ex: AuthorisationException ⇒
+    case ex: AuthorisationException =>
       logger.warn(s"could not authenticate user due to: $ex")
       InternalServerError
   }
@@ -236,7 +236,7 @@ trait FMNAuth extends AuthorisedFunctions with Logging {
 
 object FMNAuth {
   def toContinueUrl(call: Call)(implicit rh: RequestHeader): String = {
-    if (call.absoluteURL.contains("://localhost")) {
+    if (call.absoluteURL().contains("://localhost")) {
       call.absoluteURL() + rh.uri.replaceFirst("/", "")
     } else {
       call.url + rh.uri.replaceFirst("/", "")

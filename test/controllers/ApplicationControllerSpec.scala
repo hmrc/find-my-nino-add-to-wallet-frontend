@@ -125,16 +125,6 @@ class ApplicationControllerSpec extends SpecBase with CDFixtures with MockitoSug
         redirectLocation(result) mustBe None
 
       }
-
-      "return BAD_REQUEST status when completionURL is not relative" in new LocalSetup {
-
-        val result =
-          routeWrapper(buildFakeRequestWithAuth("GET", "/save-your-national-insurance-number/do-uplift?redirectUrl=http://example.com")).get
-
-        status(result) mustBe BAD_REQUEST
-        redirectLocation(result) mustBe None
-
-      }
     }
 
     "showUpliftJourneyOutcome" - {

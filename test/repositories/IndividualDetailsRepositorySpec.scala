@@ -17,7 +17,7 @@
 package repositories
 
 import config.FrontendAppConfig
-import models.individualDetails.{IndividualDetailsData, IndividualDetailsDataCache}
+import models.individualDetails.IndividualDetailsDataCache
 import org.mockito.Mockito._
 import org.scalatest.OptionValues
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}

@@ -24,7 +24,7 @@ import org.mongodb.scala.MongoException
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatestplus.mockito.MockitoSugar
-import play.api.http.Status.{BAD_REQUEST, OK}
+import play.api.http.Status.OK
 import play.api.libs.json.Json
 import repositories.IndividualDetailsRepository
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
@@ -33,6 +33,7 @@ import util.Fixtures.{fakeIndividualDetails, individualRespJsonInvalid}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}
+import scala.language.postfixOps
 
 class IndividualDetailsServiceSpec extends AnyFlatSpec
   with ScalaFutures

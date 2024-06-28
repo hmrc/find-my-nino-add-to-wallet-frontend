@@ -89,7 +89,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
       "must redirect to errorHandler.standardErrorTemplate when ID cache is not found" in {
 
         when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
-          .thenReturn(Future.successful(Left("Individual details not found in cache")))
+          .thenReturn(Future.successful(Left(NOT_FOUND)))
 
         val application = applicationBuilderWithConfig()
           .overrides(
@@ -110,11 +110,8 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
           status(result) mustEqual FAILED_DEPENDENCY
           contentAsString(result) must include("Sorry, we’re experiencing technical difficulties")
           contentAsString(result) must include("Please try again in a few minutes")
-
-
         }
       }
-
 
       "must return OK and the correct view for a GET" in {
         val application =
@@ -308,7 +305,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
             .build()
 
         when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
-          .thenReturn(Future.successful(Left("Individual details not found in cache")))
+          .thenReturn(Future.successful(Left(NOT_FOUND)))
 
         running(application) {
           userLoggedInFMNUser(NinoUser)
@@ -320,7 +317,6 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
           status(result) mustEqual FAILED_DEPENDENCY
           contentAsString(result) must include("Sorry, we’re experiencing technical difficulties")
           contentAsString(result) must include("Please try again in a few minutes")
-
         }
       }
 

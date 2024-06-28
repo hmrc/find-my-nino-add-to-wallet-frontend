@@ -99,7 +99,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
             .build()
 
         when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
-          .thenReturn(Future.successful(Left("Individual details not found in cache")))
+          .thenReturn(Future.successful(Left(NOT_FOUND)))
 
         running(application) {
           userLoggedInFMNUser(NinoUser)
@@ -111,8 +111,6 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           status(result) mustEqual FAILED_DEPENDENCY
           contentAsString(result) must include("Sorry, we’re experiencing technical difficulties")
           contentAsString(result) must include("Please try again in a few minutes")
-
-
         }
       }
 
@@ -272,7 +270,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
             .build()
 
         when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
-          .thenReturn(Future.successful(Left("Individual details not found in cache")))
+          .thenReturn(Future.successful(Left(NOT_FOUND)))
 
         running(application) {
           userLoggedInFMNUser(NinoUser)
@@ -284,9 +282,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           status(result) mustEqual FAILED_DEPENDENCY
           contentAsString(result) must include("Sorry, we’re experiencing technical difficulties")
           contentAsString(result) must include("Please try again in a few minutes")
-
         }
-
       }
 
       "must return OK and the correct view for a GET" in {

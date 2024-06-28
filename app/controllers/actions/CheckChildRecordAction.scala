@@ -25,7 +25,7 @@ import models.individualDetails.IndividualDetailsDataCache
 import models.nps.CRNUpliftRequest
 import play.api.http.Status._
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
-import play.api.mvc.Results.{FailedDependency, InternalServerError}
+import play.api.mvc.Results.{FailedDependency, Ok}
 import play.api.mvc._
 import services.{IndividualDetailsService, NPSService}
 import uk.gov.hmrc.domain.Nino
@@ -40,7 +40,7 @@ class CheckChildRecordAction @Inject()(
                                         individualDetailsService: IndividualDetailsService,
                                         cc: ControllerComponents,
                                         val messagesApi: MessagesApi,
-                                        redirectView: RedirectToPostalFormView,
+                                        postalFormView: RedirectToPostalFormView,
                                         frontendAppConfig: FrontendAppConfig,
                                         errorHandler: ErrorHandler
                                       )(implicit ec: ExecutionContext)
@@ -66,7 +66,7 @@ class CheckChildRecordAction @Inject()(
             upliftResult    <- npsService.upliftCRN(identifier, request)
             preFlightChecks <- preFlightChecks(upliftResult.isRight, individualDetails, sessionId)
           } yield (upliftResult, preFlightChecks) match {
-            case (Left(status), _) => handleError(status, authContext, frontendAppConfig)
+            case (Left(status), _) => handleErrorCrnUplift(status, authContext, frontendAppConfig)
             case (Right(_), true) =>
               Right(
                 UserRequestNew(
@@ -78,7 +78,7 @@ class CheckChildRecordAction @Inject()(
                 )
               )
             case (Right(_), false) => Left(throw new InternalServerException("Failed to verify CRN uplift"))
-            case _             => Left(throw new InternalServerException("Failed to uplift CRN"))
+            case _                 => Left(throw new InternalServerException("Failed to uplift CRN"))
           }
         } else {
           Future.successful(
@@ -135,13 +135,14 @@ class CheckChildRecordAction @Inject()(
       individualDetails.individualDetailsData.get.dateOfBirth.toString
     )
 
-  private def handleError[A](status: Int, authContext: AuthContext[A], frontendAppConfig: FrontendAppConfig): Left[Result, Nothing] = {
+  private def handleErrorCrnUplift[A](status: Int, authContext: AuthContext[A], frontendAppConfig: FrontendAppConfig): Left[Result, Nothing] = {
     implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
     status match
     {
-      case BAD_REQUEST           => Left(InternalServerError(redirectView()(authContext.request, frontendAppConfig, messages)))
-      case UNPROCESSABLE_ENTITY  => Left(InternalServerError(redirectView()(authContext.request, frontendAppConfig, messages)))
-      case _                     => throw new InternalServerException("Something went wrong")
+      case BAD_REQUEST           => Left(Ok(postalFormView()(authContext.request, frontendAppConfig, messages)))
+      case UNPROCESSABLE_ENTITY  => Left(Ok(postalFormView()(authContext.request, frontendAppConfig, messages)))
+      case NOT_FOUND             => Left(Ok(postalFormView()(authContext.request, frontendAppConfig, messages)))
+      case _                     => throw new InternalServerException("Failed to uplift CRN")
     }
   }
 

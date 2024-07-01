@@ -13,6 +13,11 @@ error.prefix=Gwall:
 error.summary.title=Mae problem wedi codi
 unauthorised.title=Ni allwch gael mynediad at y gwasanaeth hwn gyda’r cyfrif hwn
 unauthorised.heading=Ni allwch gael mynediad at y gwasanaeth hwn gyda’r cyfrif hwn
+
+label.noRetry.unavailable = Mae’n ddrwg gennym, ond nid yw’r gwasanaeth ar gael
+label.noRetry.prefix = I gael help gyda’r gwasanaeth hwn, bydd angen i chi
+label.noRetry.link = gysylltu â CThEF
+
 journeyRecovery.continue.title=Mae’n ddrwg gennym – mae problem gyda’r gwasanaeth
 journeyRecovery.continue.heading=Mae’n ddrwg gennym – mae problem gyda’r gwasanaeth
 journeyRecovery.startAgain.title=Mae’n ddrwg gennym – mae problem gyda’r gwasanaeth

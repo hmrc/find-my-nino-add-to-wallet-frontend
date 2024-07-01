@@ -33,6 +33,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
   lazy val gtmContainer: String = configuration.get[String]("tracking-consent-frontend.gtm.container")
   val enc = URLEncoder.encode(_: String, "UTF-8")
   lazy val generalQueriesUrl     = "https://www.gov.uk/contact-hmrc"
+  lazy val enquiriesForIndividuals = "https://www.gov.uk/government/organisations/hm-revenue-customs/contact/national-insurance-enquiries-for-employees-and-individuals"
   val serviceName = "save-your-national-insurance-number"
 
   def getBasGatewayFrontendSignOutUrl(continueUrl: String): String =

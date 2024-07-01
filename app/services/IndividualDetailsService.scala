@@ -21,7 +21,8 @@ import connectors.IndividualDetailsConnector
 import models.individualDetails._
 import org.mongodb.scala.MongoException
 import play.api.Logging
-import play.api.http.Status.OK
+import play.api.http.Status.{OK, UNPROCESSABLE_ENTITY}
+import play.api.libs.json.{JsError, JsSuccess}
 import repositories.IndividualDetailsRepoTrait
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 
@@ -85,12 +86,15 @@ class IndividualDetailsServiceImpl @Inject()(
   }
 
   private def handleResponse()(response: HttpResponse): Future[Either[HttpResponse, IndividualDetails]] = {
-    val className: String = s"${this.getClass.getName}:handleResponse"
     response.status match {
       case OK =>
-        Future.successful(Right(response.json.as[IndividualDetails]))
-      case status =>
-        logger.warn(s"$className returned: $status")
+        response.json.validate[IndividualDetails] match {
+          case JsSuccess(value, _) => Future.successful(Right(value))
+          case JsError(errors) =>
+            logger.warn(s"Error parsing IndividualDetails: ${errors.toString()}")
+            Future.successful(Left(HttpResponse(UNPROCESSABLE_ENTITY, errors.toString())))
+        }
+      case _ =>
         Future.successful(Left(response))
     }
   }
@@ -115,7 +119,7 @@ class IndividualDetailsServiceImpl @Inject()(
                                                           hc: HeaderCarrier): Future[Either[Int, IndividualDetailsDataCache]] = {
     getIndividualDetailsDataCache(nino).flatMap {
       case Some(individualDetailsDataCache) =>
-        logger.info(s"Individual details found in cache for Nino: ${nino}")
+        logger.info(s"Individual details found in cache for Nino: $nino")
         Future.successful(Right(individualDetailsDataCache))
       case None =>
         logger.warn("Individual details data cache not found, potentially expired, attempting to fetch from external service and recreate cache.")

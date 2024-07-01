@@ -197,7 +197,7 @@
 
     .print-header h1 {
         text-align: right;
-        margin: 2em 0 0;
+        margin: 32px 0 0;
     }
   }
 
@@ -219,8 +219,18 @@
     visibility: visible;
   }
 
+  .govuk-link {
+    text-decoration-thickness: auto;
+  }
+
   .print-header .govuk-grid-column-two-thirds {
-    margin-top: -4em;
+    width: 62%;
+    float: right;
+  }
+
+  .print-header .govuk-grid-column-one-third {
+    width: 38%;
+    float: left;
   }
 
   .print-document {
@@ -247,10 +257,8 @@
 
     .ni-letter .govuk-grid-column-one-third {
       width: 38%;
-      float: left;
+      float: right;
     }
-
-
 
     p.list-paragraph {
       margin-bottom: 5px;

@@ -21,16 +21,19 @@ import org.scalatestplus.mockito.MockitoSugar
 import play.api.i18n.{Messages, MessagesApi}
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
+import services.FopService
 import util.Fixtures.{fakeIndividualDetails, fakeIndividualDetailsDataCache}
 
+import java.nio.charset.StandardCharsets
+import scala.concurrent.ExecutionContext
 import scala.xml.Utility.trim
 import scala.xml.{Elem, XML}
-import java.nio.charset.StandardCharsets
 
-class XmlFoToPDFSpec extends SpecBase with MockitoSugar with CDFixtures {
+class FopServiceSpec extends SpecBase with MockitoSugar with CDFixtures {
   implicit val messagesApi: MessagesApi = app.injector.instanceOf[MessagesApi]
   implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
   val messages: Messages = messagesApi.preferred(request)
+  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
 
   val expectedXML: Elem = <root>
     <initials-name>FML</initials-name>
@@ -48,46 +51,29 @@ class XmlFoToPDFSpec extends SpecBase with MockitoSugar with CDFixtures {
   </root>
 
   class Setup {
-    val xmlFoToPDF: XmlFoToPDF = new XmlFoToPDF {
-      override val resourceStreamResolver: BaseResourceStreamResolver = application.injector.instanceOf[BaseResourceStreamResolver]
-      override val stylesheetResourceStreamResolver: StylesheetResourceStreamResolver = application.injector.instanceOf[StylesheetResourceStreamResolver]
-      override val fopURIResolver: FopURIResolver = application.injector.instanceOf[FopURIResolver]
-    }
+    val fopService: FopService = app.injector.instanceOf[FopService]
   }
+
   "XmlFoToPDF getXMLSource" - {
     "return expected XML when passed in valid person details and a date" in new Setup {
-      val bytes: Array[Byte] = xmlFoToPDF.getXMLSource(fakeIndividualDetailsDataCache, "01/23")
+      val bytes: Array[Byte] = fopService.getXMLSource(fakeIndividualDetailsDataCache, "01/23")
       val result = new String(bytes, StandardCharsets.UTF_8)
-      val xmlResult = XML.loadString(result)
+      val xmlResult: Elem = XML.loadString(result)
       trim(xmlResult).must(equal(trim(expectedXML)))
     }
-//    "must use correspondence address by default" in new Setup {
-//      val bytes: Array[Byte] = xmlFoToPDF.getXMLSource(pdWithBothAddresses, "01/23")
-//      val result = new String(bytes, StandardCharsets.UTF_8)
-//      result.contains("2 Fake Street") mustBe true
-//    }
-//    "must use correspondence address if no address" in new Setup {
-//      val bytes: Array[Byte] = xmlFoToPDF.getXMLSource(pdWithoutAddress, "01/23")
-//      val result = new String(bytes, StandardCharsets.UTF_8)
-//      result.contains("2 Fake Street") mustBe true
-//    }
+
     "must use address" in new Setup {
-      val bytes: Array[Byte] = xmlFoToPDF.getXMLSource(fakeIndividualDetailsDataCache, "01/23")
+      val bytes: Array[Byte] = fopService.getXMLSource(fakeIndividualDetailsDataCache, "01/23")
       val result = new String(bytes, StandardCharsets.UTF_8)
       result.contains("123 Fake Street") mustBe true
     }
-//    "must escape xml entities correctly" in new Setup {
-//      val bytes: Array[Byte] = xmlFoToPDF.getXMLSource(fakeIndividualDetailsDataCache, "01/23")
-//      val result = new String(bytes, StandardCharsets.UTF_8)
-//      result.must(include("&lt;temp&gt;&lt;/temp&gt;"))
-//      result.must(not(include("<temp></temp>")))
-//    }
-  }
-  "XmlFoToPDF createPDF" - {
-    "must have correct contents for the PDF" in new Setup {
-      val result: Array[Byte] = xmlFoToPDF.createPDF(fakeIndividualDetailsDataCache, "01/23", messages)
-      result.length must be > 0
-    }
   }
 
+  "XmlFoToPDF createPDF" - {
+    "must have correct contents for the PDF" in new Setup {
+      fopService.createPDF(fakeIndividualDetailsDataCache, "01/23", messages).map( result =>
+          result.length must be > 0
+      )
+    }
+  }
 }

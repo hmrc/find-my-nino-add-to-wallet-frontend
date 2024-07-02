@@ -18,6 +18,7 @@ package config
 
 import com.google.inject.AbstractModule
 import controllers.actions._
+import org.apache.fop.apps.FopFactory
 import play.api.{Configuration, Environment}
 import repositories.{EncryptedIndividualDetailsRepository, IndividualDetailsRepoTrait, IndividualDetailsRepository}
 import util._
@@ -39,11 +40,10 @@ class Module(environment: Environment, config: Configuration) extends AbstractMo
 
     bind(classOf[Clock]).toInstance(Clock.systemDefaultZone.withZone(ZoneOffset.UTC))
 
-    bind(classOf[XmlFoToPDF]).to(classOf[DefaultXmlFoToPDF])
+    bind(classOf[FopFactory]).toProvider(classOf[FopFactoryProvider])
     bind(classOf[StylesheetResourceStreamResolver]).to(classOf[DefaultStylesheetResourceStreamResolver])
     bind(classOf[FopURIResolver]).to(classOf[DefaultFopURIResolver])
     bind(classOf[BaseResourceStreamResolver]).to(classOf[DefaultResourceStreamResolver])
-
 
     bind(classOf[LayoutProvider]).to(classOf[NewLayoutProvider]).asEagerSingleton()
     if (encryptionEnabled) {

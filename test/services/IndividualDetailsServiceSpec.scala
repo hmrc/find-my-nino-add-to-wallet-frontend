@@ -27,9 +27,9 @@ import org.scalatestplus.mockito.MockitoSugar
 import play.api.libs.json.Json
 import repositories.IndividualDetailsRepository
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
-import util.Fixtures.fakeIndividualDetails
-import scala.language.postfixOps
+import util.Fixtures.{fakeIndividualDetails, fakeIndividualDetailsWithoutMiddleName}
 
+import scala.language.postfixOps
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}
@@ -60,9 +60,30 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec
 
     assert(result.futureValue isRight)
     assert(result.futureValue.fold( _ => false, _.getNino == "AB123456C"))
+    assert(result.futureValue.fold(_ => false, _.getFullName == "Dr FIRSTNAME MIDDLENAME LASTNAME PhD"))
   }
 
+  "IndividualDetailsService" should "create individual details data cache where no middle name present" in {
+    val mockRepository = mock[IndividualDetailsRepository]
+    val mockConnector = mock[IndividualDetailsConnector]
+    val service = new IndividualDetailsServiceImpl(mockRepository, mockConnector)
 
+    val fakeIndividualDetailsJson = Json.toJson(fakeIndividualDetailsWithoutMiddleName).toString()
+
+
+    when(mockRepository.findIndividualDetailsDataByNino(any)(any))
+      .thenReturn(Future.successful(None))
+    when(mockConnector.getIndividualDetails(any, any)(any, any))
+      .thenReturn(Future.successful(HttpResponse(200, fakeIndividualDetailsJson)))
+    when(mockRepository.insertOrReplaceIndividualDetailsDataCache(any)(any[ExecutionContext]))
+      .thenReturn(Future.successful("testNino"))
+
+    val result = service.getIdDataFromCache("testNino", "some-fake-Id")
+
+    assert(result.futureValue isRight)
+    assert(result.futureValue.fold(_ => false, _.getNino == "AB123456C"))
+    assert(result.futureValue.fold(_ => false, _.getFullName == "Dr FIRSTNAME LASTNAME PhD"))
+  }
 
   "IndividualDetailsService" should "get None from cache for non-existent NINO in cache and from 1694API" in {
     val mockRepository = mock[IndividualDetailsRepository]

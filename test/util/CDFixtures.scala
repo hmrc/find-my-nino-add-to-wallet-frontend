@@ -324,6 +324,8 @@ object Fixtures extends CDFixtures  {
     surname = Surname("Lastname")
   )
 
+  val fakeNameWithoutMiddleName = fakeName.copy(secondForename = None)
+
   val fakeAddress: Address = Address(
     addressSequenceNumber = AddressSequenceNumber(0),
     addressSource = Some(AddressSource.Customer),
@@ -370,6 +372,8 @@ object Fixtures extends CDFixtures  {
     nameList = NameList(Some(List(fakeName))),
     addressList = AddressList(Some(List(fakeAddress)))
   )
+
+  val fakeIndividualDetailsWithoutMiddleName = fakeIndividualDetails.copy(nameList = NameList(Some(List(fakeNameWithoutMiddleName))))
 
   val fakeIndividualDetailsData = IndividualDetailsData(
     fullName = "Dr Firstname Middlename Lastname Phd.",

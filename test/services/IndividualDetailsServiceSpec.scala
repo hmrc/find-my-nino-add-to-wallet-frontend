@@ -30,7 +30,6 @@ import repositories.IndividualDetailsRepository
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import util.Fixtures.{fakeIndividualDetails, fakeIndividualDetailsWithoutMiddleName, individualRespJsonInvalid}
 
-import scala.language.postfixOps
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}
@@ -66,8 +65,11 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec
   }
 
   "IndividualDetailsService" should "create individual details data cache where no middle name present" in {
-    val fakeIndividualDetailsJson = Json.toJson(fakeIndividualDetailsWithoutMiddleName).toString()
+    val mockRepository = mock[IndividualDetailsRepository]
+    val mockConnector = mock[IndividualDetailsConnector]
+    val service = new IndividualDetailsServiceImpl(mockRepository, mockConnector)
 
+    val fakeIndividualDetailsJson = Json.toJson(fakeIndividualDetailsWithoutMiddleName).toString()
 
     when(mockRepository.findIndividualDetailsDataByNino(any)(any))
       .thenReturn(Future.successful(None))

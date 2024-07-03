@@ -32,6 +32,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, InternalServerException, NotFoundException}
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import views.html.RedirectToPostalFormView
+import views.html.identity.TechnicalIssuesNoRetryView
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -41,6 +42,7 @@ class CheckChildRecordAction @Inject()(
                                         cc: ControllerComponents,
                                         val messagesApi: MessagesApi,
                                         postalFormView: RedirectToPostalFormView,
+                                        technicalIssuesNoRetryView: TechnicalIssuesNoRetryView,
                                         frontendAppConfig: FrontendAppConfig,
                                         errorHandler: ErrorHandler
                                       )(implicit ec: ExecutionContext)
@@ -50,7 +52,6 @@ class CheckChildRecordAction @Inject()(
 
   override protected def refine[A](authContext: AuthContext[A]): Future[Either[Result, UserRequestNew[A]]] = {
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(authContext.request, authContext.request.session)
-    implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
     val identifier: String = authContext.nino.nino
 
     val sessionId: String = hc.sessionId.map(_.value).getOrElse(
@@ -93,13 +94,7 @@ class CheckChildRecordAction @Inject()(
             )
           )
         }
-      case Left(_) => Future.successful(Left(FailedDependency(
-        errorHandler.standardErrorTemplate(
-          Messages("global.error.InternalServerError500.title"),
-          Messages("global.error.InternalServerError500.heading"),
-          Messages("global.error.InternalServerError500.message")
-        )(authContext.request)
-      )))
+      case Left(response) => handleErrorIndividualDetails(response, authContext, frontendAppConfig)
     }
   }
 
@@ -135,7 +130,27 @@ class CheckChildRecordAction @Inject()(
       individualDetails.individualDetailsData.get.dateOfBirth.toString
     )
 
-  private def handleErrorCrnUplift[A](status: Int, authContext: AuthContext[A], frontendAppConfig: FrontendAppConfig): Left[Result, Nothing] = {
+  private def handleErrorIndividualDetails[A](response: Int,
+                                              authContext: AuthContext[A],
+                                              frontendAppConfig: FrontendAppConfig): Future[Left[Result, Nothing]] = {
+    implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
+    response match {
+      case UNPROCESSABLE_ENTITY =>
+        Future.successful(Left(Ok(technicalIssuesNoRetryView()(authContext.request, frontendAppConfig, messages))))
+      case _ =>
+        Future.successful(Left(FailedDependency(
+          errorHandler.standardErrorTemplate(
+            Messages("global.error.InternalServerError500.title"),
+            Messages("global.error.InternalServerError500.heading"),
+            Messages("global.error.InternalServerError500.message")
+          )(authContext.request)
+        )))
+    }
+  }
+
+  private def handleErrorCrnUplift[A](status: Int,
+                                      authContext: AuthContext[A],
+                                      frontendAppConfig: FrontendAppConfig): Left[Result, Nothing] = {
     implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
     status match
     {

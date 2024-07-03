@@ -18,14 +18,17 @@ package services
 
 import models.individualDetails.IndividualDetailsDataCache
 import org.apache.commons.io.output.ByteArrayOutputStream
-import org.apache.fop.apps.FopFactory
+import org.apache.fop.apps.{FOUserAgent, FopConfParser, FopFactory}
+import org.apache.fop.events.model.EventSeverity
+import org.apache.fop.events.{Event, EventFormatter, EventListener}
 import org.apache.xmlgraphics.util.MimeConstants
+import play.api.Logging
 import play.api.i18n.Messages
-import util.XSLScalaBridge
+import util.{BaseResourceStreamResolver, StylesheetResourceStreamResolver, XSLScalaBridge}
 
-import java.io.ByteArrayInputStream
+import java.io.{ByteArrayInputStream, File}
 import javax.inject.{Inject, Singleton}
-import javax.xml.transform.TransformerFactory
+import javax.xml.transform.{ErrorListener, Transformer, TransformerException, TransformerFactory}
 import javax.xml.transform.sax.SAXResult
 import javax.xml.transform.stream.StreamSource
 import scala.concurrent.{ExecutionContext, Future}
@@ -34,20 +37,34 @@ import scala.xml.PrettyPrinter
 
 @Singleton
 class FopService @Inject()(
-  fopFactory: FopFactory
-)(implicit ec: ExecutionContext) {
+  resourceStreamResolver: BaseResourceStreamResolver,
+  stylesheetResourceStreamResolver: StylesheetResourceStreamResolver
+)(implicit ec: ExecutionContext) extends Logging {
 
   def createPDF(individualDetailsDataCache: IndividualDetailsDataCache, date: String, messages: Messages): Future[Array[Byte]] = Future {
     Using.resource(new ByteArrayOutputStream()) { out =>
+
+      val fopConfigFilePath = "conf/pdf/fop.xconf"
+      val niLetterXSLFilePath = "/pdf/niLetterXSL.xsl"
+
+      val xconf = new File(fopConfigFilePath)
+      val parser = new FopConfParser(xconf) //parsing configuration
+      val builder = parser.getFopFactoryBuilder //building the factory with the user options
+      val fopFactory = builder.build()
+
       // Turn on accessibility features
       val userAgent = fopFactory.newFOUserAgent()
       userAgent.setAccessibility(true)
 
       val fop = fopFactory.newFop(MimeConstants.MIME_PDF, userAgent, out)
+      setupFOPEventHandling(userAgent)
 
+      val xslStream: StreamSource = resourceStreamResolver.resolvePath(niLetterXSLFilePath)
       val transformerFactory = TransformerFactory.newInstance()
-      val transformer = transformerFactory.newTransformer()
+      transformerFactory.setURIResolver(stylesheetResourceStreamResolver)
+      val transformer = transformerFactory.newTransformer(xslStream)
 
+      setupTransformerEventHandling(transformer)
       transformer.setParameter("translator", XSLScalaBridge(messages))
 
       val source = new StreamSource(
@@ -74,9 +91,7 @@ class FopService @Inject()(
         <postcode>
           {individualDetailsDataCache.getPostCode.getOrElse("").toUpperCase}
         </postcode>
-
-
-    val xmlElem = <fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format" xmlns:fox="http://xmlgraphics.apache.org/fop/extensions">
+    val xmlElem = <root>
       <initials-name>
         {individualDetailsDataCache.getInitialsName}
       </initials-name>
@@ -88,11 +103,55 @@ class FopService @Inject()(
       <date>
         {date}
       </date>
-    </fo:root>
+    </root>
     val maxWidth = 80
     val tabSize = 2
     val p = new PrettyPrinter(maxWidth, tabSize)
     val xmlElemString = p.format(xmlElem)
     xmlElemString.getBytes()
+  }
+
+  private def setupFOPEventHandling(foUserAgent: FOUserAgent): Unit = {
+    val eventListener = new EventListener {
+      override def processEvent(event: Event): Unit = {
+        val messages = EventFormatter.format(event)
+
+        val optionErrorMsg = event.getSeverity match {
+          case EventSeverity.INFO =>
+            logger.info(messages)
+            None
+          case EventSeverity.WARN =>
+            logger.debug(messages)
+            None
+          case EventSeverity.ERROR =>
+            logger.error(messages)
+            Some(messages)
+          case EventSeverity.FATAL =>
+            logger.error(messages)
+            Some(messages)
+          case _ => None
+        }
+        optionErrorMsg.foreach(errorMsg => throw new RuntimeException(errorMsg))
+      }
+    }
+    foUserAgent.getEventBroadcaster.addEventListener(eventListener)
+  }
+
+  private def setupTransformerEventHandling(transformer: Transformer): Unit = {
+    val errorListener = new ErrorListener {
+      override def warning(exception: TransformerException): Unit =
+        logger.debug(exception.getMessageAndLocation)
+
+      override def error(exception: TransformerException): Unit = {
+        logger.error(exception.getMessage, exception)
+        throw exception
+      }
+
+      override def fatalError(exception: TransformerException): Unit = {
+        logger.error(exception.getMessage, exception)
+        throw exception
+      }
+    }
+    transformer.setErrorListener(errorListener)
   }
 }

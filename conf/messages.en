@@ -16,6 +16,11 @@ error.summary.title = There is a problem
 unauthorised.title = You cannot access this service with this account
 unauthorised.heading = You cannot access this service with this account
 
+label.noRetry.unavailable = Sorry, the service is unavailable
+label.noRetry.prefix = To get help with this service, you need to
+label.noRetry.link = contact HMRC
+
+
 journeyRecovery.continue.title = Sorry, there is a problem with the service
 journeyRecovery.continue.heading = Sorry, there is a problem with the service
 journeyRecovery.startAgain.title = Sorry, there is a problem with the service

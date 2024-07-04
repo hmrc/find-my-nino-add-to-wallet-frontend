@@ -18,6 +18,7 @@ package controllers
 
 import config.FrontendAppConfig
 import controllers.actions.CheckChildRecordAction
+import controllers.auth.requests.UserRequestNew
 import models.individualDetails.IndividualDetailsDataCache
 import org.apache.xmlgraphics.util.MimeConstants
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
@@ -26,7 +27,7 @@ import play.api.{Configuration, Environment}
 import services.{AuditService, FopService}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
-import util.{AuditUtils, XmlFoToPDF}
+import util.{AuditUtils, XSLScalaBridge, XmlFoToPDF}
 import views.html.print.PrintNationalInsuranceNumberView
 import views.xml.ApplicationPdf
 
@@ -72,7 +73,7 @@ class NinoLetterController @Inject()(
 
       auditNinoLetter("DownloadNinoLetter", userRequestNew.individualDetails, hc)
       //val pdf = createPDF(userRequestNew.individualDetails, messages)
-      createPDF2(userRequestNew.individualDetails, messages).flatMap(pdf =>
+      createPDF2(userRequestNew.individualDetails, userRequestNew).flatMap(pdf =>
         Future.successful(Ok(pdf).as(MimeConstants.MIME_PDF)
           .withHeaders(CONTENT_TYPE -> "application/x-download", CONTENT_DISPOSITION -> s"attachment; filename=${filename.replaceAll(" ", "-")}.pdf"))
       )
@@ -87,8 +88,11 @@ class NinoLetterController @Inject()(
     )
   }
 
-  private def createPDF2(individualDetailsDataCache: IndividualDetailsDataCache, messages: Messages): Future[Array[Byte]] = {
-    fopService.render(pdfTemplate(messages).body)
+  private def createPDF2(individualDetailsDataCache: IndividualDetailsDataCache, userRequestNew: UserRequestNew[AnyContent]): Future[Array[Byte]] = {
+    implicit val messages: Messages = cc.messagesApi.preferred(userRequestNew.request)
+    val date: String                = LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY"))
+
+    fopService.render(pdfTemplate(individualDetailsDataCache, date, XSLScalaBridge(messages).getLang()).body)
   }
 
   private def auditNinoLetter(eventType: String, individualDetailsDataCache: IndividualDetailsDataCache, hc: HeaderCarrier): Unit = {

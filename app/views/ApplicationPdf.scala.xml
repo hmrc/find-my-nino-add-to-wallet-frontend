@@ -1,8 +1,8 @@
-
+@import models.individualDetails.IndividualDetailsDataCache
 
 @this()
 
-@(messages: Messages)
+@(individualDetailsDataCache: IndividualDetailsDataCache, date: String, lang: String)(implicit messages: Messages)
 
 
         <!-- example for a simple fo file. At the beginning the page layout is set.
@@ -22,18 +22,44 @@
                             In this case there is only a simple-page-master which defines the
                             layout for all pages of the text
         -->
-        <!-- layout information -->
-        <fo:simple-page-master master-name="simple"
+
+        <!-- layout for the first page -->
+        <fo:simple-page-master master-name="first"
                                page-height="29.7cm"
                                page-width="21cm"
-                               margin-top="1cm"
-                               margin-bottom="2cm"
-                               margin-left="2.5cm"
-                               margin-right="2.5cm">
-            <fo:region-body margin-top="3cm"/>
-            <fo:region-before extent="3cm"/>
-            <fo:region-after extent="1.5cm"/>
+                               margin-top="0.5cm"
+                               margin-bottom="0.5cm"
+                               margin-left="2.2cm"
+                               margin-right="2.2cm">
+            <fo:region-body margin-top="0.7cm"/>
+            <fo:region-before extent="0.5cm"/>
+            <fo:region-after extent="0.3cm"/>
         </fo:simple-page-master>
+
+        <!-- layout for the other pages -->
+        <fo:simple-page-master master-name="rest"
+                               page-height="29.7cm"
+                               page-width="21cm"
+                               margin-top="0.5cm"
+                               margin-bottom="0.5cm"
+                               margin-left="2.2cm"
+                               margin-right="2.2cm">
+            <fo:region-body margin-top="0.5cm"/>
+            <fo:region-before extent="0.5cm"/>
+            <fo:region-after extent="0.3cm"/>
+        </fo:simple-page-master>
+
+        <fo:page-sequence-master master-name="basicPSM">
+            <fo:repeatable-page-master-alternatives>
+                <fo:conditional-page-master-reference master-reference="first"
+                                                      page-position="first"/>
+                <fo:conditional-page-master-reference master-reference="rest"
+                                                      page-position="rest"/>
+                <!-- recommended fallback procedure -->
+                <fo:conditional-page-master-reference master-reference="rest"/>
+            </fo:repeatable-page-master-alternatives>
+        </fo:page-sequence-master>
+
     </fo:layout-master-set>
     <!-- end: defines page layout -->
 
@@ -44,7 +70,7 @@
          the attribute value of master-name refers to the page layout
          which is to be used to layout the text contained in this
          page-sequence-->
-    <fo:page-sequence master-reference="simple">
+    <fo:page-sequence master-reference="basicPSM">
 
         <!-- start fo:flow
              each flow is targeted
@@ -58,47 +84,117 @@
               writing direction like English]
              in this case there is only one target: xsl-region-body
           -->
+
+        <!-- footer -->
+        <fo:static-content role="artifact" flow-name="xsl-region-after">
+            <fo:block font-size="9pt" font-family="OpenSans" font-weight="normal" line-height="14pt">
+                <!-- date -->
+                <fo:block text-align="end">
+                    @Messages("label.hmrc_date", date)
+                </fo:block>
+            </fo:block>
+        </fo:static-content>
+        <!-- end footer -->
+
         <fo:flow flow-name="xsl-region-body">
 
             <!-- each paragraph is encapsulated in a block element
                  the attributes of the block define
                  font-family and size, line-heigth etc. -->
 
-            <!-- this defines a title -->
-            <fo:block font-size="18pt"
-                      font-family="sans-serif"
-                      line-height="24pt"
-                      space-after.optimum="15pt"
-                      background-color="blue"
-                      color="white"
-                      text-align="center"
-                      padding-top="3pt">
-                Extensible Markup Language (XML) 1.0
+            <!-- logo and heading -->
+            <fo:block role="Div" space-after="10px">
+                <fo:inline-container role="Div" inline-progression-dimension="22%">
+                    <fo:block role="Div"
+                              border-left-style="solid"
+                              border-width="2px"
+                              border-color="#28a197"
+                              padding-start="4px">
+                        <fo:wrapper role="artifact">
+                            <fo:external-graphic content-type="content-type:image/png" src="conf/pdf/logo/hmrc-logo.jpg" content-height="scale-to-fit"  content-width="0.8cm"/>
+                        </fo:wrapper>
+                        <fo:block role="P"
+                                  font-family="OpenSans"
+                                  font-weight="normal"
+                                  line-height="14pt"
+                                  font-size="14pt"
+                                  linefeed-treatment="preserve">
+                            <fo:block>
+                                @Messages("label.hm_revenue_customs_ni_print.revenue.pdf")
+                            </fo:block>
+                            <fo:block>
+                                @Messages("label.hm_revenue_customs_ni_print.customs.pdf")
+                            </fo:block>
+                        </fo:block>
+                    </fo:block>
+                </fo:inline-container>
+                <fo:inline-container role="Div" inline-progression-dimension="78%">
+                    <fo:block role="H1"
+                              text-align="end"
+                              padding-before="10px"
+                              padding-after="6px"
+                              font-family="OpenSans"
+                              font-weight="normal">
+                        <fo:block>
+                            @Messages("label.your_national_insurance_number")
+                        </fo:block>
+                    </fo:block>
+                </fo:inline-container>
             </fo:block>
+            <!-- end logo and heading -->
 
-
-            <!-- this defines normal text -->
-            <fo:block font-size="12pt"
-                      font-family="sans-serif"
-                      line-height="15pt"
-                      space-after.optimum="3pt"
-                      text-align="justify">
-                The Extensible Markup Language (XML) is a subset of SGML that is completely described in this document. Its goal is to
-                enable generic SGML to be served, received, and processed on the Web in the way that is now possible with HTML. XML
-                has been designed for ease of implementation and for interoperability with both SGML and HTML.
+            <!-- Addresses -->
+            <fo:block role="Div">
+                <fo:inline-container role="Div" inline-progression-dimension="63%">
+                    <fo:block>
+                        <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal" line-height="12pt">
+                            <fo:block>@individualDetailsDataCache.getFullName</fo:block>
+                        </fo:block>
+                        @individualDetailsDataCache.getAddressLines.map { line =>
+                            <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal" line-height="12pt">
+                                <fo:block>@line</fo:block>
+                            </fo:block>
+                        }
+                        <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal" line-height="12pt">
+                            <fo:block>@individualDetailsDataCache.getPostCode.getOrElse("").toUpperCase</fo:block>
+                        </fo:block>
+                    </fo:block>
+                </fo:inline-container>
+                <fo:inline-container role="Div" inline-progression-dimension="37%">
+                    <fo:block>
+                        <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal" line-height="12pt">
+                            <fo:block>
+                                @Messages("label.nic_eo_hmrc_address.line1.pdf")
+                            </fo:block>
+                        </fo:block>
+                        <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal" line-height="12pt">
+                            <fo:block>
+                                @Messages("label.nic_eo_hmrc_address.line2")
+                            </fo:block>
+                        </fo:block>
+                        @if(language.eq("cy")) {
+                            <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal" line-height="12pt">
+                                <fo:block>
+                                    @Messages("label.nic_eo_hmrc_address.line3")
+                                </fo:block>
+                            </fo:block>
+                        }
+                        <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal" line-height="12pt">
+                            <fo:block>
+                                @Messages("label.nic_eo_hmrc_address.postcode")
+                            </fo:block>
+                        </fo:block>
+                        <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal" line-height="12pt">
+                            <fo:block>
+                                @Messages("label.phone_text")
+                            </fo:block>
+                            <fo:block>
+                                @Messages("label.contact_number")
+                            </fo:block>
+                        </fo:block>
+                    </fo:block>
+                </fo:inline-container>
             </fo:block>
-
-            <!-- this defines normal text -->
-            <fo:block font-size="12pt"
-                      font-family="sans-serif"
-                      line-height="15pt"
-                      space-after.optimum="3pt"
-                      text-align="justify">
-                The Extensible Markup Language (XML) is a subset of SGML that is completely described in this document. Its goal is to
-                enable generic SGML to be served, received, and processed on the Web in the way that is now possible with HTML. XML
-                has been designed for ease of implementation and for interoperability with both SGML and HTML.
-            </fo:block>
-
         </fo:flow> <!-- closes the flow element-->
     </fo:page-sequence> <!-- closes the page-sequence -->
 </fo:root>

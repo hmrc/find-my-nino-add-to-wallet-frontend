@@ -223,7 +223,7 @@ object IndividualDetails {
     def getNino: String = getNinoWithoutSuffix + idData.ninoSuffix.get.value
 
     def getFirstForename: String = idData.nameList.name.flatMap(_.headOption).map(_.firstForename.value).getOrElse("")
-    private def getSecondForename: String = idData.nameList.name.flatMap(_.drop(1).headOption).map(_.firstForename.value).getOrElse("")
+    private def getSecondForename: String = idData.nameList.name.flatMap(_.headOption).map(_.secondForename.getOrElse(SecondForename("")).value).getOrElse("")
     def getLastName: String = idData.nameList.name.flatMap(_.headOption).map(_.surname.value).getOrElse("")
 
     private def getTitle: String =  {

@@ -125,7 +125,10 @@ object EncryptedIndividualDetailsDataCache {
                   addr.addressPostcode.map(x => EncryptedAddressPostcode(e(x.value))),
                   e(addr.addressCountry),
                   e(addr.addressStartDate.toString),
-                  EncryptedAddressType(e(addr.addressType.toString))
+                  addr.addressType match {
+                    case AddressType.ResidentialAddress   => EncryptedAddressType(e("1"))
+                    case AddressType.CorrespondenceAddress   => EncryptedAddressType(e("2"))
+                }
             )),
             crnIndicator = e(id.crnIndicator)
           )

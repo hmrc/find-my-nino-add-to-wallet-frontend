@@ -12,7 +12,7 @@
         - and a sequence of one or more fo:page-sequences containing the text and formatting instructions
         -->
 
-<fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format">
+<fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format" font-family="OpenSans">
 
     <fo:layout-master-set>
         <!-- fo:layout-master-set defines in its children the page layout:
@@ -106,24 +106,25 @@
                               border-color="#28a197"
                               padding-start="4px">
                         <fo:wrapper role="artifact">
-                            <fo:external-graphic content-type="content-type:image/png" src="conf/pdf/logo/hmrc-logo.jpg" content-height="scale-to-fit"  content-width="0.8cm"/>
+                            <fo:external-graphic content-type="content-type:image/png" src="logo/hmrc-logo.jpg" content-height="scale-to-fit"  content-width="0.8cm"/>
                         </fo:wrapper>
                         <fo:block role="P"
                                   font-family="OpenSans"
                                   font-weight="normal"
                                   line-height="14pt"
                                   font-size="14pt"
+                                  padding-before="-14px"
                                   linefeed-treatment="preserve">
                             @Messages("label.hm_revenue_customs_ni_print.revenue.pdf")
                             @Messages("label.hm_revenue_customs_ni_print.customs.pdf")
                         </fo:block>
                     </fo:block>
                 </fo:inline-container>
-                <fo:inline-container role="Div" inline-progression-dimension="73%">
+                <fo:inline-container role="Div" inline-progression-dimension="76%">
                     <fo:block role="H1"
                               text-align="end"
                               padding-before="10px"
-                              padding-after="6px"
+                              padding-after="-6px"
                               font-family="OpenSans-Bold"
                               font-weight="bold">
                         <fo:block>
@@ -462,16 +463,17 @@
                               margin-right="5px"
                               padding-start="5px"
                               padding-end="5px"
-                              padding-before="2px"
-                              padding-after="5px">
-                        <fo:block role="H3"
+                              padding-before="-6px"
+                              padding-after="-8px">
+                        <fo:block role="H2"
                                   border-after-style="solid"
                                   border-color="#00A298"
                                   border-width="1.5px"
-                                  font-size="10.5pt" font-family="OpenSans-Bold"
+                                  font-size="10.5pt"
+                                  font-family="OpenSans-Bold"
                                   font-weight="bold"
-                                  padding-before="8px"
-                                  padding-after="6px"
+                                  padding-before="-6px"
+                                  padding-after="-4px"
                                   linefeed-treatment="preserve">
                             <fo:block>
                                 @Messages("label.now_you_have_got_your")

@@ -68,7 +68,7 @@ class NinoLetterController @Inject()(
 
   def saveNationalInsuranceNumberAsPdf: Action[AnyContent] = (authorisedAsFMNUser andThen checkChildRecordAction) async {
     implicit userRequestNew => {
-      implicit val messages: Messages = cc.messagesApi.preferred(userRequestNew.request)
+      //implicit val messages: Messages = cc.messagesApi.preferred(userRequestNew.request)
       val filename = messagesApi.preferred(userRequestNew.request).messages("label.your_national_insurance_number_letter")
 
       auditNinoLetter("DownloadNinoLetter", userRequestNew.individualDetails, hc)
@@ -80,13 +80,13 @@ class NinoLetterController @Inject()(
     }
   }
 
-  private def createPDF(individualDetailsDataCache: IndividualDetailsDataCache, messages: Messages): Array[Byte] = {
-    xmlFoToPDF.createPDF(
-      individualDetailsDataCache,
-      LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
-      messages
-    )
-  }
+//  private def createPDF(individualDetailsDataCache: IndividualDetailsDataCache, messages: Messages): Array[Byte] = {
+//    xmlFoToPDF.createPDF(
+//      individualDetailsDataCache,
+//      LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
+//      messages
+//    )
+//  }
 
   private def createPDF2(individualDetailsDataCache: IndividualDetailsDataCache, userRequestNew: UserRequestNew[AnyContent]): Future[Array[Byte]] = {
     implicit val messages: Messages = cc.messagesApi.preferred(userRequestNew.request)

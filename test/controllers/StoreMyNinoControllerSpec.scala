@@ -35,7 +35,7 @@ import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
 import util.IndividualDetailsFixtures
 import util.Fixtures.{fakeIndividualDetailsDataCache, fakeIndividualDetailsDataCacheWithCRN}
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
-import util.TestData.{NinoUser, NinoUser_With_CL50}
+import util.TestData.{NinoUser, NinoUser_With_CL50, NinoUser_With_Credential_Strength_Weak}
 import views.html.{PassIdNotFoundView, RedirectToPostalFormView, StoreMyNinoView}
 
 import java.util.Base64
@@ -309,6 +309,25 @@ class StoreMyNinoControllerSpec extends SpecBase with IndividualDetailsFixtures 
       }
     }
 
+    "must return INTERNAL_SERVER_ERROR when auth returns an unauthorized" in {
+      val application = applicationBuilderWithConfig()
+        .overrides(
+          inject.bind[SessionRepository].toInstance(mockSessionRepository),
+          inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
+          inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
+          inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+        )
+        .build()
+
+      running(application) {
+        userLoggedInIsNotFMNUser(NinoUser)
+        val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
+          .withSession(("authToken", "Bearer 123"))
+        val result = route(application, request).value
+        status(result) mustEqual INTERNAL_SERVER_ERROR
+      }
+    }
+
     "must fail to login user with 50 CL" in {
       val application = applicationBuilderWithConfig()
         .overrides(
@@ -320,11 +339,30 @@ class StoreMyNinoControllerSpec extends SpecBase with IndividualDetailsFixtures 
         .build()
 
       running(application) {
-        userLoggedInIsNotFMNUser(NinoUser_With_CL50)
+        userLoggedInFMNUser(NinoUser_With_CL50)
         val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
-        status(result) mustEqual 500
+        status(result) mustEqual SEE_OTHER
+      }
+    }
+
+    "must fail to login user with weak credential strength" in {
+      val application = applicationBuilderWithConfig()
+        .overrides(
+          inject.bind[SessionRepository].toInstance(mockSessionRepository),
+          inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
+          inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
+          inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+        )
+        .build()
+
+      running(application) {
+        userLoggedInFMNUser(NinoUser_With_Credential_Strength_Weak)
+        val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
+          .withSession(("authToken", "Bearer 123"))
+        val result = route(application, request).value
+        status(result) mustEqual SEE_OTHER
       }
     }
 

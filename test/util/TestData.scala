@@ -39,6 +39,19 @@ object TestData {
       |}
       |""".stripMargin
 
+  val NinoUser_With_Credential_Strength_Weak: String =
+    s"""
+       |{
+       |	"nino": "AA000003B",
+       |	"credentialRole": "User",
+       | "credentialStrength": "weak",
+       |	"internalId": "Int-8612ba91-5581-411d-9d32-fb2de937a565",
+       | "confidenceLevel": 200,
+       | "affinityGroup": "Individual",
+       | $allEnrolments
+       |}
+       |""".stripMargin
+
   val NinoUser: String =
     s"""
        |{

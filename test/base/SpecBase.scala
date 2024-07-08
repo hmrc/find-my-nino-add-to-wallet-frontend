@@ -60,8 +60,7 @@ class SpecBase extends WireMockSupport with MockitoSugar with GuiceOneAppPerSuit
     HeaderCarrierConverter.fromRequestAndSession(rh, rh.session)
 
   protected def applicationBuilderWithConfig(
-                                              config: Map[String, Any] = Map(),
-                                              userAnswers: Option[UserAnswers] = None): GuiceApplicationBuilder =
+                                              config: Map[String, Any] = Map()): GuiceApplicationBuilder =
     new GuiceApplicationBuilder()
       .configure(
         config ++ Map(
@@ -70,18 +69,13 @@ class SpecBase extends WireMockSupport with MockitoSugar with GuiceOneAppPerSuit
         )
       )
       .overrides(
-        bind[DataRequiredAction].to[DataRequiredActionImpl],
-        bind[IdentifierAction].to[FakeIdentifierAction],
-        bind[DataRetrievalAction].toInstance(new FakeDataRetrievalAction(userAnswers))
+        bind[IdentifierAction].to[FakeIdentifierAction]
       )
 
-  protected def applicationBuilder(
-                                    userAnswers: Option[UserAnswers] = None): GuiceApplicationBuilder =
+  protected def applicationBuilder(): GuiceApplicationBuilder =
     new GuiceApplicationBuilder()
       .overrides(
-        bind[DataRequiredAction].to[DataRequiredActionImpl],
-        bind[IdentifierAction].to[FakeIdentifierAction],
-        bind[DataRetrievalAction].toInstance(new FakeDataRetrievalAction(userAnswers))
+        bind[IdentifierAction].to[FakeIdentifierAction]
       )
 
   protected def assertSameHtmlAfter(
@@ -95,8 +89,6 @@ class SpecBase extends WireMockSupport with MockitoSugar with GuiceOneAppPerSuit
   def injected[T](c: Class[T]): T = app.injector.instanceOf(c)
 
   def injected[T](implicit evidence: ClassTag[T]): T = app.injector.instanceOf[T]
-
-  //implicit lazy val ec = app.injector.instanceOf[ExecutionContext]
 
   lazy val frontendAppConfig: FrontendAppConfig = app.injector.instanceOf[FrontendAppConfig]
 

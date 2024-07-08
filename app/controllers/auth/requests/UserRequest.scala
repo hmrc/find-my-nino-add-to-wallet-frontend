@@ -27,6 +27,4 @@ final case class UserRequest[A](
   individualDetails: IndividualDetailsDataCache,
   enrolments: Enrolments,
   request: Request[A]
-) extends WrappedRequest[A](request) {
-  def fullName: Option[String] = Some(individualDetails.getFullName)
-}
+) extends WrappedRequest[A](request) {}

@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-package controllers
+package connectors
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.http.Fault
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
-import controllers.auth.requests.UserRequest
-import models.SelfAssessmentUserType
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -30,17 +28,12 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.http.{HeaderNames, MimeTypes, Status}
 import play.api.inject.guice.{GuiceApplicationBuilder, GuiceableModule}
-import play.api.mvc.AnyContentAsEmpty
-import play.api.test.FakeRequest
-import uk.gov.hmrc.auth.core.{Enrolment, Enrolments}
 import uk.gov.hmrc.http.HeaderCarrier
-import util.UserRequestFixture.buildUserRequest
 
 import scala.concurrent.ExecutionContext
-import scala.language.implicitConversions
 
 trait ConnectorSpec
-    extends AnyWordSpec
+  extends AnyWordSpec
     with GuiceOneAppPerSuite
     with Status
     with HeaderNames
@@ -49,11 +42,8 @@ trait ConnectorSpec
     with ScalaFutures
     with IntegrationPatience {
 
-
-
-  implicit val hc: HeaderCarrier         = HeaderCarrier()
-  implicit lazy val ec: ExecutionContext =
-    scala.concurrent.ExecutionContext.global //TODO: remove lazy keyword when Caching spec is done.
+  implicit val hc: HeaderCarrier    = HeaderCarrier()
+  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
 
   val server: WireMockServer
 
@@ -63,8 +53,6 @@ trait ConnectorSpec
       .overrides(overrides: _*)
       .build()
 
-  def userRequest(saUserType: SelfAssessmentUserType, providerId: String): UserRequest[AnyContentAsEmpty.type] =
-    buildUserRequest(request = FakeRequest(), enrolments = Enrolments.apply(Set[Enrolment]()))
   def stubGet(url: String, responseStatus: Int, responseBody: Option[String]): StubMapping = server.stubFor {
     val baseResponse = aResponse().withStatus(responseStatus).withHeader(CONTENT_TYPE, JSON)
     val response     = responseBody.fold(baseResponse)(body => baseResponse.withBody(body))
@@ -73,16 +61,29 @@ trait ConnectorSpec
   }
 
   def stubPost(
-    url: String,
-    responseStatus: Int,
-    requestBody: Option[String],
-    responseBody: Option[String]
-  ): StubMapping = server.stubFor {
+                url: String,
+                responseStatus: Int,
+                requestBody: Option[String],
+                responseBody: Option[String]
+              ): StubMapping = server.stubFor {
     val baseResponse = aResponse().withStatus(responseStatus).withHeader(CONTENT_TYPE, JSON)
     val response     = responseBody.fold(baseResponse)(body => baseResponse.withBody(body))
 
     requestBody.fold(post(url).willReturn(response))(requestBody =>
       post(url).withRequestBody(equalToJson(requestBody)).willReturn(response)
+    )
+  }
+
+  def stubPut(url: String,
+              responseStatus: Int,
+              requestBody: Option[String],
+              responseBody: Option[String]
+             ): StubMapping = server.stubFor {
+    val baseResponse = aResponse().withStatus(responseStatus).withHeader(CONTENT_TYPE, JSON)
+    val response = responseBody.fold(baseResponse)(body => baseResponse.withBody(body))
+
+    requestBody.fold(put(url).willReturn(response))(requestBody =>
+      put(url).withRequestBody(equalToJson(requestBody)).willReturn(response)
     )
   }
 
@@ -95,12 +96,12 @@ trait ConnectorSpec
   }
 
   def stubWithDelay(
-    url: String,
-    responseStatus: Int,
-    requestBody: Option[String],
-    responseBody: Option[String],
-    delay: Int
-  ): StubMapping = server.stubFor {
+                     url: String,
+                     responseStatus: Int,
+                     requestBody: Option[String],
+                     responseBody: Option[String],
+                     delay: Int
+                   ): StubMapping = server.stubFor {
     val baseResponse = aResponse().withStatus(responseStatus).withHeader(CONTENT_TYPE, JSON).withFixedDelay(delay)
     val response     = responseBody.fold(baseResponse)(body => baseResponse.withBody(body))
 
@@ -116,8 +117,4 @@ trait ConnectorSpec
         matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")
       )
     )
-
-
-
-
 }

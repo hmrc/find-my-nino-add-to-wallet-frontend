@@ -18,7 +18,7 @@ package controllers
 
 import base.SpecBase
 import connectors._
-import controllers.auth.requests.UserRequestNew
+import controllers.auth.requests.UserRequest
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.{reset, when}
@@ -31,7 +31,7 @@ import services.IndividualDetailsService
 import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolment, Enrolments}
 import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
-import util.CDFixtures
+import util.IndividualDetailsFixtures
 import util.Fixtures.fakeIndividualDetailsDataCache
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
 import util.TestData.{NinoUser, NinoUser_With_CL50}
@@ -41,7 +41,7 @@ import java.util.Base64
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSugar {
+class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures with MockitoSugar {
 
   override protected def beforeEach(): Unit = {
     reset(mockScaWrapperDataConnector)
@@ -184,7 +184,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
           val request = FakeRequest(GET, routes.AppleWalletController.getPassCard(passId).url)
             .withSession(("authToken", "Bearer 123"))
           val result = route(application, request).value
-          val userRequest = UserRequestNew(
+          val userRequest = UserRequest(
             None,
             ConfidenceLevel.L200,
             fakeIndividualDetailsDataCache,
@@ -237,7 +237,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
           val request = FakeRequest(GET, routes.AppleWalletController.getQrCode(passId).url)
             .withSession(("authToken", "Bearer 123"))
           val result = route(application, request).value
-          val userRequest = UserRequestNew(
+          val userRequest = UserRequest(
             None,
             ConfidenceLevel.L200,
             fakeIndividualDetailsDataCache,
@@ -381,7 +381,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
           val request = FakeRequest(GET, routes.AppleWalletController.getPassCard(passId).url)
             .withSession(("authToken", "Bearer 123"))
           val result = route(application, request).value
-          val userRequest = UserRequestNew(
+          val userRequest = UserRequest(
             None,
             ConfidenceLevel.L200,
             fakeIndividualDetailsDataCache,
@@ -436,7 +436,7 @@ class AppleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSug
           val request = FakeRequest(GET, routes.AppleWalletController.getQrCode(passId).url)
             .withSession(("authToken", "Bearer 123"))
           val result = route(application, request).value
-          val userRequest = UserRequestNew(
+          val userRequest = UserRequest(
             None,
             ConfidenceLevel.L200,
             fakeIndividualDetailsDataCache,

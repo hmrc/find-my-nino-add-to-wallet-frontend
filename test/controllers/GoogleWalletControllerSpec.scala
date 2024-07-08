@@ -18,7 +18,7 @@ package controllers
 
 import base.SpecBase
 import connectors.{GoogleWalletConnector, IdentityVerificationFrontendConnector}
-import controllers.auth.requests.UserRequestNew
+import controllers.auth.requests.UserRequest
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.{reset, when}
@@ -31,7 +31,7 @@ import services.IndividualDetailsService
 import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolment, Enrolments}
 import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
-import util.CDFixtures
+import util.IndividualDetailsFixtures
 import util.Fixtures.fakeIndividualDetailsDataCache
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
 import util.TestData.NinoUser
@@ -41,7 +41,7 @@ import java.util.Base64
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSugar {
+class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures with MockitoSugar {
 
   override protected def beforeEach(): Unit = {
     reset(mockScaWrapperDataConnector)
@@ -174,7 +174,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           val request = FakeRequest(GET, routes.GoogleWalletController.getGooglePass(passId).url)
             .withSession(("authToken", "Bearer 123"))
           val result = route(application, request).value
-          val userRequest = UserRequestNew(
+          val userRequest = UserRequest(
             None,
             ConfidenceLevel.L200,
             fakeIndividualDetailsDataCache,
@@ -224,7 +224,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           val request = FakeRequest(GET, routes.GoogleWalletController.getGooglePassQrCode(passId).url)
             .withSession(("authToken", "Bearer 123"))
           val result = route(application, request).value
-          val userRequest = UserRequestNew(
+          val userRequest = UserRequest(
             None,
             ConfidenceLevel.L200,
             fakeIndividualDetailsDataCache,
@@ -343,7 +343,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           val request = FakeRequest(GET, routes.GoogleWalletController.getGooglePass(passId).url)
             .withSession(("authToken", "Bearer 123"))
           val result = route(application, request).value
-          val userRequest = UserRequestNew(
+          val userRequest = UserRequest(
             None,
             ConfidenceLevel.L200,
             fakeIndividualDetailsDataCache,
@@ -394,7 +394,7 @@ class GoogleWalletControllerSpec extends SpecBase with CDFixtures with MockitoSu
           val request = FakeRequest(GET, routes.GoogleWalletController.getGooglePassQrCode(passId).url)
             .withSession(("authToken", "Bearer 123"))
           val result = route(application, request).value
-          val userRequest = UserRequestNew(
+          val userRequest = UserRequest(
             None,
             ConfidenceLevel.L200,
             fakeIndividualDetailsDataCache,

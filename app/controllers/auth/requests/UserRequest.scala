@@ -16,7 +16,7 @@
 
 package controllers.auth.requests
 
-import models._
+import models.individualDetails.IndividualDetailsDataCache
 import play.api.mvc.{Request, WrappedRequest}
 import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolments}
 import uk.gov.hmrc.domain.Nino
@@ -24,10 +24,9 @@ import uk.gov.hmrc.domain.Nino
 final case class UserRequest[A](
   nino: Option[Nino],
   confidenceLevel: ConfidenceLevel,
-  personDetails: PersonDetails,
+  individualDetails: IndividualDetailsDataCache,
   enrolments: Enrolments,
   request: Request[A]
 ) extends WrappedRequest[A](request) {
-
-  def name: Option[String] = personDetails.person.shortName
+  def fullName: Option[String] = Some(individualDetails.getFullName)
 }

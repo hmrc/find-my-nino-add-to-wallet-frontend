@@ -46,11 +46,11 @@ class CheckChildRecordAction @Inject()(
                                         frontendAppConfig: FrontendAppConfig,
                                         errorHandler: ErrorHandler
                                       )(implicit ec: ExecutionContext)
-  extends ActionRefiner[AuthContext, UserRequestNew]
-    with ActionFunction[AuthContext, UserRequestNew]
+  extends ActionRefiner[AuthContext, UserRequest]
+    with ActionFunction[AuthContext, UserRequest]
     with I18nSupport {
 
-  override protected def refine[A](authContext: AuthContext[A]): Future[Either[Result, UserRequestNew[A]]] = {
+  override protected def refine[A](authContext: AuthContext[A]): Future[Either[Result, UserRequest[A]]] = {
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(authContext.request, authContext.request.session)
     val identifier: String = authContext.nino.nino
 
@@ -70,7 +70,7 @@ class CheckChildRecordAction @Inject()(
             case (Left(status), _) => handleErrorCrnUplift(status, authContext, frontendAppConfig)
             case (Right(_), true) =>
               Right(
-                UserRequestNew(
+                UserRequest(
                   Some(Nino(individualDetails.getNino)),
                   authContext.confidenceLevel,
                   individualDetails,
@@ -84,7 +84,7 @@ class CheckChildRecordAction @Inject()(
         } else {
           Future.successful(
             Right(
-              UserRequestNew(
+              UserRequest(
                 Some(Nino(individualDetails.getNino)),
                 authContext.confidenceLevel,
                 individualDetails,

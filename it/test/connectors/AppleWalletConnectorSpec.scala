@@ -23,7 +23,6 @@ import play.api.libs.json.{Json, Writes}
 import play.api.mvc.Results.InternalServerError
 import play.api.test.{DefaultAwaitTimeout, Injecting}
 import uk.gov.hmrc.http.HttpClient
-import util.Fixtures.buildPersonDetails
 import util.WireMockHelper
 
 import java.util.Base64
@@ -41,11 +40,8 @@ class AppleWalletConnectorSpec extends ConnectorSpec
   )
 
   val delay = 5000
-  val pd = buildPersonDetails
-  val jsonPd = Json.toJson(pd)
 
   val passId: String = "passId"
-  val personDetailsId: String = "pdId"
   val applePassCardBytes: Array[Byte] = Array(99, 71, 86, 121, 99, 50, 57, 117, 82, 71, 86, 48, 89, 87, 108, 115, 99, 49, 78, 48, 99, 109, 108, 117, 90, 119, 61, 61)
   val applePassCard = Base64.getEncoder.encodeToString(applePassCardBytes)
   val fakeName: String = "fakeName"
@@ -116,9 +112,9 @@ class AppleWalletConnectorSpec extends ConnectorSpec
     }
 
     "return OK when called create pass" in new LocalSetup {
-      stubPost(url, OK, Some(Json.toJson(createApplePassDetails).toString()), Some(personDetailsId))
+      stubPost(url, OK, Some(Json.toJson(createApplePassDetails).toString()), Some(passId))
       val result = connector.createApplePass(createApplePassDetails.fullName,createApplePassDetails.nino).futureValue.get
-      result mustBe personDetailsId
+      result mustBe passId
     }
 
     "return error when called create pass " in new LocalSetup {

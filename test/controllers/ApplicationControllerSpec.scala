@@ -32,16 +32,15 @@ import services._
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.UpstreamErrorResponse
 import uk.gov.hmrc.http.HttpResponse
-import util.{CDFixtures, Fixtures, UserDetails}
+import util.{IndividualDetailsFixtures, Fixtures, UserDetails}
 import views.html.identity._
 import cats.instances.future._
-import models.{ActivatedOnlineFilerSelfAssessmentUser, PersonDetails, SelfAssessmentUserType}
-import uk.gov.hmrc.domain.{Nino, SaUtr, SaUtrGenerator}
+import uk.gov.hmrc.domain.Nino
 import util.Fixtures.{buildFakeRequestWithAuth, fakeIndividualDetailsDataCache}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class ApplicationControllerSpec extends SpecBase with CDFixtures with MockitoSugar {
+class ApplicationControllerSpec extends SpecBase with IndividualDetailsFixtures with MockitoSugar {
 
   override protected def beforeEach(): Unit = {
     reset(mockScaWrapperDataConnector)
@@ -65,22 +64,15 @@ class ApplicationControllerSpec extends SpecBase with CDFixtures with MockitoSug
   val mockIdentityVerificationFrontendConnector: IdentityVerificationFrontendConnector = mock[IdentityVerificationFrontendConnector]
   val mockIdentityVerificationFrontendService: IdentityVerificationFrontendService = mock[IdentityVerificationFrontendService]
 
-  val pd = buildPersonDetails
   implicit lazy val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
 
   trait LocalSetup {
 
     lazy val authProviderType: String                                                                         = UserDetails.GovernmentGatewayAuthProvider
     lazy val nino: Nino                                                                                       = Fixtures.fakeNino
-    lazy val personDetailsResponse: PersonDetails                                                             = Fixtures.buildPersonDetails
     lazy val withPaye: Boolean                                                                                = true
-    //lazy val year                                                                                             = current.currentYear
     lazy val getIVJourneyStatusResponse: EitherT[Future, UpstreamErrorResponse, IdentityVerificationResponse] =
       EitherT[Future, UpstreamErrorResponse, IdentityVerificationResponse](Future.successful(Right(Success)))
-    lazy val getCitizenDetailsResponse                                                                        = true
-    lazy val getSelfAssessmentServiceResponse: SelfAssessmentUserType                                         = ActivatedOnlineFilerSelfAssessmentUser(
-      SaUtr(new SaUtrGenerator().nextSaUtr.utr)
-    )
 
     lazy val application = applicationBuilderWithConfig()
       .overrides(

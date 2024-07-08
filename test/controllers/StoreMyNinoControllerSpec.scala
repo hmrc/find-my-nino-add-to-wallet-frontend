@@ -18,7 +18,7 @@ package controllers
 
 import base.SpecBase
 import connectors._
-import controllers.auth.requests.UserRequestNew
+import controllers.auth.requests.UserRequest
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.{reset, times, verify, when}
@@ -32,7 +32,7 @@ import services.{IndividualDetailsService, NPSService}
 import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolment, Enrolments}
 import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
-import util.CDFixtures
+import util.IndividualDetailsFixtures
 import util.Fixtures.{fakeIndividualDetailsDataCache, fakeIndividualDetailsDataCacheWithCRN}
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
 import util.TestData.{NinoUser, NinoUser_With_CL50}
@@ -42,7 +42,7 @@ import java.util.Base64
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSugar with DefaultAwaitTimeout {
+class StoreMyNinoControllerSpec extends SpecBase with IndividualDetailsFixtures with MockitoSugar with DefaultAwaitTimeout {
 
   override protected def beforeEach(): Unit = {
     reset(mockScaWrapperDataConnector)
@@ -225,7 +225,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
         val request = FakeRequest(GET, routes.GoogleWalletController.getGooglePass(googlePassId).url)
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
-        val userRequest = UserRequestNew(
+        val userRequest = UserRequest(
           None,
           ConfidenceLevel.L200,
           fakeIndividualDetailsDataCache,
@@ -276,7 +276,7 @@ class StoreMyNinoControllerSpec extends SpecBase with CDFixtures with MockitoSug
         val request = FakeRequest(GET, routes.AppleWalletController.getPassCard(applePassId).url)
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
-        val userRequest = UserRequestNew(
+        val userRequest = UserRequest(
           None,
           ConfidenceLevel.L200,
           fakeIndividualDetailsDataCache,

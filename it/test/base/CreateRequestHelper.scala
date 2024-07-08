@@ -35,7 +35,7 @@ trait CreateRequestHelper extends ServerProvider {
 
   lazy val ws: WSClient = app.injector.instanceOf(classOf[WSClient])
 
-  implicit val defaultCookie = DefaultWSCookie("CSRF-Token","nocheck")
+  implicit val defaultCookie: DefaultWSCookie = DefaultWSCookie("CSRF-Token", "nocheck")
 
   def bakeCookie(sessionKvs: (String, String)*): (String, String) =
     HeaderNames.COOKIE -> SessionCookieBaker.bakeSessionCookie(sessionKvs.toMap)

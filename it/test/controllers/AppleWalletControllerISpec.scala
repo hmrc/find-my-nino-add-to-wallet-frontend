@@ -21,7 +21,7 @@ import com.github.tomakehurst.wiremock.client.WireMock._
 import config.FrontendAppConfig
 import controllers.auth.requests.UserRequest
 import controllers.auth.routes
-import models.{Address, Person, PersonDetails}
+import models.individualDetails.IndividualDetailsDataCache
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.scalatest.Assertion
@@ -32,50 +32,17 @@ import play.twirl.api.Html
 import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolment, Enrolments}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
+import util.Fixtures
 import views.html.AppleWalletView
 
 import java.net.URLDecoder
-import java.time.LocalDate
 
 class AppleWalletControllerISpec extends IntegrationSpecBase {
-
-  //generate fake details to provide for testing the functionality of the apple wallet page
-  val fakePersonDetails: PersonDetails = PersonDetails(
-    Person(
-      Some("John"),
-      None,
-      Some("Doe"),
-      Some("JD"),
-      Some("Mr"),
-      None,
-      Some("M"),
-      Some(LocalDate.parse("1975-12-03")),
-      Some(generatedNino)
-    ),
-    Some(
-      Address(
-        Some("1 Fake Street"),
-        Some("Fake Town"),
-        Some("Fake City"),
-        Some("Fake Region"),
-        None,
-        Some("AA1 1AA"),
-        None,
-        Some(LocalDate.of(2015, 3, 15)),
-        None,
-        Some("Residential"),
-        isRls = false
-      )
-    ),
-    None
-  )
 
   val fakePassId = "applePassId"
   val fakeBase64String = "UEsDBBQACAgIABxqJlYAAAAAAA"
 
-
   override lazy val messagesApi: MessagesApi = app.injector.instanceOf[MessagesApi]
-
 
   implicit lazy val frontendAppConfig: FrontendAppConfig = app.injector.instanceOf[FrontendAppConfig]
   implicit lazy val messages: Messages = MessagesImpl(Lang("en"), messagesApi).messages
@@ -84,13 +51,13 @@ class AppleWalletControllerISpec extends IntegrationSpecBase {
     def buildUserRequest[A](
                              nino: Option[Nino] = Some(generatedNino),
                              confidenceLevel: ConfidenceLevel = ConfidenceLevel.L200,
-                             personDetails: PersonDetails = fakePersonDetails,
+                             individualDetailsData: IndividualDetailsDataCache = Fixtures.fakeIndividualDetailsDataCache,
                              request: Request[A] = FakeRequest().asInstanceOf[Request[A]]
                            ): UserRequest[A] =
       UserRequest(
         nino,
         confidenceLevel,
-        personDetails,
+        individualDetailsData,
         Enrolments(Set(Enrolment("HMRC-PT"))),
         request
       )

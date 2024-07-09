@@ -31,8 +31,8 @@ import services.IndividualDetailsService
 import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolment, Enrolments}
 import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
+import util.Fixtures.{fakeIndividualDetailsDataCache, fakeIndividualDetailsDataCacheNoAddress}
 import util.IndividualDetailsFixtures
-import util.Fixtures.fakeIndividualDetailsDataCache
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
 import util.TestData.{NinoUser, NinoUser_With_CL50}
 import views.html._
@@ -130,6 +130,34 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
         when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
           .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCache)))
+
+        running(application) {
+          userLoggedInFMNUser(NinoUser)
+          val request = FakeRequest(GET, routes.AppleWalletController.onPageLoad().url)
+            .withSession(("authToken", "Bearer 123"))
+          val result = route(application, request).value
+          status(result) mustEqual OK
+          contentAsString(result).removeAllNonces() mustEqual (view(passId, false)(request.withAttrs(requestAttributeMap), messages(application)).toString())
+        }
+      }
+
+      "must return OK and the correct view for a GET with no address on individual details" in {
+        val application =
+          applicationBuilderWithConfig()
+            .overrides(
+              inject.bind[SessionRepository].toInstance(mockSessionRepository),
+              inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
+              inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),
+              inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+            ).configure(
+            "features.apple-wallet-enabled" -> true
+          )
+            .build()
+
+        val view = application.injector.instanceOf[AppleWalletView]
+
+        when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
+          .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCacheNoAddress)))
 
         running(application) {
           userLoggedInFMNUser(NinoUser)

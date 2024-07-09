@@ -26,6 +26,11 @@ object TestData {
     |   }]
     |""".stripMargin
 
+  val noEnrolments: String =
+    """
+      |  "allEnrolments": []
+      |""".stripMargin
+
   val NinoUser_With_CL50: String =
     s"""
       |{
@@ -49,6 +54,19 @@ object TestData {
        | "confidenceLevel": 200,
        | "affinityGroup": "Individual",
        | $allEnrolments
+       |}
+       |""".stripMargin
+
+  val NinoUserNoEnrolments: String =
+    s"""
+       |{
+       |	"nino": "AA000003B",
+       |	"credentialRole": "User",
+       | "credentialStrength": "strong",
+       |	"internalId": "Int-8612ba91-5581-411d-9d32-fb2de937a565",
+       | "confidenceLevel": 200,
+       | "affinityGroup": "Individual",
+       | $noEnrolments
        |}
        |""".stripMargin
 

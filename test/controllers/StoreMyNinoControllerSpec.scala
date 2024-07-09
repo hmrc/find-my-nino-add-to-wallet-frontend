@@ -35,7 +35,7 @@ import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
 import util.IndividualDetailsFixtures
 import util.Fixtures.{fakeIndividualDetailsDataCache, fakeIndividualDetailsDataCacheWithCRN}
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
-import util.TestData.{NinoUser, NinoUser_With_CL50, NinoUser_With_Credential_Strength_Weak}
+import util.TestData.{NinoUser, NinoUserNoEnrolments, NinoUser_With_CL50, NinoUser_With_Credential_Strength_Weak}
 import views.html.{PassIdNotFoundView, RedirectToPostalFormView, StoreMyNinoView}
 
 import java.util.Base64
@@ -125,6 +125,32 @@ class StoreMyNinoControllerSpec extends SpecBase with IndividualDetailsFixtures 
         contentAsString(result).removeAllNonces() mustEqual view(applePassId, googlePassId, "AB 12 34 56 C", displayForMobile = false)(request.withAttrs(requestAttributeMap), messages(application)).toString()
         verify(mockNPSService, times(0)).upliftCRN(any(), any())(any())
 
+      }
+    }
+
+    "must redirect to foo" in {
+      val application =
+        applicationBuilderWithConfig()
+          .overrides(
+            inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
+            inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
+            inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),
+            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+          )
+          .build()
+
+      running(application) {
+        userLoggedInFMNUser(NinoUserNoEnrolments)
+        val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
+          .withSession(("authToken", "Bearer 123"))
+        val result = route(application, request).value
+        status(result) mustEqual SEE_OTHER
+
+        val target: String = "http://localhost:7750/protect-tax-info?redirectUrl=http%3A%2F%2Flocalhost%3A14006%2Fsave-your-national-insurance-number"
+        redirectLocation(result) mustEqual Some(target)
+
+        verify(mockNPSService, times(0)).upliftCRN(any(), any())(any())
       }
     }
 

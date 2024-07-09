@@ -56,6 +56,31 @@ class AuthControllerSpec extends SpecBase with MockitoSugar {
       }
     }
 
+    "must return unknown when no origin is present when url not supplied" in {
+
+      val mockSessionRepository = mock[SessionRepository]
+      when(mockSessionRepository.clear(any())) thenReturn Future.successful(true)
+
+      val mockWrapperService = mock[WrapperService]
+      when(mockWrapperService.safeSignoutUrl(any)).thenReturn(None)
+
+      val application =
+        applicationBuilder()
+          .overrides(bind[SessionRepository].toInstance(mockSessionRepository),
+            bind[WrapperService].toInstance(mockWrapperService))
+          .build()
+
+      running(application) {
+
+        val request = FakeRequest(GET, routes.AuthController.signout(None, None).url)
+
+        val result = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result) mustBe Some("http://localhost:9553/bas-gateway/sign-out-without-state?continue=http://localhost:9514/feedback/unknown")
+      }
+    }
+
     "must clear user answers and redirect to sign out when safeSignOutUrl returns none" in {
 
       val mockSessionRepository = mock[SessionRepository]

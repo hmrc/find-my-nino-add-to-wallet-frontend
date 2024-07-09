@@ -94,8 +94,6 @@ class EncryptedIndividualDetailsRepositorySpec extends AnyFreeSpec
 
       //we search with NINO plus suffix
       val result = repository.findIndividualDetailsDataByNino(nino + "C").futureValue
-      println("find result type: " + result.value.individualDetailsData.get.address.get.addressType)
-      println("fake address type: " + individualDetailsDataCache.individualDetailsData.get.address.get.addressType)
       result.value.copy(lastUpdated = Instant.EPOCH) mustEqual individualDetailsDataCache.copy(lastUpdated = Instant.EPOCH)
     }
 

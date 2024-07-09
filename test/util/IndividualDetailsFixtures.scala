@@ -301,9 +301,17 @@ object Fixtures extends IndividualDetailsFixtures  {
     crnIndicator = "false"
   )
 
+  val fakeIndividualDetailsDataNoAddress = fakeIndividualDetailsData.copy(address = None)
+
   val fakeIndividualDetailsDataCache = IndividualDetailsDataCache(
     "some-fake-Id",
     Some(fakeIndividualDetailsData),
+    LocalDateTime.now(ZoneId.systemDefault()).toInstant(ZoneOffset.UTC)
+  )
+
+  val fakeIndividualDetailsDataCacheNoAddress = IndividualDetailsDataCache(
+    "some-fake-Id",
+    Some(fakeIndividualDetailsDataNoAddress),
     LocalDateTime.now(ZoneId.systemDefault()).toInstant(ZoneOffset.UTC)
   )
 

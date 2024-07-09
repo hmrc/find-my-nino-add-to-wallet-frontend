@@ -97,16 +97,18 @@
         </fo:static-content>
         <!-- end footer -->
         <fo:flow flow-name="xsl-region-body">
+
             <!-- logo and heading -->
-            <fo:block role="Div" space-after="10px">
-                <fo:inline-container role="Div" inline-progression-dimension="22%">
+            <fo:block role="Div" space-after="-3px">
+                <fo:inline-container role="Div" inline-progression-dimension="23%">
                     <fo:block role="Div"
                               border-left-style="solid"
                               border-width="2px"
                               border-color="#28a197"
                               padding-start="4px">
                         <fo:wrapper role="artifact">
-                            <fo:external-graphic content-type="content-type:image/png" src="logo/hmrc-logo.jpg" content-height="scale-to-fit"  content-width="0.8cm"/>
+                            <fo:external-graphic content-type="content-type:image/png" src="logo/hmrc-logo.jpg"
+                                                 content-height="scale-to-fit" content-width="0.8cm"/>
                         </fo:wrapper>
                         <fo:block role="P"
                                   font-family="OpenSans"
@@ -124,12 +126,10 @@
                     <fo:block role="H1"
                               text-align="end"
                               padding-before="10px"
-                              padding-after="-6px"
+                              padding-after="6px"
                               font-family="OpenSans-Bold"
                               font-weight="bold">
-                        <fo:block>
-                            @Messages("label.your_national_insurance_number")
-                        </fo:block>
+                        @Messages("label.your_national_insurance_number")
                     </fo:block>
                 </fo:inline-container>
             </fo:block>
@@ -139,52 +139,62 @@
             <fo:block role="Div">
                 <fo:inline-container role="Div" inline-progression-dimension="62%">
                     <fo:block>
-                        <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal" line-height="12pt">
-                            <fo:block>@individualDetailsDataCache.getFullName</fo:block>
+                        <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal"
+                                  line-height="12pt">
+                            <fo:block>@individualDetailsDataCache.getInitialsName</fo:block>
                         </fo:block>
                         @individualDetailsDataCache.getAddressLines.map { line =>
-                        <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal" line-height="12pt">
+                        <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal"
+                                  line-height="12pt">
                             <fo:block>@line</fo:block>
                         </fo:block>
                         }
-                        <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal" line-height="12pt">
+                        <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal"
+                                  line-height="12pt">
                             <fo:block>@individualDetailsDataCache.getPostCode.getOrElse("").toUpperCase</fo:block>
                         </fo:block>
                     </fo:block>
                 </fo:inline-container>
                 <fo:inline-container role="Div" inline-progression-dimension="37%">
                     <fo:block>
-                        <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal" line-height="12pt">
+                        <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal"
+                                  line-height="12pt">
                             <fo:block>
                                 @Messages("label.nic_eo_hmrc_address.line1.pdf")
                             </fo:block>
                         </fo:block>
-                        <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal" line-height="12pt">
+                        <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal"
+                                  line-height="12pt">
                             <fo:block>
                                 @Messages("label.nic_eo_hmrc_address.line2")
                             </fo:block>
                         </fo:block>
                         @if(lang.eq("cy")) {
-                        <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal" line-height="12pt">
+                        <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal"
+                                  line-height="12pt">
                             <fo:block>
                                 @Messages("label.nic_eo_hmrc_address.line3")
                             </fo:block>
                         </fo:block>
                         }
-                        <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal" line-height="12pt">
+                        <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal"
+                                  line-height="12pt">
                             <fo:block>
                                 @Messages("label.nic_eo_hmrc_address.postcode")
                             </fo:block>
                         </fo:block>
-                        <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal" line-height="12pt" padding-after="6px" padding-before="6px">
+                        <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal"
+                                  line-height="12pt" padding-after="6px" padding-before="6px">
                             <fo:block>
                                 @Messages("label.phone_text")
                                 @Messages("label.contact_number")
                             </fo:block>
                         </fo:block>
-                        <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal" line-height="12pt">
-                            <!-- TODO supply alternative text for link -->
-                            <fo:basic-link color="#1F70B8" external-destination='https://@Messages("label.www_gov_uk_hmrc")' text-decoration="underline">
+                        <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal"
+                                  line-height="12pt">
+                            <fo:basic-link color="#1F70B8"
+                                           external-destination='https://@Messages("label.www_gov_uk_hmrc")'
+                                           text-decoration="underline">
                                 @messages("label.www_gov_uk_hmrc")
                             </fo:basic-link>
                         </fo:block>
@@ -194,7 +204,8 @@
             <!-- end Addresses -->
 
             <!-- name and title -->
-            <fo:block font-size="10.5pt" font-family="OpenSans" font-weight="normal" line-height="12pt" padding-after="6px" padding-before="6px">
+            <fo:block font-size="10.5pt" font-family="OpenSans" font-weight="normal" line-height="12pt"
+                      padding-after="6px" padding-before="6px">
                 @individualDetailsDataCache.getFullName
             </fo:block>
             <!-- end name and title -->
@@ -206,7 +217,8 @@
                       border-style="solid"
                       border-width="1.5px"
                       border-color="#28a197">
-                <fo:block role="H2" font-size="10.5pt" font-family="OpenSans-Bold" font-weight="bold" padding-before="8px" padding-after="6px" text-align="center">
+                <fo:block role="H2" font-size="10.5pt" font-family="OpenSans-Bold" font-weight="bold"
+                          padding-before="8px" padding-after="6px" text-align="center">
                     @messages("label.your_national_insurance_number_is")
                 </fo:block>
                 <fo:block role="P"
@@ -236,23 +248,27 @@
                     <fo:block role="Div"
                               margin-left="5px"
                               margin-right="5px">
-                        <fo:block role="H3" font-size="10.5pt" font-family="OpenSans-Bold" font-weight="bold" padding-before="8px" padding-after="6px">
+                        <fo:block role="H3" font-size="10.5pt" font-family="OpenSans-Bold" font-weight="bold"
+                                  padding-before="2px" padding-after="5px">
                             <fo:block>
                                 @Messages("label.about_your_national_insurance_number")
                             </fo:block>
                         </fo:block>
-                        <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal" line-height="12pt" padding-after="6px" padding-before="6px">
+                        <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal"
+                                  line-height="12pt" padding-after="6px" padding-before="6px">
                             <fo:block>
                                 @Messages("label.your_national_insurance_number_is_unique_to_you_and_will_never_change_")
                             </fo:block>
                         </fo:block>
-                        <fo:block  role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal" line-height="12pt" padding-after="6px" padding-before="6px">
+                        <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal"
+                                  line-height="12pt" padding-after="6px" padding-before="6px">
                             <fo:block>
                                 @Messages("label.you_will_need_it_if_you")
                             </fo:block>
                         </fo:block>
                         <fo:list-block role="L" provisional-distance-between-starts="0.3cm">
-                            <fo:list-item font-size="10.5pt" font-family="OpenSans" font-weight="normal" line-height="12pt" padding-after="3px" padding-before="3px" role="LI">
+                            <fo:list-item font-size="10.5pt" font-family="OpenSans" font-weight="normal"
+                                          line-height="12pt" padding-after="3px" padding-before="3px" role="LI">
                                 <fo:list-item-label role="Lbl" end-indent="1em">
                                     <fo:block>
                                         <fo:inline>
@@ -270,7 +286,8 @@
                                     </fo:block>
                                 </fo:list-item-body>
                             </fo:list-item>
-                            <fo:list-item font-size="10.5pt" font-family="OpenSans" font-weight="normal" line-height="12pt" padding-after="3px" padding-before="3px" role="LI">
+                            <fo:list-item font-size="10.5pt" font-family="OpenSans" font-weight="normal"
+                                          line-height="12pt" padding-after="3px" padding-before="3px" role="LI">
                                 <fo:list-item-label role="Lbl" end-indent="1em">
                                     <fo:block>
                                         <fo:inline>
@@ -288,7 +305,8 @@
                                     </fo:block>
                                 </fo:list-item-body>
                             </fo:list-item>
-                            <fo:list-item font-size="10.5pt" font-family="OpenSans" font-weight="normal" line-height="12pt" padding-after="3px" padding-before="3px" role="LI">
+                            <fo:list-item font-size="10.5pt" font-family="OpenSans" font-weight="normal"
+                                          line-height="12pt" padding-after="3px" padding-before="3px" role="LI">
                                 <fo:list-item-label role="Lbl" end-indent="1em">
                                     <fo:block>
                                         <fo:inline>
@@ -306,7 +324,8 @@
                                     </fo:block>
                                 </fo:list-item-body>
                             </fo:list-item>
-                            <fo:list-item font-size="10.5pt" font-family="OpenSans" font-weight="normal" line-height="12pt" padding-after="3px" padding-before="3px" role="LI">
+                            <fo:list-item font-size="10.5pt" font-family="OpenSans" font-weight="normal"
+                                          line-height="12pt" padding-after="3px" padding-before="3px" role="LI">
                                 <fo:list-item-label role="Lbl" end-indent="1em">
                                     <fo:block>
                                         <fo:inline>
@@ -324,7 +343,8 @@
                                     </fo:block>
                                 </fo:list-item-body>
                             </fo:list-item>
-                            <fo:list-item font-size="10.5pt" font-family="OpenSans" font-weight="normal" line-height="12pt" padding-after="3px" padding-before="3px" role="LI">
+                            <fo:list-item font-size="10.5pt" font-family="OpenSans" font-weight="normal"
+                                          line-height="12pt" padding-after="3px" padding-before="3px" role="LI">
                                 <fo:list-item-label role="Lbl" end-indent="1em">
                                     <fo:block>
                                         <fo:inline>
@@ -343,13 +363,15 @@
                                 </fo:list-item-body>
                             </fo:list-item>
                         </fo:list-block>
-                        <fo:block  role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal" line-height="12pt" padding-after="6px" padding-before="6px">
+                        <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal"
+                                  line-height="12pt" padding-after="6px" padding-before="6px">
                             <fo:block>
                                 @Messages("label.it_is_not_proof_of")
                             </fo:block>
                         </fo:block>
                         <fo:list-block role="L" provisional-distance-between-starts="0.3cm">
-                            <fo:list-item font-size="10.5pt" font-family="OpenSans" font-weight="normal" line-height="12pt" padding-after="3px" padding-before="3px" role="LI">
+                            <fo:list-item font-size="10.5pt" font-family="OpenSans" font-weight="normal"
+                                          line-height="12pt" padding-after="3px" padding-before="3px" role="LI">
                                 <fo:list-item-label role="Lbl" end-indent="1em">
                                     <fo:block>
                                         <fo:inline>
@@ -367,7 +389,8 @@
                                     </fo:block>
                                 </fo:list-item-body>
                             </fo:list-item>
-                            <fo:list-item font-size="10.5pt" font-family="OpenSans" font-weight="normal" line-height="12pt" padding-after="3px" padding-before="3px" role="LI">
+                            <fo:list-item font-size="10.5pt" font-family="OpenSans" font-weight="normal"
+                                          line-height="12pt" padding-after="3px" padding-before="3px" role="LI">
                                 <fo:list-item-label role="Lbl" end-indent="1em">
                                     <fo:block>
                                         <fo:inline>
@@ -386,35 +409,41 @@
                                 </fo:list-item-body>
                             </fo:list-item>
                         </fo:list-block>
-                        <fo:block role="H3" font-size="10.5pt" font-family="OpenSans-Bold" font-weight="bold" padding-before="8px" padding-after="6px">
+                        <fo:block role="H3" font-size="10.5pt" font-family="OpenSans-Bold" font-weight="bold"
+                                  padding-before="8px" padding-after="6px">
                             <fo:block>
                                 @Messages("label.child.trust.fund")
                             </fo:block>
                         </fo:block>
-                        <fo:block  role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal" line-height="12pt" padding-after="6px" padding-before="6px">
+                        <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal"
+                                  line-height="12pt" padding-after="6px" padding-before="6px">
                             <fo:block>
                                 @Messages("label.child.trust.fund.details")
                             </fo:block>
-                            <!-- TODO supply alternative text for link -->
-                            <fo:basic-link color="#1F70B8" external-destination='https://@Messages("label.child.trust.fund.details.link")' text-decoration="underline">
+                            <fo:basic-link color="#1F70B8"
+                                           external-destination='https://@Messages("label.child.trust.fund.details.link")'
+                                           text-decoration="underline">
                                 @messages("label.child.trust.fund.details.link")
                             </fo:basic-link>
                         </fo:block>
 
                         <!-- only display welsh language section when in English -->
                         @if(lang.eq("en")) {
-                        <fo:block role="H3" font-size="10.5pt" font-family="OpenSans-Bold" font-weight="bold" padding-before="8px" padding-after="6px">
+                        <fo:block role="H3" font-size="10.5pt" font-family="OpenSans-Bold" font-weight="bold"
+                                  padding-before="8px" padding-after="6px">
                             <fo:block>
                                 @Messages("label.welsh_language")
                             </fo:block>
                         </fo:block>
-                        <fo:block  role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal" line-height="12pt" padding-after="6px" padding-before="6px">
+                        <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal"
+                                  line-height="12pt" padding-after="6px" padding-before="6px">
                             <fo:block>
                                 @Messages("label.to_continue_to_receive_a_welsh_language_service_")
                             </fo:block>
                         </fo:block>
                         <fo:list-block role="L" provisional-distance-between-starts="0.3cm">
-                            <fo:list-item font-size="10.5pt" font-family="OpenSans" font-weight="normal" line-height="12pt" padding-after="3px" padding-before="3px" role="LI">
+                            <fo:list-item font-size="10.5pt" font-family="OpenSans" font-weight="normal"
+                                          line-height="12pt" padding-after="3px" padding-before="3px" role="LI">
                                 <fo:list-item-label role="Lbl" end-indent="1em">
                                     <fo:block>
                                         <fo:inline>
@@ -427,14 +456,16 @@
                                 <fo:list-item-body role="LBody" start-indent="2em">
                                     <fo:block>
                                         @Messages("label.email")
-                                        <!-- TODO supply alternative text for link -->
-                                        <fo:basic-link color="#1F70B8" external-destination='mailto:@Messages("label.email_for_welsh_language")' text-decoration="underline">
+                                        <fo:basic-link color="#1F70B8"
+                                                       external-destination='mailto:@Messages("label.email_for_welsh_language")'
+                                                       text-decoration="underline">
                                             @messages("label.email_for_welsh_language")
                                         </fo:basic-link>
                                     </fo:block>
                                 </fo:list-item-body>
                             </fo:list-item>
-                            <fo:list-item font-size="10.5pt" font-family="OpenSans" font-weight="normal" line-height="12pt" padding-after="3px" padding-before="3px" role="LI">
+                            <fo:list-item font-size="10.5pt" font-family="OpenSans" font-weight="normal"
+                                          line-height="12pt" padding-after="3px" padding-before="3px" role="LI">
                                 <fo:list-item-label role="Lbl" end-indent="1em">
                                     <fo:block>
                                         <fo:inline>
@@ -463,8 +494,8 @@
                               margin-right="5px"
                               padding-start="5px"
                               padding-end="5px"
-                              padding-before="-6px"
-                              padding-after="-8px">
+                              padding-before="2px"
+                              padding-after="5px">
                         <fo:block role="H2"
                                   border-after-style="solid"
                                   border-color="#00A298"
@@ -472,25 +503,25 @@
                                   font-size="10.5pt"
                                   font-family="OpenSans-Bold"
                                   font-weight="bold"
-                                  padding-before="-6px"
-                                  padding-after="-4px"
+                                  padding-before="-2px"
+                                  padding-after="6px"
                                   linefeed-treatment="preserve">
-                            <fo:block>
-                                @Messages("label.now_you_have_got_your")
-                                @Messages("label.national_insurance_number")
-                            </fo:block>
+                            @Messages("label.now_you_have_got_your")
+                            @Messages("label.national_insurance_number")
                         </fo:block>
                         <fo:block role="Div"
                                   border-after-style="solid"
                                   border-width="1.5px"
                                   border-color="#00A298"
                                   padding-after="5px">
-                            <fo:block font-size="9.5pt" font-family="OpenSans" font-weight="normal" padding-before="6px" padding-after="6px">
+                            <fo:block font-size="9.5pt" font-family="OpenSans" font-weight="normal" padding-before="6px"
+                                      padding-after="6px">
                                 <fo:block>
                                     @Messages("label.you_can_download_and_use_the_hmrc_app_or_go_online_to.text.part1")
                                 </fo:block>
-                                <!-- TODO supply alternative text for link -->
-                                <fo:basic-link color="#1F70B8" external-destination='https://@Messages("label.you_can_download_and_use_the_hmrc_app_or_go_online_to.link")' text-decoration="underline">
+                                <fo:basic-link color="#1F70B8"
+                                               external-destination='https://@Messages("label.you_can_download_and_use_the_hmrc_app_or_go_online_to.link")'
+                                               text-decoration="underline">
                                     @messages("label.you_can_download_and_use_the_hmrc_app_or_go_online_to.link")
                                 </fo:basic-link>
                                 <fo:block>
@@ -498,7 +529,8 @@
                                 </fo:block>
                             </fo:block>
                             <fo:list-block role="L" provisional-distance-between-starts="0.3cm">
-                                <fo:list-item font-size="9.5pt" font-family="OpenSans" font-weight="normal" line-height="11pt" padding-before="2.8px" padding-after="2.8px" role="LI">
+                                <fo:list-item font-size="9.5pt" font-family="OpenSans" font-weight="normal"
+                                              line-height="11pt" padding-before="2.8px" padding-after="2.8px" role="LI">
                                     <fo:list-item-label role="Lbl" end-indent="1em">
                                         <fo:block>
                                             <fo:inline>
@@ -516,7 +548,8 @@
                                         </fo:block>
                                     </fo:list-item-body>
                                 </fo:list-item>
-                                <fo:list-item font-size="9.5pt" font-family="OpenSans" font-weight="normal" line-height="11pt" padding-before="2.8px" padding-after="2.8px" role="LI">
+                                <fo:list-item font-size="9.5pt" font-family="OpenSans" font-weight="normal"
+                                              line-height="11pt" padding-before="2.8px" padding-after="2.8px" role="LI">
                                     <fo:list-item-label role="Lbl" end-indent="1em">
                                         <fo:block>
                                             <fo:inline>
@@ -534,7 +567,8 @@
                                         </fo:block>
                                     </fo:list-item-body>
                                 </fo:list-item>
-                                <fo:list-item font-size="9.5pt" font-family="OpenSans" font-weight="normal" line-height="11pt" padding-before="2.8px" padding-after="2.8px" role="LI">
+                                <fo:list-item font-size="9.5pt" font-family="OpenSans" font-weight="normal"
+                                              line-height="11pt" padding-before="2.8px" padding-after="2.8px" role="LI">
                                     <fo:list-item-label role="Lbl" end-indent="1em">
                                         <fo:block>
                                             <fo:inline>
@@ -552,7 +586,8 @@
                                         </fo:block>
                                     </fo:list-item-body>
                                 </fo:list-item>
-                                <fo:list-item font-size="9.5pt" font-family="OpenSans" font-weight="normal" line-height="11pt" padding-before="2.8px" padding-after="2.8px" role="LI">
+                                <fo:list-item font-size="9.5pt" font-family="OpenSans" font-weight="normal"
+                                              line-height="11pt" padding-before="2.8px" padding-after="2.8px" role="LI">
                                     <fo:list-item-label role="Lbl" end-indent="1em">
                                         <fo:block>
                                             <fo:inline>
@@ -573,21 +608,22 @@
                             </fo:list-block>
                         </fo:block>
                         <fo:block role="Div">
-                            <fo:block font-size="9.5pt" font-family="OpenSans" font-weight="normal" padding-before="6px" padding-after="6px">
-                                <fo:block>
+                            <fo:block font-size="9.5pt" font-family="OpenSans" font-weight="normal" padding-before="6px"
+                                      padding-after="6px">
+                                <fo:block padding-before="6px" padding-after="6px">
                                     @Messages("label.view_more_information_about_national_insurance_at")
                                 </fo:block>
-                                <!-- TODO supply alternative text for link -->
-                                <fo:basic-link color="#1F70B8" external-destination='https://@Messages("label.www_gov_uk_national_insurance")' text-decoration="underline">
+                                <fo:basic-link color="#1F70B8"
+                                               external-destination='https://@Messages("label.www_gov_uk_national_insurance")'
+                                               text-decoration="underline">
                                     @messages("label.www_gov_uk_national_insurance")
                                 </fo:basic-link>
-                                <fo:block font-size="9.5pt" font-family="OpenSans" font-weight="normal" padding-before="6px" padding-after="6px">
-                                    <fo:block>
-                                        @Messages("label.or_our_youtube_channel_at")
-                                    </fo:block>
+                                <fo:block padding-before="6px" padding-after="6px">
+                                    @Messages("label.or_our_youtube_channel_at")
                                 </fo:block>
-                                <!-- TODO supply alternative text for link -->
-                                <fo:basic-link color="#1F70B8" external-destination='https://@Messages("label.www_youtube_com_hmrcgovuk")' text-decoration="underline">
+                                <fo:basic-link color="#1F70B8"
+                                               external-destination='https://@Messages("label.www_youtube_com_hmrcgovuk")'
+                                               text-decoration="underline">
                                     @messages("label.www_youtube_com_hmrcgovuk")
                                 </fo:basic-link>
                             </fo:block>

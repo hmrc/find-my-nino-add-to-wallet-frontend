@@ -27,7 +27,7 @@ import play.api.{Configuration, Environment}
 import services.{AuditService, FopService}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
-import util.{AuditUtils, XSLScalaBridge, XmlFoToPDF}
+import util.{AuditUtils, XSLScalaBridge}
 import views.html.print.PrintNationalInsuranceNumberView
 import views.xml.ApplicationPdf
 
@@ -42,7 +42,6 @@ class NinoLetterController @Inject()(
                                       auditService: AuditService,
                                       view: PrintNationalInsuranceNumberView,
                                       checkChildRecordAction: CheckChildRecordAction,
-                                      xmlFoToPDF: XmlFoToPDF,
                                       fopService: FopService,
                                       pdfTemplate: ApplicationPdf,
                                     )(implicit config: Configuration,
@@ -68,27 +67,17 @@ class NinoLetterController @Inject()(
 
   def saveNationalInsuranceNumberAsPdf: Action[AnyContent] = (authorisedAsFMNUser andThen checkChildRecordAction) async {
     implicit userRequestNew => {
-      //implicit val messages: Messages = cc.messagesApi.preferred(userRequestNew.request)
       val filename = messagesApi.preferred(userRequestNew.request).messages("label.your_national_insurance_number_letter")
 
       auditNinoLetter("DownloadNinoLetter", userRequestNew.individualDetails, hc)
-      //val pdf = createPDF(userRequestNew.individualDetails, messages)
-      createPDF2(userRequestNew.individualDetails, userRequestNew).flatMap(pdf =>
+      createPDF(userRequestNew.individualDetails, userRequestNew).flatMap(pdf =>
         Future.successful(Ok(pdf).as(MimeConstants.MIME_PDF)
           .withHeaders(CONTENT_TYPE -> "application/x-download", CONTENT_DISPOSITION -> s"attachment; filename=${filename.replaceAll(" ", "-")}.pdf"))
       )
     }
   }
 
-//  private def createPDF(individualDetailsDataCache: IndividualDetailsDataCache, messages: Messages): Array[Byte] = {
-//    xmlFoToPDF.createPDF(
-//      individualDetailsDataCache,
-//      LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
-//      messages
-//    )
-//  }
-
-  private def createPDF2(individualDetailsDataCache: IndividualDetailsDataCache, userRequestNew: UserRequestNew[AnyContent]): Future[Array[Byte]] = {
+  private def createPDF(individualDetailsDataCache: IndividualDetailsDataCache, userRequestNew: UserRequestNew[AnyContent]): Future[Array[Byte]] = {
     implicit val messages: Messages = cc.messagesApi.preferred(userRequestNew.request)
     val date: String                = LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY"))
 

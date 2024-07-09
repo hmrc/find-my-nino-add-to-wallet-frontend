@@ -27,7 +27,7 @@ import scala.xml.Utility.trim
 import scala.xml.{Elem, XML}
 import java.nio.charset.StandardCharsets
 
-class XmlFoToPDFSpec extends SpecBase with MockitoSugar with CDFixtures {
+class XmlFoToPDFSpec extends SpecBase with MockitoSugar with IndividualDetailsFixtures {
   implicit val messagesApi: MessagesApi = app.injector.instanceOf[MessagesApi]
   implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
   val messages: Messages = messagesApi.preferred(request)

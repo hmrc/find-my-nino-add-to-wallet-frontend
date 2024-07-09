@@ -16,26 +16,27 @@
 
 package repositories
 
+import com.mongodb.client.result.DeleteResult
 import config.FrontendAppConfig
+import models.encryption.id.EncryptedIndividualDetailsDataCache
 import models.individualDetails.IndividualDetailsDataCache
 import org.mockito.Mockito._
 import org.scalatest.OptionValues
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
-import org.scalatestplus.mockito.MockitoSugar
 import org.scalatest.matchers.must.Matchers
-import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
-import util.Fixtures.fakeIndividualDetailsData
-import com.mongodb.client.result.DeleteResult
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.test.DefaultAwaitTimeout
 import play.api.test.Helpers.await
+import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
+import util.Fixtures.fakeIndividualDetailsData
 
 import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class IndividualDetailsRepositorySpec extends AnyFreeSpec
+class EncryptedIndividualDetailsRepositorySpec extends AnyFreeSpec
   with Matchers
-  with DefaultPlayMongoRepositorySupport[IndividualDetailsDataCache]
+  with DefaultPlayMongoRepositorySupport[EncryptedIndividualDetailsDataCache]
   with ScalaFutures
   with OptionValues
   with IntegrationPatience
@@ -44,9 +45,9 @@ class IndividualDetailsRepositorySpec extends AnyFreeSpec
 
   private val mockAppConfig = mock[FrontendAppConfig]
 
-  protected val repository = new IndividualDetailsRepository(
+  protected val repository = new EncryptedIndividualDetailsRepository(
     mongoComponent = mongoComponent,
-    appConfig = mockAppConfig
+    appConfig      = mockAppConfig
   )
 
   def createFakeIdCache: IndividualDetailsDataCache = IndividualDetailsDataCache(
@@ -56,9 +57,10 @@ class IndividualDetailsRepositorySpec extends AnyFreeSpec
   )
 
   when(mockAppConfig.cacheTtl) thenReturn 1
+  when(mockAppConfig.encryptionKey) thenReturn "z4rWoRLf7a1OHTXLutSDJjhrUzZTBE3b"
 
 
-  "IndividualDetailsRepository" - {
+  "EncryptedIndividualDetailsRepository" - {
 
     "insertOrReplaceIndividualDetailsData" - {
 
@@ -73,8 +75,8 @@ class IndividualDetailsRepositorySpec extends AnyFreeSpec
         result mustBe "AB123456C"
       }
     }
-  }
 
+}
   "findIndividualDetailsDataByNino" - {
 
     val individualDetailsDataCache: IndividualDetailsDataCache = IndividualDetailsDataCache(
@@ -101,7 +103,6 @@ class IndividualDetailsRepositorySpec extends AnyFreeSpec
       result mustBe None
     }
   }
-
   "deleteIndividualDetailsData" - {
 
     "must delete the cache and return a DeleteResult" in {

@@ -19,6 +19,7 @@ package controllers.actions
 import base.SpecBase
 import com.google.inject.Inject
 import config.FrontendAppConfig
+import controllers.actions.AuthActionSpec.{fakeAuthConnector, retrievals}
 import controllers.routes
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
@@ -52,7 +53,7 @@ class AuthActionSpec extends SpecBase with MockitoSugar{
         when(mockSessionRepository.get(any())) thenReturn Future.successful(None)
 
         val application =
-          applicationBuilder(userAnswers = None)
+          applicationBuilder()
             .overrides(
               inject.bind[SessionRepository].toInstance(mockSessionRepository),
             )
@@ -80,7 +81,7 @@ class AuthActionSpec extends SpecBase with MockitoSugar{
         when(mockSessionRepository.get(any())) thenReturn Future.successful(None)
 
         val application =
-          applicationBuilder(userAnswers = None)
+          applicationBuilder()
             .overrides(
               inject.bind[SessionRepository].toInstance(mockSessionRepository),
             )
@@ -108,7 +109,7 @@ class AuthActionSpec extends SpecBase with MockitoSugar{
         when(mockSessionRepository.get(any())) thenReturn Future.successful(None)
 
         val application =
-          applicationBuilder(userAnswers = None)
+          applicationBuilder()
             .overrides(
               inject.bind[SessionRepository].toInstance(mockSessionRepository),
             )
@@ -136,7 +137,7 @@ class AuthActionSpec extends SpecBase with MockitoSugar{
         when(mockSessionRepository.get(any())) thenReturn Future.successful(None)
 
         val application =
-          applicationBuilder(userAnswers = None)
+          applicationBuilder()
             .overrides(
               inject.bind[SessionRepository].toInstance(mockSessionRepository),
             )
@@ -164,7 +165,7 @@ class AuthActionSpec extends SpecBase with MockitoSugar{
         when(mockSessionRepository.get(any())) thenReturn Future.successful(None)
 
         val application =
-          applicationBuilder(userAnswers = None)
+          applicationBuilder()
             .overrides(
               inject.bind[SessionRepository].toInstance(mockSessionRepository),
             )
@@ -192,7 +193,7 @@ class AuthActionSpec extends SpecBase with MockitoSugar{
         when(mockSessionRepository.get(any())) thenReturn Future.successful(None)
 
         val application =
-          applicationBuilder(userAnswers = None)
+          applicationBuilder()
             .overrides(
               inject.bind[SessionRepository].toInstance(mockSessionRepository),
             )
@@ -220,7 +221,7 @@ class AuthActionSpec extends SpecBase with MockitoSugar{
         when(mockSessionRepository.get(any())) thenReturn Future.successful(None)
 
         val application =
-          applicationBuilder(userAnswers = None)
+          applicationBuilder()
             .overrides(
               inject.bind[SessionRepository].toInstance(mockSessionRepository),
             )
@@ -239,7 +240,47 @@ class AuthActionSpec extends SpecBase with MockitoSugar{
         }
       }
     }
+
+    "the user has a valid auth record" - {
+
+      "must redirect the user to foo" in {
+
+        val mockSessionRepository = mock[SessionRepository]
+        when(mockSessionRepository.get(any())) thenReturn Future.successful(None)
+
+        val application =
+          applicationBuilder()
+            .overrides(
+              inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            )
+            .build()
+
+        running(application) {
+          val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
+          val appConfig = application.injector.instanceOf[FrontendAppConfig]
+
+          val authAction = new AuthenticatedIdentifierAction(fakeAuthConnector(retrievals), appConfig, bodyParsers)
+          val controller = new Harness(authAction)
+          val result = controller.onPageLoad()(FakeRequest())
+
+          status(result) mustBe OK
+        }
+      }
+    }
   }
+}
+
+object AuthActionSpec {
+
+  private def fakeAuthConnector(stubbedRetrievalResult: Future[_]): AuthConnector = new AuthConnector {
+
+    def authorise[A](predicate: Predicate, retrieval: Retrieval[A])
+                    (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[A] = {
+      stubbedRetrievalResult.asInstanceOf[Future[A]]
+    }
+  }
+
+  private def retrievals: Future[Some[String]] = Future.successful(Some("internal-id"))
 }
 
 class FakeFailingAuthConnector @Inject()(exceptionToReturn: Throwable) extends AuthConnector {
@@ -248,3 +289,4 @@ class FakeFailingAuthConnector @Inject()(exceptionToReturn: Throwable) extends A
   override def authorise[A](predicate: Predicate, retrieval: Retrieval[A])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[A] =
     Future.failed(exceptionToReturn)
 }
+

@@ -44,7 +44,7 @@ trait IntegrationSpecBase extends PlaySpec
   override implicit lazy val app: Application = new GuiceApplicationBuilder()
     .in(Environment.simple(mode = Mode.Dev))
     .configure(config)
-    .build
+    .build()
 
   val generatedNino = new Generator().nextNino
 
@@ -127,8 +127,8 @@ trait IntegrationSpecBase extends PlaySpec
     "microservice.services.exbForms.port" -> wiremockPort
   )
 
-  implicit lazy val messagesApi = app.injector.instanceOf[MessagesApi]
-  implicit lazy val appConfig = app.injector.instanceOf[FrontendAppConfig]
+  implicit lazy val messagesApi: MessagesApi = app.injector.instanceOf[MessagesApi]
+  implicit lazy val appConfig: FrontendAppConfig = app.injector.instanceOf[FrontendAppConfig]
   implicit lazy val fakeRequest = FakeRequest("", "").withSession(SessionKeys.sessionId -> "foo")
 
   override def beforeEach(): Unit = {

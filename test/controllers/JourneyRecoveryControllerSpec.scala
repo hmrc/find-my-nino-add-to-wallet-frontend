@@ -50,7 +50,7 @@ class JourneyRecoveryControllerSpec extends SpecBase with MockitoSugar {
         when(mockSessionRepository.get(any())) thenReturn Future.successful(None)
 
         val application =
-          applicationBuilder(userAnswers = None)
+          applicationBuilder()
             .overrides(
               inject.bind[SessionRepository].toInstance(mockSessionRepository),
             )
@@ -79,7 +79,7 @@ class JourneyRecoveryControllerSpec extends SpecBase with MockitoSugar {
         when(mockSessionRepository.get(any())) thenReturn Future.successful(None)
 
         val application =
-          applicationBuilder(userAnswers = None)
+          applicationBuilder()
             .overrides(
               inject.bind[SessionRepository].toInstance(mockSessionRepository),
             )
@@ -108,7 +108,7 @@ class JourneyRecoveryControllerSpec extends SpecBase with MockitoSugar {
         when(mockSessionRepository.get(any())) thenReturn Future.successful(None)
 
         val application =
-          applicationBuilder(userAnswers = None)
+          applicationBuilder()
             .overrides(
               inject.bind[SessionRepository].toInstance(mockSessionRepository),
             )

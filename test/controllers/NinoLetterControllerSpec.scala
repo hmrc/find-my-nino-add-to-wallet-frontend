@@ -25,7 +25,7 @@ import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import services.{IndividualDetailsService, NPSService}
-import util.CDFixtures
+import util.IndividualDetailsFixtures
 import util.Fixtures.{fakeIndividualDetailsDataCache, fakeIndividualDetailsDataCacheWithCRN}
 import util.Stubs.userLoggedInFMNUser
 import util.TestData.NinoUser
@@ -33,7 +33,7 @@ import views.html.print.PrintNationalInsuranceNumberView
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class NinoLetterControllerSpec extends SpecBase with CDFixtures with MockitoSugar {
+class NinoLetterControllerSpec extends SpecBase with IndividualDetailsFixtures with MockitoSugar {
 
   override protected def beforeEach(): Unit = {
     reset(mockIndividualDetailsService)

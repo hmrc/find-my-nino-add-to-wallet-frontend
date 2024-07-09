@@ -23,7 +23,6 @@ import play.api.libs.json.{Json, Writes}
 import play.api.mvc.Results.InternalServerError
 import play.api.test.{DefaultAwaitTimeout, Injecting}
 import uk.gov.hmrc.http.HttpClient
-import util.Fixtures.buildPersonDetails
 import util.WireMockHelper
 
 import java.util.Base64
@@ -41,11 +40,8 @@ class GoogleWalletConnectorSpec extends ConnectorSpec
   )
 
   val delay = 5000
-  val pd = buildPersonDetails
-  val jsonPd = Json.toJson(pd)
 
   val passId: String = "passId"
-  val personDetailsId: String = "pdId"
   val fakeName: String = "fakeName"
   val fakeNino:String = "fakeNino"
   val googlePassUrl = " https://pay.google.com/gp/v/save/eyJhbGci6IkpXVCJ9"
@@ -117,9 +113,9 @@ class GoogleWalletConnectorSpec extends ConnectorSpec
     }
 
     "return OK when called create google pass" in new LocalSetup {
-      stubPost(url, OK, Some(Json.toJson(createGooglePassDetails).toString()), Some(personDetailsId))
+      stubPost(url, OK, Some(Json.toJson(createGooglePassDetails).toString()), Some(passId))
       val result: String = connector.createGooglePass(createGooglePassDetails.fullName, createGooglePassDetails.nino).futureValue.get
-      result mustBe personDetailsId
+      result mustBe passId
     }
 
     "return error when called create google pass " in new LocalSetup {

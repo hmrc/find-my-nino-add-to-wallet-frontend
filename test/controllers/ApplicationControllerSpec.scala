@@ -250,6 +250,17 @@ class ApplicationControllerSpec extends SpecBase with IndividualDetailsFixtures 
         }
       }
 
+      "showUpliftJourneyOutcome should return TechnicalIssue(424) when IV journey status is some other error" in new LocalSetup {
+
+        running(application) {
+          when(mockIdentityVerificationFrontendService.getIVJourneyStatus(any())(any(), any()))
+            .thenReturn(EitherT[Future, UpstreamErrorResponse, IdentityVerificationResponse](Future.successful(Right(InvalidResponse))))
+
+          val result = controller.showUpliftJourneyOutcome(None)(buildFakeRequestWithAuth("GET", "/?journeyId=XXXXX"))
+          status(result) mustBe FAILED_DEPENDENCY
+        }
+      }
+
       "return bad request when continueUrl is not relative" in new LocalSetup {
         val result = routeWrapper(
           buildFakeRequestWithAuth(

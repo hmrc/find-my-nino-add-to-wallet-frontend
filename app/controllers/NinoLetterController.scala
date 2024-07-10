@@ -18,7 +18,7 @@ package controllers
 
 import config.FrontendAppConfig
 import controllers.actions.CheckChildRecordAction
-import controllers.auth.requests.UserRequestNew
+import controllers.auth.requests.UserRequest
 import models.individualDetails.IndividualDetailsDataCache
 import org.apache.xmlgraphics.util.MimeConstants
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
@@ -43,7 +43,7 @@ class NinoLetterController @Inject()(
                                       view: PrintNationalInsuranceNumberView,
                                       checkChildRecordAction: CheckChildRecordAction,
                                       fopService: FopService,
-                                      pdfTemplate: ApplicationPdf,
+                                      pdfTemplate: ApplicationPdf
                                     )(implicit config: Configuration,
                                       env: Environment,
                                       ec: ExecutionContext,
@@ -77,7 +77,7 @@ class NinoLetterController @Inject()(
     }
   }
 
-  private def createPDF(individualDetailsDataCache: IndividualDetailsDataCache, userRequestNew: UserRequestNew[AnyContent]): Future[Array[Byte]] = {
+  private def createPDF(individualDetailsDataCache: IndividualDetailsDataCache, userRequestNew: UserRequest[AnyContent]): Future[Array[Byte]] = {
     implicit val messages: Messages = cc.messagesApi.preferred(userRequestNew.request)
     val date: String                = LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY"))
 

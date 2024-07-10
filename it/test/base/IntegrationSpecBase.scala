@@ -25,6 +25,7 @@ import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.i18n.MessagesApi
 import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.mvc.AnyContentAsEmpty
 import play.api.test.{DefaultAwaitTimeout, FakeRequest}
 import play.api.{Application, Environment, Mode}
 import uk.gov.hmrc.domain.Generator
@@ -44,7 +45,7 @@ trait IntegrationSpecBase extends PlaySpec
   override implicit lazy val app: Application = new GuiceApplicationBuilder()
     .in(Environment.simple(mode = Mode.Dev))
     .configure(config)
-    .build
+    .build()
 
   val generatedNino = new Generator().nextNino
 
@@ -127,9 +128,9 @@ trait IntegrationSpecBase extends PlaySpec
     "microservice.services.exbForms.port" -> wiremockPort
   )
 
-  implicit lazy val messagesApi = app.injector.instanceOf[MessagesApi]
-  implicit lazy val appConfig = app.injector.instanceOf[FrontendAppConfig]
-  implicit lazy val fakeRequest = FakeRequest("", "").withSession(SessionKeys.sessionId -> "foo")
+  implicit lazy val messagesApi: MessagesApi = app.injector.instanceOf[MessagesApi]
+  implicit lazy val appConfig: FrontendAppConfig = app.injector.instanceOf[FrontendAppConfig]
+  implicit lazy val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("", "").withSession(SessionKeys.sessionId -> "foo")
 
   override def beforeEach(): Unit = {
     resetWiremock()

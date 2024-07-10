@@ -496,7 +496,7 @@
                               padding-end="5px"
                               padding-before="2px"
                               padding-after="5px">
-                        <fo:block role="H2"
+                        <fo:block role="H3"
                                   border-after-style="solid"
                                   border-color="#00A298"
                                   border-width="1.5px"

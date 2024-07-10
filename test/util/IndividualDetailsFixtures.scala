@@ -17,8 +17,7 @@
 package util
 
 import controllers.auth.requests.UserRequest
-import models._
-import models.individualDetails.{Address, _}
+import models.individualDetails._
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatest.concurrent.{PatienceConfiguration, ScalaFutures}
@@ -30,7 +29,6 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.libs.json.{JsValue, Json}
 import play.api.mvc._
 import play.api.test.{FakeRequest, Helpers, Injecting}
 import play.twirl.api.Html
@@ -43,120 +41,7 @@ import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
 
-trait CDFixtures {
-  def buildPersonDetails: PersonDetails =
-    PersonDetails(
-      Person(
-        Some("Firstname"),
-        Some("Middlename"),
-        Some("Lastname"),
-        Some("FML"),
-        Some("Dr"),
-        Some("Phd."),
-        Some("M"),
-        Some(LocalDate.parse("1945-03-18")),
-        Some(Fixtures.fakeNino)
-      ),
-      Some(buildFakeAddress),
-      None
-    )
-
-  def buildPersonDetailsCorrespondenceAddress: PersonDetails =
-    PersonDetails(
-      Person(
-        Some("Firstname"),
-        Some("Middlename"),
-        Some("Lastname"),
-        Some("FML"),
-        Some("Dr"),
-        Some("Phd."),
-        Some("M"),
-        Some(LocalDate.parse("1945-03-18")),
-        Some(Fixtures.fakeNino)
-      ),
-      Some(buildFakeAddress),
-      Some(buildFakeCorrespondenceAddress)
-    )
-
-  def buildPersonDetailsWithoutAddress: PersonDetails =
-    PersonDetails(
-      Person(
-        Some("Firstname"),
-        Some("Middlename"),
-        Some("Lastname"),
-        Some("FML"),
-        Some("Dr"),
-        Some("Phd."),
-        Some("M"),
-        Some(LocalDate.parse("1945-03-18")),
-        Some(Fixtures.fakeNino)
-      ),
-      None,
-      Some(buildFakeCorrespondenceAddress)
-    )
-
-  def buildPersonDetailsWithoutCorrespondenceAddress: PersonDetails =
-    PersonDetails(
-      Person(
-        Some("Firstname"),
-        Some("Middlename"),
-        Some("Lastname"),
-        Some("FML"),
-        Some("Dr"),
-        Some("Phd."),
-        Some("M"),
-        Some(LocalDate.parse("1945-03-18")),
-        Some(Fixtures.fakeNino)
-      ),
-      Some(buildFakeAddress),
-      None
-    )
-
-  def buildFakeAddress: models.Address = models.Address(
-    Some("1 Fake Street"),
-    Some("Fake Town"),
-    Some("Fake City"),
-    Some("Fake Region"),
-    None,
-    Some("AA1 1AA"),
-    None,
-    Some(LocalDate.of(2015, 3, 15)),
-    None,
-    Some("Residential"),
-    false
-  )
-
-  def buildFakeCorrespondenceAddress: models.Address = models.Address(
-    Some("2 Fake Street"),
-    Some("Fake Town"),
-    Some("Fake City"),
-    Some("Fake Region"),
-    None,
-    Some("AA1 1AA"),
-    None,
-    Some(LocalDate.of(2015, 3, 15)),
-    None,
-    Some("Correspondence"),
-    false
-  )
-
-  def buildFakeAddressWithEndDate: models.Address = models.Address(
-    Some("1 Fake Street"),
-    Some("Fake Town"),
-    Some("Fake City"),
-    Some("Fake Region"),
-    None,
-    Some("AA1 1AA"),
-    None,
-    Some(LocalDate.now),
-    Some(LocalDate.now),
-    Some("Correspondence"),
-    false
-  )
-
-  def buildFakeJsonAddress: JsValue = Json.toJson(buildFakeAddress)
-
-
+trait IndividualDetailsFixtures {
 
 trait BaseSpec
     extends AnyWordSpec
@@ -186,25 +71,14 @@ trait BaseSpec
       "auditing.enabled"              -> false
     )
 
-  protected def localGuiceApplicationBuilder(
-    personDetails: Option[PersonDetails] = None
-  ): GuiceApplicationBuilder =
+  protected def localGuiceApplicationBuilder(): GuiceApplicationBuilder =
     GuiceApplicationBuilder()
       .overrides(
-        bind[FormPartialRetriever].toInstance(mockPartialRetriever),
-//         bind[AuthJourney].toInstance(new FakeAuthJourney(saUser, personDetails))
+        bind[FormPartialRetriever].toInstance(mockPartialRetriever)
       )
       .configure(configValues)
 
   override implicit lazy val app: Application = localGuiceApplicationBuilder().build()
-
-  //implicit lazy val ec = app.injector.instanceOf[ExecutionContext]
-
-  //lazy val config = app.injector.instanceOf[ConfigDecorator]
-
-  //def injected[T](c: Class[T]): T = app.injector.instanceOf(c)
-
-  //def injected[T](implicit evidence: ClassTag[T]): T = app.injector.instanceOf[T]
 
 }
 trait ActionBuilderFixture extends ActionBuilder[UserRequest, AnyContent] {
@@ -215,7 +89,7 @@ trait ActionBuilderFixture extends ActionBuilder[UserRequest, AnyContent] {
 }
 
 
-object Fixtures extends CDFixtures  {
+object Fixtures extends IndividualDetailsFixtures  {
 
   val fakeNino = Nino(new Generator(new Random()).nextNino.nino)
 
@@ -351,21 +225,6 @@ object Fixtures extends CDFixtures  {
       |}
       |""".stripMargin
 
-  /*def buildFakePersonDetails: PersonDetails = PersonDetails(buildFakePerson, None, None)
-
-  def buildFakePerson: Person =
-    Person(
-      Some("Firstname"),
-      Some("Middlename"),
-      Some("Lastname"),
-      Some("FML"),
-      Some("Mr"),
-      None,
-      Some("M"),
-      Some(LocalDate.parse("1931-01-17")),
-      Some(Fixtures.fakeNino)
-    )*/
-
   val fakeName: Name = models.individualDetails.Name(
     nameSequenceNumber = NameSequenceNumber(1),
     nameType = NameType.RealName,
@@ -442,9 +301,17 @@ object Fixtures extends CDFixtures  {
     crnIndicator = "false"
   )
 
+  val fakeIndividualDetailsDataNoAddress = fakeIndividualDetailsData.copy(address = None)
+
   val fakeIndividualDetailsDataCache = IndividualDetailsDataCache(
     "some-fake-Id",
     Some(fakeIndividualDetailsData),
+    LocalDateTime.now(ZoneId.systemDefault()).toInstant(ZoneOffset.UTC)
+  )
+
+  val fakeIndividualDetailsDataCacheNoAddress = IndividualDetailsDataCache(
+    "some-fake-Id",
+    Some(fakeIndividualDetailsDataNoAddress),
     LocalDateTime.now(ZoneId.systemDefault()).toInstant(ZoneOffset.UTC)
   )
 

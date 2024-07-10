@@ -70,7 +70,8 @@ class IdentityVerificationFrontendConnectorSpec
       IM_A_TEAPOT,
       NOT_FOUND,
       BAD_REQUEST,
-      UNPROCESSABLE_ENTITY
+      UNPROCESSABLE_ENTITY,
+      LOCKED
     ).foreach { statusCode =>
       s"return Left when a $statusCode is retreived" in new SpecSetup {
         stubGet("/mdtp/journey/journeyId/1234", statusCode, None)

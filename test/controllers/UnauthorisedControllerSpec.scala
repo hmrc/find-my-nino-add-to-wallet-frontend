@@ -46,7 +46,7 @@ class UnauthorisedControllerSpec extends SpecBase with MockitoSugar {
       when(mockSessionRepository.get(any())) thenReturn Future.successful(Some(emptyUserAnswers))
 
       val application =
-        applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        applicationBuilder()
           .overrides(
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
           )

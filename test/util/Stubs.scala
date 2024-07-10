@@ -43,13 +43,12 @@ object Stubs {
         )
     )
 
-  def userLoggedInIsNotFMNUser(error: String): StubMapping =
+  def userLoggedInIsNotFMNUser(response: String): StubMapping =
     stubFor(
       post(urlEqualTo("/auth/authorise"))
         .withRequestBody(equalToJson(FMNRetrievals))
         .willReturn(
-          unauthorized.withHeader("WWW-Authenticate", s"""MDTP detail="$error"""")
+          unauthorized.withHeader("WWW-Authenticate", s"""MDTP detail="$response"""")
         )
     )
-
 }

@@ -27,7 +27,7 @@ import scala.concurrent.duration.FiniteDuration
 
 trait WireMockSupport extends SBase with BeforeAndAfterEach with BeforeAndAfterAll {
 
-  implicit val defaultTimeout = FiniteDuration(100, TimeUnit.SECONDS)
+  implicit val defaultTimeout: FiniteDuration = FiniteDuration(100, TimeUnit.SECONDS)
 
   val wiremockPort = 11111
 

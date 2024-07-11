@@ -14,21 +14,18 @@
  * limitations under the License.
  */
 
-package util
+package config
 
-import javax.inject.Inject
-import javax.xml.transform.{Source, URIResolver}
+import org.apache.fop.apps.{FopFactory, FopFactoryBuilder}
 import play.api.Environment
-import play.api.Logging
 
-class DefaultStylesheetResourceStreamResolver @Inject()(val environment: Environment) extends StylesheetResourceStreamResolver
+import javax.inject.{Inject, Provider, Singleton}
 
-trait StylesheetResourceStreamResolver extends URIResolver with BaseResourceStreamResolver with Logging {
-  val environment: Environment
-
-  override def resolve(href: String, base: String): Source = {
-    logger.info("[StylesheetResolver] Stylesheet location to convert " + href)
-
-    resolvePath(href.substring(href.lastIndexOf("/pdf") + 1))
-  }
+@Singleton
+class FopFactoryProvider @Inject()(
+  environment: Environment
+) extends Provider[FopFactory] {
+  override def get(): FopFactory =
+    new FopFactoryBuilder(environment.rootPath.toURI)
+      .build()
 }

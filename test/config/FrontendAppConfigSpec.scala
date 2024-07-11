@@ -59,10 +59,6 @@ class FrontendAppConfigSpec extends SpecBase with MockitoSugar {
     mockFrontendAppConfig.loginUrl.isInstanceOf[String]
   }
 
-  "host" in {
-    mockFrontendAppConfig.host.isInstanceOf[String]
-  }
-
   "cacheTtl" in {
     mockFrontendAppConfig.cacheTtl.isInstanceOf[Int]
   }

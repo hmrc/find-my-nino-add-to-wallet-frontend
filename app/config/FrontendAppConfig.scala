@@ -27,7 +27,6 @@ import java.net.URLEncoder
 @Singleton
 class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig: ServicesConfig) {
 
-  val host: String    = configuration.get[String]("host")
   val appName: String = configuration.get[String]("appName")
 
   lazy val gtmContainer: String = configuration.get[String]("tracking-consent-frontend.gtm.container")

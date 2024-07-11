@@ -12,7 +12,15 @@ The service consists of only 4 pages allowing you to:
 
 ## Prerequisites:
 
-### To use Apple Wallet functionality:
+### Note: Both Google and Apple integration should only be tested in staging or QA!
+
+The environments are pre-configured with the required Google and Apple cred`s via build jobs!
+
+For local development the Apple and Google pass creation is stubbed here (https://github.com/hmrc/sca-nino-stubs)
+
+Local dev does not make use of https://github.com/hmrc/find-my-nino-add-to-wallet as this should only be integrated in the environments.
+
+### To use Apple Wallet functionality (Google and Apple cred`s need to be stored in local zshrc file. This should be avoided unless absolutely necessary!):
 
 You would require the below certs and keys to run all the functionalities of the service:
 
@@ -30,7 +38,7 @@ These then need to be added to be added to env variables, local commands for tes
 - export PUBLIC_CERTIFICATE="add your base64 encoded public certificate"
 
 
-### To use Google Wallet functionality:
+### To use Google Wallet functionality locally (Google and Apple cred`s need to be stored in local zshrc file. This should be avoided unless absolutely necessary!):
 
 You would need a **Google Cloud service account key**, you can potentially create a local one for testing using the steps below, this process can change in future depending on Google's directions and policies or UI changes.
 

@@ -29,7 +29,7 @@ import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
 import util.{AuditUtils, XSLScalaBridge}
 import views.html.print.PrintNationalInsuranceNumberView
-import views.xml.ApplicationPdf
+import views.xml.NinoPdf
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -43,7 +43,7 @@ class NinoLetterController @Inject()(
                                       view: PrintNationalInsuranceNumberView,
                                       checkChildRecordAction: CheckChildRecordAction,
                                       fopService: FopService,
-                                      pdfTemplate: ApplicationPdf
+                                      pdfTemplate: NinoPdf
                                     )(implicit config: Configuration,
                                       env: Environment,
                                       ec: ExecutionContext,

@@ -17,8 +17,9 @@
 package services
 
 import org.apache.commons.io.output.ByteArrayOutputStream
-import org.apache.fop.apps.{FOUserAgent, Fop, FopConfParser, FopFactory, FopFactoryBuilder}
+import org.apache.fop.apps.{EnvironmentProfile, EnvironmentalProfileFactory, FOUserAgent, Fop, FopConfParser, FopFactory, FopFactoryBuilder}
 import org.apache.xmlgraphics.util.MimeConstants
+import util.{BaseResourceStreamResolver, FopURIResolver}
 
 import java.io.{File, StringReader}
 import javax.inject.{Inject, Singleton}
@@ -29,15 +30,20 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Using
 
 @Singleton
-class FopService @Inject()()(implicit ec: ExecutionContext) {
+class FopService @Inject()(fopURIResolver: FopURIResolver,
+                           resourceStreamResolver: BaseResourceStreamResolver)(implicit ec: ExecutionContext) {
 
   def render(input: String): Future[Array[Byte]] = Future {
 
     Using.resource(new ByteArrayOutputStream()) { out =>
 
-      val fopConfigFilePath: String  = "conf/pdf/fop.xconf"
-      val xconf: File                = new File(fopConfigFilePath)
-      val parser: FopConfParser      = new FopConfParser(xconf) //parsing configuration
+      val fopConfigFilePath = "pdf/fop.xconf"
+
+      val restrictedIO: EnvironmentProfile =
+        EnvironmentalProfileFactory.createRestrictedIO(new File(".").toURI, fopURIResolver)
+      val parser: FopConfParser =
+        new FopConfParser(resourceStreamResolver.resolvePath(fopConfigFilePath).getInputStream, restrictedIO) //parsing configuration
+
       val builder: FopFactoryBuilder = parser.getFopFactoryBuilder //building the factory with the user options
       val fopFactory: FopFactory     = builder.build()
 

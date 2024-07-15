@@ -99,6 +99,15 @@ To create a Google Cloud service account key for testing:
 - Click the green submit button
 - You should be redirected to: http://localhost:14006/save-your-national-insurance-number
 
+# Stubbing Find My Nino Add to Wallet back end (local dev)
+
+The endpoints located within `wallet.routes` within SCA Nino Stub (https://github.com/hmrc/sca-nino-stubs) implement stubbed out versions of the Apple and Google wallet endpoints held within Find My Nino Add to Wallet back end.
+This is provided such that the back end and creation of integrated Google and Apple pass cards can be bypassed in local development.
+
+Switching out Find My Nino Add to Wallet back end for stubs provides mock implementations of these journeys and creates test QR codes for a dummy url.
+
+The QR codes are `real` QR codes and as such the front end can generate them without the need for the Apple or Google creds to be stored in the local development environment.
+
 ## License
 
 This code is open source software licensed under the [Apache 2.0 License]("http://www.apache.org/licenses/LICENSE-2.0.html").

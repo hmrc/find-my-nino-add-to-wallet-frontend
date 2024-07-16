@@ -52,6 +52,7 @@ class CheckChildRecordAction @Inject()(
 
   override protected def refine[A](authContext: AuthContext[A]): Future[Either[Result, UserRequest[A]]] = {
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(authContext.request, authContext.request.session)
+    implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
     val identifier: String = authContext.nino.nino
 
     val sessionId: String = hc.sessionId.map(_.value).getOrElse(
@@ -61,25 +62,29 @@ class CheckChildRecordAction @Inject()(
     individualDetailsService.getIdDataFromCache(identifier, sessionId).flatMap {
       case Right(individualDetails) =>
         if (!isFullNino(individualDetails)) {
-          val request: CRNUpliftRequest = buildCrnUpliftRequest(individualDetails)
+          if (frontendAppConfig.crnUpliftEnabled) {
+            val request: CRNUpliftRequest = buildCrnUpliftRequest(individualDetails)
 
-          for {
-            upliftResult    <- npsService.upliftCRN(identifier, request)
-            preFlightChecks <- preFlightChecks(upliftResult.isRight, individualDetails, sessionId)
-          } yield (upliftResult, preFlightChecks) match {
-            case (Left(status), _) => handleErrorCrnUplift(status, authContext, frontendAppConfig)
-            case (Right(_), true) =>
-              Right(
-                UserRequest(
-                  Some(Nino(individualDetails.getNino)),
-                  authContext.confidenceLevel,
-                  individualDetails,
-                  authContext.allEnrolments,
-                  authContext.request
+            for {
+              upliftResult <- npsService.upliftCRN(identifier, request)
+              preFlightChecks <- preFlightChecks(upliftResult.isRight, individualDetails, sessionId)
+            } yield (upliftResult, preFlightChecks) match {
+              case (Left(status), _) => handleErrorCrnUplift(status, authContext, frontendAppConfig)
+              case (Right(_), true) =>
+                Right(
+                  UserRequest(
+                    Some(Nino(individualDetails.getNino)),
+                    authContext.confidenceLevel,
+                    individualDetails,
+                    authContext.allEnrolments,
+                    authContext.request
+                  )
                 )
-              )
-            case (Right(_), false) => Left(throw new InternalServerException("Failed to verify CRN uplift"))
-            case _                 => Left(throw new InternalServerException("Failed to uplift CRN"))
+              case (Right(_), false) => Left(throw new InternalServerException("Failed to verify CRN uplift"))
+              case _ => Left(throw new InternalServerException("Failed to uplift CRN"))
+            }
+          } else {
+            Future.successful(Left(Ok(postalFormView()(authContext.request, frontendAppConfig, messages))))
           }
         } else {
           Future.successful(

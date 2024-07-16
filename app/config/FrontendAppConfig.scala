@@ -61,8 +61,9 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
 
   val crnUpliftAPIAlreadyAdultErrorCode: String = configuration.get[String]("crnUpliftAPI.alreadyAnAdultErrorCode")
 
-  lazy val googleWalletEnabled = configuration.getOptional[Boolean]("features.google-wallet-enabled").getOrElse(false)
-  lazy val appleWalletEnabled = configuration.getOptional[Boolean]("features.apple-wallet-enabled").getOrElse(false)
+  lazy val googleWalletEnabled: Boolean = configuration.getOptional[Boolean]("features.google-wallet-enabled").getOrElse(false)
+  lazy val appleWalletEnabled: Boolean = configuration.getOptional[Boolean]("features.apple-wallet-enabled").getOrElse(false)
+  lazy val crnUpliftEnabled: Boolean = configuration.getOptional[Boolean]("features.crn-uplift-enabled").getOrElse(true)
 
   lazy val basGatewayFrontendHost: String     = getExternalUrl(s"bas-gateway-frontend.host").getOrElse("")
   lazy val multiFactorAuthenticationUpliftUrl = s"$basGatewayFrontendHost/bas-gateway/uplift-mfa"

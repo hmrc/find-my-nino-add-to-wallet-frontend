@@ -97,7 +97,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
             inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
             inject.bind[IdentityVerificationFrontendConnector].toInstance(mockIdentityVerificationFrontendConnector)
-          ).configure("features.apple-wallet-enabled" -> true)
+          ).configure("features.apple-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true)
           .build()
 
         running(application) {
@@ -122,8 +122,8 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
               inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),
               inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
             ).configure(
-              "features.apple-wallet-enabled" -> true
-            )
+            Map("features.apple-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true)
+          )
             .build()
 
         val view = application.injector.instanceOf[AppleWalletView]
@@ -150,7 +150,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
               inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),
               inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
             ).configure(
-            "features.apple-wallet-enabled" -> true
+            "features.apple-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true
           )
             .build()
 
@@ -172,12 +172,12 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
       "must return apple pass" in {
 
         val application = applicationBuilderWithConfig().overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
-            inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
-            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-          )
+          inject.bind[SessionRepository].toInstance(mockSessionRepository),
+          inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
+          inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+        )
           .configure(
-            "features.apple-wallet-enabled" -> true
+            "features.apple-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true
           )
           .build()
 
@@ -196,12 +196,12 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
           .thenReturn(Future(None))
 
         val application = applicationBuilderWithConfig().overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
-            inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
-            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-          )
+          inject.bind[SessionRepository].toInstance(mockSessionRepository),
+          inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
+          inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+        )
           .configure(
-            "features.apple-wallet-enabled" -> true
+            "features.apple-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true
           )
           .build()
 
@@ -232,7 +232,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-          ).configure("features.apple-wallet-enabled" -> true)
+          ).configure("features.apple-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true)
           .build()
 
         running(application) {
@@ -250,12 +250,12 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
           .thenReturn(Future(None))
 
         val application = applicationBuilderWithConfig().overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
-            inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
-            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-          ).configure(
-            "features.apple-wallet-enabled" -> true
-          )
+          inject.bind[SessionRepository].toInstance(mockSessionRepository),
+          inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
+          inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+        ).configure(
+          "features.apple-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true
+        )
           .build()
 
         val view = application.injector.instanceOf[QRCodeNotFoundView]
@@ -285,8 +285,8 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
             inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
           ).configure(
-            "features.apple-wallet-enabled" -> true
-          )
+          "features.apple-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true
+        )
           .build()
 
         running(application) {
@@ -305,8 +305,8 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
             inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
           ).configure(
-            "features.apple-wallet-enabled" -> true
-          )
+          "features.apple-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true
+        )
           .build()
 
         running(application) {
@@ -329,7 +329,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
               inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
               inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
               inject.bind[IdentityVerificationFrontendConnector].toInstance(mockIdentityVerificationFrontendConnector)
-            ).configure("features.apple-wallet-enabled" -> true)
+            ).configure("features.apple-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true)
             .build()
 
         when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
@@ -375,10 +375,10 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
       "must return apple pass" in {
 
         val application = applicationBuilderWithConfig().overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
-            inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
-            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-          ).configure("features.apple-wallet-enabled" -> false)
+          inject.bind[SessionRepository].toInstance(mockSessionRepository),
+          inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
+          inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+        ).configure("features.apple-wallet-enabled" -> false)
           .build()
 
         running(application) {
@@ -396,10 +396,10 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
           .thenReturn(Future(None))
 
         val application = applicationBuilderWithConfig().overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
-            inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
-            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-          ).configure("features.apple-wallet-enabled" -> false)
+          inject.bind[SessionRepository].toInstance(mockSessionRepository),
+          inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
+          inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+        ).configure("features.apple-wallet-enabled" -> false)
           .build()
 
         val view = application.injector.instanceOf[PassIdNotFoundView]
@@ -430,8 +430,8 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
             inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
           ).configure(
-            "features.apple-wallet-enabled" -> false
-          )
+          "features.apple-wallet-enabled" -> false
+        )
           .build()
 
         running(application) {
@@ -449,12 +449,12 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
           .thenReturn(Future(None))
 
         val application = applicationBuilderWithConfig().overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
-            inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
-            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-          ).configure(
-            "features.apple-wallet-enabled" -> false
-          )
+          inject.bind[SessionRepository].toInstance(mockSessionRepository),
+          inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
+          inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+        ).configure(
+          "features.apple-wallet-enabled" -> false
+        )
           .build()
 
         val view = application.injector.instanceOf[QRCodeNotFoundView]
@@ -484,8 +484,8 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
             inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
           ).configure(
-            "features.apple-wallet-enabled" -> false
-          )
+          "features.apple-wallet-enabled" -> false
+        )
           .build()
 
         running(application) {
@@ -504,8 +504,8 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
             inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
           ).configure(
-            "features.apple-wallet-enabled" -> false
-          )
+          "features.apple-wallet-enabled" -> false
+        )
           .build()
 
         running(application) {

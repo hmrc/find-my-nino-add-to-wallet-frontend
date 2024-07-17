@@ -95,7 +95,7 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
               inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
               inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
               inject.bind[IdentityVerificationFrontendConnector].toInstance(mockIdentityVerificationFrontendConnector)
-            ).configure("features.google-wallet-enabled" -> true)
+            ).configure("features.google-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true)
             .build()
 
         when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
@@ -122,7 +122,7 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
               inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
               inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),
               inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-            ).configure("features.google-wallet-enabled" -> true)
+            ).configure("features.google-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true)
             .build()
 
         val view = application.injector.instanceOf[GoogleWalletView]
@@ -143,7 +143,7 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-          ).configure("features.google-wallet-enabled" -> true)
+          ).configure("features.google-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true)
           .build()
 
         running(application) {
@@ -164,7 +164,7 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-          ).configure("features.google-wallet-enabled" -> true)
+          ).configure("features.google-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true)
           .build()
 
         val view = application.injector.instanceOf[PassIdNotFoundView]
@@ -193,7 +193,7 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-          ).configure("features.google-wallet-enabled" -> true)
+          ).configure("features.google-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true)
           .build()
 
         running(application) {
@@ -214,7 +214,7 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-          ).configure("features.google-wallet-enabled" -> true)
+          ).configure("features.google-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true)
           .build()
 
         val view = application.injector.instanceOf[QRCodeNotFoundView]
@@ -243,7 +243,7 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-          ).configure("features.google-wallet-enabled" -> true)
+          ).configure("features.google-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true)
           .build()
 
         running(application) {
@@ -266,7 +266,7 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
               inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
               inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
               inject.bind[IdentityVerificationFrontendConnector].toInstance(mockIdentityVerificationFrontendConnector)
-            ).configure("features.google-wallet-enabled" -> true)
+            ).configure("features.google-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true)
             .build()
 
         when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))

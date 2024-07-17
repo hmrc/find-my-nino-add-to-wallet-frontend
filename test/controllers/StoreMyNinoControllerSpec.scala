@@ -400,7 +400,7 @@ class StoreMyNinoControllerSpec extends SpecBase with IndividualDetailsFixtures 
         .thenReturn(Future.successful(true))
       when(mockNPSService.upliftCRN(any(), any())(any())).thenReturn(Future.successful(Right(NO_CONTENT)))
 
-      val application =
+      val app =
         applicationBuilderWithConfig()
           .overrides(
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
@@ -412,45 +412,46 @@ class StoreMyNinoControllerSpec extends SpecBase with IndividualDetailsFixtures 
           ).configure("features.crn-upgrade-enabled" -> true)
           .build()
 
-      val view = application.injector.instanceOf[StoreMyNinoView]
+      val view = app.injector.instanceOf[StoreMyNinoView]
 
-      running(application) {
+      running(app) {
         userLoggedInFMNUser(NinoUser)
         val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
-        val result = route(application, request).value
+        val result = route(app, request).value
         status(result) mustEqual OK
-        contentAsString(result).removeAllNonces() mustEqual view(applePassId, googlePassId, "AB 12 34 56 C", displayForMobile = false)(request.withAttrs(requestAttributeMap), messages(application)).toString()
+        contentAsString(result).removeAllNonces() mustEqual view(applePassId, googlePassId, "AB 12 34 56 C", displayForMobile = false)(request.withAttrs(requestAttributeMap), messages(app)).toString()
         verify(mockNPSService, times(1)).upliftCRN(any(), any())(any())
       }
     }
 
     "must return OK and RedirectToPostalFormView when CRN uplift is toggled off" in {
       when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
-        .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCacheWithCRN)),
-          Future.successful(Right(fakeIndividualDetailsDataCache)))
+        .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCacheWithCRN)))
 
-      val application =
+      val app =
         applicationBuilderWithConfig()
           .overrides(
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
             inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
             inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),
-            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-          ).configure("features.crn-upgrade-enabled" -> false)
+            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
+          ).configure("features.crn-uplift-enabled" -> false)
           .build()
 
-      val view = application.injector.instanceOf[RedirectToPostalFormView]
+      val view = app.injector.instanceOf[RedirectToPostalFormView]
 
-      running(application) {
+      running(app) {
         userLoggedInFMNUser(NinoUser)
         val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
-        val result = route(application, request).value
+        val result = route(app, request).value
+
         status(result) mustEqual OK
         contentAsString(result).removeAllNonces() mustEqual
-          view()(request.withAttrs(requestAttributeMap), frontendAppConfig, messages(application)).toString
+          view()(request.withAttrs(requestAttributeMap), frontendAppConfig, messages(app)).toString
+
         verify(mockNPSService, times(0)).upliftCRN(any(), any())(any())
       }
     }

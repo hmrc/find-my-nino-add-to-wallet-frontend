@@ -49,7 +49,7 @@ class IndividualDetailsRepository @Inject()(mongoComponent: MongoComponent,
       Indexes.ascending("lastUpdated"),
       IndexOptions()
         .name("lastUpdatedIdx")
-        .expireAfter(appConfig.cacheTtl, TimeUnit.SECONDS)
+        .expireAfter(appConfig.individualDetailsCacheTtl, TimeUnit.SECONDS)
     )
   ),
   replaceIndexes = true

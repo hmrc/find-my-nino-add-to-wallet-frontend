@@ -125,7 +125,40 @@ class StoreMyNinoControllerSpec extends SpecBase with IndividualDetailsFixtures 
         val result = route(application, request).value
         status(result) mustEqual OK
 
-        contentAsString(result).removeAllNonces() mustEqual view(applePassId, googlePassId, "AB 12 34 56 C", displayForMobile = false)(request.withAttrs(requestAttributeMap), messages(application)).toString()
+        contentAsString(result).removeAllNonces() mustEqual view(
+          applePassId, googlePassId, "AB 12 34 56 C", displayForMobile = false
+        )(request.withAttrs(requestAttributeMap), messages(application)).toString()
+
+        verify(mockNPSService, times(0)).upliftCRN(any(), any())(any())
+
+      }
+    }
+
+    "must throw an exception when the individual details cache can't be invalidated" in {
+      when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
+        .thenReturn(Future.successful(false))
+
+      val application =
+        applicationBuilderWithConfig()
+          .overrides(
+            inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
+            inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
+            inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),
+            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+          )
+          .build()
+
+      running(application) {
+        userLoggedInFMNUser(NinoUser)
+
+        assertThrows[RuntimeException] {
+          val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
+            .withSession(("authToken", "Bearer 123"))
+          val result = route(application, request).value
+          status(result)
+        }
+
         verify(mockNPSService, times(0)).upliftCRN(any(), any())(any())
 
       }

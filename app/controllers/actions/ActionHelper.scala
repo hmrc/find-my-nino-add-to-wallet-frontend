@@ -92,8 +92,8 @@ class ActionHelper @Inject()(individualDetailsService: IndividualDetailsService,
     }
   }
 
-  def preFlightChecks(upliftSuccess: Boolean, individualDetails: IndividualDetailsDataCache, sessionId: String)
-                     (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] = {
+  private def preFlightChecks(upliftSuccess: Boolean, individualDetails: IndividualDetailsDataCache, sessionId: String)
+                             (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] = {
     if (upliftSuccess) {
       for {
         cacheInvalidated <- individualDetailsService.deleteIdDataFromCache(individualDetails.getNino)
@@ -107,26 +107,26 @@ class ActionHelper @Inject()(individualDetailsService: IndividualDetailsService,
     }
   }
 
-  def isFullNino(individualDetails: IndividualDetailsDataCache): Boolean =
+  private def isFullNino(individualDetails: IndividualDetailsDataCache): Boolean =
     individualDetails.individualDetailsData.get.crnIndicator.toLowerCase.equals("false")
 
-  def validateCrnUplift(nino: String, sessionId: String)
-                       (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
+  private def validateCrnUplift(nino: String, sessionId: String)
+                               (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
     individualDetailsService.getIdDataFromCache(nino, sessionId).flatMap {
       case Right(individualDetails) => Future.successful(isFullNino(individualDetails))
       case _ => Future.successful(throw new NotFoundException("Individual details not found"))
     }
 
-  def buildCrnUpliftRequest(individualDetails: IndividualDetailsDataCache): CRNUpliftRequest =
+  private def buildCrnUpliftRequest(individualDetails: IndividualDetailsDataCache): CRNUpliftRequest =
     new CRNUpliftRequest(
       individualDetails.individualDetailsData.get.firstForename,
       individualDetails.individualDetailsData.get.surname,
       individualDetails.individualDetailsData.get.dateOfBirth.toString
     )
 
-  def handleErrorIndividualDetails[A](response: Int,
-                                      authContext: AuthContext[A],
-                                      frontendAppConfig: FrontendAppConfig): Future[Left[Result, Nothing]] = {
+  private def handleErrorIndividualDetails[A](response: Int,
+                                              authContext: AuthContext[A],
+                                              frontendAppConfig: FrontendAppConfig): Future[Left[Result, Nothing]] = {
     implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
     response match {
       case UNPROCESSABLE_ENTITY =>
@@ -142,9 +142,9 @@ class ActionHelper @Inject()(individualDetailsService: IndividualDetailsService,
     }
   }
 
-  def handleErrorCrnUplift[A](status: Int,
-                              authContext: AuthContext[A],
-                              frontendAppConfig: FrontendAppConfig): Left[Result, Nothing] = {
+  private def handleErrorCrnUplift[A](status: Int,
+                                      authContext: AuthContext[A],
+                                      frontendAppConfig: FrontendAppConfig): Left[Result, Nothing] = {
     implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
     status match {
       case BAD_REQUEST => Left(Ok(postalFormView()(authContext.request, frontendAppConfig, messages)))

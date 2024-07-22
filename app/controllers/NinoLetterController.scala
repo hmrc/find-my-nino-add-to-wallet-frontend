@@ -17,7 +17,7 @@
 package controllers
 
 import config.FrontendAppConfig
-import controllers.actions.CheckChildRecordAction
+import controllers.actions.CheckChildRecordActionWithCacheInvalidation
 import controllers.auth.requests.UserRequest
 import models.individualDetails.IndividualDetailsDataCache
 import org.apache.xmlgraphics.util.MimeConstants
@@ -41,7 +41,7 @@ class NinoLetterController @Inject()(
                                       authConnector: AuthConnector,
                                       auditService: AuditService,
                                       view: PrintNationalInsuranceNumberView,
-                                      checkChildRecordAction: CheckChildRecordAction,
+                                      checkChildRecordAction: CheckChildRecordActionWithCacheInvalidation,
                                       fopService: FopService,
                                       pdfTemplate: NinoPdf
                                     )(implicit config: Configuration,

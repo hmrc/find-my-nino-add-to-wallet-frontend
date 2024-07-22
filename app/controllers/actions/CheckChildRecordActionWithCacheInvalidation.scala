@@ -21,12 +21,14 @@ import controllers.auth.AuthContext
 import controllers.auth.requests._
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc._
+import services.IndividualDetailsService
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class CheckChildRecordAction @Inject()(
+class CheckChildRecordActionWithCacheInvalidation @Inject()(
+                                        individualDetailsService: IndividualDetailsService,
                                         cc: ControllerComponents,
                                         val messagesApi: MessagesApi,
                                         actionHelper: ActionHelper
@@ -44,7 +46,11 @@ class CheckChildRecordAction @Inject()(
       throw new IllegalArgumentException("Session is required")
     )
 
-    actionHelper.checkForCrn(identifier, sessionId, authContext, messages)
+    individualDetailsService.deleteIdDataFromCache(identifier).flatMap {
+      case true => actionHelper.checkForCrn(identifier, sessionId, authContext, messages)
+      case _    => throw new RuntimeException("Failed to invalidate individual details data cache")
+    }
   }
+
   override protected def executionContext: ExecutionContext = cc.executionContext
 }

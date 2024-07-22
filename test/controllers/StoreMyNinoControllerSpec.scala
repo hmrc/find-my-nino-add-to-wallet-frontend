@@ -102,6 +102,9 @@ class StoreMyNinoControllerSpec extends SpecBase with IndividualDetailsFixtures 
   "StoreMyNino Controller" - {
 
     "must return OK and the correct view for a GET" in {
+      when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
+        .thenReturn(Future.successful(true))
+
       val application =
         applicationBuilderWithConfig()
           .overrides(
@@ -122,13 +125,49 @@ class StoreMyNinoControllerSpec extends SpecBase with IndividualDetailsFixtures 
         val result = route(application, request).value
         status(result) mustEqual OK
 
-        contentAsString(result).removeAllNonces() mustEqual view(applePassId, googlePassId, "AB 12 34 56 C", displayForMobile = false)(request.withAttrs(requestAttributeMap), messages(application)).toString()
+        contentAsString(result).removeAllNonces() mustEqual view(
+          applePassId, googlePassId, "AB 12 34 56 C", displayForMobile = false
+        )(request.withAttrs(requestAttributeMap), messages(application)).toString()
+
         verify(mockNPSService, times(0)).upliftCRN(any(), any())(any())
 
       }
     }
 
-    "must redirect to foo" in {
+    "must throw an exception when the individual details cache can't be invalidated" in {
+      when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
+        .thenReturn(Future.successful(false))
+
+      val application =
+        applicationBuilderWithConfig()
+          .overrides(
+            inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
+            inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
+            inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),
+            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+          )
+          .build()
+
+      running(application) {
+        userLoggedInFMNUser(NinoUser)
+
+        assertThrows[RuntimeException] {
+          val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
+            .withSession(("authToken", "Bearer 123"))
+          val result = route(application, request).value
+          status(result)
+        }
+
+        verify(mockNPSService, times(0)).upliftCRN(any(), any())(any())
+
+      }
+    }
+
+    "must redirect to redirect url" in {
+      when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
+        .thenReturn(Future.successful(true))
+
       val application =
         applicationBuilderWithConfig()
           .overrides(
@@ -155,6 +194,9 @@ class StoreMyNinoControllerSpec extends SpecBase with IndividualDetailsFixtures 
     }
 
     "must redirect to ErrorView when individuals details could not be found" in {
+      when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
+        .thenReturn(Future.successful(true))
+
       when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
         .thenReturn(Future.successful(Left(NOT_FOUND)))
 
@@ -185,6 +227,9 @@ class StoreMyNinoControllerSpec extends SpecBase with IndividualDetailsFixtures 
     }
 
     "must redirect to technical error contact hmrc when individuals details could not be parsed" in {
+      when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
+        .thenReturn(Future.successful(true))
+
       when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
         .thenReturn(Future.successful(Left(UNPROCESSABLE_ENTITY)))
 
@@ -214,6 +259,9 @@ class StoreMyNinoControllerSpec extends SpecBase with IndividualDetailsFixtures 
     }
 
     "must return google pass" in {
+      when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
+        .thenReturn(Future.successful(true))
+
       val application = applicationBuilderWithConfig().overrides(
         inject.bind[SessionRepository].toInstance(mockSessionRepository),
         inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
@@ -233,6 +281,9 @@ class StoreMyNinoControllerSpec extends SpecBase with IndividualDetailsFixtures 
     }
 
     "must redirect to passIdNotFoundView when no Google pass is returned" in {
+      when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
+        .thenReturn(Future.successful(true))
+
       when(mockGoogleWalletConnector.getGooglePassUrl(eqTo(googlePassId))(any(), any()))
         .thenReturn(Future(None))
 
@@ -265,6 +316,9 @@ class StoreMyNinoControllerSpec extends SpecBase with IndividualDetailsFixtures 
     }
 
     "must return apple pass" in {
+      when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
+        .thenReturn(Future.successful(true))
+
       val application = applicationBuilderWithConfig().overrides(
         inject.bind[SessionRepository].toInstance(mockSessionRepository),
         inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
@@ -284,6 +338,9 @@ class StoreMyNinoControllerSpec extends SpecBase with IndividualDetailsFixtures 
     }
 
     "must redirect to passIdNotFoundView when no Apple pass is returned" in {
+      when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
+        .thenReturn(Future.successful(true))
+
       when(mockAppleWalletConnector.getApplePass(eqTo(applePassId))(any(), any()))
         .thenReturn(Future(None))
 
@@ -317,6 +374,7 @@ class StoreMyNinoControllerSpec extends SpecBase with IndividualDetailsFixtures 
     }
 
     "must fail to login user" in {
+
       val application = applicationBuilderWithConfig()
         .overrides(
           inject.bind[SessionRepository].toInstance(mockSessionRepository),
@@ -393,6 +451,9 @@ class StoreMyNinoControllerSpec extends SpecBase with IndividualDetailsFixtures 
     }
 
     "must uplift a CRN when CRN uplift is toggled on" in {
+      when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
+        .thenReturn(Future.successful(true))
+
       when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
         .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCacheWithCRN)),
           Future.successful(Right(fakeIndividualDetailsDataCache)))
@@ -426,6 +487,9 @@ class StoreMyNinoControllerSpec extends SpecBase with IndividualDetailsFixtures 
     }
 
     "must return OK and RedirectToPostalFormView when CRN uplift is toggled off" in {
+      when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
+        .thenReturn(Future.successful(true))
+
       when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
         .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCacheWithCRN)))
 
@@ -457,6 +521,9 @@ class StoreMyNinoControllerSpec extends SpecBase with IndividualDetailsFixtures 
     }
 
     "must return OK and RedirectToPostalFormView for BAD_REQUEST from CRN uplift" in {
+      when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
+        .thenReturn(Future.successful(true))
+
       when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
         .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCacheWithCRN)))
       when(mockNPSService.upliftCRN(any(), any())(any())).thenReturn(Future.successful(Left(BAD_REQUEST)))
@@ -490,6 +557,9 @@ class StoreMyNinoControllerSpec extends SpecBase with IndividualDetailsFixtures 
     }
 
     "must return OK and RedirectToPostalFormView for UNPROCESSABLE_ENTITY from CRN uplift" in {
+      when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
+        .thenReturn(Future.successful(true))
+
       when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
         .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCacheWithCRN)))
       when(mockNPSService.upliftCRN(any(), any())(any())).thenReturn(Future.successful(Left(UNPROCESSABLE_ENTITY)))
@@ -524,6 +594,9 @@ class StoreMyNinoControllerSpec extends SpecBase with IndividualDetailsFixtures 
     }
 
     "must return OK and RedirectToPostalFormView for NOT_FOUND from CRN uplift" in {
+      when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
+        .thenReturn(Future.successful(true))
+
       when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
         .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCacheWithCRN)))
       when(mockNPSService.upliftCRN(any(), any())(any())).thenReturn(Future.successful(Left(NOT_FOUND)))

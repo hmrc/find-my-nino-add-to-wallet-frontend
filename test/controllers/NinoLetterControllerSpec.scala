@@ -52,6 +52,9 @@ class NinoLetterControllerSpec extends SpecBase with IndividualDetailsFixtures w
   "NinoLetter Controller" - {
     "must return OK and the correct view for a GET" in {
       userLoggedInFMNUser(NinoUser)
+      when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
+        .thenReturn(Future.successful(true))
+
       when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
         .thenReturn(
           Future.successful(Right(fakeIndividualDetailsDataCache))

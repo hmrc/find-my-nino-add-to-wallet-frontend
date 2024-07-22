@@ -18,6 +18,7 @@ package controllers
 
 import config.FrontendAppConfig
 import connectors.{AppleWalletConnector, GoogleWalletConnector}
+import controllers.actions.CheckChildRecordActionWithCacheInvalidation
 import models.individualDetails.IndividualDetailsDataCache
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc._
@@ -27,7 +28,6 @@ import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
 import util.AuditUtils
 import views.html.StoreMyNinoView
-import controllers.actions.CheckChildRecordAction
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
@@ -39,7 +39,7 @@ class StoreMyNinoController @Inject()(
                                        auditService: AuditService,
                                        override val messagesApi: MessagesApi,
                                        view: StoreMyNinoView,
-                                       checkChildRecordAction: CheckChildRecordAction
+                                       checkChildRecordAction: CheckChildRecordActionWithCacheInvalidation
                                      )(implicit config: Configuration,
                                        env: Environment,
                                        ec: ExecutionContext,

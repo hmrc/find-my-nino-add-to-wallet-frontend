@@ -129,7 +129,7 @@ class IndividualDetailsServiceImpl @Inject()(
 
   def deleteIdDataFromCache(nino: String)(implicit ec: ExecutionContext): Future[Boolean] = {
     individualDetailsRepository.deleteIndividualDetailsDataByNino(nino) map {
-      r => r.wasAcknowledged() && r.getDeletedCount > 0
+      r => r.wasAcknowledged()
     }
   }
 }

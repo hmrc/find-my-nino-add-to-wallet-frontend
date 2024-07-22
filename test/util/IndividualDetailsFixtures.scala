@@ -36,7 +36,7 @@ import uk.gov.hmrc.domain.{Generator, Nino, SaUtrGenerator}
 import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
 import uk.gov.hmrc.play.partials.FormPartialRetriever
 
-import java.time.{LocalDate, LocalDateTime, ZoneId, ZoneOffset}
+import java.time.{Instant, LocalDate}
 import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
@@ -306,13 +306,13 @@ object Fixtures extends IndividualDetailsFixtures  {
   val fakeIndividualDetailsDataCache = IndividualDetailsDataCache(
     "some-fake-Id",
     Some(fakeIndividualDetailsData),
-    LocalDateTime.now(ZoneId.systemDefault()).toInstant(ZoneOffset.UTC)
+    Instant.now(java.time.Clock.systemUTC())
   )
 
   val fakeIndividualDetailsDataCacheNoAddress = IndividualDetailsDataCache(
     "some-fake-Id",
     Some(fakeIndividualDetailsDataNoAddress),
-    LocalDateTime.now(ZoneId.systemDefault()).toInstant(ZoneOffset.UTC)
+    Instant.now(java.time.Clock.systemUTC())
   )
 
   val fakeIndividualDetailsDataWithCRN = fakeIndividualDetailsData.copy(crnIndicator = "true")

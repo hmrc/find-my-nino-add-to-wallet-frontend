@@ -28,3 +28,4 @@ final case class UserRequest[A](
   enrolments: Enrolments,
   request: Request[A]
 ) extends WrappedRequest[A](request) {}
+

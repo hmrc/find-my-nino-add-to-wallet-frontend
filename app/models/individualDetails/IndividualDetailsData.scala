@@ -21,7 +21,7 @@ import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
 import play.api.libs.json.{OFormat, __}
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats.instantFormat
 
-import java.time.{Instant, LocalDate, LocalDateTime, ZoneId, ZoneOffset}
+import java.time.{Instant, LocalDate}
 
 case class IndividualDetailsData(
                               fullName: String,
@@ -37,7 +37,7 @@ case class IndividualDetailsData(
 case class IndividualDetailsDataCache(
                                        id: String,
                                        individualDetailsData: Option[IndividualDetailsData],
-                                       lastUpdated: Instant = LocalDateTime.now(ZoneId.systemDefault()).toInstant(ZoneOffset.UTC)
+                                       lastUpdated: Instant = Instant.now(java.time.Clock.systemUTC())
  )
 
 object IndividualDetailsDataCache {

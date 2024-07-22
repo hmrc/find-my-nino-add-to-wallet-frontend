@@ -75,6 +75,33 @@ class NinoLetterControllerSpec extends SpecBase with IndividualDetailsFixtures w
       }
     }
 
+    "must throw an exception when the individual details cache can't be invalidated" in {
+      userLoggedInFMNUser(NinoUser)
+      when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
+        .thenReturn(Future.successful(false))
+
+      when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
+        .thenReturn(
+          Future.successful(Right(fakeIndividualDetailsDataCache))
+        )
+
+      val application = applicationBuilderWithConfig()
+        .overrides(
+          bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+        )
+        .build()
+
+      running(application) {
+        assertThrows[RuntimeException] {
+          val request = FakeRequest(GET, routes.NinoLetterController.onPageLoad.url)
+            .withSession(("authToken", "Bearer 123"))
+
+          val result = route(application, request).value
+          status(result)
+        }
+      }
+    }
+
     "must uplift CRN and return OK and the correct view for a GET" in {
       userLoggedInFMNUser(NinoUser)
       when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
@@ -105,6 +132,9 @@ class NinoLetterControllerSpec extends SpecBase with IndividualDetailsFixtures w
   "NinoLetterController saveNationalInsuranceNumberAsPdf" - {
     "must return OK and pdf file with correct content" in {
       userLoggedInFMNUser(NinoUser)
+      when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
+        .thenReturn(Future.successful(true))
+
       when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
         .thenReturn(
           Future.successful(Right(fakeIndividualDetailsDataCache))

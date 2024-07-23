@@ -76,17 +76,21 @@ class ActionHelper @Inject()(individualDetailsService: IndividualDetailsService,
             Future.successful(Left(Ok(postalFormView()(authContext.request, frontendAppConfig, messages))))
           }
         } else {
-          Future.successful(
-            Right(
-              UserRequest(
-                Some(Nino(individualDetails.getNino)),
-                authContext.confidenceLevel,
-                individualDetails,
-                authContext.allEnrolments,
-                authContext.request
+          if (Nino.isValid(individualDetails.getNino)) {
+            Future.successful(
+              Right(
+                UserRequest(
+                  Some(Nino(individualDetails.getNino)),
+                  authContext.confidenceLevel,
+                  individualDetails,
+                  authContext.allEnrolments,
+                  authContext.request
+                )
               )
             )
-          )
+          } else {
+            Future.successful(Left(Ok(postalFormView()(authContext.request, frontendAppConfig, messages))))
+          }
         }
       case Left(response) => handleErrorIndividualDetails(response, authContext, frontendAppConfig)
     }

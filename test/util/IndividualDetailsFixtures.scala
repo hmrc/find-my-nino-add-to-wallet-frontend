@@ -318,4 +318,8 @@ object Fixtures extends IndividualDetailsFixtures  {
   val fakeIndividualDetailsDataWithCRN = fakeIndividualDetailsData.copy(crnIndicator = "true")
 
   val fakeIndividualDetailsDataCacheWithCRN = fakeIndividualDetailsDataCache.copy(individualDetailsData = Some(fakeIndividualDetailsDataWithCRN))
+
+  val fakeIndividualDetailsDataCacheMissingNinoSuffix = fakeIndividualDetailsDataCache
+    .copy(individualDetailsData = Some(fakeIndividualDetailsData
+      .copy(nino = "AB123456")))
 }

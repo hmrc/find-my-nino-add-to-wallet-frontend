@@ -33,7 +33,7 @@ import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolment, Enrolments}
 import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
 import util.IndividualDetailsFixtures
-import util.Fixtures.{fakeIndividualDetailsDataCache, fakeIndividualDetailsDataCacheWithCRN}
+import util.Fixtures.{fakeIndividualDetailsDataCache, fakeIndividualDetailsDataCacheMissingNinoSuffix, fakeIndividualDetailsDataCacheWithCRN}
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
 import util.TestData.{NinoUser, NinoUserNoEnrolments, NinoUser_With_CL50, NinoUser_With_Credential_Strength_Weak}
 import views.html.{PassIdNotFoundView, RedirectToPostalFormView, StoreMyNinoView}
@@ -483,6 +483,38 @@ class StoreMyNinoControllerSpec extends SpecBase with IndividualDetailsFixtures 
         status(result) mustEqual OK
         contentAsString(result).removeAllNonces() mustEqual view(applePassId, googlePassId, "AB 12 34 56 C", displayForMobile = false)(request.withAttrs(requestAttributeMap), messages(app)).toString()
         verify(mockNPSService, times(1)).upliftCRN(any(), any())(any())
+      }
+    }
+
+    "must return OK and RedirectToPostalFormView when NINO is missing suffix" in {
+      when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
+        .thenReturn(Future.successful(true))
+
+      when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
+        .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCacheMissingNinoSuffix)))
+
+      val app =
+        applicationBuilderWithConfig()
+          .overrides(
+            inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
+            inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
+            inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),
+            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
+          )
+          .build()
+
+      val view = app.injector.instanceOf[RedirectToPostalFormView]
+
+      running(app) {
+        userLoggedInFMNUser(NinoUser)
+        val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
+          .withSession(("authToken", "Bearer 123"))
+        val result = route(app, request).value
+
+        status(result) mustEqual OK
+        contentAsString(result).removeAllNonces() mustEqual
+          view()(request.withAttrs(requestAttributeMap), frontendAppConfig, messages(app)).toString
       }
     }
 

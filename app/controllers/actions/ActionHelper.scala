@@ -76,26 +76,32 @@ class ActionHelper @Inject()(individualDetailsService: IndividualDetailsService,
             Future.successful(Left(Ok(postalFormView()(authContext.request, frontendAppConfig, messages))))
           }
         } else {
-          if (Nino.isValid(individualDetails.getNino)) {
-            Future.successful(
-              Right(
-                UserRequest(
-                  Some(Nino(individualDetails.getNino)),
-                  authContext.confidenceLevel,
-                  individualDetails,
-                  authContext.allEnrolments,
-                  authContext.request
-                )
-              )
-            )
-          } else {
-            Future.successful(Left(Ok(postalFormView()(authContext.request, frontendAppConfig, messages))))
-          }
+          validateNino(individualDetails, authContext, messages)
         }
       case Left(response) => handleErrorIndividualDetails(response, authContext, frontendAppConfig)
     }
   }
 
+  private def validateNino[A](individualDetails: IndividualDetailsDataCache,
+                              authContext: AuthContext[A],
+                              messages: Messages
+                             ): Future[Either[Result, UserRequest[A]]] = {
+    if (Nino.isValid(individualDetails.getNino)) {
+      Future.successful(
+        Right(
+          UserRequest(
+            Some(Nino(individualDetails.getNino)),
+            authContext.confidenceLevel,
+            individualDetails,
+            authContext.allEnrolments,
+            authContext.request
+          )
+        )
+      )
+    } else {
+      Future.successful(Left(Ok(postalFormView()(authContext.request, frontendAppConfig, messages))))
+    }
+  }
   private def preFlightChecks(upliftSuccess: Boolean, individualDetails: IndividualDetailsDataCache, sessionId: String)
                              (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] = {
     if (upliftSuccess) {

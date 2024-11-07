@@ -239,6 +239,20 @@ object Fixtures extends IndividualDetailsFixtures  {
     surname = Surname("Lastname")
   )
 
+  val fakeKnownAsName: Name = models.individualDetails.Name(
+    nameSequenceNumber = NameSequenceNumber(2),
+    nameType = NameType.KnownAsName,
+    titleType = Some(TitleType.Dr),
+    requestedName = Some(RequestedName("Known As Name")),
+    nameStartDate = NameStartDate(LocalDate.of(2000, 1, 1)),
+    nameEndDate = Some(NameEndDate(LocalDate.of(2022, 12, 31))),
+    otherTitle = Some(OtherTitle("Sir")),
+    honours = Some(Honours("PhD")),
+    firstForename = FirstForename("Known"),
+    secondForename = Some(SecondForename("As")),
+    surname = Surname("Name")
+  )
+
   val fakeNameWithoutMiddleName = fakeName.copy(secondForename = None)
 
   val fakeAddress: Address = Address(
@@ -287,6 +301,8 @@ object Fixtures extends IndividualDetailsFixtures  {
     nameList = NameList(Some(List(fakeName))),
     addressList = AddressList(Some(List(fakeAddress)))
   )
+
+  val fakeIndividualDetailsWithKnownAsName = fakeIndividualDetails.copy(nameList = NameList(Some(List(fakeName, fakeKnownAsName))))
 
   val fakeIndividualDetailsWithoutMiddleName = fakeIndividualDetails.copy(nameList = NameList(Some(List(fakeNameWithoutMiddleName))))
 

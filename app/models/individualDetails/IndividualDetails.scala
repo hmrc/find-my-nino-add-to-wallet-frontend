@@ -222,12 +222,16 @@ object IndividualDetails {
 
     def getNino: String = getNinoWithoutSuffix + idData.ninoSuffix.map(_.value).getOrElse("")
 
-    def getFirstForename: String = idData.nameList.name.flatMap(_.headOption).map(_.firstForename.value).getOrElse("")
-    private def getSecondForename: String = idData.nameList.name.flatMap(_.headOption).map(_.secondForename.getOrElse(SecondForename("")).value).getOrElse("")
-    def getLastName: String = idData.nameList.name.flatMap(_.headOption).map(_.surname.value).getOrElse("")
+    def findKnownAs(list: NameList): Option[Name] = {
+      list.name.flatMap(names => names.find(_.nameType.equals(NameType.KnownAsName)).orElse(names.headOption))
+    }
+
+    def getFirstForename: String = findKnownAs(idData.nameList).map(_.firstForename.value).getOrElse("")
+    private def getSecondForename: String = findKnownAs(idData.nameList).map(_.secondForename.getOrElse(SecondForename("")).value).getOrElse("")
+    def getLastName: String = findKnownAs(idData.nameList).map(_.surname.value).getOrElse("")
 
     private def getTitle: String =  {
-      val maybeTitle: Object = idData.nameList.name.flatMap(_.headOption)
+      val maybeTitle: Object = findKnownAs(idData.nameList)
         .map(_.titleType).getOrElse(TitleType.NotKnown)
 
       maybeTitle match {
@@ -243,7 +247,7 @@ object IndividualDetails {
     }
 
     private def getHonours: String = {
-      idData.nameList.name.flatMap(_.headOption.flatMap(_.honours.map(_.value))).getOrElse("")
+      findKnownAs(idData.nameList).flatMap(_.honours.map(_.value)).getOrElse("")
     }
 
     def getFullName: String = {

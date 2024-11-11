@@ -298,13 +298,13 @@ object Fixtures extends IndividualDetailsFixtures  {
     dateOfDeathStatus = None,
     dateOfRegistration = Some(LocalDate.of(2000, 1, 1)),
     crnIndicator = CrnIndicator.False,
-    nameList = NameList(Some(List(fakeName))),
+    nameList = NameList(List(fakeName)),
     addressList = AddressList(Some(List(fakeAddress)))
   )
 
-  val fakeIndividualDetailsWithKnownAsName = fakeIndividualDetails.copy(nameList = NameList(Some(List(fakeName, fakeKnownAsName))))
+  val fakeIndividualDetailsWithKnownAsName = fakeIndividualDetails.copy(nameList = NameList(List(fakeName, fakeKnownAsName)))
 
-  val fakeIndividualDetailsWithoutMiddleName = fakeIndividualDetails.copy(nameList = NameList(Some(List(fakeNameWithoutMiddleName))))
+  val fakeIndividualDetailsWithoutMiddleName = fakeIndividualDetails.copy(nameList = NameList(List(fakeNameWithoutMiddleName)))
 
   val fakeIndividualDetailsData = IndividualDetailsData(
     fullName = "Dr Firstname Middlename Lastname Phd.",

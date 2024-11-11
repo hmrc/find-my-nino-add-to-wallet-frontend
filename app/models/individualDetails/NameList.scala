@@ -18,7 +18,7 @@ package models.individualDetails
 
 import play.api.libs.json.{Json, OFormat}
 
-final case class NameList(name: Option[List[Name]])
+final case class NameList(name: List[Name])
 
 object NameList {
   implicit val format: OFormat[NameList] = Json.format[NameList]

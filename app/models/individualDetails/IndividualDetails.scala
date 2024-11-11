@@ -177,6 +177,68 @@ final case class IndividualDetails(
     addressList:        AddressList
 ) {
   def fullIdentifier: String = s"""${ninoWithoutSuffix}${ninoSuffix.map(_.value).getOrElse("")}"""
+
+  def getResidenceAddress: Option[Address] = addressList.getAddress
+    .find(_.addressType.equals(ResidentialAddress))
+
+  private def getCorrespondenceAddress: Option[Address] = addressList.getAddress
+    .find(_.addressType.equals(AddressType.CorrespondenceAddress))
+
+  private def getAddress: Option[Address] = getCorrespondenceAddress.orElse(getResidenceAddress)
+
+  def getAddressData: Option[AddressData] = {
+    getAddress.map(addr => AddressData(addr.addressLine1,
+      addr.addressLine2,
+      addr.addressLine3,
+      addr.addressLine4,
+      addr.addressLine5,
+      addr.addressPostcode,
+      CountryCodeLookup.convertCodeToCountryName(addr.countryCode.value),
+      addr.addressStartDate,
+      addr.addressType))
+
+  }
+
+  def getNino: String = ninoWithoutSuffix + ninoSuffix.map(_.value).getOrElse("")
+
+  def knownAsOrHead(list: NameList): Name = {
+    list.name.find(_.nameType.equals(NameType.KnownAsName)).getOrElse(list.name.head)
+  }
+
+  def getFirstForename: String = knownAsOrHead(nameList).firstForename.value
+  private def getSecondForename: String = knownAsOrHead(nameList).secondForename.getOrElse(SecondForename("")).value
+  def getLastName: String = knownAsOrHead(nameList).surname.value
+
+  private def getTitle: String =  {
+    val maybeTitle: TitleType = knownAsOrHead(nameList)
+      .titleType.getOrElse(TitleType.NotKnown)
+    maybeTitle match {
+      case TitleType.Mr => "Mr"
+      case TitleType.Mrs => "Mrs"
+      case TitleType.Miss => "Miss"
+      case TitleType.Ms => "Ms"
+      case TitleType.Dr => "Dr"
+      case TitleType.Rev => "Rev"
+      case _ => ""
+    }
+  }
+
+  private def getHonours: String = {
+    knownAsOrHead(nameList).honours.map(_.value).getOrElse("")
+  }
+
+  def getFullName: String = {
+    List(getTitle, getFirstForename.toUpperCase(), getSecondForename.toUpperCase(), getLastName.toUpperCase(), getHonours)
+      .filter(_.nonEmpty)
+      .mkString(" ")
+  }
+
+  def getInitialsName: String = {
+    List(getTitle, getFirstForename.toUpperCase().take(1), getSecondForename.toUpperCase().take(1), getLastName.toUpperCase(), getHonours)
+      .filter(_.nonEmpty)
+      .mkString(" ")
+  }
+
 }
 
 object IndividualDetails {
@@ -195,79 +257,4 @@ object IndividualDetails {
     (__ \ "nameList").format[NameList] ~
     (__ \ "addressList").format[AddressList])(IndividualDetails.apply, unlift(IndividualDetails.unapply))
 
-  implicit class IndividualDetailsOps(idData: IndividualDetails) {
-
-    private def getResidenceAddress: Option[Address] = idData.addressList.getAddress
-      .find(_.addressType.equals(ResidentialAddress))
-
-    private def getCorrespondenceAddress: Option[Address] = idData.addressList.getAddress
-      .find(_.addressType.equals(AddressType.CorrespondenceAddress))
-
-    private def getAddress: Option[Address] = getCorrespondenceAddress.orElse(getResidenceAddress)
-
-    def getAddressData: Option[AddressData] = {
-      getAddress.map(addr => AddressData(addr.addressLine1,
-        addr.addressLine2,
-        addr.addressLine3,
-        addr.addressLine4,
-        addr.addressLine5,
-        addr.addressPostcode,
-        CountryCodeLookup.convertCodeToCountryName(addr.countryCode.value),
-        addr.addressStartDate,
-        addr.addressType))
-
-    }
-
-    private def getNinoWithoutSuffix: String = idData.ninoWithoutSuffix
-
-    def getNino: String = getNinoWithoutSuffix + idData.ninoSuffix.map(_.value).getOrElse("")
-
-    def findKnownAs(list: NameList): Option[Name] = {
-      list.name.flatMap(names => names.find(_.nameType.equals(NameType.KnownAsName)).orElse(names.headOption))
-    }
-
-    def getFirstForename: String = findKnownAs(idData.nameList).map(_.firstForename.value).getOrElse("")
-    private def getSecondForename: String = findKnownAs(idData.nameList).map(_.secondForename.getOrElse(SecondForename("")).value).getOrElse("")
-    def getLastName: String = findKnownAs(idData.nameList).map(_.surname.value).getOrElse("")
-
-    private def getTitle: String =  {
-      val maybeTitle: Object = findKnownAs(idData.nameList)
-        .map(_.titleType).getOrElse(TitleType.NotKnown)
-
-      maybeTitle match {
-        case Some(TitleType.Mr) => "Mr"
-        case Some(TitleType.Mrs) => "Mrs"
-        case Some(TitleType.Miss) => "Miss"
-        case Some(TitleType.Ms) => "Ms"
-        case Some(TitleType.Dr) => "Dr"
-        case Some(TitleType.Rev) => "Rev"
-        case Some(OtherTitle(title)) => title
-        case _ => ""
-      }
-    }
-
-    private def getHonours: String = {
-      findKnownAs(idData.nameList).flatMap(_.honours.map(_.value)).getOrElse("")
-    }
-
-    def getFullName: String = {
-      List(getTitle, getFirstForename.toUpperCase(), getSecondForename.toUpperCase(), getLastName.toUpperCase(), getHonours)
-        .filter(_.nonEmpty)
-        .mkString(" ")
-    }
-
-    def getInitialsName: String = {
-      List(getTitle, getFirstForename.toUpperCase().take(1), getSecondForename.toUpperCase().take(1), getLastName.toUpperCase(), getHonours)
-        .filter(_.nonEmpty)
-        .mkString(" ")
-    }
-
-    def getCrnIndicator: String = {
-      idData.crnIndicator.asString
-    }
-
-    def getDateOfBirth: LocalDate = {
-      idData.dateOfBirth
-    }
-  }
 }

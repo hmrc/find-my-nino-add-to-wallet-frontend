@@ -58,7 +58,7 @@ class StoreMyNinoController @Inject()(
 
       auditSMNLandingPage("ViewNinoLanding", userRequestNew.individualDetails, hc)
 
-      val fullName = userRequestNew.individualDetails.getFullName
+      val fullName = userRequestNew.individualDetails.individualDetailsData.fullName
       val googleIdf = googleWalletConnector.createGooglePass(fullName, ninoFormatted)
       val appleIdf = appleWalletConnector.createApplePass(fullName, ninoFormatted)
 

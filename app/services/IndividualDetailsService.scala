@@ -76,7 +76,7 @@ class IndividualDetailsServiceImpl @Inject()(
 
     IndividualDetailsDataCache(
       sessionId,
-      Some(iDetails)
+      iDetails
     )
   }
 

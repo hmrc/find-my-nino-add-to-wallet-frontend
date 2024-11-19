@@ -60,7 +60,7 @@ class AppleWalletController @Inject()(val appleWalletConnector: AppleWalletConne
         auditApple("ViewWalletPage", userRequestNew.individualDetails, hc)
         val nino: String = userRequestNew.nino.getOrElse(throw new IllegalArgumentException("No nino found")).nino
         val ninoFormatted = nino.grouped(2).mkString(" ")
-        val fullName = userRequestNew.individualDetails.getFullName
+        val fullName = userRequestNew.individualDetails.individualDetailsData.fullName
         for {
           pId: Some[String] <- appleWalletConnector.createApplePass(fullName, ninoFormatted)
         } yield Ok(view(pId.value, isMobileDisplay(userRequestNew.request))(userRequestNew.request, messages))

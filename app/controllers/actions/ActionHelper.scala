@@ -62,7 +62,7 @@ class ActionHelper @Inject()(individualDetailsService: IndividualDetailsService,
               case (Right(_), true) =>
                 Right(
                   UserRequest(
-                    Some(Nino(individualDetails.getNino)),
+                    Some(Nino(individualDetails.individualDetailsData.nino)),
                     authContext.confidenceLevel,
                     individualDetails,
                     authContext.allEnrolments,
@@ -86,11 +86,11 @@ class ActionHelper @Inject()(individualDetailsService: IndividualDetailsService,
                               authContext: AuthContext[A],
                               messages: Messages
                              ): Future[Either[Result, UserRequest[A]]] = {
-    if (Nino.isValid(individualDetails.getNino)) {
+    if (Nino.isValid(individualDetails.individualDetailsData.nino)) {
       Future.successful(
         Right(
           UserRequest(
-            Some(Nino(individualDetails.getNino)),
+            Some(Nino(individualDetails.individualDetailsData.nino)),
             authContext.confidenceLevel,
             individualDetails,
             authContext.allEnrolments,
@@ -106,8 +106,8 @@ class ActionHelper @Inject()(individualDetailsService: IndividualDetailsService,
                              (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] = {
     if (upliftSuccess) {
       for {
-        cacheInvalidated <- individualDetailsService.deleteIdDataFromCache(individualDetails.getNino)
-        crnIndicatorUpdated <- validateCrnUplift(individualDetails.getNino, sessionId)
+        cacheInvalidated <- individualDetailsService.deleteIdDataFromCache(individualDetails.individualDetailsData.nino)
+        crnIndicatorUpdated <- validateCrnUplift(individualDetails.individualDetailsData.nino, sessionId)
       } yield (cacheInvalidated, crnIndicatorUpdated) match {
         case (true, true) => true
         case _ => false
@@ -118,7 +118,7 @@ class ActionHelper @Inject()(individualDetailsService: IndividualDetailsService,
   }
 
   private def isFullNino(individualDetails: IndividualDetailsDataCache): Boolean =
-    individualDetails.individualDetailsData.get.crnIndicator.toLowerCase.equals("false")
+    individualDetails.individualDetailsData.crnIndicator.toLowerCase.equals("false")
 
   private def validateCrnUplift(nino: String, sessionId: String)
                                (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
@@ -129,9 +129,9 @@ class ActionHelper @Inject()(individualDetailsService: IndividualDetailsService,
 
   private def buildCrnUpliftRequest(individualDetails: IndividualDetailsDataCache): CRNUpliftRequest =
     new CRNUpliftRequest(
-      individualDetails.individualDetailsData.get.firstForename,
-      individualDetails.individualDetailsData.get.surname,
-      individualDetails.individualDetailsData.get.dateOfBirth.toString
+      individualDetails.individualDetailsData.firstForename,
+      individualDetails.individualDetailsData.surname,
+      individualDetails.individualDetailsData.dateOfBirth.toString
     )
 
   private def handleErrorIndividualDetails[A](response: Int,

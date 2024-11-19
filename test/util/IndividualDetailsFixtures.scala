@@ -321,21 +321,21 @@ object Fixtures extends IndividualDetailsFixtures  {
 
   val fakeIndividualDetailsDataCache = IndividualDetailsDataCache(
     "some-fake-Id",
-    Some(fakeIndividualDetailsData),
+    fakeIndividualDetailsData,
     Instant.now(java.time.Clock.systemUTC())
   )
 
   val fakeIndividualDetailsDataCacheNoAddress = IndividualDetailsDataCache(
     "some-fake-Id",
-    Some(fakeIndividualDetailsDataNoAddress),
+    fakeIndividualDetailsDataNoAddress,
     Instant.now(java.time.Clock.systemUTC())
   )
 
   val fakeIndividualDetailsDataWithCRN = fakeIndividualDetailsData.copy(crnIndicator = "true")
 
-  val fakeIndividualDetailsDataCacheWithCRN = fakeIndividualDetailsDataCache.copy(individualDetailsData = Some(fakeIndividualDetailsDataWithCRN))
+  val fakeIndividualDetailsDataCacheWithCRN = fakeIndividualDetailsDataCache.copy(individualDetailsData = fakeIndividualDetailsDataWithCRN)
 
   val fakeIndividualDetailsDataCacheMissingNinoSuffix = fakeIndividualDetailsDataCache
-    .copy(individualDetailsData = Some(fakeIndividualDetailsData
-      .copy(nino = "AB123456")))
+    .copy(individualDetailsData = fakeIndividualDetailsData
+      .copy(nino = "AB123456"))
 }

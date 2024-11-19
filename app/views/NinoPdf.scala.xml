@@ -141,7 +141,7 @@
                     <fo:block>
                         <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal"
                                   line-height="12pt">
-                            <fo:block>@individualDetailsDataCache.getInitialsName</fo:block>
+                            <fo:block>@individualDetailsDataCache.individualDetailsData.initialsName</fo:block>
                         </fo:block>
                         @individualDetailsDataCache.getAddressLines.map { line =>
                         <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal"
@@ -206,7 +206,7 @@
             <!-- name and title -->
             <fo:block font-size="10.5pt" font-family="OpenSans" font-weight="normal" line-height="12pt"
                       padding-after="6px" padding-before="6px">
-                @individualDetailsDataCache.getFullName
+                @individualDetailsDataCache.individualDetailsData.fullName
             </fo:block>
             <!-- end name and title -->
 
@@ -226,7 +226,7 @@
                           text-align="center"
                           font-family="OpenSans-Bold"
                           font-weight="bold">
-                    @individualDetailsDataCache.getNino.grouped(2).mkString(" ")
+                    @individualDetailsDataCache.individualDetailsData.nino.grouped(2).mkString(" ")
                 </fo:block>
             </fo:block>
             <fo:block role="P"

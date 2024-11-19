@@ -60,8 +60,8 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec
     val result = service.getIdDataFromCache("testNino", "some-fake-Id")
 
     assert(result.futureValue isRight)
-    assert(result.futureValue.fold( _ => false, _.getNino == "AB123456C"))
-    assert(result.futureValue.fold(_ => false, _.getFullName == "Dr FIRSTNAME MIDDLENAME LASTNAME PhD"))
+    assert(result.futureValue.fold( _ => false, _.individualDetailsData.nino == "AB123456C"))
+    assert(result.futureValue.fold(_ => false, _.individualDetailsData.fullName == "Dr FIRSTNAME MIDDLENAME LASTNAME PhD"))
   }
 
   "IndividualDetailsService" should "create individual details data cache where no middle name present" in {
@@ -81,8 +81,8 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec
     val result = service.getIdDataFromCache("testNino", "some-fake-Id")
 
     assert(result.futureValue isRight)
-    assert(result.futureValue.fold(_ => false, _.getNino == "AB123456C"))
-    assert(result.futureValue.fold(_ => false, _.getFullName == "Dr FIRSTNAME LASTNAME PhD"))
+    assert(result.futureValue.fold(_ => false, _.individualDetailsData.nino == "AB123456C"))
+    assert(result.futureValue.fold(_ => false, _.individualDetailsData.fullName == "Dr FIRSTNAME LASTNAME PhD"))
   }
 
   "IndividualDetailsService" should "create individual details data cache where the known as name is present" in {
@@ -102,8 +102,8 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec
     val result = service.getIdDataFromCache("testNino", "some-fake-Id")
 
     assert(result.futureValue isRight)
-    assert(result.futureValue.fold(_ => false, _.getNino == "AB123456C"))
-    assert(result.futureValue.fold(_ => false, _.getFullName == "Dr KNOWN AS NAME PhD"))
+    assert(result.futureValue.fold(_ => false, _.individualDetailsData.nino == "AB123456C"))
+    assert(result.futureValue.fold(_ => false, _.individualDetailsData.fullName == "Dr KNOWN AS NAME PhD"))
   }
 
   "IndividualDetailsService" should "return a left of unprcessible entity where invalid json is returned" in {

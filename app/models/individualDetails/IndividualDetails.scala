@@ -86,13 +86,13 @@ final case class IndividualDetails(
 
   def getNino: String = ninoWithoutSuffix + ninoSuffix.map(_.value).getOrElse("")
 
-  def getPreferredName = {
+  lazy val preferredName: Name = {
     nameList.name.find(_.nameType.equals(NameType.KnownAsName)).getOrElse(nameList.name.head)
   }
 
 
   private def getTitle: String =  {
-    val maybeTitle: TitleType = getPreferredName
+    val maybeTitle: TitleType = preferredName
       .titleType.getOrElse(TitleType.NotKnown)
     maybeTitle match {
       case TitleType.Mr => "Mr"
@@ -106,19 +106,17 @@ final case class IndividualDetails(
   }
 
   private def getHonours: String = {
-    getPreferredName.honours.map(_.value).getOrElse("")
+    preferredName.honours.map(_.value).getOrElse("")
   }
 
   def getFullName: String = {
-    val name = getPreferredName
-    List(getTitle, name.firstForename.toUpperCase(), name.secondForename.getOrElse("").toUpperCase(), name.surname.toUpperCase(), getHonours)
+    List(getTitle, preferredName.firstForename.toUpperCase(), preferredName.secondForename.getOrElse("").toUpperCase(), preferredName.surname.toUpperCase(), getHonours)
       .filter(_.nonEmpty)
       .mkString(" ")
   }
 
   def getInitialsName: String = {
-    val name = getPreferredName
-    List(getTitle, name.firstForename.toUpperCase().take(1), name.secondForename.getOrElse("").toUpperCase().take(1), name.surname.toUpperCase(), getHonours)
+    List(getTitle, preferredName.firstForename.toUpperCase().take(1), preferredName.secondForename.getOrElse("").toUpperCase().take(1), preferredName.surname.toUpperCase(), getHonours)
       .filter(_.nonEmpty)
       .mkString(" ")
   }

@@ -79,14 +79,6 @@ final case class RequestedName(value: String) extends AnyVal
 object RequestedName {
   implicit val format: Format[RequestedName] = Json.valueFormat[RequestedName]
 }
-final case class NameStartDate(value: LocalDate) extends AnyVal
-object NameStartDate {
-  implicit val format: Format[NameStartDate] = Json.valueFormat[NameStartDate]
-}
-final case class NameEndDate(value: LocalDate) extends AnyVal
-object NameEndDate {
-  implicit val format: Format[NameEndDate] = Json.valueFormat[NameEndDate]
-}
 final case class OtherTitle(value: String) extends AnyVal
 object OtherTitle {
   implicit val format: Format[OtherTitle] = Json.valueFormat[OtherTitle]

@@ -290,13 +290,7 @@ object Fixtures extends IndividualDetailsFixtures  {
   val fakeIndividualDetails: IndividualDetails = IndividualDetails(
     ninoWithoutSuffix = "AB123456",
     ninoSuffix = Some(NinoSuffix("C")),
-    accountStatusType = Some(AccountStatusType.FullLive),
-    dateOfEntry = Some(LocalDate.of(2000, 1, 1)),
     dateOfBirth = LocalDate.of(1990, 1, 1),
-    dateOfBirthStatus = Some(DateOfBirthStatus.Verified),
-    dateOfDeath = None,
-    dateOfDeathStatus = None,
-    dateOfRegistration = Some(LocalDate.of(2000, 1, 1)),
     crnIndicator = CrnIndicator.False,
     nameList = NameList(List(fakeName)),
     addressList = AddressList(Some(List(fakeAddress)))

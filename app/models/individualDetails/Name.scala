@@ -21,10 +21,7 @@ import play.api.libs.json._
 
 import java.time.LocalDate
 
-final case class NameSequenceNumber(value: Int) extends AnyVal
-object NameSequenceNumber {
-  implicit val format: Format[NameSequenceNumber] = Json.valueFormat[NameSequenceNumber]
-}
+
 sealed trait NameType
 object NameType {
   object RealName    extends NameType
@@ -98,32 +95,17 @@ final case class Honours(value: String) extends AnyVal
 object Honours {
   implicit val format: Format[Honours] = Json.valueFormat[Honours]
 }
-final case class FirstForename(value: String) extends AnyVal
-object FirstForename {
-  implicit val format: Format[FirstForename] = Json.valueFormat[FirstForename]
-}
-final case class SecondForename(value: String) extends AnyVal
-object SecondForename {
-  implicit val format: Format[SecondForename] = Json.valueFormat[SecondForename]
-}
-final case class Surname(value: String) extends AnyVal
-
-object Surname {
-  implicit val format: Format[Surname] = Json.valueFormat[Surname]
-}
 
 final case class Name(
-    nameSequenceNumber: NameSequenceNumber,
+    nameSequenceNumber: Int,
     nameType:           NameType,
     titleType:          Option[TitleType],
     requestedName:      Option[RequestedName],
-    nameStartDate:      NameStartDate,
-    nameEndDate:        Option[NameEndDate],
     otherTitle:         Option[OtherTitle],
     honours:            Option[Honours],
-    firstForename:      FirstForename,
-    secondForename:     Option[SecondForename],
-    surname:            Surname
+    firstForename:      String,
+    secondForename:     Option[String],
+    surname:            String
 )
 
 object Name {

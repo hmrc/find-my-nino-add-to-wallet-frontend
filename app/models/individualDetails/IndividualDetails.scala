@@ -90,9 +90,9 @@ final case class IndividualDetails(
     list.name.find(_.nameType.equals(NameType.KnownAsName)).getOrElse(list.name.head)
   }
 
-  def getFirstForename: String = knownAsOrHead(nameList).firstForename.value
-  private def getSecondForename: String = knownAsOrHead(nameList).secondForename.getOrElse(SecondForename("")).value
-  def getLastName: String = knownAsOrHead(nameList).surname.value
+  def getFirstForename: String = knownAsOrHead(nameList).firstForename
+  private def getSecondForename: String = knownAsOrHead(nameList).secondForename.getOrElse("")
+  def getLastName: String = knownAsOrHead(nameList).surname
 
   private def getTitle: String =  {
     val maybeTitle: TitleType = knownAsOrHead(nameList)

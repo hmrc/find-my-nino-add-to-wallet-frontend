@@ -226,31 +226,27 @@ object Fixtures extends IndividualDetailsFixtures  {
       |""".stripMargin
 
   val fakeName: Name = models.individualDetails.Name(
-    nameSequenceNumber = NameSequenceNumber(1),
+    nameSequenceNumber = 1,
     nameType = NameType.RealName,
     titleType = Some(TitleType.Dr),
     requestedName = Some(RequestedName("Firstname Middlename")),
-    nameStartDate = NameStartDate(LocalDate.of(2000, 1, 1)),
-    nameEndDate = Some(NameEndDate(LocalDate.of(2022, 12, 31))),
     otherTitle = Some(OtherTitle("Sir")),
     honours = Some(Honours("PhD")),
-    firstForename = FirstForename("Firstname"),
-    secondForename = Some(SecondForename("Middlename")),
-    surname = Surname("Lastname")
+    firstForename = "Firstname",
+    secondForename = Some("Middlename"),
+    surname = "Lastname"
   )
 
   val fakeKnownAsName: Name = models.individualDetails.Name(
-    nameSequenceNumber = NameSequenceNumber(2),
+    nameSequenceNumber = 2,
     nameType = NameType.KnownAsName,
     titleType = Some(TitleType.Dr),
     requestedName = Some(RequestedName("Known As Name")),
-    nameStartDate = NameStartDate(LocalDate.of(2000, 1, 1)),
-    nameEndDate = Some(NameEndDate(LocalDate.of(2022, 12, 31))),
     otherTitle = Some(OtherTitle("Sir")),
     honours = Some(Honours("PhD")),
-    firstForename = FirstForename("Known"),
-    secondForename = Some(SecondForename("As")),
-    surname = Surname("Name")
+    firstForename = "Known",
+    secondForename = Some("As"),
+    surname = "Name"
   )
 
   val fakeNameWithoutMiddleName = fakeName.copy(secondForename = None)

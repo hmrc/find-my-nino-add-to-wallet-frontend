@@ -22,4 +22,8 @@ final case class NameList(name: List[Name])
 
 object NameList {
   implicit val format: OFormat[NameList] = Json.format[NameList]
+
+  def apply(name: List[Name]) = {
+    NameList(name.sortBy(_.nameType))
+  }
 }

@@ -58,11 +58,11 @@ class IndividualDetailsRepository @Inject()(mongoComponent: MongoComponent,
                                                (implicit ec: ExecutionContext): Future[String] = {
     logger.info(s"insert or update one in $collectionName table")
 
-    val filter = Filters.equal("individualDetails.nino", individualDetailsData.getNino)
+    val filter = Filters.equal("individualDetails.nino", individualDetailsData.individualDetailsData.nino)
     val options = ReplaceOptions().upsert(true)
     collection.replaceOne(filter, individualDetailsData, options)
       .toFuture()
-      .map(_ => individualDetailsData.getNino) recover {
+      .map(_ => individualDetailsData.individualDetailsData.nino) recover {
       case e: MongoWriteException if e.getCode == 11000 =>
         logger.warn(s"Error replacing or updating into $collectionName table")
         ""

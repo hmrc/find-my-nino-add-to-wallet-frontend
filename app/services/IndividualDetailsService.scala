@@ -65,18 +65,18 @@ class IndividualDetailsServiceImpl @Inject()(
 
     val iDetails = IndividualDetailsData(
       individualDetails.getFullName,
-      individualDetails.getFirstForename,
-      individualDetails.getLastName,
+      individualDetails.preferredName.firstForename,
+      individualDetails.preferredName.surname,
       individualDetails.getInitialsName,
-      individualDetails.getDateOfBirth,
+      individualDetails.dateOfBirth,
       individualDetails.getNino,
       individualDetails.getAddressData,
-      individualDetails.getCrnIndicator
+      individualDetails.crnIndicator.asString
     )
 
     IndividualDetailsDataCache(
       sessionId,
-      Some(iDetails)
+      iDetails
     )
   }
 

@@ -111,7 +111,7 @@ object AuditUtils {
   }
 
   private def getIndivudualsAddress(individualDetailsDataCache: IndividualDetailsDataCache): AuditAddress = {
-    individualDetailsDataCache.getAddress match {
+    individualDetailsDataCache.individualDetailsData.address match {
       case Some(a: AddressData) => getAuditAddress(a)
       case _ => getAuditAddress(emptyAddress)
     }
@@ -146,13 +146,13 @@ object AuditUtils {
     val strLang = getLanguageFromCookieStr(hc)
     val strDevice = getUserDevice(hc)
 
-    individualDetailsDataCache.getNino match {
+    individualDetailsDataCache.individualDetailsData.nino match {
       case (nino:String) =>
         YourDetailsAuditEvent(
           journeyId,
           timestamp(),
           nino,
-          name = individualDetailsDataCache.getFullName,
+          name = individualDetailsDataCache.individualDetailsData.fullName,
           mainAddress = mainAddress,
           device = Some(strDevice),
           language = strLang,

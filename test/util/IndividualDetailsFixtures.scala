@@ -226,17 +226,27 @@ object Fixtures extends IndividualDetailsFixtures  {
       |""".stripMargin
 
   val fakeName: Name = models.individualDetails.Name(
-    nameSequenceNumber = NameSequenceNumber(1),
+    nameSequenceNumber = 1,
     nameType = NameType.RealName,
     titleType = Some(TitleType.Dr),
     requestedName = Some(RequestedName("Firstname Middlename")),
-    nameStartDate = NameStartDate(LocalDate.of(2000, 1, 1)),
-    nameEndDate = Some(NameEndDate(LocalDate.of(2022, 12, 31))),
     otherTitle = Some(OtherTitle("Sir")),
     honours = Some(Honours("PhD")),
-    firstForename = FirstForename("Firstname"),
-    secondForename = Some(SecondForename("Middlename")),
-    surname = Surname("Lastname")
+    firstForename = "Firstname",
+    secondForename = Some("Middlename"),
+    surname = "Lastname"
+  )
+
+  val fakeKnownAsName: Name = models.individualDetails.Name(
+    nameSequenceNumber = 2,
+    nameType = NameType.KnownAsName,
+    titleType = Some(TitleType.Dr),
+    requestedName = Some(RequestedName("Known As Name")),
+    otherTitle = Some(OtherTitle("Sir")),
+    honours = Some(Honours("PhD")),
+    firstForename = "Known",
+    secondForename = Some("As"),
+    surname = "Name"
   )
 
   val fakeNameWithoutMiddleName = fakeName.copy(secondForename = None)
@@ -276,19 +286,15 @@ object Fixtures extends IndividualDetailsFixtures  {
   val fakeIndividualDetails: IndividualDetails = IndividualDetails(
     ninoWithoutSuffix = "AB123456",
     ninoSuffix = Some(NinoSuffix("C")),
-    accountStatusType = Some(AccountStatusType.FullLive),
-    dateOfEntry = Some(LocalDate.of(2000, 1, 1)),
     dateOfBirth = LocalDate.of(1990, 1, 1),
-    dateOfBirthStatus = Some(DateOfBirthStatus.Verified),
-    dateOfDeath = None,
-    dateOfDeathStatus = None,
-    dateOfRegistration = Some(LocalDate.of(2000, 1, 1)),
     crnIndicator = CrnIndicator.False,
-    nameList = NameList(Some(List(fakeName))),
+    nameList = NameList(List(fakeName)),
     addressList = AddressList(Some(List(fakeAddress)))
   )
 
-  val fakeIndividualDetailsWithoutMiddleName = fakeIndividualDetails.copy(nameList = NameList(Some(List(fakeNameWithoutMiddleName))))
+  val fakeIndividualDetailsWithKnownAsName = fakeIndividualDetails.copy(nameList = NameList(List(fakeName, fakeKnownAsName)))
+
+  val fakeIndividualDetailsWithoutMiddleName = fakeIndividualDetails.copy(nameList = NameList(List(fakeNameWithoutMiddleName)))
 
   val fakeIndividualDetailsData = IndividualDetailsData(
     fullName = "Dr Firstname Middlename Lastname Phd.",
@@ -305,21 +311,21 @@ object Fixtures extends IndividualDetailsFixtures  {
 
   val fakeIndividualDetailsDataCache = IndividualDetailsDataCache(
     "some-fake-Id",
-    Some(fakeIndividualDetailsData),
+    fakeIndividualDetailsData,
     Instant.now(java.time.Clock.systemUTC())
   )
 
   val fakeIndividualDetailsDataCacheNoAddress = IndividualDetailsDataCache(
     "some-fake-Id",
-    Some(fakeIndividualDetailsDataNoAddress),
+    fakeIndividualDetailsDataNoAddress,
     Instant.now(java.time.Clock.systemUTC())
   )
 
   val fakeIndividualDetailsDataWithCRN = fakeIndividualDetailsData.copy(crnIndicator = "true")
 
-  val fakeIndividualDetailsDataCacheWithCRN = fakeIndividualDetailsDataCache.copy(individualDetailsData = Some(fakeIndividualDetailsDataWithCRN))
+  val fakeIndividualDetailsDataCacheWithCRN = fakeIndividualDetailsDataCache.copy(individualDetailsData = fakeIndividualDetailsDataWithCRN)
 
   val fakeIndividualDetailsDataCacheMissingNinoSuffix = fakeIndividualDetailsDataCache
-    .copy(individualDetailsData = Some(fakeIndividualDetailsData
-      .copy(nino = "AB123456")))
+    .copy(individualDetailsData = fakeIndividualDetailsData
+      .copy(nino = "AB123456"))
 }

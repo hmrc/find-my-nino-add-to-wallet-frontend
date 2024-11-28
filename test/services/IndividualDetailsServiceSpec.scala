@@ -28,7 +28,7 @@ import play.api.http.Status.OK
 import play.api.libs.json.Json
 import repositories.IndividualDetailsRepository
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
-import util.Fixtures.{fakeIndividualDetails, fakeIndividualDetailsWithoutMiddleName, individualRespJsonInvalid}
+import util.Fixtures.{fakeIndividualDetails, fakeIndividualDetailsWithKnownAsName, fakeIndividualDetailsWithoutMiddleName, individualRespJsonInvalid}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt
@@ -60,8 +60,8 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec
     val result = service.getIdDataFromCache("testNino", "some-fake-Id")
 
     assert(result.futureValue isRight)
-    assert(result.futureValue.fold( _ => false, _.getNino == "AB123456C"))
-    assert(result.futureValue.fold(_ => false, _.getFullName == "Dr FIRSTNAME MIDDLENAME LASTNAME PhD"))
+    assert(result.futureValue.fold( _ => false, _.individualDetailsData.nino == "AB123456C"))
+    assert(result.futureValue.fold(_ => false, _.individualDetailsData.fullName == "Dr FIRSTNAME MIDDLENAME LASTNAME PhD"))
   }
 
   "IndividualDetailsService" should "create individual details data cache where no middle name present" in {
@@ -81,8 +81,29 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec
     val result = service.getIdDataFromCache("testNino", "some-fake-Id")
 
     assert(result.futureValue isRight)
-    assert(result.futureValue.fold(_ => false, _.getNino == "AB123456C"))
-    assert(result.futureValue.fold(_ => false, _.getFullName == "Dr FIRSTNAME LASTNAME PhD"))
+    assert(result.futureValue.fold(_ => false, _.individualDetailsData.nino == "AB123456C"))
+    assert(result.futureValue.fold(_ => false, _.individualDetailsData.fullName == "Dr FIRSTNAME LASTNAME PhD"))
+  }
+
+  "IndividualDetailsService" should "create individual details data cache where the known as name is present" in {
+    val mockRepository = mock[IndividualDetailsRepository]
+    val mockConnector = mock[IndividualDetailsConnector]
+    val service = new IndividualDetailsServiceImpl(mockRepository, mockConnector)
+
+    val fakeIndividualDetailsJson = Json.toJson(fakeIndividualDetailsWithKnownAsName).toString()
+
+    when(mockRepository.findIndividualDetailsDataByNino(any)(any))
+      .thenReturn(Future.successful(None))
+    when(mockConnector.getIndividualDetails(any, any)(any, any))
+      .thenReturn(Future.successful(HttpResponse(200, fakeIndividualDetailsJson)))
+    when(mockRepository.insertOrReplaceIndividualDetailsDataCache(any)(any[ExecutionContext]))
+      .thenReturn(Future.successful("testNino"))
+
+    val result = service.getIdDataFromCache("testNino", "some-fake-Id")
+
+    assert(result.futureValue isRight)
+    assert(result.futureValue.fold(_ => false, _.individualDetailsData.nino == "AB123456C"))
+    assert(result.futureValue.fold(_ => false, _.individualDetailsData.fullName == "Dr KNOWN AS NAME PhD"))
   }
 
   "IndividualDetailsService" should "return a left of unprcessible entity where invalid json is returned" in {

@@ -52,7 +52,7 @@ class EncryptedIndividualDetailsRepositorySpec extends AnyFreeSpec
 
   def createFakeIdCache: IndividualDetailsDataCache = IndividualDetailsDataCache(
     id = "id",
-    individualDetailsData = Some(fakeIndividualDetailsData),
+    individualDetailsData = fakeIndividualDetailsData,
     lastUpdated = Instant.EPOCH
   )
 
@@ -68,7 +68,7 @@ class EncryptedIndividualDetailsRepositorySpec extends AnyFreeSpec
 
         val individualDetailsDataCache: IndividualDetailsDataCache = IndividualDetailsDataCache(
           id = "id",
-          individualDetailsData = Some(fakeIndividualDetailsData),
+          individualDetailsData = fakeIndividualDetailsData,
           lastUpdated = Instant.EPOCH
         )
         val result = repository.insertOrReplaceIndividualDetailsDataCache(individualDetailsDataCache).futureValue
@@ -81,7 +81,7 @@ class EncryptedIndividualDetailsRepositorySpec extends AnyFreeSpec
 
     val individualDetailsDataCache: IndividualDetailsDataCache = IndividualDetailsDataCache(
       id = "id",
-      individualDetailsData = Some(fakeIndividualDetailsData),
+      individualDetailsData = fakeIndividualDetailsData,
       lastUpdated = Instant.EPOCH
     )
 

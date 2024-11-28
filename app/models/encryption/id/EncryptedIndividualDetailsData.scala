@@ -38,7 +38,7 @@ case class EncryptedIndividualDetailsData(
 
 case class EncryptedIndividualDetailsDataCache(
   id: String,
-  individualDetailsData: Option[EncryptedIndividualDetailsData],
+  individualDetailsData: EncryptedIndividualDetailsData,
   lastUpdated: Instant = Instant.now(java.time.Clock.systemUTC())
 )
 
@@ -89,7 +89,7 @@ object EncryptedIndividualDetailsDataCache {
 
   val encryptedIndividualDetailsDataCacheFormat: OFormat[EncryptedIndividualDetailsDataCache] = {
     ((__ \ "id").format[String]
-      ~ (__ \ "individualDetails").formatNullable[EncryptedIndividualDetailsData](encryptedIndividualDetailsDataFormat)
+      ~ (__ \ "individualDetails").format[EncryptedIndividualDetailsData](encryptedIndividualDetailsDataFormat)
       ~ (__ \ "lastUpdated").format[Instant](instantFormat)
       )(EncryptedIndividualDetailsDataCache.apply, unlift(EncryptedIndividualDetailsDataCache.unapply))
   }
@@ -102,11 +102,10 @@ object EncryptedIndividualDetailsDataCache {
     def e(fieldValue: String): EncryptedValue = {
       SymmetricCryptoFactory.aesGcmAdCrypto(key).encrypt(fieldValue, key)
     }
-
+    val id = individualDetailsDataCache.individualDetailsData
     EncryptedIndividualDetailsDataCache(
       id = individualDetailsDataCache.id,
-      individualDetailsData = individualDetailsDataCache.individualDetailsData.map {
-        id =>
+      individualDetailsData =
           EncryptedIndividualDetailsData(
             fullName = e(id.fullName),
             firstForename = e(id.firstForename),
@@ -132,7 +131,6 @@ object EncryptedIndividualDetailsDataCache {
             )),
             crnIndicator = e(id.crnIndicator)
           )
-      }
     )
   }
 
@@ -141,10 +139,10 @@ object EncryptedIndividualDetailsDataCache {
       SymmetricCryptoFactory.aesGcmAdCrypto(key).decrypt(field, key)
     }
 
+    val id = encryptedIndividualDetailsDataCache.individualDetailsData
+
     IndividualDetailsDataCache(
       id = encryptedIndividualDetailsDataCache.id,
-      individualDetailsData = encryptedIndividualDetailsDataCache.individualDetailsData.map {
-        id =>
           IndividualDetailsData(
             fullName = d(id.fullName),
             firstForename = d(id.firstForename),
@@ -170,30 +168,6 @@ object EncryptedIndividualDetailsDataCache {
                 )),
             crnIndicator = d(id.crnIndicator)
           )
-      }
     )
-  }
-
-  implicit class IndividualDetailsDataOps(private val individualDetailsData:EncryptedIndividualDetailsDataCache) extends AnyVal {
-
-    def getNino: String = individualDetailsData.individualDetailsData match {
-      case Some(id) => id.nino
-      case _        => ""
-    }
-
-    def getFirstForename: String = individualDetailsData.individualDetailsData match {
-      case Some(id) => id.firstForename.value
-      case _        => ""
-    }
-
-    def getLastName: String = individualDetailsData.individualDetailsData match {
-      case Some(id) => id.surname.value
-      case _        => ""
-    }
-
-    def getAddress: Option[EncryptedAddressData] = individualDetailsData.individualDetailsData match {
-      case Some(id) => id.address
-      case _ => None
-    }
   }
 }

@@ -16,7 +16,6 @@
 
 package models.individualDetails
 
-import org.apache.commons.lang3.StringUtils
 import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
 import play.api.libs.json.{OFormat, __}
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats.instantFormat
@@ -36,13 +35,29 @@ case class IndividualDetailsData(
 
 case class IndividualDetailsDataCache(
                                        id: String,
-                                       individualDetailsData: Option[IndividualDetailsData],
+                                       individualDetailsData: IndividualDetailsData,
                                        lastUpdated: Instant = Instant.now(java.time.Clock.systemUTC())
- )
+                                     ) {
+
+  def getAddressLines: List[String] =
+    individualDetailsData.address match {
+      case Some(address) =>
+        List(
+          address.addressLine1.value,
+          address.addressLine2.value,
+          address.addressLine3.map(_.value).getOrElse(""),
+          address.addressLine4.map(_.value).getOrElse(""),
+          address.addressLine5.map(_.value).getOrElse("")
+        ).filter(_.nonEmpty)
+      case _ => List.empty
+  }
+
+  def getPostCode: Option[String] = individualDetailsData.address.flatMap(addr => addr.addressPostcode.map(postcode => postcode.value))
+}
 
 object IndividualDetailsDataCache {
   private val individualDetailsDataFormat: OFormat[IndividualDetailsData] = {
-    ( (__ \ "fullName").format[String]
+    ((__ \ "fullName").format[String]
       ~ (__ \ "firstForename").format[String]
       ~ (__ \ "surname").format[String]
       ~ (__ \ "initialsName").format[String]
@@ -55,71 +70,8 @@ object IndividualDetailsDataCache {
 
   val individualDetailsDataCacheFormat: OFormat[IndividualDetailsDataCache] = {
     ((__ \ "id").format[String]
-      ~ (__ \ "individualDetails").formatNullable[IndividualDetailsData](individualDetailsDataFormat)
+      ~ (__ \ "individualDetails").format[IndividualDetailsData](individualDetailsDataFormat)
       ~ (__ \ "lastUpdated").format[Instant](instantFormat)
       )(IndividualDetailsDataCache.apply, unlift(IndividualDetailsDataCache.unapply))
-  }
-
-  implicit class IndividualDetailsDataOps(private val individualDetailsData:IndividualDetailsDataCache) extends AnyVal {
-
-    def getFullName: String = individualDetailsData.individualDetailsData match {
-      case Some(id) => id.fullName
-      case _        => StringUtils.EMPTY
-    }
-
-    def getNino: String = individualDetailsData.individualDetailsData match {
-      case Some(id) => id.nino
-      case _        => StringUtils.EMPTY
-    }
-
-    def getFirstForename: String = individualDetailsData.individualDetailsData match {
-      case Some(id) => id.firstForename
-      case _        => throw new IllegalArgumentException("Individual details data not found")
-    }
-
-    def getLastName: String = individualDetailsData.individualDetailsData match {
-      case Some(id) => id.surname
-      case _        => throw new IllegalArgumentException("Individual details data not found")
-    }
-
-    def getInitialsName: String = individualDetailsData.individualDetailsData match {
-      case Some(id) => id.initialsName
-      case _        => throw new IllegalArgumentException("Individual details data not found")
-    }
-
-    def getDateOfBirth: LocalDate = individualDetailsData.individualDetailsData match {
-      case Some(id) => id.dateOfBirth
-      case _        => throw new IllegalArgumentException("Individual details data not found")
-    }
-
-    def getAddress: Option[AddressData] = individualDetailsData.individualDetailsData match {
-      case Some(id) => id.address
-      case _        => throw new IllegalArgumentException("Individual details data not found")
-    }
-
-    def getAddressLines: List[String] = individualDetailsData.individualDetailsData match {
-      case Some(id) => id.address match {
-        case Some(address) =>
-          List(
-            address.addressLine1.value,
-            address.addressLine2.value,
-            address.addressLine3.map(_.value).getOrElse(""),
-            address.addressLine4.map(_.value).getOrElse(""),
-            address.addressLine5.map(_.value).getOrElse("")
-          ).filter(_.nonEmpty)
-        case _ => List.empty
-      }
-      case _ => throw new IllegalArgumentException("Individual details data not found")
-    }
-
-    def getPostCode: Option[String] = individualDetailsData.individualDetailsData match {
-      case Some(id) => id.address.flatMap(addr => addr.addressPostcode.map(postcode => postcode.value))
-      case _ => throw new IllegalArgumentException("Individual details data not found")
-    }
-
-    def getCrnIndicator: String = individualDetailsData.individualDetailsData match {
-      case Some(id) => id.crnIndicator
-      case _ => throw new IllegalArgumentException("Individual details data not found")
-    }
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,16 +34,21 @@ class NPSService @Inject()(connector: NPSConnector, frontendAppConfig: FrontendA
   private val alreadyAnAdultErrorCode: String = frontendAppConfig.crnUpliftAPIAlreadyAdultErrorCode
   def upliftCRN(identifier: String, crnUpliftRequest: CRNUpliftRequest)
                (implicit hc: HeaderCarrier): Future[Either[Int, Int]] = {
-    for {
-      httpResponse <- connector.upliftCRN(identifier, crnUpliftRequest)
-    } yield httpResponse.status match {
-      case NO_CONTENT =>
-        Right(NO_CONTENT)
-      case UNPROCESSABLE_ENTITY if httpResponse.body.contains(alreadyAnAdultErrorCode) =>
-        Right(NO_CONTENT)
-      case _ =>
-        logger.warn(s"$className returned: ${httpResponse.status}")
-        Left(httpResponse.status)
+
+    connector.upliftCRN(identifier, crnUpliftRequest).value.map {
+      case Right(httpResponse) =>
+        httpResponse.status match {
+          case NO_CONTENT =>
+            Right(NO_CONTENT)
+          case UNPROCESSABLE_ENTITY if httpResponse.body.contains(alreadyAnAdultErrorCode) =>
+            Right(NO_CONTENT)
+          case _ =>
+            logger.warn(s"$className returned: ${httpResponse.status}")
+            Left(httpResponse.status)
+        }
+      case Left(upstreamError) =>
+        logger.error(s"Upstream error: ${upstreamError.message}", upstreamError)
+        Left(upstreamError.statusCode)
     }
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,31 +16,33 @@
 
 package connectors
 
+import cats.data.EitherT
 import config.FrontendAppConfig
 import models.nps.CRNUpliftRequest
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps, UpstreamErrorResponse}
 
-import java.net.URL
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class NPSConnector@Inject() (httpClientV2: HttpClientV2, appConfig: FrontendAppConfig) {
+class NPSConnector@Inject() (
+  httpClientV2: HttpClientV2,
+  appConfig: FrontendAppConfig,
+  httpClientResponse: HttpClientResponse)
+{
 
-  def upliftCRN(nino: String, body: CRNUpliftRequest
-                   )(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
+  def upliftCRN(nino: String, body: CRNUpliftRequest)(implicit hc: HeaderCarrier, ec: ExecutionContext):
+  EitherT[Future, UpstreamErrorResponse, HttpResponse] = {
 
     val url = s"${appConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/adult-registration/$nino"
 
-    httpClientV2
-      .put(new URL(url))
-      .withBody(body)
-      .execute[HttpResponse]
-      .flatMap{ response =>
-        Future.successful(response)
-      }
+    httpClientResponse.read(
+      httpClientV2
+        .put(url"$url")
+        .withBody(body)
+        .execute[Either[UpstreamErrorResponse, HttpResponse]]
+    )
   }
-
 }

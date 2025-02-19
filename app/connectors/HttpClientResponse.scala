@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package connectors
 import cats.data.EitherT
 import com.google.inject.Inject
 import play.api.Logging
-import play.api.http.Status.{BAD_GATEWAY, LOCKED, NOT_FOUND, TOO_MANY_REQUESTS}
+import play.api.http.Status.{BAD_GATEWAY, NOT_FOUND, TOO_MANY_REQUESTS, UNPROCESSABLE_ENTITY}
 import uk.gov.hmrc.http.{HttpException, HttpResponse, UpstreamErrorResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -32,18 +32,15 @@ class HttpClientResponse @Inject()(implicit ec: ExecutionContext) extends Loggin
     EitherT(response.map {
       case Right(response)                                                                 =>
         Right(response)
-      case Left(error) if error.statusCode == NOT_FOUND                                    =>
-        logger.info(error.message)
-        Left(error)
-      case Left(error) if error.statusCode == LOCKED                                       =>
-        logger.warn(error.message)
-        Left(error)
-      case Left(error) if error.statusCode >= 499 || error.statusCode == TOO_MANY_REQUESTS =>
+      case Left(error) if error.statusCode == NOT_FOUND || error.statusCode == UNPROCESSABLE_ENTITY   =>
+        Left(error) // No logging, no exception
+      case Left(error) if error.statusCode >= 500 || error.statusCode == TOO_MANY_REQUESTS =>
         logger.error(error.message)
-        Left(error)
-      case Left(error)                                                                     =>
+        Left(error) // Log but do not throw
+      case Left(error) =>
         logger.error(error.message, error)
-        Left(error)
+        // Throw exception for other errors
+        throw new RuntimeException(s"Unexpected error: ${error.statusCode} - ${error.message}")
     } recover {
       case exception: HttpException =>
         logger.error(exception.message)

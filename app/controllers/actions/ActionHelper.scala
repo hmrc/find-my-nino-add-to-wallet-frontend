@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package controllers.actions
 
+import cats.data.EitherT
 import com.google.inject.Inject
 import config.FrontendAppConfig
 import controllers.auth.AuthContext
@@ -25,11 +26,11 @@ import models.individualDetails.IndividualDetailsDataCache
 import models.nps.CRNUpliftRequest
 import play.api.http.Status.{BAD_REQUEST, NOT_FOUND, UNPROCESSABLE_ENTITY}
 import play.api.i18n.Messages
-import play.api.mvc.Results.{FailedDependency, Ok}
+import play.api.mvc.Results.{FailedDependency, InternalServerError, Ok}
 import play.api.mvc.{ControllerComponents, Result}
 import services.{IndividualDetailsService, NPSService}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HeaderCarrier, InternalServerException, NotFoundException}
+import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import views.html.RedirectToPostalFormView
 import views.html.identity.TechnicalIssuesNoRetryView
 
@@ -54,24 +55,24 @@ class ActionHelper @Inject()(individualDetailsService: IndividualDetailsService,
           if (frontendAppConfig.crnUpliftEnabled) {
             val request: CRNUpliftRequest = buildCrnUpliftRequest(individualDetails)
 
-            for {
-              upliftResult <- npsService.upliftCRN(identifier, request)
-              preFlightChecks <- preFlightChecks(upliftResult.isRight, individualDetails, sessionId)
-            } yield (upliftResult, preFlightChecks) match {
-              case (Left(status), _) => handleErrorCrnUplift(status, authContext, frontendAppConfig)
-              case (Right(_), true) =>
-                Right(
+             (for {
+                _ <-  npsService.upliftCRN(identifier, request)
+                _ <- EitherT[Future, UpstreamErrorResponse, Boolean](individualDetailsService.deleteIdDataFromCache(individualDetails.individualDetailsData.nino).map(Right(_)))
+              } yield  {
+
                   UserRequest(
                     Some(Nino(individualDetails.individualDetailsData.nino)),
                     authContext.confidenceLevel,
                     individualDetails,
                     authContext.allEnrolments,
                     authContext.request
-                  )
                 )
-              case (Right(_), false) => Left(throw new InternalServerException("Failed to verify CRN uplift"))
-              case _ => Left(throw new InternalServerException("Failed to uplift CRN"))
-            }
+            }).leftMap {
+              case upstreamErrorResponse if upstreamErrorResponse.statusCode == BAD_REQUEST =>  Ok(postalFormView()(authContext.request, frontendAppConfig, messages))
+              case upstreamErrorResponse if upstreamErrorResponse.statusCode == UNPROCESSABLE_ENTITY =>  Ok(postalFormView()(authContext.request, frontendAppConfig, messages))
+              case upstreamErrorResponse if upstreamErrorResponse.statusCode == NOT_FOUND =>  Ok(postalFormView()(authContext.request, frontendAppConfig, messages))
+              case _ => InternalServerError("Failed to verify CRN uplift")
+            }.value
           } else {
             Future.successful(Left(Ok(postalFormView()(authContext.request, frontendAppConfig, messages))))
           }
@@ -102,30 +103,9 @@ class ActionHelper @Inject()(individualDetailsService: IndividualDetailsService,
       Future.successful(Left(Ok(postalFormView()(authContext.request, frontendAppConfig, messages))))
     }
   }
-  private def preFlightChecks(upliftSuccess: Boolean, individualDetails: IndividualDetailsDataCache, sessionId: String)
-                             (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] = {
-    if (upliftSuccess) {
-      for {
-        cacheInvalidated <- individualDetailsService.deleteIdDataFromCache(individualDetails.individualDetailsData.nino)
-        crnIndicatorUpdated <- validateCrnUplift(individualDetails.individualDetailsData.nino, sessionId)
-      } yield (cacheInvalidated, crnIndicatorUpdated) match {
-        case (true, true) => true
-        case _ => false
-      }
-    } else {
-      Future.successful(true)
-    }
-  }
 
   private def isFullNino(individualDetails: IndividualDetailsDataCache): Boolean =
     individualDetails.individualDetailsData.crnIndicator.toLowerCase.equals("false")
-
-  private def validateCrnUplift(nino: String, sessionId: String)
-                               (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
-    individualDetailsService.getIdDataFromCache(nino, sessionId).flatMap {
-      case Right(individualDetails) => Future.successful(isFullNino(individualDetails))
-      case _ => Future.successful(throw new NotFoundException("Individual details not found"))
-    }
 
   private def buildCrnUpliftRequest(individualDetails: IndividualDetailsDataCache): CRNUpliftRequest =
     new CRNUpliftRequest(
@@ -151,17 +131,4 @@ class ActionHelper @Inject()(individualDetailsService: IndividualDetailsService,
         )))
     }
   }
-
-  private def handleErrorCrnUplift[A](status: Int,
-                                      authContext: AuthContext[A],
-                                      frontendAppConfig: FrontendAppConfig): Left[Result, Nothing] = {
-    implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
-    status match {
-      case BAD_REQUEST => Left(Ok(postalFormView()(authContext.request, frontendAppConfig, messages)))
-      case UNPROCESSABLE_ENTITY => Left(Ok(postalFormView()(authContext.request, frontendAppConfig, messages)))
-      case NOT_FOUND => Left(Ok(postalFormView()(authContext.request, frontendAppConfig, messages)))
-      case _ => throw new InternalServerException("Failed to uplift CRN")
-    }
-  }
-
 }

@@ -16,12 +16,13 @@
 
 package services
 
+import cats.data.EitherT
 import config.FrontendAppConfig
 import connectors.NPSConnector
 import models.nps.CRNUpliftRequest
 import play.api.Logging
 import play.api.http.Status._
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -33,22 +34,12 @@ class NPSService @Inject()(connector: NPSConnector, frontendAppConfig: FrontendA
   val className: String                       = s"${this.getClass.getName}:upliftCRN"
   private val alreadyAnAdultErrorCode: String = frontendAppConfig.crnUpliftAPIAlreadyAdultErrorCode
   def upliftCRN(identifier: String, crnUpliftRequest: CRNUpliftRequest)
-               (implicit hc: HeaderCarrier): Future[Either[Int, Int]] = {
-
-    connector.upliftCRN(identifier, crnUpliftRequest).value.map {
-      case Right(httpResponse) =>
-        httpResponse.status match {
-          case NO_CONTENT =>
-            Right(NO_CONTENT)
-          case UNPROCESSABLE_ENTITY if httpResponse.body.contains(alreadyAnAdultErrorCode) =>
-            Right(NO_CONTENT)
-          case _ =>
-            logger.warn(s"$className returned: ${httpResponse.status}")
-            Left(httpResponse.status)
-        }
-      case Left(upstreamError) =>
-        logger.error(s"Upstream error: ${upstreamError.message}", upstreamError)
-        Left(upstreamError.statusCode)
+               (implicit hc: HeaderCarrier): EitherT[Future, UpstreamErrorResponse, Boolean] = {
+    connector.upliftCRN(identifier, crnUpliftRequest).transform {
+      case Right(httpResponse) if httpResponse.status == NO_CONTENT => Right(true)
+      case Right(httpResponse) if httpResponse.status == UNPROCESSABLE_ENTITY && httpResponse.body.contains(alreadyAnAdultErrorCode)=> Right(true)
+      case Right(httpResponse) =>  Left(UpstreamErrorResponse("", httpResponse.status))
+      case Left(upstreamErrorResponse) => Left(upstreamErrorResponse)
     }
   }
 }

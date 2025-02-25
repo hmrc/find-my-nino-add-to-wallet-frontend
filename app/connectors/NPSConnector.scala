@@ -19,9 +19,10 @@ package connectors
 import cats.data.EitherT
 import config.FrontendAppConfig
 import models.nps.CRNUpliftRequest
+import play.api.http.Status.UNPROCESSABLE_ENTITY
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, HttpResponse, StringContextOps, UpstreamErrorResponse}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -42,7 +43,14 @@ class NPSConnector@Inject() (
       httpClientV2
         .put(url"$url")
         .withBody(body)
-        .execute[Either[UpstreamErrorResponse, HttpResponse]]
+        .execute[Either[UpstreamErrorResponse, HttpResponse]](readEitherOfWithUnProcessableEntity, implicitly)
     )
   }
+
+
+  private def readEitherOfWithUnProcessableEntity[A: HttpReads]: HttpReads[Either[UpstreamErrorResponse, A]] =
+    HttpReads.ask.flatMap {
+      case (_, _, response) if response.status == UNPROCESSABLE_ENTITY => HttpReads[A].map(Right.apply)
+      case _                                                => HttpReads[Either[UpstreamErrorResponse, A]]
+    }
 }

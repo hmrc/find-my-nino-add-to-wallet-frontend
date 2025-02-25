@@ -18,29 +18,35 @@ package connectors
 
 import cats.data.EitherT
 import com.google.inject.Inject
+import config.FrontendAppConfig
 import play.api.Logging
-import play.api.http.Status.{BAD_GATEWAY, NOT_FOUND, TOO_MANY_REQUESTS, UNPROCESSABLE_ENTITY}
+import play.api.http.Status.{BAD_GATEWAY, BAD_REQUEST, NOT_FOUND, TOO_MANY_REQUESTS, UNPROCESSABLE_ENTITY}
 import uk.gov.hmrc.http.{HttpException, HttpResponse, UpstreamErrorResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class HttpClientResponse @Inject()(implicit ec: ExecutionContext) extends Logging {
+class HttpClientResponse @Inject()(frontendAppConfig: FrontendAppConfig)(implicit ec: ExecutionContext) extends Logging {
+
+  private val alreadyAnAdultErrorCode: String = frontendAppConfig.crnUpliftAPIAlreadyAdultErrorCode
 
   def read(
     response: Future[Either[UpstreamErrorResponse, HttpResponse]]
   ): EitherT[Future, UpstreamErrorResponse, HttpResponse] =
     EitherT(response.map {
+      case Right(response) if response.status == UNPROCESSABLE_ENTITY && response.body.contains(alreadyAnAdultErrorCode)  =>
+        logger.info("UNPROCESSABLE_ENTITY - alreadyAnAdultErrorCode")
+        Right(response)
       case Right(response)                                                                 =>
         Right(response)
-      case Left(error) if error.statusCode == NOT_FOUND || error.statusCode == UNPROCESSABLE_ENTITY   =>
-        Left(error) // No logging, no exception
+      case Left(error) if error.statusCode == NOT_FOUND || error.statusCode == BAD_REQUEST =>
+        logger.info(error.message)
+        Left(error)
       case Left(error) if error.statusCode >= 500 || error.statusCode == TOO_MANY_REQUESTS =>
         logger.error(error.message)
-        Left(error) // Log but do not throw
+        Left(error)
       case Left(error) =>
         logger.error(error.message, error)
-        // Throw exception for other errors
-        throw new RuntimeException(s"Unexpected error: ${error.statusCode} - ${error.message}")
+        Left(error)
     } recover {
       case exception: HttpException =>
         logger.error(exception.message)

@@ -52,6 +52,18 @@ class NPSConnectorSpec
        |}
        |""".stripMargin
 
+  val jsonUnprocessableEntity: String =
+    s"""
+       |{
+       |  "failures": [
+       |    {
+       |      "reason": "Date of birth does not match",
+       |      "code": "63484"
+       |    }
+       |  ]
+       |}
+       |""".stripMargin
+
   val jsonForbidden: String =
     s"""
        |{
@@ -128,6 +140,16 @@ class NPSConnectorSpec
 
       result mustBe a[Right[_, HttpResponse]]
       result.getOrElse(HttpResponse(OK, "")).status mustBe UNPROCESSABLE_ENTITY
+    }
+
+    "return 422 UNPROCESSABLE_ENTITY with Left(UpstreamErrorResponse) when the response does NOT contain alreadyAnAdultErrorCode" in new LocalSetup {
+
+      stubPut(url(nino), UNPROCESSABLE_ENTITY, Some(Json.toJson(body).toString()), Some(jsonUnprocessableEntity))
+
+      val result: Either[UpstreamErrorResponse, HttpResponse] = connector.upliftCRN(nino, body).value.futureValue
+
+      result mustBe a[Left[UpstreamErrorResponse, _]]
+      result.swap.getOrElse(UpstreamErrorResponse("", IM_A_TEAPOT)).statusCode mustBe UNPROCESSABLE_ENTITY
     }
 
     "return 404 NOT_FOUND when resource cannot be found" in new LocalSetup {

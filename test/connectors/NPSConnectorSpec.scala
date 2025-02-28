@@ -71,6 +71,21 @@ class NPSConnectorSpec
        |}
        |""".stripMargin
 
+
+  val jsonUnprocessableEntityAlreadyAdult: String =
+    s"""
+       |{
+       |  "failures": [
+       |    {
+       |      "reason": "Already an adult account",
+       |      "code": "63492"
+       |    }
+       |  ]
+       |}
+       |""".stripMargin
+
+
+
   def stubPut(url: String, responseStatus: Int, responseBody: Option[String] = None): StubMapping =
     server.stubFor {
       val baseResponse = aResponse().withStatus(responseStatus).withHeader(CONTENT_TYPE, JSON)
@@ -89,13 +104,22 @@ class NPSConnectorSpec
       result.getOrElse(HttpResponse(INTERNAL_SERVER_ERROR, "")).status mustBe OK
     }
 
-    "return UNPROCESSABLE_ENTITY when response body contains alreadyAnAdultErrorCode" in {
-      stubPut(url, UNPROCESSABLE_ENTITY, Some(jsonUnprocessableEntity))
+    "return Right(HttpResponse) with UNPROCESSABLE_ENTITY when response body contains alreadyAnAdultErrorCode" in {
+      stubPut(url, UNPROCESSABLE_ENTITY, Some(jsonUnprocessableEntityAlreadyAdult))
 
       val result = npsConnector.upliftCRN(nino, requestBody).value.futureValue
 
       result mustBe a[Right[_, _]]
       result.getOrElse(HttpResponse(INTERNAL_SERVER_ERROR, "")).status mustBe UNPROCESSABLE_ENTITY
+    }
+
+    "return Left(UpstreamErrorResponse) with UNPROCESSABLE_ENTITY when response body does NOT contain alreadyAnAdultErrorCode" in {
+      stubPut(url, UNPROCESSABLE_ENTITY, Some(jsonUnprocessableEntity))
+
+      val result = npsConnector.upliftCRN(nino, requestBody).value.futureValue
+
+      result mustBe a[Left[_, _]]
+      result.swap.getOrElse(UpstreamErrorResponse("", OK)).statusCode mustBe UNPROCESSABLE_ENTITY
     }
 
     "return NOT_FOUND when called with an unknown nino" in {

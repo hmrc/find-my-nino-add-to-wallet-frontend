@@ -34,6 +34,8 @@ class NPSConnector@Inject() (
   httpClientResponse: HttpClientResponse)
 {
 
+  private val alreadyAnAdultErrorCode: String = appConfig.crnUpliftAPIAlreadyAdultErrorCode
+
   def upliftCRN(nino: String, body: CRNUpliftRequest)(implicit hc: HeaderCarrier, ec: ExecutionContext):
   EitherT[Future, UpstreamErrorResponse, HttpResponse] = {
 
@@ -50,7 +52,8 @@ class NPSConnector@Inject() (
 
   private def readEitherOfWithUnProcessableEntity[A: HttpReads]: HttpReads[Either[UpstreamErrorResponse, A]] =
     HttpReads.ask.flatMap {
-      case (_, _, response) if response.status == UNPROCESSABLE_ENTITY => HttpReads[A].map(Right.apply)
+      case (_, _, response) if response.status == UNPROCESSABLE_ENTITY && response.body.contains(alreadyAnAdultErrorCode) =>
+        HttpReads[A].map(Right.apply)
       case _                                                => HttpReads[Either[UpstreamErrorResponse, A]]
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,30 +18,33 @@ package connectors
 
 import cats.data.EitherT
 import com.google.inject.Inject
+import config.FrontendAppConfig
 import play.api.Logging
-import play.api.http.Status.{BAD_GATEWAY, LOCKED, NOT_FOUND, TOO_MANY_REQUESTS}
+import play.api.http.Status.{BAD_GATEWAY, BAD_REQUEST, NOT_FOUND, TOO_MANY_REQUESTS, UNPROCESSABLE_ENTITY}
 import uk.gov.hmrc.http.{HttpException, HttpResponse, UpstreamErrorResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class HttpClientResponse @Inject()(implicit ec: ExecutionContext) extends Logging {
+class HttpClientResponse @Inject()(frontendAppConfig: FrontendAppConfig)(implicit ec: ExecutionContext) extends Logging {
+
+  private val alreadyAnAdultErrorCode: String = frontendAppConfig.crnUpliftAPIAlreadyAdultErrorCode
 
   def read(
     response: Future[Either[UpstreamErrorResponse, HttpResponse]]
   ): EitherT[Future, UpstreamErrorResponse, HttpResponse] =
     EitherT(response.map {
+      case Right(response) if response.status == UNPROCESSABLE_ENTITY && response.body.contains(alreadyAnAdultErrorCode)  =>
+        logger.info("UNPROCESSABLE_ENTITY - alreadyAnAdultErrorCode")
+        Right(response)
       case Right(response)                                                                 =>
         Right(response)
-      case Left(error) if error.statusCode == NOT_FOUND                                    =>
+      case Left(error) if error.statusCode == NOT_FOUND || error.statusCode == BAD_REQUEST =>
         logger.info(error.message)
         Left(error)
-      case Left(error) if error.statusCode == LOCKED                                       =>
-        logger.warn(error.message)
-        Left(error)
-      case Left(error) if error.statusCode >= 499 || error.statusCode == TOO_MANY_REQUESTS =>
+      case Left(error) if error.statusCode >= 500 || error.statusCode == TOO_MANY_REQUESTS =>
         logger.error(error.message)
         Left(error)
-      case Left(error)                                                                     =>
+      case Left(error) =>
         logger.error(error.message, error)
         Left(error)
     } recover {

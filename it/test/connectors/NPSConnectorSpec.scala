@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import org.scalatestplus.mockito.MockitoSugar
 import play.api.Application
 import play.api.libs.json.Json
 import play.api.test.{DefaultAwaitTimeout, Injecting}
-import uk.gov.hmrc.http.HttpResponse
+import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.http.client.HttpClientV2
 import util.WireMockHelper
 
@@ -39,6 +39,18 @@ class NPSConnectorSpec
   )
 
   val nino = "nino"
+
+  val jsonUnprocessableEntityAlreadyAdult: String =
+    s"""
+       |{
+       |  "failures": [
+       |    {
+       |      "reason": "Already an adult account",
+       |      "code": "63492"
+       |    }
+       |  ]
+       |}
+       |""".stripMargin
 
   val jsonUnprocessableEntity: String =
     s"""
@@ -84,10 +96,12 @@ class NPSConnectorSpec
     lazy val connector: NPSConnector = {
       val httpClient2 = app.injector.instanceOf[HttpClientV2]
       val config = app.injector.instanceOf[FrontendAppConfig]
-      new NPSConnector(httpClient2, config)
+      val httpClientResponse = app.injector.instanceOf[HttpClientResponse]
+
+      new NPSConnector(httpClient2, config, httpClientResponse)
     }
 
-    val body = mock[CRNUpliftRequest]
+    val body: CRNUpliftRequest = mock[CRNUpliftRequest]
   }
 
   "NPS FMN Connector" must {
@@ -98,50 +112,61 @@ class NPSConnectorSpec
 
     "return 204 NO_CONTENT when called with a CRN" in new LocalSetup {
       stubPut(url(nino), NO_CONTENT, Some(Json.toJson(body).toString()), Some(""))
-      val result: HttpResponse = connector.upliftCRN(nino, body).futureValue.leftSideValue
+      val result: Either[UpstreamErrorResponse, HttpResponse] = connector.upliftCRN(nino, body).value.futureValue
 
-      result.status mustBe NO_CONTENT
-      result.body mustBe ""
+      result mustBe a[Right[_, HttpResponse]]
+      result.getOrElse(HttpResponse(OK, "")).status mustBe NO_CONTENT
     }
 
     "return 400 BAD_REQUEST when called with invalid request object" in new LocalSetup {
       stubPut(url(nino), BAD_REQUEST, Some(Json.toJson(body).toString()), Some(jsonBadRequest))
-      val result = connector.upliftCRN(nino, body).futureValue.leftSideValue
+      val result: Either[UpstreamErrorResponse, HttpResponse] = connector.upliftCRN(nino, body).value.futureValue
 
-      result.status mustBe BAD_REQUEST
-      result.body mustBe jsonBadRequest
+      result mustBe a[Left[UpstreamErrorResponse, _]]
+      result.swap.getOrElse(UpstreamErrorResponse("", IM_A_TEAPOT)).statusCode mustBe BAD_REQUEST
     }
 
     "return 403 FORBIDDEN when called with forbidden request" in new LocalSetup {
       stubPut(url(nino), FORBIDDEN, Some(Json.toJson(body).toString()), Some(jsonForbidden))
-      val result = connector.upliftCRN(nino, body).futureValue.leftSideValue
+      val result: Either[UpstreamErrorResponse, HttpResponse] = connector.upliftCRN(nino, body).value.futureValue
 
-      result.status mustBe FORBIDDEN
-      result.body mustBe jsonForbidden
+      result mustBe a[Left[UpstreamErrorResponse, _]]
+      result.swap.getOrElse(UpstreamErrorResponse("", IM_A_TEAPOT)).statusCode mustBe FORBIDDEN
     }
 
-    "return 422 UNPROCESSABLE_ENTITY when the action cannot be completed" in new LocalSetup {
-      stubPut(url(nino), UNPROCESSABLE_ENTITY, Some(Json.toJson(body).toString()), Some(jsonUnprocessableEntity))
-      val result = connector.upliftCRN(nino, body).futureValue.leftSideValue
+    "return 422 UNPROCESSABLE_ENTITY with Right(HttpResponse) when the error code indicates already an adult" in new LocalSetup {
+      stubPut(url(nino), UNPROCESSABLE_ENTITY, Some(Json.toJson(body).toString()), Some(jsonUnprocessableEntityAlreadyAdult))
+      val result: Either[UpstreamErrorResponse, HttpResponse] = connector.upliftCRN(nino, body).value.futureValue
 
-      result.status mustBe UNPROCESSABLE_ENTITY
-      result.body mustBe jsonUnprocessableEntity
+      result mustBe a[Right[_, HttpResponse]]
+      result.getOrElse(HttpResponse(OK, "")).status mustBe UNPROCESSABLE_ENTITY
+    }
+
+    "return 422 UNPROCESSABLE_ENTITY with Left(UpstreamErrorResponse) when the response does NOT contain alreadyAnAdultErrorCode" in new LocalSetup {
+
+      stubPut(url(nino), UNPROCESSABLE_ENTITY, Some(Json.toJson(body).toString()), Some(jsonUnprocessableEntity))
+
+      val result: Either[UpstreamErrorResponse, HttpResponse] = connector.upliftCRN(nino, body).value.futureValue
+
+      result mustBe a[Left[UpstreamErrorResponse, _]]
+      result.swap.getOrElse(UpstreamErrorResponse("", IM_A_TEAPOT)).statusCode mustBe UNPROCESSABLE_ENTITY
     }
 
     "return 404 NOT_FOUND when resource cannot be found" in new LocalSetup {
       stubPut(url(nino), NOT_FOUND, Some(Json.toJson(body).toString()), None)
-      val result = connector.upliftCRN(nino, body).futureValue.leftSideValue
+      val result: Either[UpstreamErrorResponse, HttpResponse] = connector.upliftCRN(nino, body).value.futureValue
 
-      result.status mustBe NOT_FOUND
-      result.body mustBe ""
+      result mustBe a[Left[UpstreamErrorResponse, _]]
+      result.swap.getOrElse(UpstreamErrorResponse("", IM_A_TEAPOT)).statusCode mustBe NOT_FOUND
     }
 
     "return 500 INTERNAL_SERVER_ERROR when exception is thrown" in new LocalSetup {
       stubPut(url(nino), INTERNAL_SERVER_ERROR, Some(Json.toJson(body).toString()), None)
 
-      val result = connector.upliftCRN(nino, body).futureValue.leftSideValue
-      result.status mustBe INTERNAL_SERVER_ERROR
-      result.body mustBe ""
+      val result: Either[UpstreamErrorResponse, HttpResponse] = connector.upliftCRN(nino, body).value.futureValue
+
+      result mustBe a[Left[UpstreamErrorResponse, _]]
+      result.swap.getOrElse(UpstreamErrorResponse("", IM_A_TEAPOT)).statusCode mustBe INTERNAL_SERVER_ERROR
     }
 
   }

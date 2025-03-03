@@ -19,8 +19,6 @@ package models.individualDetails
 import models.json.WritesNumber
 import play.api.libs.json._
 
-import java.time.LocalDate
-
 
 sealed trait NameType
 object NameType {

@@ -1,8 +1,9 @@
 @import models.individualDetails.IndividualDetailsDataCache
+@import uk.gov.hmrc.auth.core.retrieve.v2.TrustedHelper
 
         @this()
 
-        @(individualDetailsDataCache: IndividualDetailsDataCache, date: String, lang: String)(implicit messages: Messages)
+        @(individualDetailsDataCache: IndividualDetailsDataCache, date: String, lang: String, trustedHelper: Option[TrustedHelper])(implicit messages: Messages)
 
 
         <!-- example for a simple fo file. At the beginning the page layout is set.
@@ -226,7 +227,7 @@
                           text-align="center"
                           font-family="OpenSans-Bold"
                           font-weight="bold">
-                    @individualDetailsDataCache.individualDetailsData.nino.grouped(2).mkString(" ")
+                    @trustedHelper.map(_.principalNino.grouped(2).mkString(" ")).getOrElse(individualDetailsDataCache.individualDetailsData.nino.grouped(2).mkString(" "))
                 </fo:block>
             </fo:block>
             <fo:block role="P"

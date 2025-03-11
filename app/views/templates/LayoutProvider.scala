@@ -70,7 +70,7 @@ class NewLayoutProvider @Inject()(wrapperService: WrapperService, additionalScri
       scripts = Seq(additionalScript()),
       styleSheets = stylesheets.toSeq :+ headBlock(),
       fullWidth = fullWidth,
-      hideMenuBar = hideAccountMenu
+      hideMenuBar = hideAccountMenu,
     )(messages, HeaderCarrierConverter.fromRequest(request), request)
   }
 }

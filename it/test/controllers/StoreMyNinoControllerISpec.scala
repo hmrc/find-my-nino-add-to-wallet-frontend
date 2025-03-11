@@ -61,7 +61,8 @@ class StoreMyNinoControllerISpec extends IntegrationSpecBase {
         confidenceLevel,
         individualDetailsData,
         Enrolments(Set(Enrolment("HMRC-PT"))),
-        request
+        request,
+        None
       )
 
     implicit val userRequest: UserRequest[AnyContentAsEmpty.type] = buildUserRequest()
@@ -73,7 +74,8 @@ class StoreMyNinoControllerISpec extends IntegrationSpecBase {
         applePassId = fakeApplePassId,
         googlePassId = fakeGooglePassId,
         nino = generatedNino.nino,
-        displayForMobile = true
+        displayForMobile = true,
+        trustedHelper = None
       )(fakeRequest, messages)
 
     def doc: Document = Jsoup.parse(main.toString)

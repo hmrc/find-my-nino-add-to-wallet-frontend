@@ -66,7 +66,8 @@ class ActionHelper @Inject()(individualDetailsService: IndividualDetailsService,
                     authContext.confidenceLevel,
                     individualDetails,
                     authContext.allEnrolments,
-                    authContext.request
+                    authContext.request,
+                    authContext.trustedHelper
                   )
                 )
               case (Right(_), false) => Left(throw new InternalServerException("Failed to verify CRN uplift"))
@@ -94,7 +95,8 @@ class ActionHelper @Inject()(individualDetailsService: IndividualDetailsService,
             authContext.confidenceLevel,
             individualDetails,
             authContext.allEnrolments,
-            authContext.request
+            authContext.request,
+            authContext.trustedHelper
           )
         )
       )

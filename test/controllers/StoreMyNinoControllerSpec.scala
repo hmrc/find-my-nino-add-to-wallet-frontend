@@ -29,13 +29,14 @@ import play.api.test.Helpers._
 import play.api.test.{DefaultAwaitTimeout, FakeRequest}
 import repositories.SessionRepository
 import services.{IndividualDetailsService, NPSService}
+import uk.gov.hmrc.auth.core.retrieve.v2.TrustedHelper
 import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolment, Enrolments}
 import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
 import util.IndividualDetailsFixtures
 import util.Fixtures.{fakeIndividualDetailsDataCache, fakeIndividualDetailsDataCacheMissingNinoSuffix, fakeIndividualDetailsDataCacheWithCRN}
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
-import util.TestData.{NinoUser, NinoUserNoEnrolments, NinoUser_With_CL50, NinoUser_With_Credential_Strength_Weak}
+import util.TestData.{NinoUser, NinoUserNoEnrolments, NinoUser_With_CL50, NinoUser_With_Credential_Strength_Weak, trustedHelper, trustedHelperUser}
 import views.html.{PassIdNotFoundView, RedirectToPostalFormView, StoreMyNinoView}
 
 import java.util.Base64
@@ -126,8 +127,45 @@ class StoreMyNinoControllerSpec extends SpecBase with IndividualDetailsFixtures 
         status(result) mustEqual OK
 
         contentAsString(result).removeAllNonces() mustEqual view(
-          applePassId, googlePassId, "AB 12 34 56 C", displayForMobile = false
+          applePassId, googlePassId, "AB 12 34 56 C", displayForMobile = false, None
         )(request.withAttrs(requestAttributeMap), messages(application)).toString()
+
+        contentAsString(result).removeAllNonces().contains("Save your number to your phone’s wallet") mustBe true
+
+        verify(mockNPSService, times(0)).upliftCRN(any(), any())(any())
+
+      }
+    }
+
+    "must return correct view with the trusted helpers displayed and no add to wallet links when loaded by trusted helper" in {
+      when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
+        .thenReturn(Future.successful(true))
+
+      val application =
+        applicationBuilderWithConfig()
+          .overrides(
+            inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
+            inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
+            inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),
+            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+          )
+          .build()
+
+      val view = application.injector.instanceOf[StoreMyNinoView]
+
+      running(application) {
+        userLoggedInFMNUser(trustedHelperUser)
+        val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
+          .withSession(("authToken", "Bearer 123"))
+        val result = route(application, request).value
+        status(result) mustEqual OK
+
+        contentAsString(result).removeAllNonces() mustEqual view(
+          applePassId, googlePassId, "AB 12 34 56 C", displayForMobile = false, Some(trustedHelper)
+        )(request.withAttrs(requestAttributeMap), messages(application)).toString()
+
+        contentAsString(result).removeAllNonces().contains("Save your number to your phone’s wallet") mustBe false
 
         verify(mockNPSService, times(0)).upliftCRN(any(), any())(any())
 
@@ -307,7 +345,8 @@ class StoreMyNinoControllerSpec extends SpecBase with IndividualDetailsFixtures 
           ConfidenceLevel.L200,
           fakeIndividualDetailsDataCache,
           Enrolments(Set(Enrolment("HMRC-PT"))),
-          request
+          request,
+          None
         )
 
         contentAsString(result).removeAllNonces() mustEqual (view()(userRequest, messages(application), scala.concurrent.ExecutionContext.global).toString())
@@ -364,7 +403,8 @@ class StoreMyNinoControllerSpec extends SpecBase with IndividualDetailsFixtures 
           ConfidenceLevel.L200,
           fakeIndividualDetailsDataCache,
           Enrolments(Set(Enrolment("HMRC-PT"))),
-          request
+          request,
+          None
         )
 
         contentAsString(result).removeAllNonces() mustEqual (view()(userRequest, messages(application), scala.concurrent.ExecutionContext.global).toString())
@@ -481,7 +521,7 @@ class StoreMyNinoControllerSpec extends SpecBase with IndividualDetailsFixtures 
           .withSession(("authToken", "Bearer 123"))
         val result = route(app, request).value
         status(result) mustEqual OK
-        contentAsString(result).removeAllNonces() mustEqual view(applePassId, googlePassId, "AB 12 34 56 C", displayForMobile = false)(request.withAttrs(requestAttributeMap), messages(app)).toString()
+        contentAsString(result).removeAllNonces() mustEqual view(applePassId, googlePassId, "AB 12 34 56 C", displayForMobile = false, None)(request.withAttrs(requestAttributeMap), messages(app)).toString()
         verify(mockNPSService, times(1)).upliftCRN(any(), any())(any())
       }
     }

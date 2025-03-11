@@ -46,8 +46,8 @@ trait LayoutProvider {
              sidebarContent: Option[Html] = None,
              messagesActive: Boolean = false
            )(contentBlock: Html)(
-             implicit request: Request[_]
-             , messages: Messages
+             implicit request: Request[_],
+             messages: Messages
            ): HtmlFormat.Appendable
 }
 

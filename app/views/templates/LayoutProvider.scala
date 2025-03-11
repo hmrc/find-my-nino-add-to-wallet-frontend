@@ -22,7 +22,6 @@ import play.api.i18n.Messages
 import play.api.mvc.Request
 import play.twirl.api.{Html, HtmlFormat}
 import uk.gov.hmrc.hmrcfrontend.views.viewmodels.hmrcstandardpage.ServiceURLs
-import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import uk.gov.hmrc.sca.services.WrapperService
 import views.html.components.{AdditionalScript, HeadBlock}
 
@@ -72,7 +71,7 @@ class NewLayoutProvider @Inject()(wrapperService: WrapperService, additionalScri
       scripts = Seq(additionalScript()),
       styleSheets = stylesheets.toSeq :+ headBlock(),
       fullWidth = fullWidth,
-      hideMenuBar = hideAccountMenu,
+      hideMenuBar = hideAccountMenu
     )(messages, request)
   }
 }

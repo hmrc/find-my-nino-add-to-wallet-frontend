@@ -101,7 +101,7 @@ object TestData {
       |	}
       |""".stripMargin
 
-  val trustedHelper: TrustedHelper = TrustedHelper("principal", "attorney", "returnLink", "AB000005C")
+  val trustedHelper: TrustedHelper = TrustedHelper("principal", "attorney", "returnLink", Some("AB000005C"))
   val trustedHelperUser: String =
     s"""
        |{

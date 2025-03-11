@@ -81,7 +81,7 @@ class NinoLetterController @Inject()(
     implicit val messages: Messages = cc.messagesApi.preferred(userRequestNew.request)
     val date: String                = LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY"))
 
-    fopService.render(pdfTemplate(individualDetailsDataCache, date, XSLScalaBridge(messages).getLang(), userRequestNew.trustedHelper).body)
+    fopService.render(pdfTemplate(individualDetailsDataCache, date, XSLScalaBridge(messages).getLang()).body)
   }
 
   private def auditNinoLetter(eventType: String, individualDetailsDataCache: IndividualDetailsDataCache, hc: HeaderCarrier): Unit = {

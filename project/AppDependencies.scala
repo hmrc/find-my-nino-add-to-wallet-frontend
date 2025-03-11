@@ -2,17 +2,17 @@ import sbt._
 
 object AppDependencies {
 
-  private val mongoVersion = "1.8.0"
+  private val mongoVersion = "2.5.0"
   private val playVersion = "play-30"
-  private val bootstrapVersion = "8.5.0"
+  private val bootstrapVersion = "9.11.0"
 
   val compile: Seq[ModuleID] = Seq(
     play.sbt.PlayImport.ws,
-    "uk.gov.hmrc"                   %% s"play-conditional-form-mapping-$playVersion"        %   "2.0.0",
+    "uk.gov.hmrc"                   %% s"play-conditional-form-mapping-$playVersion"        %   "3.2.0",
     "uk.gov.hmrc.mongo"             %% s"hmrc-mongo-$playVersion"                           %   mongoVersion,
     "org.apache.xmlgraphics"        % "fop"                                                 %   "2.10",
     "org.typelevel"                 %% "cats-core"                                          %   "2.10.0",
-    "uk.gov.hmrc"                   %% s"sca-wrapper-$playVersion"                          %   "1.5.0",
+    "uk.gov.hmrc"                   %% s"sca-wrapper-$playVersion"                          %   "2.6.0",
     "com.google.auth"               % "google-auth-library-oauth2-http"                     %   "1.23.0",
     "com.auth0"                     % "java-jwt"                                            %   "4.4.0",
     "com.fasterxml.jackson.module"  %% "jackson-module-scala"                               %   "2.17.0",

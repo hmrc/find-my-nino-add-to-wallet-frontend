@@ -165,7 +165,7 @@ trait FMNAuth extends AuthorisedFunctions with Logging {
             .asInstanceOf[Request[A]]
 
           val authenticatedRequest = AuthContext[A](
-            trustedHelper.fold(NationalInsuranceNumber(nino))(helper => NationalInsuranceNumber(helper.principalNino)),
+            trustedHelper.fold(NationalInsuranceNumber(nino))(helper => NationalInsuranceNumber(helper.principalNino.get)),
             isUser = true,
             internalId,
             confidenceLevel,

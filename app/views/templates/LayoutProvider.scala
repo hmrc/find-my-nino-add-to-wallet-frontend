@@ -16,6 +16,7 @@
 
 package views.html.templates
 
+import config.FrontendAppConfig
 import play.api.Logging
 import play.api.i18n.Messages
 import play.api.mvc.Request
@@ -51,7 +52,7 @@ trait LayoutProvider {
 }
 
 class NewLayoutProvider @Inject()(wrapperService: WrapperService, additionalScript: AdditionalScript,
-                                  headBlock: HeadBlock) extends LayoutProvider with Logging {
+                                  headBlock: HeadBlock, appConfig: FrontendAppConfig) extends LayoutProvider with Logging {
 
   //noinspection ScalaStyle
   override def apply(pageTitle: String, showBackLink: Boolean, timeout: Boolean, showSignOut: Boolean,
@@ -65,12 +66,13 @@ class NewLayoutProvider @Inject()(wrapperService: WrapperService, additionalScri
       pageTitle = Some(pageTitle),
       showBackLinkJS = showBackLink,
       serviceURLs = ServiceURLs(
-        serviceUrl = Some("/personal-account")
+        serviceUrl = Some("/personal-account"),
+        signOutUrl = Some(appConfig.signOutUrl)
       ),
       scripts = Seq(additionalScript()),
       styleSheets = stylesheets.toSeq :+ headBlock(),
       fullWidth = fullWidth,
       hideMenuBar = hideAccountMenu,
-    )(messages, HeaderCarrierConverter.fromRequest(request), request)
+    )(messages, request)
   }
 }

@@ -46,7 +46,7 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
   override protected def beforeEach(): Unit = {
     reset(mockScaWrapperDataConnector)
     when(mockScaWrapperDataConnector.wrapperData()(any(), any(), any()))
-      .thenReturn(Future.successful(wrapperDataResponse))
+      .thenReturn(Future.successful(Some(wrapperDataResponse)))
     when(mockScaWrapperDataConnector.messageData()(any(), any()))
       .thenReturn(Future.successful(messageDataResponse))
 
@@ -109,8 +109,7 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
           val result = route(application, request).value
 
           status(result) mustEqual FAILED_DEPENDENCY
-          contentAsString(result) must include("Sorry, we’re experiencing technical difficulties")
-          contentAsString(result) must include("Please try again in a few minutes")
+          contentAsString(result) must include("Sorry, there is a problem with the service")
         }
       }
 
@@ -301,8 +300,7 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
           val result = route(application, request).value
 
           status(result) mustEqual FAILED_DEPENDENCY
-          contentAsString(result) must include("Sorry, we’re experiencing technical difficulties")
-          contentAsString(result) must include("Please try again in a few minutes")
+          contentAsString(result) must include("Sorry, there is a problem with the service")
         }
       }
 

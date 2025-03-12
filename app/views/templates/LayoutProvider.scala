@@ -17,15 +17,18 @@
 package views.html.templates
 
 import config.FrontendAppConfig
+import controllers.auth.requests.UserRequest
 import play.api.Logging
 import play.api.i18n.Messages
 import play.api.mvc.Request
 import play.twirl.api.{Html, HtmlFormat}
+import uk.gov.hmrc.auth.core.retrieve.v2.TrustedHelper
 import uk.gov.hmrc.hmrcfrontend.views.viewmodels.hmrcstandardpage.ServiceURLs
 import uk.gov.hmrc.sca.services.WrapperService
 import views.html.components.{AdditionalScript, HeadBlock}
 
 import javax.inject.Inject
+import scala.util.{Failure, Success, Try}
 
 trait LayoutProvider {
   //noinspection ScalaStyle
@@ -59,6 +62,14 @@ class NewLayoutProvider @Inject()(wrapperService: WrapperService, additionalScri
                      hideAccountMenu: Boolean, backLinkID: Boolean, backLinkUrl: String,
                      disableSessionExpired: Boolean, sidebarContent: Option[Html], messagesActive: Boolean)(contentBlock: Html)
                     (implicit request: Request[_], messages: Messages): HtmlFormat.Appendable = {
+    val trustedHelper: Option[TrustedHelper] = Try(request.asInstanceOf[UserRequest[_]]) match {
+      case Success(userRequest) => userRequest.trustedHelper
+      case Failure(_)           => {
+        println("zazaza" + request)
+        None
+      }
+    }
+
     wrapperService.standardScaLayout(
       disableSessionExpired = disableSessionExpired,
       content = contentBlock,
@@ -71,7 +82,8 @@ class NewLayoutProvider @Inject()(wrapperService: WrapperService, additionalScri
       scripts = Seq(additionalScript()),
       styleSheets = stylesheets.toSeq :+ headBlock(),
       fullWidth = fullWidth,
-      hideMenuBar = hideAccountMenu
+      hideMenuBar = hideAccountMenu,
+      optTrustedHelper = trustedHelper
     )(messages, request)
   }
 }

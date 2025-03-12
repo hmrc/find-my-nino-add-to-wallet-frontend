@@ -17,6 +17,7 @@
 @import config.FrontendAppConfig
 @import components.{H1, H2, P, Link, BulletList}
 @import uk.gov.hmrc.auth.core.retrieve.v2.TrustedHelper
+@import controllers.auth.requests.UserRequest
 
 @this(
         layout: templates.LayoutProvider,
@@ -34,7 +35,7 @@
     nino: String,
     displayForMobile: Boolean,
     trustedHelper: Option[TrustedHelper]
-)(implicit request: Request[_], messages: Messages)
+)(implicit request: UserRequest[_], messages: Messages)
 
 @stylesheet = {
     <link rel="stylesheet" href='@routes.Assets.versioned("stylesheets/partials/save-your-nino.css")'>

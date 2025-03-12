@@ -125,10 +125,18 @@ class StoreMyNinoControllerSpec extends SpecBase with IndividualDetailsFixtures 
           .withSession(("authToken", "Bearer 123"))
         val result = route(application, request).value
         status(result) mustEqual OK
+        val userRequest = UserRequest(
+          None,
+          ConfidenceLevel.L200,
+          fakeIndividualDetailsDataCache,
+          Enrolments(Set(Enrolment("HMRC-PT"))),
+          request.withAttrs(requestAttributeMap),
+          None
+        )
 
         contentAsString(result).removeAllNonces() mustEqual view(
           applePassId, googlePassId, "AB 12 34 56 C", displayForMobile = false, None
-        )(request.withAttrs(requestAttributeMap), messages(application)).toString()
+        )(userRequest, messages(application)).toString()
 
         contentAsString(result).removeAllNonces().contains("Save your number to your phone’s wallet") mustBe true
 
@@ -158,12 +166,20 @@ class StoreMyNinoControllerSpec extends SpecBase with IndividualDetailsFixtures 
         userLoggedInFMNUser(trustedHelperUser)
         val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
+        val userRequest = UserRequest(
+          None,
+          ConfidenceLevel.L200,
+          fakeIndividualDetailsDataCache,
+          Enrolments(Set(Enrolment("HMRC-PT"))),
+          request.withAttrs(requestAttributeMap),
+          Some(trustedHelper)
+        )
         val result = route(application, request).value
         status(result) mustEqual OK
 
         contentAsString(result).removeAllNonces() mustEqual view(
           applePassId, googlePassId, "AB 12 34 56 C", displayForMobile = false, Some(trustedHelper)
-        )(request.withAttrs(requestAttributeMap), messages(application)).toString()
+        )(userRequest, messages(application)).toString()
 
         contentAsString(result).removeAllNonces().contains("Save your number to your phone’s wallet") mustBe false
 
@@ -519,8 +535,18 @@ class StoreMyNinoControllerSpec extends SpecBase with IndividualDetailsFixtures 
         val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
         val result = route(app, request).value
+
+        val userRequest = UserRequest(
+          None,
+          ConfidenceLevel.L200,
+          fakeIndividualDetailsDataCache,
+          Enrolments(Set(Enrolment("HMRC-PT"))),
+          request.withAttrs(requestAttributeMap),
+          None
+        )
+
         status(result) mustEqual OK
-        contentAsString(result).removeAllNonces() mustEqual view(applePassId, googlePassId, "AB 12 34 56 C", displayForMobile = false, None)(request.withAttrs(requestAttributeMap), messages(app)).toString()
+        contentAsString(result).removeAllNonces() mustEqual view(applePassId, googlePassId, "AB 12 34 56 C", displayForMobile = false, None)(userRequest, messages(app)).toString()
         verify(mockNPSService, times(1)).upliftCRN(any(), any())(any())
       }
     }

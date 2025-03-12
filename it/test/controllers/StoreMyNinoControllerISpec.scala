@@ -76,7 +76,7 @@ class StoreMyNinoControllerISpec extends IntegrationSpecBase {
         nino = generatedNino.nino,
         displayForMobile = true,
         trustedHelper = None
-      )(fakeRequest, messages)
+      )(buildUserRequest(request = fakeRequest), messages)
 
     def doc: Document = Jsoup.parse(main.toString)
 

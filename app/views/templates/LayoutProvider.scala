@@ -64,10 +64,8 @@ class NewLayoutProvider @Inject()(wrapperService: WrapperService, additionalScri
                     (implicit request: Request[_], messages: Messages): HtmlFormat.Appendable = {
     val trustedHelper: Option[TrustedHelper] = Try(request.asInstanceOf[UserRequest[_]]) match {
       case Success(userRequest) => userRequest.trustedHelper
-      case Failure(_)           => {
-        println("zazaza" + request)
-        None
-      }
+      case Failure(_)           => None
+
     }
 
     wrapperService.standardScaLayout(

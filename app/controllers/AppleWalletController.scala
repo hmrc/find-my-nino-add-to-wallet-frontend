@@ -55,7 +55,7 @@ class AppleWalletController @Inject()(val appleWalletConnector: AppleWalletConne
     implicit userRequestNew => {
       (frontendAppConfig.appleWalletEnabled, userRequestNew.trustedHelper) match {
         case (_, Some(_)) => Future.successful(Redirect(controllers.routes.StoreMyNinoController.onPageLoad))
-        case (true, None) => {
+        case (true, None) =>
         implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(userRequestNew.request, userRequestNew.request.session)
         implicit val messages: Messages = cc.messagesApi.preferred(userRequestNew.request)
 
@@ -66,7 +66,6 @@ class AppleWalletController @Inject()(val appleWalletConnector: AppleWalletConne
         for {
           pId: Some[String] <- appleWalletConnector.createApplePass(fullName, ninoFormatted)
         } yield Ok(view(pId.value, isMobileDisplay(userRequestNew.request))(userRequestNew.request, messages))
-      }
         case (false, _) =>Future.successful(Redirect(controllers.routes.UnauthorisedController.onPageLoad))
       }
     }

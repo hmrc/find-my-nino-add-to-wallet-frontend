@@ -128,6 +128,19 @@ trait FMNAuth extends AuthorisedFunctions with Logging {
       Retrievals.internalId and
       Retrievals.credentialRole
 
+  private def enrolmentAffinityCheck[A](enrolments: Set[Enrolment], affinityGroup: AffinityGroup, nino:String, block: FMNAction[A])(implicit config: FrontendAppConfig, authenticatedRequest: AuthContext[A]) = {
+    (checkPTAEnrolment(enrolments, domain.Nino(nino)), affinityGroup == AffinityGroup.Agent) match {
+      case (false, _) =>
+        val redirectUrl = config.getTaxEnrolmentAssignmentRedirectUrl(config.saveYourNationalNumberFrontendHost + "/save-your-national-insurance-number")
+        Future.successful(Redirect(redirectUrl))
+      case (true, true) =>
+        logger.warn("Agent affinity group encountered whilst attempting to authorise user")
+        Future successful Redirect(controllers.routes.UnauthorisedController.onPageLoad)
+      case _ =>
+        block(authenticatedRequest)
+    }
+  }
+
   private def authorisedUser[A](loginContinueUrl: Call, block: FMNAction[A])
                                (implicit
                                 ec: ExecutionContext,
@@ -146,13 +159,13 @@ trait FMNAuth extends AuthorisedFunctions with Logging {
         case Some(nino) ~
           Some(affinityGroup) ~
           Enrolments(enrolments) ~
-          credentials ~
+          _ ~
           Some(CredentialStrength.strong) ~
           GTOE200(confidenceLevel) ~
-          trustedHelper ~
-          profile ~
+          Some(helper) ~
+          _ ~
           Some(internalId)  ~
-          Some(credentialRole) =>
+          Some(_) =>
 
           val trimmedRequest: Request[A] = request
             .map {
@@ -164,28 +177,53 @@ trait FMNAuth extends AuthorisedFunctions with Logging {
             }
             .asInstanceOf[Request[A]]
 
-          val authenticatedRequest = AuthContext[A](
-            trustedHelper.fold(NationalInsuranceNumber(nino))(helper => NationalInsuranceNumber(helper.principalNino.getOrElse(nino))),
+          implicit val authenticatedRequest: AuthContext[A] = AuthContext[A](
+            NationalInsuranceNumber(helper.principalNino.get),
             isUser = true,
             internalId,
             confidenceLevel,
             affinityGroup,
             Enrolments(enrolments),
-            trustedHelper,
+            Some(helper),
             trimmedRequest
           )
 
-          if (!checkPTAEnrolment(enrolments, domain.Nino(nino))) {
-            val redirectUrl = config.getTaxEnrolmentAssignmentRedirectUrl(config.saveYourNationalNumberFrontendHost + "/save-your-national-insurance-number")
-            Future.successful(Redirect(redirectUrl))
-          }
-          else if (affinityGroup == AffinityGroup.Agent) {
-            logger.warn("Agent affinity group encountered whilst attempting to authorise user")
-            Future successful Redirect(controllers.routes.UnauthorisedController.onPageLoad)
-          } else {
-            //block(AuthContext(NationalInsuranceNumber(nino), isUser = true, internalId, confidenceLevel, affinityGroup, allEnrolments, name, request))
-            block(authenticatedRequest)
-          }
+          enrolmentAffinityCheck(enrolments, affinityGroup, nino, block)
+
+        case Some(nino) ~
+          Some(affinityGroup) ~
+          Enrolments(enrolments) ~
+          _ ~
+          Some(CredentialStrength.strong) ~
+          GTOE200(confidenceLevel) ~
+          None ~
+          _ ~
+          Some(internalId)  ~
+          Some(_) =>
+
+          val trimmedRequest: Request[A] = request
+            .map {
+              case AnyContentAsFormUrlEncoded(data) =>
+                AnyContentAsFormUrlEncoded(data.map { case (key, vals) =>
+                  (key, vals.map(_.trim))
+                })
+              case b => b
+            }
+            .asInstanceOf[Request[A]]
+
+          implicit val authenticatedRequest: AuthContext[A] = AuthContext[A](
+            NationalInsuranceNumber(nino),
+            isUser = true,
+            internalId,
+            confidenceLevel,
+            affinityGroup,
+            Enrolments(enrolments),
+            None,
+            trimmedRequest
+          )
+
+          enrolmentAffinityCheck(enrolments, affinityGroup, nino, block)
+
         case _ =>
           logger.warn("All authorize checks failed whilst attempting to authorise user")
           Future successful Redirect(controllers.routes.UnauthorisedController.onPageLoad)

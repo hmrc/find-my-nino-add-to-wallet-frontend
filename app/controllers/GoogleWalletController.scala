@@ -53,7 +53,7 @@ class GoogleWalletController @Inject()(override val messagesApi: MessagesApi,
     userRequestNew => {
       (frontendAppConfig.googleWalletEnabled, userRequestNew.trustedHelper) match {
         case (_, Some(_)) => Future.successful(Redirect(controllers.routes.StoreMyNinoController.onPageLoad))
-        case (true, None) => {
+        case (true, None) =>
           implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession (userRequestNew.request, userRequestNew.request.session)
           implicit val messages: Messages = cc.messagesApi.preferred (userRequestNew.request)
 
@@ -64,7 +64,7 @@ class GoogleWalletController @Inject()(override val messagesApi: MessagesApi,
           for {
           pId: Some[String] <- googleWalletConnector.createGooglePass (fullName, ninoFormatted)
           } yield Ok (view (pId.value, isMobileDisplay (userRequestNew.request) ) (userRequestNew.request, messages) )
-      } case (false, _) => Future.successful (Redirect (controllers.routes.UnauthorisedController.onPageLoad))
+        case (false, _) => Future.successful (Redirect (controllers.routes.UnauthorisedController.onPageLoad))
       }
       }
     }

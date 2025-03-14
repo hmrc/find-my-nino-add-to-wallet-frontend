@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 package services
 
 import base.SpecBase
+import cats.implicits._
+import cats.data.EitherT
 import connectors.NPSConnector
 import models.nps.CRNUpliftRequest
 import org.mockito.ArgumentMatchers.any
@@ -26,7 +28,7 @@ import play.api.http.Status._
 import play.api.inject.bind
 import uk.gov.hmrc.http._
 
-import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class NPSServiceSpec extends SpecBase{
 
@@ -87,110 +89,126 @@ class NPSServiceSpec extends SpecBase{
   override implicit lazy val app: Application = applicationBuilder()
     .overrides(
       bind[NPSConnector].toInstance(mockNPSConnector)
-    )
-
-    .build()
+    ).build()
 
   val npsService: NPSService = app.injector.instanceOf[NPSService]
 
-  override def beforeEach(): Unit =
-    reset(mockNPSConnector)
+  override def beforeEach(): Unit = reset(mockNPSConnector)
 
   "upliftCRN" - {
-    implicit val hc: HeaderCarrier = HeaderCarrier()
 
     "when back end connector returns 204 (NO_CONTENT)" - {
-      "return a right of NO_CONTENT" in {
+      "return Right(true)" in {
+        when(mockNPSConnector.upliftCRN(any, any)(any, any()))
+          .thenReturn(EitherT.rightT(HttpResponse(NO_CONTENT, "")))
 
-        when(mockNPSConnector
-          .upliftCRN(any, any)(any, any()))
-          .thenReturn(Future.successful(HttpResponse(NO_CONTENT, "")))
+        val result = npsService.upliftCRN(nino, npsRequest).value.futureValue
 
-        val result = npsService.upliftCRN(nino, npsRequest)
-        result.futureValue mustBe Right(NO_CONTENT)
+        result mustBe Right(true)
       }
     }
 
     "when back end connector returns 422 (UNPROCESSABLE_ENTITY) with code 63492 (Already an adult account)" - {
-      "return a right of NO_CONTENT" in {
+      "return Right(true)" in {
+        when(mockNPSConnector.upliftCRN(any, any)(any, any()))
+          .thenReturn(EitherT.rightT(HttpResponse(UNPROCESSABLE_ENTITY, jsonUnprocessableEntityAlreadyAdult)))
 
-        when(mockNPSConnector
-          .upliftCRN(any, any)(any, any()))
-          .thenReturn(Future.successful(HttpResponse(UNPROCESSABLE_ENTITY, jsonUnprocessableEntityAlreadyAdult)))
+        val result = npsService.upliftCRN(nino, npsRequest).value.futureValue
 
-        val result = npsService.upliftCRN(nino, npsRequest)
-        result.futureValue mustBe Right(NO_CONTENT)
-      }
-    }
-
-    "when back end connector returns 400 (BAD_REQUEST)" - {
-      "return a bad request exception (BAD_REQUEST)" in {
-
-        val response: HttpResponse = HttpResponse(BAD_REQUEST, jsonBadRequest)
-
-        when(mockNPSConnector
-          .upliftCRN(any, any)(any, any()))
-          .thenReturn(Future.successful(response))
-
-        val result = npsService.upliftCRN(nino, npsRequest)
-        result.futureValue mustBe Left(BAD_REQUEST)
-        }
-      }
-    }
-
-    "when back end connector returns 403 (FORBIDDEN)" - {
-      "return a bad request exception (FORBIDDEN)" in {
-
-        val response: HttpResponse = HttpResponse(FORBIDDEN, jsonForbidden)
-
-        when(mockNPSConnector
-          .upliftCRN(any, any)(any, any()))
-          .thenReturn(Future.successful(response))
-
-        val result = npsService.upliftCRN(nino, npsRequest)
-        result.futureValue mustBe Left(FORBIDDEN)
+        result mustBe Right(true)
       }
     }
 
     "when back end connector returns 422 (UNPROCESSABLE_ENTITY)" - {
-      "return a bad request exception (UNPROCESSABLE_ENTITY)" in {
+      "return Left with status UNPROCESSABLE_ENTITY" in {
 
         val response: HttpResponse = HttpResponse(UNPROCESSABLE_ENTITY, jsonUnprocessableEntity)
 
-        when(mockNPSConnector
-          .upliftCRN(any, any)(any, any()))
-          .thenReturn(Future.successful(response))
+        when(mockNPSConnector.upliftCRN(any, any)(any, any()))
+          .thenReturn(EitherT.rightT(response))
 
-        val result = npsService.upliftCRN(nino, npsRequest)
-        result.futureValue mustBe Left(UNPROCESSABLE_ENTITY)
+        val result = npsService.upliftCRN(nino, npsRequest).value.futureValue
+
+        result mustBe a[Left[_, _]]
+        result.swap.getOrElse(UpstreamErrorResponse("", OK)).statusCode mustBe UNPROCESSABLE_ENTITY
+      }
+    }
+
+
+
+    "when back end connector returns 400 (BAD_REQUEST)" - {
+      "return Left with status BAD_REQUEST" in {
+
+        val response: HttpResponse = HttpResponse(BAD_REQUEST, jsonBadRequest)
+
+        when(mockNPSConnector.upliftCRN(any, any)(any, any()))
+          .thenReturn(EitherT.rightT(response))
+
+        val result = npsService.upliftCRN(nino, npsRequest).value.futureValue
+
+        result mustBe a[Left[_, _]]
+        result.swap.getOrElse(UpstreamErrorResponse("", OK)).statusCode mustBe BAD_REQUEST
+      }
+    }
+
+    "when back end connector returns 403 (FORBIDDEN)" - {
+      "return Left with status FORBIDDEN" in {
+
+        val response: HttpResponse = HttpResponse(FORBIDDEN, jsonForbidden)
+
+        when(mockNPSConnector.upliftCRN(any, any)(any, any()))
+          .thenReturn(EitherT.rightT(response))
+
+        val result = npsService.upliftCRN(nino, npsRequest).value.futureValue
+
+        result mustBe a[Left[_, _]]
+        result.swap.getOrElse(UpstreamErrorResponse("", OK)).statusCode mustBe FORBIDDEN
       }
     }
 
     "when back end connector returns 404 (NOT_FOUND)" - {
-      "return a bad request exception (NOT_FOUND)" in {
+      "return Left with status NOT_FOUND" in {
 
         val response: HttpResponse = HttpResponse(NOT_FOUND, "")
 
-        when(mockNPSConnector
-          .upliftCRN(any, any)(any, any()))
-          .thenReturn(Future.successful(response))
+        when(mockNPSConnector.upliftCRN(any, any)(any, any()))
+          .thenReturn(EitherT.rightT(response))
 
-        val result = npsService.upliftCRN(nino, npsRequest)
-        result.futureValue mustBe Left(NOT_FOUND)
+        val result = npsService.upliftCRN(nino, npsRequest).value.futureValue
+
+        result mustBe a[Left[_, _]]
+        result.swap.getOrElse(UpstreamErrorResponse("", OK)).statusCode mustBe NOT_FOUND
       }
     }
 
     "when back end connector returns 500 (INTERNAL_SERVER_ERROR)" - {
-      "return a bad request exception (INTERNAL_SERVER_ERROR)" in {
+      "return Left with status INTERNAL_SERVER_ERROR" in {
 
         val response: HttpResponse = HttpResponse(INTERNAL_SERVER_ERROR, "Something went wrong")
 
-        when(mockNPSConnector
-          .upliftCRN(any, any)(any, any()))
-          .thenReturn(Future.successful(response))
+        when(mockNPSConnector.upliftCRN(any, any)(any, any()))
+          .thenReturn(EitherT.rightT(response))
 
-        val result = npsService.upliftCRN(nino, npsRequest)
-        result.futureValue mustBe Left(INTERNAL_SERVER_ERROR)
+        val result = npsService.upliftCRN(nino, npsRequest).value.futureValue
+
+        result mustBe a[Left[_, _]]
+        result.swap.getOrElse(UpstreamErrorResponse("", OK)).statusCode mustBe INTERNAL_SERVER_ERROR
+      }
+    }
+
+    "when backend returns Left(UpstreamErrorResponse(BAD_GATEWAY))" - {
+      "return Left with the correct status" in {
+
+        val upstreamErrorResponse = UpstreamErrorResponse("Bad Gateway", BAD_GATEWAY)
+
+        when(mockNPSConnector.upliftCRN(any, any)(any, any()))
+          .thenReturn(EitherT.leftT(upstreamErrorResponse))
+
+        val result = npsService.upliftCRN(nino, npsRequest).value.futureValue
+
+        result mustBe a[Left[_, _]]
+        result.swap.getOrElse(UpstreamErrorResponse("", OK)).statusCode mustBe BAD_GATEWAY
+      }
     }
   }
 }

@@ -56,26 +56,24 @@ class AppleWalletConnector @Inject()(frontendAppConfig: FrontendAppConfig, httpC
                   (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): EitherT[Future, UpstreamErrorResponse, Option[Array[Byte]]] = {
 
     val url = s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-pass-card?passId=$passId"
-    val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
 
-    httpClientResponse.read(
-      httpClientV2
-        .get(url"$url")(hc)
-        .execute[Either[UpstreamErrorResponse, HttpResponse]](readEitherOf(readRaw), ec)
-    ).map(response =>
-      if (response.status == OK) Some(Base64.getDecoder.decode(response.body)) else None
-    )
+    fetchAppleData(url)
   }
 
   def getAppleQrCode(passId: String)
                (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): EitherT[Future, UpstreamErrorResponse, Option[Array[Byte]]] = {
 
     val url = s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-qr-code?passId=$passId"
-    val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
+
+    fetchAppleData(url)
+  }
+
+  private def fetchAppleData(url: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): EitherT[Future, UpstreamErrorResponse, Option[Array[Byte]]] = {
+    val updatedHc = hc.withExtraHeaders(headers: _*)
 
     httpClientResponse.read(
       httpClientV2
-        .get(url"$url")(hc)
+        .get(url"$url")(updatedHc)
         .execute[Either[UpstreamErrorResponse, HttpResponse]](readEitherOf(readRaw), ec)
     ).map(response =>
       if (response.status == OK) Some(Base64.getDecoder.decode(response.body)) else None

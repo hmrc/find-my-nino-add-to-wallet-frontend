@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,11 +60,12 @@ class StoreMyNinoController @Inject()(
 
       val fullName = userRequestNew.individualDetails.individualDetailsData.fullName
       val googleIdf = googleWalletConnector.createGooglePass(fullName, ninoFormatted)
-      val appleIdf = appleWalletConnector.createApplePass(fullName, ninoFormatted)
+      val appleIdET = appleWalletConnector.createApplePass(fullName, ninoFormatted)
 
       googleIdf.flatMap { googleId =>
-        appleIdf.map { appleId =>
-          Ok(view(appleId.value, googleId.value, ninoFormatted, isMobileDisplay(userRequestNew.request))(userRequestNew.request, messages))
+        appleIdET.value.map {
+          case Right(appleId) => Ok(view(appleId.value, googleId.value, ninoFormatted, isMobileDisplay(userRequestNew.request))(userRequestNew.request, messages))
+          case Left(error)    => InternalServerError(s"Error: ${error.message}")
         }
       }
     }

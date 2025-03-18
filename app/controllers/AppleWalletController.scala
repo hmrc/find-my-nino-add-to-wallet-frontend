@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,9 +61,13 @@ class AppleWalletController @Inject()(val appleWalletConnector: AppleWalletConne
         val nino: String = userRequestNew.nino.getOrElse(throw new IllegalArgumentException("No nino found")).nino
         val ninoFormatted = nino.grouped(2).mkString(" ")
         val fullName = userRequestNew.individualDetails.individualDetailsData.fullName
-        for {
-          pId: Some[String] <- appleWalletConnector.createApplePass(fullName, ninoFormatted)
-        } yield Ok(view(pId.value, isMobileDisplay(userRequestNew.request))(userRequestNew.request, messages))
+
+        appleWalletConnector.createApplePass(fullName, ninoFormatted)
+          .value
+          .map{
+            case Right(pId) => Ok(view(pId.value, isMobileDisplay(userRequestNew.request))(userRequestNew.request, messages))
+            case Left(error) => InternalServerError(s"Failed to create Apple Pass: ${error.message}")
+          }
       }
       else {
         Future.successful(Redirect(controllers.routes.UnauthorisedController.onPageLoad))
@@ -107,27 +111,33 @@ class AppleWalletController @Inject()(val appleWalletConnector: AppleWalletConne
 
   private def getApplePass(passId: String, individualDetailsDataCache: IndividualDetailsDataCache,
                            request: Request[AnyContent], hc:HeaderCarrier, messages: Messages): Future[Result] = {
-    appleWalletConnector.getApplePass(passId)(ec, hc).map {
-      case Some(data) =>
+    appleWalletConnector.getApplePass(passId)(ec, hc).value.map {
+      case Right(Some(data)) =>
         val eventType = request.getQueryString("qr-code") match {
           case Some("true") => "AddNinoToWalletFromQRCode"
           case _ => "AddNinoToWallet"
         }
         auditApple(eventType, individualDetailsDataCache, hc)
         Ok(data).withHeaders("Content-Disposition" -> s"attachment; filename=$passFileName")
-      case _ =>
+
+      case Right(None) =>
         NotFound(passIdNotFoundView()(request, messages, ec))
+
+      case Left(error) => InternalServerError(s"Failed to get Apple Pass: ${error.message}")
     }
   }
 
   private def getAppleQRCode(passId: String, individualDetailsDataCache: IndividualDetailsDataCache,
                              request: Request[AnyContent], hc:HeaderCarrier, messages: Messages): Future[Result] = {
-    appleWalletConnector.getAppleQrCode(passId)(ec, hc).map {
-      case Some(data) =>
+    appleWalletConnector.getAppleQrCode(passId)(ec, hc).value.map {
+      case Right(Some(data)) =>
         auditApple("DisplayQRCode", individualDetailsDataCache, hc)
         Ok(data).withHeaders("Content-Disposition" -> s"attachment; filename=$passFileName")
-      case _ =>
+
+      case Right(None) =>
         NotFound(qrCodeNotFoundView()(request, messages, ec))
+
+      case Left(error) => InternalServerError(s"Failed to get Apple QR Code: ${error.message}")
     }
   }
 

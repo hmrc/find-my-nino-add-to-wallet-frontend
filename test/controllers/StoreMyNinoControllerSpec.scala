@@ -70,9 +70,10 @@ class StoreMyNinoControllerSpec extends SpecBase with IndividualDetailsFixtures 
     reset(mockGoogleWalletConnector)
 
     when(mockAppleWalletConnector.getApplePass(eqTo(applePassId))(any(), any()))
-      .thenReturn(Future(Some(Base64.getDecoder.decode(fakeBase64String))))
+      .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](Some(Base64.getDecoder.decode(fakeBase64String))))
+
     when(mockAppleWalletConnector.createApplePass(any(), any())(any(), any()))
-      .thenReturn(Future(Some(applePassId)))
+      .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](Some(applePassId)))
 
     when(mockGoogleWalletConnector.getGooglePassUrl(eqTo(googlePassId))(any(), any()))
       .thenReturn(Future(Some(fakeGooglePassSaveUrl)))
@@ -342,7 +343,7 @@ class StoreMyNinoControllerSpec extends SpecBase with IndividualDetailsFixtures 
         .thenReturn(Future.successful(true))
 
       when(mockAppleWalletConnector.getApplePass(eqTo(applePassId))(any(), any()))
-        .thenReturn(Future(None))
+        .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](None))
 
       val application = applicationBuilderWithConfig().overrides(
         inject.bind[SessionRepository].toInstance(mockSessionRepository),
@@ -371,6 +372,36 @@ class StoreMyNinoControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
       }
 
+    }
+
+
+    "must return InternalServerError when Apple pass creation fails" in {
+      when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
+        .thenReturn(Future.successful(true))
+
+      when(mockAppleWalletConnector.createApplePass(any(), any())(any(), any()))
+        .thenReturn(EitherT.leftT(UpstreamErrorResponse("Internal Server Error", INTERNAL_SERVER_ERROR)))
+
+      when(mockGoogleWalletConnector.createGooglePass(any(), any())(any(), any()))
+        .thenReturn(Future.successful(Some(googlePassId)))
+
+      val application = applicationBuilderWithConfig().overrides(
+        inject.bind[SessionRepository].toInstance(mockSessionRepository),
+        inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
+        inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
+        inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+      ).build()
+
+      running(application) {
+        userLoggedInFMNUser(NinoUser)
+        val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
+          .withSession(("authToken", "Bearer 123"))
+
+        val result = route(application, request).value
+
+        status(result) mustBe INTERNAL_SERVER_ERROR
+        contentAsString(result) must include("Error: Internal Server Error")
+      }
     }
 
     "must fail to login user" in {

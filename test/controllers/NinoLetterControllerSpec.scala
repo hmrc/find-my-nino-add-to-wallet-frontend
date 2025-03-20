@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,15 @@
 package controllers
 
 import base.SpecBase
+import cats.data.EitherT
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{reset, times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
-import play.api.http.Status.NO_CONTENT
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import services.{IndividualDetailsService, NPSService}
+import uk.gov.hmrc.http.UpstreamErrorResponse
 import util.IndividualDetailsFixtures
 import util.Fixtures.{fakeIndividualDetailsDataCache, fakeIndividualDetailsDataCacheWithCRN}
 import util.Stubs.userLoggedInFMNUser
@@ -109,7 +110,8 @@ class NinoLetterControllerSpec extends SpecBase with IndividualDetailsFixtures w
           Future.successful(Right(fakeIndividualDetailsDataCache)))
       when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
         .thenReturn(Future.successful(true))
-      when(mockNPSService.upliftCRN(any(), any())(any())).thenReturn(Future.successful(Right(NO_CONTENT)))
+      when(mockNPSService.upliftCRN(any(), any())(any()))
+        .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](true))
 
       val application = applicationBuilderWithConfig()
         .overrides(

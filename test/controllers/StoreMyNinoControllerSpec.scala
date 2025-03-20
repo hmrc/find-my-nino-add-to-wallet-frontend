@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,13 @@
 package controllers
 
 import base.SpecBase
+import cats.data.EitherT
 import connectors._
 import controllers.auth.requests.UserRequest
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.{reset, times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
-import play.api.http.Status.NO_CONTENT
 import play.api.inject
 import play.api.test.Helpers._
 import play.api.test.{DefaultAwaitTimeout, FakeRequest}
@@ -514,7 +514,8 @@ class StoreMyNinoControllerSpec extends SpecBase with IndividualDetailsFixtures 
           Future.successful(Right(fakeIndividualDetailsDataCache)))
       when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
         .thenReturn(Future.successful(true))
-      when(mockNPSService.upliftCRN(any(), any())(any())).thenReturn(Future.successful(Right(NO_CONTENT)))
+      when(mockNPSService.upliftCRN(any(), any())(any()))
+        .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](true))
 
       val app =
         applicationBuilderWithConfig()
@@ -623,7 +624,8 @@ class StoreMyNinoControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
       when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
         .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCacheWithCRN)))
-      when(mockNPSService.upliftCRN(any(), any())(any())).thenReturn(Future.successful(Left(BAD_REQUEST)))
+      when(mockNPSService.upliftCRN(any(), any())(any()))
+        .thenReturn(EitherT.leftT[Future, Boolean](UpstreamErrorResponse("Some error", BAD_REQUEST)))
 
       val application =
         applicationBuilderWithConfig()
@@ -659,7 +661,8 @@ class StoreMyNinoControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
       when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
         .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCacheWithCRN)))
-      when(mockNPSService.upliftCRN(any(), any())(any())).thenReturn(Future.successful(Left(UNPROCESSABLE_ENTITY)))
+      when(mockNPSService.upliftCRN(any(), any())(any()))
+        .thenReturn(EitherT.leftT[Future, Boolean](UpstreamErrorResponse("Unprocessable Entity", UNPROCESSABLE_ENTITY)))
 
       val application =
         applicationBuilderWithConfig()
@@ -696,7 +699,8 @@ class StoreMyNinoControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
       when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
         .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCacheWithCRN)))
-      when(mockNPSService.upliftCRN(any(), any())(any())).thenReturn(Future.successful(Left(NOT_FOUND)))
+      when(mockNPSService.upliftCRN(any(), any())(any()))
+        .thenReturn(EitherT.leftT[Future, Boolean](UpstreamErrorResponse("Not Found", NOT_FOUND)))
 
       val application =
         applicationBuilderWithConfig()

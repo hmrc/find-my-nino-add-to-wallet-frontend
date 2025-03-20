@@ -74,9 +74,18 @@ class AppleWalletConnector @Inject()(frontendAppConfig: FrontendAppConfig, httpC
     httpClientResponse.read(
       httpClientV2
         .get(url"$url")(updatedHc)
-        .execute[Either[UpstreamErrorResponse, HttpResponse]](readEitherOf(readRaw), ec)
-    ).map(response =>
-      if (response.status == OK) Some(Base64.getDecoder.decode(response.body)) else None
-    )
+        .execute[Either[UpstreamErrorResponse, HttpResponse]](readEitherOfWithNotFound, implicitly)
+    ).transform {
+      case Right(httpResponse) if httpResponse.status == OK => Right(Some(Base64.getDecoder.decode(httpResponse.body)))
+      case Right(httpResponse) if httpResponse.status == NOT_FOUND => Right(None)
+      case Right(httpResponse) =>  Left(UpstreamErrorResponse("", httpResponse.status))
+      case Left(upstreamErrorResponse) => Left(upstreamErrorResponse)
+    }
   }
+
+  private def readEitherOfWithNotFound[A: HttpReads]: HttpReads[Either[UpstreamErrorResponse, A]] =
+    HttpReads.ask.flatMap {
+      case (_, _, response) if response.status == NOT_FOUND => HttpReads[A].map(Right.apply)
+      case _                                                => HttpReads[Either[UpstreamErrorResponse, A]]
+    }
 }

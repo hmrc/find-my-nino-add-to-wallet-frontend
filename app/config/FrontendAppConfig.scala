@@ -48,7 +48,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
 
   val loginUrl: String                  = configuration.get[String]("urls.login")
   val loginContinueUrl: String          = configuration.get[String]("urls.loginContinue")
-  val signOutUrl: String                = configuration.get[String]("urls.signOut")
+  val signOutUrl: String                = configuration.get[String]("sca-wrapper.signout.url")
   lazy val findMyNinoServiceUrl: String = servicesConfig.baseUrl("find-my-nino-add-to-wallet-service")
 
   def languageMap: Map[String, Lang] = Map(

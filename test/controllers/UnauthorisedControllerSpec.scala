@@ -32,7 +32,7 @@ class UnauthorisedControllerSpec extends SpecBase with MockitoSugar {
   override protected def beforeEach(): Unit = {
     reset(mockScaWrapperDataConnector)
     when(mockScaWrapperDataConnector.wrapperData()(any(), any(), any()))
-      .thenReturn(Future.successful(wrapperDataResponse))
+      .thenReturn(Future.successful(Some(wrapperDataResponse)))
     when(mockScaWrapperDataConnector.messageData()(any(), any()))
       .thenReturn(Future.successful(messageDataResponse))
     super.beforeEach()

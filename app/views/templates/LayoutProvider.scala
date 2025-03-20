@@ -16,16 +16,19 @@
 
 package views.html.templates
 
+import config.FrontendAppConfig
+import controllers.auth.requests.UserRequest
 import play.api.Logging
 import play.api.i18n.Messages
 import play.api.mvc.Request
 import play.twirl.api.{Html, HtmlFormat}
+import uk.gov.hmrc.auth.core.retrieve.v2.TrustedHelper
 import uk.gov.hmrc.hmrcfrontend.views.viewmodels.hmrcstandardpage.ServiceURLs
-import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import uk.gov.hmrc.sca.services.WrapperService
 import views.html.components.{AdditionalScript, HeadBlock}
 
 import javax.inject.Inject
+import scala.util.{Failure, Success, Try}
 
 trait LayoutProvider {
   //noinspection ScalaStyle
@@ -45,13 +48,13 @@ trait LayoutProvider {
              sidebarContent: Option[Html] = None,
              messagesActive: Boolean = false
            )(contentBlock: Html)(
-             implicit request: Request[_]
-             , messages: Messages
+             implicit request: Request[_],
+             messages: Messages
            ): HtmlFormat.Appendable
 }
 
 class NewLayoutProvider @Inject()(wrapperService: WrapperService, additionalScript: AdditionalScript,
-                                  headBlock: HeadBlock) extends LayoutProvider with Logging {
+                                  headBlock: HeadBlock, appConfig: FrontendAppConfig) extends LayoutProvider with Logging {
 
   //noinspection ScalaStyle
   override def apply(pageTitle: String, showBackLink: Boolean, timeout: Boolean, showSignOut: Boolean,
@@ -59,18 +62,26 @@ class NewLayoutProvider @Inject()(wrapperService: WrapperService, additionalScri
                      hideAccountMenu: Boolean, backLinkID: Boolean, backLinkUrl: String,
                      disableSessionExpired: Boolean, sidebarContent: Option[Html], messagesActive: Boolean)(contentBlock: Html)
                     (implicit request: Request[_], messages: Messages): HtmlFormat.Appendable = {
+    val trustedHelper: Option[TrustedHelper] = Try(request.asInstanceOf[UserRequest[_]]) match {
+      case Success(userRequest) => userRequest.trustedHelper
+      case Failure(_)           => None
+
+    }
+
     wrapperService.standardScaLayout(
       disableSessionExpired = disableSessionExpired,
       content = contentBlock,
       pageTitle = Some(pageTitle),
       showBackLinkJS = showBackLink,
       serviceURLs = ServiceURLs(
-        serviceUrl = Some("/personal-account")
+        serviceUrl = Some("/personal-account"),
+        signOutUrl = Some(appConfig.signOutUrl)
       ),
       scripts = Seq(additionalScript()),
       styleSheets = stylesheets.toSeq :+ headBlock(),
       fullWidth = fullWidth,
-      hideMenuBar = hideAccountMenu
-    )(messages, HeaderCarrierConverter.fromRequest(request), request)
+      hideMenuBar = hideAccountMenu,
+      optTrustedHelper = trustedHelper
+    )(messages, request)
   }
 }

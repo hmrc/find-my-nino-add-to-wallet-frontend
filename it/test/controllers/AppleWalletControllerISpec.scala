@@ -59,7 +59,8 @@ class AppleWalletControllerISpec extends IntegrationSpecBase {
         confidenceLevel,
         individualDetailsData,
         Enrolments(Set(Enrolment("HMRC-PT"))),
-        request
+        request,
+        None
       )
 
     implicit val userRequest: UserRequest[AnyContentAsEmpty.type] = buildUserRequest()

@@ -16,6 +16,8 @@
 
 @import config.FrontendAppConfig
 @import components.{H1, H2, P, Link, BulletList}
+@import uk.gov.hmrc.auth.core.retrieve.v2.TrustedHelper
+@import controllers.auth.requests.UserRequest
 
 @this(
         layout: templates.LayoutProvider,
@@ -31,8 +33,9 @@
     applePassId: String,
     googlePassId: String,
     nino: String,
-    displayForMobile: Boolean
-)(implicit request: Request[_], messages: Messages)
+    displayForMobile: Boolean,
+    trustedHelper: Option[TrustedHelper]
+)(implicit request: UserRequest[_], messages: Messages)
 
 @stylesheet = {
     <link rel="stylesheet" href='@routes.Assets.versioned("stylesheets/partials/save-your-nino.css")'>
@@ -42,15 +45,15 @@
     @h1("storeMyNino.heading")
 
     <div class="govuk-inset-text">
-        <p>@messages("storeMyNino.saveYourNino.yourNinoIs") <span class="govuk-!-font-weight-bold" id="nino">@{nino}</span></p>
+        <p>@messages("storeMyNino.saveYourNino.yourNinoIs") <span class="govuk-!-font-weight-bold" id="nino">@nino</span></p>
         @if(displayForMobile) {
             <div class="show-on-phones">
-                @if(frontendAppConfig.appleWalletEnabled) {
+                @if(frontendAppConfig.appleWalletEnabled && trustedHelper.isEmpty) {
                     <a href='/@frontendAppConfig.serviceName/get-pass-card?passId=@{applePassId}' id="apple">
                         <img class="add-wallet-ios" src="/@frontendAppConfig.serviceName/assets/images/apple-pay.svg" alt='@messages("appleWallet.addToWallet.alt")'>
                     </a>
                 }
-               @if(frontendAppConfig.googleWalletEnabled) {
+               @if(frontendAppConfig.googleWalletEnabled && trustedHelper.isEmpty) {
                     <a href='/@frontendAppConfig.serviceName/get-google-pass?passId=@{googlePassId}' id="google">
                         <img src="/@frontendAppConfig.serviceName/assets/images/google-wallet-condensed.svg" alt='@messages("googleWallet.addToWallet.alt")' class="add-wallet-android-mobile">
                     </a>
@@ -63,15 +66,15 @@
 
     @p("storeMyNino.saveYourNino.p2")
 
-    @if(frontendAppConfig.googleWalletEnabled || frontendAppConfig.appleWalletEnabled) {
+    @if((frontendAppConfig.googleWalletEnabled || frontendAppConfig.appleWalletEnabled) && trustedHelper.isEmpty) {
         @h2("storeMyNino.saveToWallet.heading")
     }
 
     <ul class="govuk-list govuk-list--bullet govuk-list--spaced">
-        @if(frontendAppConfig.googleWalletEnabled) {
+        @if(frontendAppConfig.googleWalletEnabled && trustedHelper.isEmpty) {
             <li><a class="govuk-link" href='/@frontendAppConfig.serviceName/google-wallet'>@messages("storeMyNino.saveToWallet.googleWallet")</a></li>
         }
-        @if(frontendAppConfig.appleWalletEnabled) {
+        @if(frontendAppConfig.appleWalletEnabled && trustedHelper.isEmpty) {
             <li><a class="govuk-link" href='/@frontendAppConfig.serviceName/apple-wallet'>@messages("storeMyNino.saveToWallet.appleWallet")</a></li>
         }
     </ul>

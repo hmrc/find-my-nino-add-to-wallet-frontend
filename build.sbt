@@ -7,7 +7,7 @@ import uk.gov.hmrc.DefaultBuildSettings
 lazy val appName: String = "find-my-nino-add-to-wallet-frontend"
 
 ThisBuild / majorVersion := 0
-ThisBuild / scalaVersion := "2.13.12"
+ThisBuild / scalaVersion := "2.13.16"
 
 lazy val scoverageSettings = {
   import scoverage.ScoverageKeys

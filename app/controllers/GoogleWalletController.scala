@@ -51,22 +51,23 @@ class GoogleWalletController @Inject()(override val messagesApi: MessagesApi,
 
   def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen checkChildRecordAction) async {
     userRequestNew => {
-      if (frontendAppConfig.googleWalletEnabled) {
-        implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(userRequestNew.request, userRequestNew.request.session)
-        implicit val messages: Messages = cc.messagesApi.preferred(userRequestNew.request)
+      (frontendAppConfig.googleWalletEnabled, userRequestNew.trustedHelper) match {
+        case (_, Some(_)) => Future.successful(Redirect(controllers.routes.StoreMyNinoController.onPageLoad))
+        case (true, None) =>
+          implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession (userRequestNew.request, userRequestNew.request.session)
+          implicit val messages: Messages = cc.messagesApi.preferred (userRequestNew.request)
 
-        auditGoogleWallet("ViewWalletPage", userRequestNew.individualDetails, hc)
-        val nino: String = userRequestNew.nino.getOrElse(throw new IllegalArgumentException("No nino found")).nino
-        val ninoFormatted = nino.grouped(2).mkString(" ")
-        val fullName = userRequestNew.individualDetails.individualDetailsData.fullName
-        for {
-          pId: Some[String] <- googleWalletConnector.createGooglePass(fullName, ninoFormatted)
-        } yield Ok(view(pId.value, isMobileDisplay(userRequestNew.request))(userRequestNew.request, messages))
-      } else {
-        Future.successful(Redirect(controllers.routes.UnauthorisedController.onPageLoad))
+          auditGoogleWallet ("ViewWalletPage", userRequestNew.individualDetails, hc)
+          val nino: String = userRequestNew.nino.getOrElse (throw new IllegalArgumentException ("No nino found") ).nino
+          val ninoFormatted = nino.grouped (2).mkString (" ")
+          val fullName = userRequestNew.individualDetails.individualDetailsData.fullName
+          for {
+          pId: Some[String] <- googleWalletConnector.createGooglePass (fullName, ninoFormatted)
+          } yield Ok (view (pId.value, isMobileDisplay (userRequestNew.request) ) (userRequestNew.request, messages) )
+        case (false, _) => Future.successful (Redirect (controllers.routes.UnauthorisedController.onPageLoad))
+      }
       }
     }
-  }
 
   private def isMobileDisplay(request: Request[AnyContent]): Boolean = {
     // Display wallet options differently on mobile to pc

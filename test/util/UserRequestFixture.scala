@@ -19,6 +19,7 @@ package util
 import controllers.auth.requests.UserRequest
 import models.individualDetails.IndividualDetailsDataCache
 import play.api.mvc.Request
+import uk.gov.hmrc.auth.core.retrieve.v2.TrustedHelper
 import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolments}
 import uk.gov.hmrc.domain.Nino
 
@@ -29,13 +30,15 @@ object UserRequestFixture {
                            confidenceLevel: ConfidenceLevel = ConfidenceLevel.L200,
                            individualDetailsData: IndividualDetailsDataCache = Fixtures.fakeIndividualDetailsDataCache,
                            enrolments: Enrolments,
-                           request: Request[A]
+                           request: Request[A],
+                           trustedHelper: Option[TrustedHelper] = None
                          ): UserRequest[A] =
     UserRequest(
       nino,
       confidenceLevel,
       individualDetailsData,
       enrolments,
-      request
+      request,
+      trustedHelper
     )
 }

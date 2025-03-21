@@ -39,7 +39,7 @@ class IndividualDetailsRepository @Inject()(mongoComponent: MongoComponent,
   indexes = Seq(
     IndexModel(
       Indexes.ascending("id"),
-      IndexOptions().name("idIdx").unique(true)
+      IndexOptions().name("idIdx")
     ),
     IndexModel(
       Indexes.ascending("individualDetails.nino"),

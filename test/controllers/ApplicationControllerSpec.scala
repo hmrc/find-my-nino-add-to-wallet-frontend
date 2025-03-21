@@ -45,7 +45,7 @@ class ApplicationControllerSpec extends SpecBase with IndividualDetailsFixtures 
   override protected def beforeEach(): Unit = {
     reset(mockScaWrapperDataConnector)
     when(mockScaWrapperDataConnector.wrapperData()(any(), any(), any()))
-      .thenReturn(Future.successful(wrapperDataResponse))
+      .thenReturn(Future.successful(Some(wrapperDataResponse)))
 
     reset(mockSessionRepository)
     when(mockSessionRepository.get(any())) thenReturn Future.successful(Some(emptyUserAnswers))

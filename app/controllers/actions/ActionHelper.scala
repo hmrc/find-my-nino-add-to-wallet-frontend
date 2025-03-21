@@ -33,7 +33,6 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import views.html.RedirectToPostalFormView
 import views.html.identity.TechnicalIssuesNoRetryView
-
 import scala.concurrent.{ExecutionContext, Future}
 
 class ActionHelper @Inject()(individualDetailsService: IndividualDetailsService,
@@ -65,8 +64,9 @@ class ActionHelper @Inject()(individualDetailsService: IndividualDetailsService,
                     authContext.confidenceLevel,
                     individualDetails,
                     authContext.allEnrolments,
-                    authContext.request
-                )
+                    authContext.request,
+                    authContext.trustedHelper
+                  )
             }).leftMap {
               case upstreamErrorResponse if upstreamErrorResponse.statusCode == BAD_REQUEST =>  Ok(postalFormView()(authContext.request, frontendAppConfig, messages))
               case upstreamErrorResponse if upstreamErrorResponse.statusCode == UNPROCESSABLE_ENTITY =>  Ok(postalFormView()(authContext.request, frontendAppConfig, messages))
@@ -95,7 +95,8 @@ class ActionHelper @Inject()(individualDetailsService: IndividualDetailsService,
             authContext.confidenceLevel,
             individualDetails,
             authContext.allEnrolments,
-            authContext.request
+            authContext.request,
+            authContext.trustedHelper
           )
         )
       )
@@ -116,19 +117,18 @@ class ActionHelper @Inject()(individualDetailsService: IndividualDetailsService,
 
   private def handleErrorIndividualDetails[A](response: Int,
                                               authContext: AuthContext[A],
-                                              frontendAppConfig: FrontendAppConfig): Future[Left[Result, Nothing]] = {
+                                              frontendAppConfig: FrontendAppConfig)(implicit ec: ExecutionContext): Future[Left[Result, Nothing]] = {
     implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
     response match {
       case UNPROCESSABLE_ENTITY =>
         Future.successful(Left(Ok(technicalIssuesNoRetryView()(authContext.request, frontendAppConfig, messages))))
       case _ =>
-        Future.successful(Left(FailedDependency(
           errorHandler.standardErrorTemplate(
             Messages("global.error.InternalServerError500.title"),
             Messages("global.error.InternalServerError500.heading"),
             Messages("global.error.InternalServerError500.message")
-          )(authContext.request)
-        )))
+          )(authContext.request).map(error => Left(FailedDependency(error))
+        )
     }
   }
 }

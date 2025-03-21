@@ -35,7 +35,7 @@ import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
 import util.Fixtures.{fakeIndividualDetailsDataCache, fakeIndividualDetailsDataCacheNoAddress}
 import util.IndividualDetailsFixtures
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
-import util.TestData.{NinoUser, NinoUser_With_CL50}
+import util.TestData.{NinoUser, NinoUser_With_CL50, trustedHelperUser}
 import views.html._
 
 import java.util.Base64
@@ -47,7 +47,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
   override protected def beforeEach(): Unit = {
     reset(mockScaWrapperDataConnector)
     when(mockScaWrapperDataConnector.wrapperData()(any(), any(), any()))
-      .thenReturn(Future.successful(wrapperDataResponse))
+      .thenReturn(Future.successful(Some(wrapperDataResponse)))
     when(mockScaWrapperDataConnector.messageData()(any(), any()))
       .thenReturn(Future.successful(messageDataResponse))
 
@@ -111,8 +111,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
           val result = route(application, request).value
 
           status(result) mustEqual FAILED_DEPENDENCY
-          contentAsString(result) must include("Sorry, we’re experiencing technical difficulties")
-          contentAsString(result) must include("Please try again in a few minutes")
+          contentAsString(result) must include("Sorry, there is a problem with the service")
         }
       }
 
@@ -220,7 +219,8 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
             ConfidenceLevel.L200,
             fakeIndividualDetailsDataCache,
             Enrolments(Set(Enrolment("HMRC-PT"))),
-            request
+            request,
+            None
           )
 
           contentAsString(result).removeAllNonces() mustEqual (view()(userRequest, messages(application), scala.concurrent.ExecutionContext.global).toString())
@@ -294,7 +294,8 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
             ConfidenceLevel.L200,
             fakeIndividualDetailsDataCache,
             Enrolments(Set(Enrolment("HMRC-PT"))),
-            request
+            request,
+            None
           )
 
           contentAsString(result).removeAllNonces() mustEqual (view()(userRequest, messages(application), scala.concurrent.ExecutionContext.global).toString())
@@ -363,6 +364,24 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
           status(result) mustEqual 500
         }
       }
+      "redirect to Store my Nino home page when trusted helper user tries to access this page" in {
+        val application = applicationBuilderWithConfig()
+          .overrides(
+            inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
+            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+          ).configure("features.google-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true)
+          .build()
+
+        running(application) {
+          userLoggedInFMNUser(trustedHelperUser)
+          val request = FakeRequest(GET, routes.AppleWalletController.onPageLoad().url)
+            .withSession(("authToken", "Bearer 123"))
+          val result = route(application, request).value
+          status(result) mustEqual 303
+          redirectLocation(result) mustEqual Some(controllers.routes.StoreMyNinoController.onPageLoad.toString)
+        }
+      }
     }
 
     "Apple wallet disabled" - {
@@ -389,8 +408,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
           val result = route(application, request).value
 
           status(result) mustEqual FAILED_DEPENDENCY
-          contentAsString(result) must include("Sorry, we’re experiencing technical difficulties")
-          contentAsString(result) must include("Please try again in a few minutes")
+          contentAsString(result) must include("Sorry, there is a problem with the service")
         }
       }
 
@@ -460,7 +478,8 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
             ConfidenceLevel.L200,
             fakeIndividualDetailsDataCache,
             Enrolments(Set(Enrolment("HMRC-PT"))),
-            request
+            request,
+            None
           )
 
           contentAsString(result).removeAllNonces() mustEqual (view()(userRequest, messages(application), scala.concurrent.ExecutionContext.global).toString())
@@ -515,7 +534,8 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
             ConfidenceLevel.L200,
             fakeIndividualDetailsDataCache,
             Enrolments(Set(Enrolment("HMRC-PT"))),
-            request
+            request,
+            None
           )
 
           contentAsString(result).removeAllNonces() mustEqual (view()(userRequest, messages(application), scala.concurrent.ExecutionContext.global).toString())
@@ -560,6 +580,24 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
             .withSession(("authToken", "Bearer 123"))
           val result = route(application, request).value
           status(result) mustEqual 500
+        }
+      }
+      "redirect to Store my Nino home page when trusted helper user tries to access this page" in {
+        val application = applicationBuilderWithConfig()
+          .overrides(
+            inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
+            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+          ).configure("features.google-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true)
+          .build()
+
+        running(application) {
+          userLoggedInFMNUser(trustedHelperUser)
+          val request = FakeRequest(GET, routes.AppleWalletController.onPageLoad().url)
+            .withSession(("authToken", "Bearer 123"))
+          val result = route(application, request).value
+          status(result) mustEqual 303
+          redirectLocation(result) mustEqual Some(controllers.routes.StoreMyNinoController.onPageLoad.toString)
         }
       }
     }

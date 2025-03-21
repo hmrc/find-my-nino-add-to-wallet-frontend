@@ -64,7 +64,7 @@ class StoreMyNinoController @Inject()(
 
       googleIdf.flatMap { googleId =>
         appleIdET.value.map {
-          case Right(appleId) => Ok(view(appleId.value, googleId.value, ninoFormatted, isMobileDisplay(userRequestNew.request))(userRequestNew.request, messages))
+          case Right(appleId) => Ok(view(appleId.value, googleId.value, ninoFormatted, isMobileDisplay(userRequestNew.request), userRequestNew.trustedHelper)(userRequestNew, messages))
           case Left(error)    => InternalServerError(s"Error: ${error.message}")
         }
       }

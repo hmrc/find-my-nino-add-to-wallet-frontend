@@ -53,24 +53,24 @@ class AppleWalletController @Inject()(val appleWalletConnector: AppleWalletConne
 
   def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen checkChildRecordAction) async {
     implicit userRequestNew => {
-      if (frontendAppConfig.appleWalletEnabled) {
-        implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(userRequestNew.request, userRequestNew.request.session)
-        implicit val messages: Messages = cc.messagesApi.preferred(userRequestNew.request)
+      (frontendAppConfig.appleWalletEnabled, userRequestNew.trustedHelper) match {
+        case (_, Some(_)) => Future.successful(Redirect(controllers.routes.StoreMyNinoController.onPageLoad))
+        case (true, None) =>
+          implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(userRequestNew.request, userRequestNew.request.session)
+          implicit val messages: Messages = cc.messagesApi.preferred(userRequestNew.request)
 
-        auditApple("ViewWalletPage", userRequestNew.individualDetails, hc)
-        val nino: String = userRequestNew.nino.getOrElse(throw new IllegalArgumentException("No nino found")).nino
-        val ninoFormatted = nino.grouped(2).mkString(" ")
-        val fullName = userRequestNew.individualDetails.individualDetailsData.fullName
+          auditApple("ViewWalletPage", userRequestNew.individualDetails, hc)
+          val nino: String = userRequestNew.nino.getOrElse(throw new IllegalArgumentException("No nino found")).nino
+          val ninoFormatted = nino.grouped(2).mkString(" ")
+          val fullName = userRequestNew.individualDetails.individualDetailsData.fullName
 
-        appleWalletConnector.createApplePass(fullName, ninoFormatted)
-          .value
-          .map{
-            case Right(pId) => Ok(view(pId.value, isMobileDisplay(userRequestNew.request))(userRequestNew.request, messages))
-            case Left(error) => InternalServerError(s"Failed to create Apple Pass: ${error.message}")
-          }
-      }
-      else {
-        Future.successful(Redirect(controllers.routes.UnauthorisedController.onPageLoad))
+          appleWalletConnector.createApplePass(fullName, ninoFormatted)
+            .value
+            .map{
+              case Right(pId) => Ok(view(pId.value, isMobileDisplay(userRequestNew.request))(userRequestNew.request, messages))
+              case Left(error) => InternalServerError(s"Failed to create Apple Pass: ${error.message}")
+            }
+        case (false, _) =>Future.successful(Redirect(controllers.routes.UnauthorisedController.onPageLoad))
       }
     }
   }

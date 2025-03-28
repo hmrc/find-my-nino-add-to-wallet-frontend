@@ -36,9 +36,11 @@ class HttpClientResponse @Inject()(frontendAppConfig: FrontendAppConfig)(implici
       case Right(response) if response.status == UNPROCESSABLE_ENTITY && response.body.contains(alreadyAnAdultErrorCode)  =>
         logger.info("UNPROCESSABLE_ENTITY - alreadyAnAdultErrorCode")
         Right(response)
+      case Right(response) if response.status == NOT_FOUND =>
+        Right(response)
       case Right(response)                                                                 =>
         Right(response)
-      case Left(error) if error.statusCode == NOT_FOUND || error.statusCode == BAD_REQUEST =>
+      case Left(error) if error.statusCode == BAD_REQUEST =>
         logger.info(error.message)
         Left(error)
       case Left(error) if error.statusCode >= 500 || error.statusCode == TOO_MANY_REQUESTS =>

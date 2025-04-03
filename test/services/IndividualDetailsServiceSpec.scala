@@ -198,5 +198,23 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec
       assert(result.futureValue.isLeft)
     }
   }
+  "IndividualDetailsService" should "throw empty string returned from insert insertOrReplaceIndividualDetailsDataCache" in {
+    val mockRepository = mock[IndividualDetailsRepository]
+    val mockConnector = mock[IndividualDetailsConnector]
+    val service = new IndividualDetailsServiceImpl(mockRepository, mockConnector)
+    val fakeIndividualDetailsJson = Json.toJson(fakeIndividualDetailsWithoutMiddleName).toString()
 
+    val nino = "testNino"
+    when(mockRepository.findIndividualDetailsDataByNino(any)(any))
+      .thenReturn(Future.successful(None))
+    when(mockConnector.getIndividualDetails(any, any)(any, any))
+      .thenReturn(Future.successful(HttpResponse(200, fakeIndividualDetailsJson)))
+    when(mockRepository.insertOrReplaceIndividualDetailsDataCache(any)(any[ExecutionContext]))
+      .thenReturn(Future.successful(""))
+
+    assertThrows[RuntimeException] {
+      val result = service.getIdDataFromCache(nino, "testSessionId")
+      assert(result.futureValue.isLeft)
+    }
+  }
 }

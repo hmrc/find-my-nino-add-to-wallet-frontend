@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package controllers
 
 import base.SpecBase
+import cats.data.EitherT
 import connectors._
 import controllers.auth.requests.UserRequest
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
@@ -51,11 +52,13 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
     reset(mockApplePassConnector)
     when(mockApplePassConnector.getApplePass(eqTo(passId))(any(), any()))
-      .thenReturn(Future(Some(Base64.getDecoder.decode(fakeBase64String))))
+      .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](Some(Base64.getDecoder.decode(fakeBase64String))))
+
     when(mockApplePassConnector.createApplePass(any(), any())(any(), any()))
-      .thenReturn(Future(Some(passId)))
+      .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](Some(passId)))
+
     when(mockApplePassConnector.getAppleQrCode(eqTo(passId))(any(), any()))
-      .thenReturn(Future(Some(Base64.getDecoder.decode(fakeBase64String))))
+      .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](Some(Base64.getDecoder.decode(fakeBase64String))))
 
     reset(mockSessionRepository)
     when(mockSessionRepository.get(any())) thenReturn Future.successful(Some(emptyUserAnswers))
@@ -191,7 +194,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
       "must redirect to passIdNotFoundView when no Apple pass is returned" in {
         when(mockApplePassConnector.getApplePass(eqTo(passId))(any(), any()))
-          .thenReturn(Future(None))
+          .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](None))
 
         val application = applicationBuilderWithConfig().overrides(
           inject.bind[SessionRepository].toInstance(mockSessionRepository),
@@ -225,6 +228,27 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
       }
 
+      "must return InternalServerError when Apple Pass retrieval fails" in {
+        when(mockApplePassConnector.getApplePass(eqTo(passId))(any(), any()))
+          .thenReturn(EitherT.leftT(UpstreamErrorResponse("some error", INTERNAL_SERVER_ERROR)))
+
+        val application = applicationBuilderWithConfig().overrides(
+            inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
+            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+          ).configure("features.apple-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true)
+          .build()
+
+        running(application) {
+          userLoggedInFMNUser(NinoUser)
+          val request = FakeRequest(GET, routes.AppleWalletController.getPassCard(passId).url)
+            .withSession(("authToken", "Bearer 123"))
+          val result = route(application, request).value
+          status(result) mustEqual INTERNAL_SERVER_ERROR
+          contentAsString(result) must include("Failed to get Apple Pass: some error")
+        }
+      }
+
       "must return QR code" in {
         val application = applicationBuilderWithConfig()
           .overrides(
@@ -246,7 +270,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
       "must redirect to qrCodeNotFoundView when no Apple pass QR code is returned" in {
         when(mockApplePassConnector.getAppleQrCode(eqTo(passId))(any(), any()))
-          .thenReturn(Future(None))
+          .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](None))
 
         val application = applicationBuilderWithConfig().overrides(
           inject.bind[SessionRepository].toInstance(mockSessionRepository),
@@ -275,6 +299,28 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
           contentAsString(result).removeAllNonces() mustEqual (view()(userRequest, messages(application), scala.concurrent.ExecutionContext.global).toString())
 
+        }
+      }
+
+
+      "must return InternalServerError when Apple QR Code retrieval fails" in {
+        when(mockApplePassConnector.getAppleQrCode(eqTo(passId))(any(), any()))
+          .thenReturn(EitherT.leftT(UpstreamErrorResponse("some error", INTERNAL_SERVER_ERROR)))
+
+        val application = applicationBuilderWithConfig().overrides(
+            inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
+            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+          ).configure("features.apple-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true)
+          .build()
+
+        running(application) {
+          userLoggedInFMNUser(NinoUser)
+          val request = FakeRequest(GET, routes.AppleWalletController.getQrCode(passId).url)
+            .withSession(("authToken", "Bearer 123"))
+          val result = route(application, request).value
+          status(result) mustEqual INTERNAL_SERVER_ERROR
+          contentAsString(result) must include("Failed to get Apple QR Code: some error")
         }
       }
 
@@ -410,7 +456,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
       "must redirect to passIdNotFoundView when no Apple pass is returned" in {
         when(mockApplePassConnector.getApplePass(eqTo(passId))(any(), any()))
-          .thenReturn(Future(None))
+          .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](None))
 
         val application = applicationBuilderWithConfig().overrides(
           inject.bind[SessionRepository].toInstance(mockSessionRepository),
@@ -464,7 +510,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
       "must redirect to qrCodeNotFoundView when no Apple pass QR code is returned" in {
         when(mockApplePassConnector.getAppleQrCode(eqTo(passId))(any(), any()))
-          .thenReturn(Future(None))
+          .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](None))
 
         val application = applicationBuilderWithConfig().overrides(
           inject.bind[SessionRepository].toInstance(mockSessionRepository),

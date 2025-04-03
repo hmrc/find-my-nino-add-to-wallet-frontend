@@ -39,7 +39,7 @@ class HttpClientResponseSpec extends BaseSpec with RecoverMethods with LogCaptur
   "read" must {
     behave like clientResponseLogger(
       httpClientResponseUsingMockLogger.read,
-      infoLevel = Set(NOT_FOUND, BAD_REQUEST),
+      infoLevel = Set(BAD_REQUEST),
       infoLevelWithBodyCheck = UNPROCESSABLE_ENTITY,
       errorLevelWithoutThrowable = Set(TOO_MANY_REQUESTS, INTERNAL_SERVER_ERROR),
       errorLevelWithThrowable = Set(UNAUTHORIZED),

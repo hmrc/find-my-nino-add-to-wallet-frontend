@@ -71,7 +71,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
   lazy val multiFactorAuthenticationUpliftUrl = s"$basGatewayFrontendHost/bas-gateway/uplift-mfa"
 
   lazy val pertaxFrontendHost = getExternalUrl(s"pertax-frontend.host").getOrElse("")
-  lazy val pertaxFrontendUrl: String = s"$pertaxFrontendHost/personal-account"
+  lazy val checkNationalInsuranceRecordAndPension: String = s"$pertaxFrontendHost/personal-account/your-national-insurance-state-pension"
 
   lazy val origin: String = configuration.getOptional[String]("sosOrigin").orElse(Some(appName)).getOrElse("undefined")
 

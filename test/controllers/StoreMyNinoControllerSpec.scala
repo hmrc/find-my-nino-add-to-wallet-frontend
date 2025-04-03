@@ -433,7 +433,7 @@ class StoreMyNinoControllerSpec extends SpecBase with IndividualDetailsFixtures 
         .thenReturn(Future.successful(true))
 
       when(mockAppleWalletConnector.createApplePass(any(), any())(any(), any()))
-        .thenReturn(EitherT.leftT(UpstreamErrorResponse("Internal Server Error", INTERNAL_SERVER_ERROR)))
+        .thenReturn(EitherT.leftT[Future, HttpResponse](UpstreamErrorResponse("Internal Server Error", INTERNAL_SERVER_ERROR)))
 
       when(mockGoogleWalletConnector.createGooglePass(any(), any())(any(), any()))
         .thenReturn(Future.successful(Some(googlePassId)))

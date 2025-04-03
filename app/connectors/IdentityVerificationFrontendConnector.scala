@@ -19,28 +19,30 @@ package connectors
 import cats.data.EitherT
 import com.google.inject.{Inject, Singleton}
 import play.api.Logging
-import uk.gov.hmrc.http.HttpReads.Implicits._
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.http.HttpReads.Implicits.*
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps, UpstreamErrorResponse}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class IdentityVerificationFrontendConnector @Inject()(
-  val httpClient: HttpClient,
-  servicesConfig: ServicesConfig,
-  httpClientResponse: HttpClientResponse
+                                                       val httpClient: HttpClientV2,
+                                                       servicesConfig: ServicesConfig,
+                                                       httpClientResponse: HttpClientResponse
 ) extends Logging {
 
   lazy val identityVerificationFrontendUrl: String = servicesConfig.baseUrl("identity-verification-frontend")
 
   def getIVJourneyStatus(
     journeyId: String
-  )(implicit hc: HeaderCarrier, ec: ExecutionContext): EitherT[Future, UpstreamErrorResponse, HttpResponse] =
+  )(implicit hc: HeaderCarrier, ec: ExecutionContext): EitherT[Future, UpstreamErrorResponse, HttpResponse] = {
+    val url = s"$identityVerificationFrontendUrl/mdtp/journey/journeyId/$journeyId"
     httpClientResponse
       .read(
-        httpClient.GET[Either[UpstreamErrorResponse, HttpResponse]](
-          s"$identityVerificationFrontendUrl/mdtp/journey/journeyId/$journeyId"
+        httpClient.get(url"$url")
+          .execute[Either[UpstreamErrorResponse, HttpResponse]]
         )
-      )
+  }
 }

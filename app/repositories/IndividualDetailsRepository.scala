@@ -25,6 +25,7 @@ import play.api.Logging
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import com.mongodb.client.result.DeleteResult
+import org.mongodb.scala.SingleObservableFuture
 
 import java.util.concurrent.TimeUnit
 import scala.concurrent.{ExecutionContext, Future}
@@ -74,8 +75,8 @@ class IndividualDetailsRepository @Inject()(mongoComponent: MongoComponent,
     //logger.info(s"find one in $collectionName table")
     val filter = Filters.regex("individualDetails.nino", nino.take(8).r)
     collection.find(filter)
-      .toFuture()
-      .map(_.headOption)
+      .first()
+      .toFutureOption()
   } recoverWith {
     case e: Throwable =>
       logger.warn(s"Failed finding Individual Details Data by Nino: $nino")

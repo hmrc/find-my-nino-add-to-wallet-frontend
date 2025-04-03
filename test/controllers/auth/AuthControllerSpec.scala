@@ -26,7 +26,6 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
-import uk.gov.hmrc.sca.services.WrapperService
 
 import scala.concurrent.Future
 
@@ -61,13 +60,9 @@ class AuthControllerSpec extends SpecBase with MockitoSugar {
       val mockSessionRepository = mock[SessionRepository]
       when(mockSessionRepository.clear(any())) thenReturn Future.successful(true)
 
-      val mockWrapperService = mock[WrapperService]
-      when(mockWrapperService.safeSignoutUrl(any)).thenReturn(None)
-
       val application =
         applicationBuilder()
-          .overrides(bind[SessionRepository].toInstance(mockSessionRepository),
-            bind[WrapperService].toInstance(mockWrapperService))
+          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
           .build()
 
       running(application) {
@@ -86,13 +81,9 @@ class AuthControllerSpec extends SpecBase with MockitoSugar {
       val mockSessionRepository = mock[SessionRepository]
       when(mockSessionRepository.clear(any())) thenReturn Future.successful(true)
 
-      val mockWrapperService = mock[WrapperService]
-      when(mockWrapperService.safeSignoutUrl(any)).thenReturn(None)
-
       val application =
         applicationBuilder()
-          .overrides(bind[SessionRepository].toInstance(mockSessionRepository),
-            bind[WrapperService].toInstance(mockWrapperService))
+          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
           .build()
 
       running(application) {

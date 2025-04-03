@@ -35,7 +35,7 @@ import uk.gov.hmrc.play.http.HeaderCarrierConverter
 
 import scala.concurrent.{ExecutionContext, Future}
 
-final case class AuthContext[A](
+case class AuthContext[A](
                                  nino: NationalInsuranceNumber,
                                  isUser: Boolean,
                                  internalId: String,

@@ -21,7 +21,7 @@ import cats.data.EitherT
 import config.FrontendAppConfig
 import connectors.IdentityVerificationFrontendConnector
 import org.mockito.ArgumentMatchers.any
-import org.mockito.MockitoSugar.{reset, when}
+import org.mockito.Mockito.{reset, when}
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject
 import play.api.mvc.{AnyContentAsEmpty, MessagesControllerComponents, Result}

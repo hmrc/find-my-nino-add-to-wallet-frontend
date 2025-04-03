@@ -18,8 +18,8 @@ package services
 
 import com.mongodb.client.result.DeleteResult
 import connectors.IndividualDetailsConnector
-import org.mockito.ArgumentMatchersSugar.any
-import org.mockito.Mockito._
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.*
 import org.mongodb.scala.MongoException
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec

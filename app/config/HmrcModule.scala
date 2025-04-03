@@ -16,36 +16,35 @@
 
 package config
 
-import com.google.inject.AbstractModule
 import controllers.actions._
 import org.apache.fop.apps.FopFactory
 import play.api.{Configuration, Environment}
 import repositories.{EncryptedIndividualDetailsRepository, IndividualDetailsRepoTrait, IndividualDetailsRepository}
 import util.{BaseResourceStreamResolver, DefaultFopURIResolver, DefaultResourceStreamResolver, FopURIResolver}
 import views.html.templates.{LayoutProvider, NewLayoutProvider}
+import play.api.inject.{Binding, Module}
 
 import java.time.{Clock, ZoneOffset}
 
-class Module(environment: Environment, config: Configuration) extends AbstractModule {
+class HmrcModule extends Module {
 
-  private val encryptionEnabled = config.get[Boolean]("mongodb.encryption.enabled")
-  
-  override def configure(): Unit = {
+  override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = {
+    val encryptionEnabled = configuration.get[Boolean]("mongodb.encryption.enabled")
     // For session based storage instead of cred based, change to SessionIdentifierAction
-    bind(classOf[IdentifierAction]).to(classOf[SessionIdentifierAction]).asEagerSingleton()
-    bind(classOf[Clock]).toInstance(Clock.systemDefaultZone.withZone(ZoneOffset.UTC))
-    bind(classOf[FopFactory]).toProvider(classOf[FopFactoryProvider])
-
-    bind(classOf[FopURIResolver]).to(classOf[DefaultFopURIResolver])
-    bind(classOf[BaseResourceStreamResolver]).to(classOf[DefaultResourceStreamResolver])
-
-    bind(classOf[LayoutProvider]).to(classOf[NewLayoutProvider]).asEagerSingleton()
+    Seq(
+    bind[IdentifierAction].to(classOf[SessionIdentifierAction]),
+    bind[Clock].toInstance(Clock.systemDefaultZone.withZone(ZoneOffset.UTC)),
+    bind[FopFactory].toProvider(classOf[FopFactoryProvider]),
+    bind[FopURIResolver].to(classOf[DefaultFopURIResolver]),
+    bind[BaseResourceStreamResolver].to(classOf[DefaultResourceStreamResolver]),
+    bind[LayoutProvider].to(classOf[NewLayoutProvider]),
     if (encryptionEnabled) {
-      bind(classOf[IndividualDetailsRepoTrait])
-        .to(classOf[EncryptedIndividualDetailsRepository]).asEagerSingleton()
+      bind[IndividualDetailsRepoTrait]
+        .to(classOf[EncryptedIndividualDetailsRepository])
     } else {
-      bind(classOf[IndividualDetailsRepoTrait])
-        .to(classOf[IndividualDetailsRepository]).asEagerSingleton()
+      bind[IndividualDetailsRepoTrait]
+        .to(classOf[IndividualDetailsRepository])
     }
+    )
   }
 }

@@ -22,7 +22,7 @@ import play.api.Application
 import play.api.libs.json.{Json, Writes}
 import play.api.mvc.Results.InternalServerError
 import play.api.test.{DefaultAwaitTimeout, Injecting}
-import uk.gov.hmrc.http.HttpClient
+import uk.gov.hmrc.http.client.HttpClientV2
 import util.WireMockHelper
 
 import java.util.Base64
@@ -59,7 +59,7 @@ class AppleWalletConnectorSpec extends ConnectorSpec
     def url: String
 
     lazy val connector = {
-      val httpClient = app.injector.instanceOf[HttpClient]
+      val httpClient = app.injector.instanceOf[HttpClientV2]
       val frontendAppConfig = app.injector.instanceOf[FrontendAppConfig]
       new AppleWalletConnector(frontendAppConfig, httpClient)
     }
@@ -80,7 +80,7 @@ class AppleWalletConnectorSpec extends ConnectorSpec
     "return empty Array when called with an unknown passId" in new LocalSetup {
       stubGet(url, OK, None)
       val result = connector.getApplePass(passId).futureValue.get
-      result mustBe Array()
+      result mustBe Array[Byte]()
 
     }
   }
@@ -100,7 +100,7 @@ class AppleWalletConnectorSpec extends ConnectorSpec
     "return empty Array when called with an unknown passId" in new LocalSetup {
       stubGet(url, OK, None)
       val result = connector.getAppleQrCode(passId).futureValue.get
-      result mustBe Array()
+      result mustBe Array[Byte]()
 
     }
   }

@@ -45,9 +45,9 @@ class EncryptedIndividualDetailsRepositorySpec extends AnyFreeSpec
 
   private val mockAppConfig = mock[FrontendAppConfig]
 
-  protected val repository = new EncryptedIndividualDetailsRepository(
+  protected val repository: EncryptedIndividualDetailsRepository = new EncryptedIndividualDetailsRepository(
     mongoComponent = mongoComponent,
-    appConfig      = mockAppConfig
+    appConfig = mockAppConfig
   )
 
   def createFakeIdCache: IndividualDetailsDataCache = IndividualDetailsDataCache(
@@ -56,7 +56,7 @@ class EncryptedIndividualDetailsRepositorySpec extends AnyFreeSpec
     lastUpdated = Instant.EPOCH
   )
 
-  when(mockAppConfig.cacheTtl) thenReturn 1
+  when(mockAppConfig.cacheTtl) thenReturn 1L
   when(mockAppConfig.encryptionKey) thenReturn "z4rWoRLf7a1OHTXLutSDJjhrUzZTBE3b"
 
 

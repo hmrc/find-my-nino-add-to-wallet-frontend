@@ -15,8 +15,9 @@
  *@
 
 @import tags._
-@import components.{H2,H3, P}
-@this(h2: H2, h3: H3, p: P)
+
+@this()
+
 @(individualDetailsDataCache: models.individualDetails.IndividualDetailsDataCache,dateString: String,nino: String)(
 implicit request: Request[_], messages: play.api.i18n.Messages)
 

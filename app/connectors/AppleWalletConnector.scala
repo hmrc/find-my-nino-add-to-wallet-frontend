@@ -18,17 +18,19 @@ package connectors
 
 import com.google.inject.Inject
 import config.FrontendAppConfig
-import play.api.http.Status._
-import play.api.libs.json._
-import uk.gov.hmrc.http.HttpReads.Implicits._
-import uk.gov.hmrc.http._
+import play.api.http.Status.*
+import play.api.libs.json.*
+import uk.gov.hmrc.http.HttpReads.Implicits.*
+import uk.gov.hmrc.http.*
+import uk.gov.hmrc.http.client.HttpClientV2
 
+import play.api.libs.ws.WSBodyWritables.writeableOf_JsValue
 import java.util.Base64
 import scala.concurrent.{ExecutionContext, Future}
 
 case class ApplePassDetails(fullName: String, nino: String)
 
-class AppleWalletConnector @Inject()(frontendAppConfig: FrontendAppConfig, http: HttpClient) {
+class AppleWalletConnector @Inject()(frontendAppConfig: FrontendAppConfig, http: HttpClientV2) {
 
   private val headers: Seq[(String, String)] = Seq("Content-Type" -> "application/json")
   implicit val writes: Writes[ApplePassDetails] = Json.writes[ApplePassDetails]
@@ -37,11 +39,11 @@ class AppleWalletConnector @Inject()(frontendAppConfig: FrontendAppConfig, http:
                      (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Some[String]] = {
 
     val url = s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/create-apple-pass"
-    val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
+    implicit val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
 
     val details = ApplePassDetails(fullName, nino)
 
-    http.POST[JsValue, HttpResponse](url, Json.toJson(details))(implicitly, implicitly, hc, implicitly)
+    http.post(url"$url").withBody(Json.toJson(details)).execute[HttpResponse]
       .map { response =>
         response.status match {
           case OK => Some(response.body)
@@ -54,9 +56,9 @@ class AppleWalletConnector @Inject()(frontendAppConfig: FrontendAppConfig, http:
                   (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Option[Array[Byte]]] = {
 
     val url = s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-pass-card?passId=$passId"
-    val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
+    implicit val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
 
-    http.GET[HttpResponse](url)(implicitly, hc, implicitly)
+    http.get(url"$url").execute[HttpResponse]
       .map { response =>
         response.status match {
           case OK => Some(Base64.getDecoder.decode(response.body))
@@ -70,9 +72,9 @@ class AppleWalletConnector @Inject()(frontendAppConfig: FrontendAppConfig, http:
                (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Option[Array[Byte]]] = {
 
     val url = s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-qr-code?passId=$passId"
-    val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
+    implicit val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
 
-    http.GET[HttpResponse](url)(implicitly, hc, implicitly)
+    http.get(url"$url").execute[HttpResponse]
       .map { response =>
         response.status match {
           case OK => Some(Base64.getDecoder.decode(response.body))

@@ -131,6 +131,6 @@ object IndividualDetails {
     (__ \ "details" \ "dateOfBirth").format[LocalDate] ~
     (__ \ "details" \ "crnIndicator").format[CrnIndicator] ~
     (__ \ "nameList").format[NameList] ~
-    (__ \ "addressList").format[AddressList])(IndividualDetails.apply, unlift(IndividualDetails.unapply))
+    (__ \ "addressList").format[AddressList])(IndividualDetails.apply, id => Tuple6(id.ninoWithoutSuffix, id.ninoSuffix, id.dateOfBirth, id.crnIndicator, id.nameList, id.addressList))
 
 }

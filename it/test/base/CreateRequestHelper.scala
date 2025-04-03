@@ -17,10 +17,10 @@
 package base
 
 import org.scalatestplus.play.ServerProvider
-import play.api.Application
 import play.api.http.HeaderNames
 import play.api.libs.json.JsValue
 import play.api.libs.ws.{DefaultWSCookie, WSClient, WSResponse}
+import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
 
 import scala.concurrent.Future
 import scala.concurrent.duration.{Duration, FiniteDuration, SECONDS}
@@ -30,8 +30,6 @@ trait CreateRequestHelper extends ServerProvider {
 
   val defaultSeconds = 5
   implicit val defaultDuration: FiniteDuration = Duration.apply(defaultSeconds, SECONDS)
-
-  val app: Application
 
   lazy val ws: WSClient = app.injector.instanceOf(classOf[WSClient])
 

@@ -158,7 +158,7 @@ object AuditUtils {
           language = strLang,
           walletProvider
         )
-      case _ => throw new NotFoundException("Nino not found for person when building audit event")
+      case null => throw new NotFoundException("Nino not found for person when building audit event")
     }
 
 

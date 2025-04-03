@@ -36,8 +36,8 @@ class IdentityVerificationFrontendServiceSpec extends SpecBase {
   )
 
   "IdentityVerificationFrontendService" - {
-    implicit val hc = HeaderCarrier()
-    implicit lazy val ec = app.injector.instanceOf[ExecutionContext]
+    implicit val hc: HeaderCarrier = HeaderCarrier()
+    implicit lazy val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
 
     "getIVJourneyStatus is called" - {
       List(

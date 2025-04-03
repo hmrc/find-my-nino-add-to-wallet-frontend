@@ -27,10 +27,10 @@ final case class ConnectorError(statusCode: Int, message: String) extends Indivi
 final case class InvalidIdentifier(identifier: IndividualDetailsIdentifier)
     extends IndividualDetailsError(s"Invalid identifier: $identifier")
 
-final case object CacheNotFound extends IndividualDetailsError("cache not found")
+case object CacheNotFound extends IndividualDetailsError("cache not found")
 
 
-final case object LockError extends IndividualDetailsError("Could not acquire lock")
+case object LockError extends IndividualDetailsError("Could not acquire lock")
 
 
 final case class DataLockedException(sdesCorrelationId: String)

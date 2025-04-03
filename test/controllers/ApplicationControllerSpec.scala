@@ -261,6 +261,14 @@ class ApplicationControllerSpec extends SpecBase with IndividualDetailsFixtures 
         }
       }
 
+      "showUpliftJourneyOutcome should return FailedDependency when no response given" in new LocalSetup {
+
+        running(application) {
+          val result = controller.showUpliftJourneyOutcome(None)(buildFakeRequestWithAuth("GET", "/"))
+          status(result) mustBe FAILED_DEPENDENCY
+        }
+      }
+
       "return bad request when continueUrl is not relative" in new LocalSetup {
         val result = routeWrapper(
           buildFakeRequestWithAuth(

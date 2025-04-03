@@ -121,6 +121,13 @@ class AppleWalletConnectorSpec extends ConnectorSpec
       result mustBe a[Left[UpstreamErrorResponse, _]]
       result.swap.getOrElse(UpstreamErrorResponse("", OK)).statusCode mustBe INTERNAL_SERVER_ERROR
     }
+    "return Left(UpstreamErrorResponse) when unexpected status is returned" in new LocalSetup {
+      stubGet(url, IM_A_TEAPOT, None)
+      val result = connector.getAppleQrCode(passId).value.futureValue
+
+      result mustBe a[Left[UpstreamErrorResponse, _]]
+      result.swap.getOrElse(UpstreamErrorResponse("", OK)).statusCode mustBe IM_A_TEAPOT
+    }
   }
 
   "Calling create pass" must {

@@ -84,6 +84,18 @@ class GoogleWalletConnectorSpec extends ConnectorSpec
       result mustBe ""
 
     }
+
+    "return None when NOT_FOUND status returned" in new LocalSetup {
+      stubGet(url, NOT_FOUND, None)
+      val result = connector.getGooglePassUrl(passId).futureValue
+      result mustBe None
+    }
+    "throw an exception when unexpected status returned" in new LocalSetup {
+      stubGet(url, IM_A_TEAPOT, None)
+      assertThrows[RuntimeException] {
+        val result = connector.getGooglePassUrl(passId).futureValue
+      }
+    }
   }
 
   "Calling get google qr code by pass Id" must {
@@ -102,6 +114,18 @@ class GoogleWalletConnectorSpec extends ConnectorSpec
       stubGet(url, OK, None)
       val result = connector.getGooglePassQrCode(passId).futureValue.get
       result mustBe Array[Byte]()
+    }
+
+    "return None when NOT_FOUND status returned" in new LocalSetup {
+      stubGet(url, NOT_FOUND, None)
+      val result = connector.getGooglePassQrCode(passId).futureValue
+      result mustBe None
+    }
+    "throw an exception when unexpected status returned" in new LocalSetup {
+      stubGet(url, IM_A_TEAPOT, None)
+      assertThrows[RuntimeException] {
+        val result = connector.getGooglePassQrCode(passId).futureValue
+      }
     }
   }
 
@@ -122,6 +146,12 @@ class GoogleWalletConnectorSpec extends ConnectorSpec
       val result = connector.createGooglePass(createGooglePassDetails.fullName, createGooglePassDetails.nino)
         .value.getOrElse(InternalServerError(Json.toJson(errMsg)))
       result mustBe InternalServerError(Json.toJson(errMsg))
+    }
+    "throw an exception when expected status returned" in new LocalSetup {
+      stubWithDelay(url, IM_A_TEAPOT, None, None, delay)
+      assertThrows[RuntimeException] {
+        val result = connector.createGooglePass(createGooglePassDetails.fullName, createGooglePassDetails.nino).futureValue
+      }
     }
   }
 }

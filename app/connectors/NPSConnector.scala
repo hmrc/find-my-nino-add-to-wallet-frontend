@@ -20,9 +20,10 @@ import cats.data.EitherT
 import config.FrontendAppConfig
 import models.nps.CRNUpliftRequest
 import play.api.http.Status.UNPROCESSABLE_ENTITY
-import uk.gov.hmrc.http.HttpReads.Implicits._
+import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, HttpResponse, StringContextOps, UpstreamErrorResponse}
+import play.api.libs.ws.WSBodyWritables.writeableOf_JsValue
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -31,10 +32,17 @@ import scala.concurrent.{ExecutionContext, Future}
 class NPSConnector@Inject() (
   httpClientV2: HttpClientV2,
   appConfig: FrontendAppConfig,
-  httpClientResponse: HttpClientResponse)
-{
+  httpClientResponse: HttpClientResponse) {
 
   private val alreadyAnAdultErrorCode: String = appConfig.crnUpliftAPIAlreadyAdultErrorCode
+
+
+  val readEitherOfWithUnProcessableEntity: HttpReads[Either[UpstreamErrorResponse, HttpResponse]] =
+    HttpReads.ask.flatMap {
+      case (_, _, response) if response.status == UNPROCESSABLE_ENTITY && response.body.contains(alreadyAnAdultErrorCode) =>
+        HttpReads[HttpResponse].map(Right.apply)
+      case _ => HttpReads[Either[UpstreamErrorResponse, HttpResponse]]
+    }
 
   def upliftCRN(nino: String, body: CRNUpliftRequest)(implicit hc: HeaderCarrier, ec: ExecutionContext):
   EitherT[Future, UpstreamErrorResponse, HttpResponse] = {
@@ -45,15 +53,8 @@ class NPSConnector@Inject() (
       httpClientV2
         .put(url"$url")
         .withBody(body)
-        .execute[Either[UpstreamErrorResponse, HttpResponse]](readEitherOfWithUnProcessableEntity, implicitly)
+        .execute(readEitherOfWithUnProcessableEntity)
     )
   }
-
-
-  private def readEitherOfWithUnProcessableEntity[A: HttpReads]: HttpReads[Either[UpstreamErrorResponse, A]] =
-    HttpReads.ask.flatMap {
-      case (_, _, response) if response.status == UNPROCESSABLE_ENTITY && response.body.contains(alreadyAnAdultErrorCode) =>
-        HttpReads[A].map(Right.apply)
-      case _                                                => HttpReads[Either[UpstreamErrorResponse, A]]
-    }
+  
 }

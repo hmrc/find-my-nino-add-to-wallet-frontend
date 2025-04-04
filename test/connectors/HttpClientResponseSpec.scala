@@ -18,29 +18,23 @@ package connectors
 
 import cats.data.EitherT
 import config.FrontendAppConfig
-import org.mockito.{ArgumentMatchers, Mockito, MockitoSugar}
 import org.scalatest.RecoverMethods
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatestplus.play.PlaySpec
-import play.api.Logger
-import play.api.http.Status._
-import uk.gov.hmrc.http._
+import play.api.Logging
+import play.api.http.Status.*
+import uk.gov.hmrc.http.*
+import uk.gov.hmrc.play.bootstrap.tools.LogCapturing
+import util.Fixtures.BaseSpec
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
-class HttpClientResponseSpec extends PlaySpec with MockitoSugar with ScalaFutures with RecoverMethods {
+class HttpClientResponseSpec extends BaseSpec with RecoverMethods with LogCapturing with Logging{
 
-  private val mockLogger: Logger = mock[Logger]
-  implicit lazy val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
+  private val appConfig: FrontendAppConfig = app.injector.instanceOf[FrontendAppConfig]
 
-  private val mockFrontendAppConfig: FrontendAppConfig = mock[FrontendAppConfig]
-
-  private lazy val httpClientResponseUsingMockLogger: HttpClientResponse = new HttpClientResponse(mockFrontendAppConfig) {
-    override protected val logger: Logger = mockLogger
-  }
+  private lazy val httpClientResponseUsingMockLogger: HttpClientResponse = new HttpClientResponse(appConfig) with Logging
 
   private val dummyContent = "error message"
-  private val alreadyAnAdultErrorCode = "1234"
+  private val alreadyAnAdultErrorCode = appConfig.crnUpliftAPIAlreadyAdultErrorCode
 
   "read" must {
     behave like clientResponseLogger(
@@ -62,85 +56,67 @@ class HttpClientResponseSpec extends PlaySpec with MockitoSugar with ScalaFuture
 
     infoLevel.foreach { httpResponseCode =>
       s"log message: INFO level only when response code is $httpResponseCode" in {
-        reset(mockLogger)
-        val response = Future.successful(Left(UpstreamErrorResponse(dummyContent, httpResponseCode)))
-        whenReady(block(response).value) { actual =>
-          actual mustBe Left(UpstreamErrorResponse(dummyContent, httpResponseCode))
-          verifyCalls(info = Some(dummyContent))
+        withCaptureOfLoggingFrom(logger) { capturedLogs =>
+          val response = Future.successful(Left(UpstreamErrorResponse(dummyContent, httpResponseCode)))
+          whenReady(block(response).value) { actual =>
+            actual mustBe Left(UpstreamErrorResponse(dummyContent, httpResponseCode))
+            capturedLogs.exists(_.getMessage.contains(dummyContent)) mustBe true
+          }
         }
       }
     }
 
     s"log message: INFO level when response is UNPROCESSABLE_ENTITY and body contains $alreadyAnAdultErrorCode" in {
-      reset(mockLogger)
       val response = Future.successful(Right(HttpResponse(infoLevelWithBodyCheck, alreadyAnAdultErrorCode)))
-      whenReady(block(response).value) { actual =>
-        val httpResponse = actual.getOrElse(fail(s"Expected Right(HttpResponse), but got Left($actual)"))
-        httpResponse.status mustBe infoLevelWithBodyCheck
-        httpResponse.body mustBe alreadyAnAdultErrorCode
-        verifyCalls(info = Some("UNPROCESSABLE_ENTITY - alreadyAnAdultErrorCode"))
+      withCaptureOfLoggingFrom(logger) { capturedLogs =>
+        whenReady(block(response).value) { actual =>
+          val httpResponse = actual.getOrElse(fail(s"Expected Right(HttpResponse), but got Left($actual)"))
+          httpResponse.status mustBe infoLevelWithBodyCheck
+          httpResponse.body mustBe alreadyAnAdultErrorCode
+          capturedLogs.exists(_.getMessage.contains("UNPROCESSABLE_ENTITY - alreadyAnAdultErrorCode")) mustBe true
+        }
       }
     }
 
     errorLevelWithThrowable.foreach { httpResponseCode =>
       s"log message: ERROR level WITH throwable when response code is $httpResponseCode" in {
-        reset(mockLogger)
         val response = Future.successful(Left(UpstreamErrorResponse(dummyContent, httpResponseCode)))
-        whenReady(block(response).value) { actual =>
-          actual mustBe Left(UpstreamErrorResponse(dummyContent, httpResponseCode))
-          verifyCalls(errorWithThrowable = Some(dummyContent))
+        withCaptureOfLoggingFrom(logger) { capturedLogs =>
+          whenReady(block(response).value) { actual =>
+            actual mustBe Left(UpstreamErrorResponse(dummyContent, httpResponseCode))
+            capturedLogs.exists(_.getMessage.contains(dummyContent)) mustBe true
+          }
         }
       }
     }
 
     errorLevelWithoutThrowable.foreach { httpResponseCode =>
       s"log message: ERROR level WITHOUT throwable when response code is $httpResponseCode" in {
-        reset(mockLogger)
         val response = Future.successful(Left(UpstreamErrorResponse(dummyContent, httpResponseCode)))
-        whenReady(block(response).value) { actual =>
-          actual mustBe Left(UpstreamErrorResponse(dummyContent, httpResponseCode))
-          verifyCalls(errorWithoutThrowable = Some(dummyContent))
+        withCaptureOfLoggingFrom(logger) { capturedLogs =>
+          whenReady(block(response).value) { actual =>
+            actual mustBe Left(UpstreamErrorResponse(dummyContent, httpResponseCode))
+            capturedLogs.exists(_.getMessage.contains(dummyContent)) mustBe true
+          }
         }
       }
     }
 
     "log message: ERROR level WITHOUT throwable when future fails with HttpException & recovers to BAD GATEWAY" in {
-      reset(mockLogger)
       val response = Future.failed(new HttpException(dummyContent, GATEWAY_TIMEOUT))
-      whenReady(block(response).value) { actual =>
-        actual mustBe Left(UpstreamErrorResponse(dummyContent, BAD_GATEWAY))
-        verifyCalls(errorWithoutThrowable = Some(dummyContent))
-      }
+        withCaptureOfLoggingFrom(logger) { capturedLogs =>
+          whenReady(block(response).value) { actual =>
+            actual mustBe Left(UpstreamErrorResponse(dummyContent, BAD_GATEWAY))
+            capturedLogs.exists(_.getMessage.contains(dummyContent)) mustBe true
+          }
+        }
     }
 
     "log nothing when future fails with a non-HttpException" in {
-      reset(mockLogger)
       val response = Future.failed(new RuntimeException(dummyContent))
       recoverToSucceededIf[RuntimeException] {
         block(response).value
       }
-      verifyCalls()
     }
-  }
-
-  private def verifyCalls(
-                           info: Option[String] = None,
-                           errorWithThrowable: Option[String] = None,
-                           errorWithoutThrowable: Option[String] = None
-                         ): Unit = {
-
-    def argumentMatcher(content: Option[String]): String = content match {
-      case None    => ArgumentMatchers.any()
-      case Some(c) => ArgumentMatchers.eq(c)
-    }
-
-    Mockito.verify(mockLogger, times(info.map(_ => 1).getOrElse(0)))
-      .info(argumentMatcher(info))(ArgumentMatchers.any())
-
-    Mockito.verify(mockLogger, times(errorWithThrowable.map(_ => 1).getOrElse(0)))
-      .error(argumentMatcher(errorWithThrowable), ArgumentMatchers.any())(ArgumentMatchers.any())
-
-    Mockito.verify(mockLogger, times(errorWithoutThrowable.map(_ => 1).getOrElse(0)))
-      .error(argumentMatcher(errorWithoutThrowable))(ArgumentMatchers.any())
   }
 }

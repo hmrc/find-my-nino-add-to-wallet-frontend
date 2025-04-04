@@ -20,7 +20,8 @@ import play.api.Application
 import play.api.test.{DefaultAwaitTimeout, Injecting}
 import util.WireMockHelper
 import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.http.{HttpClient, HttpResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import scala.util.Random
@@ -43,7 +44,7 @@ class IdentityVerificationFrontendConnectorSpec
     lazy val connector = {
       val serviceConfig = app.injector.instanceOf[ServicesConfig]
       new IdentityVerificationFrontendConnector(
-        inject[HttpClient],
+        inject[HttpClientV2],
         serviceConfig,
         inject[HttpClientResponse]
       )

@@ -17,18 +17,19 @@
 package services
 
 import base.SpecBase
-import cats.implicits._
+import cats.implicits.*
 import cats.data.EitherT
 import connectors.NPSConnector
 import models.nps.CRNUpliftRequest
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{reset, when}
 import play.api.Application
-import play.api.http.Status._
+import play.api.http.Status.*
 import play.api.inject.bind
-import uk.gov.hmrc.http._
+import uk.gov.hmrc.http.*
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 class NPSServiceSpec extends SpecBase{
 
@@ -100,8 +101,8 @@ class NPSServiceSpec extends SpecBase{
     "when back end connector returns 204 (NO_CONTENT)" - {
       "return Right(true)" in {
         when(mockNPSConnector.upliftCRN(any, any)(any, any()))
-          .thenReturn(EitherT.rightT(HttpResponse(NO_CONTENT, "")))
-
+          .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](HttpResponse(NO_CONTENT, "")))
+        
         val result = npsService.upliftCRN(nino, npsRequest).value.futureValue
 
         result mustBe Right(true)
@@ -111,7 +112,7 @@ class NPSServiceSpec extends SpecBase{
     "when back end connector returns 422 (UNPROCESSABLE_ENTITY) with code 63492 (Already an adult account)" - {
       "return Right(true)" in {
         when(mockNPSConnector.upliftCRN(any, any)(any, any()))
-          .thenReturn(EitherT.rightT(HttpResponse(UNPROCESSABLE_ENTITY, jsonUnprocessableEntityAlreadyAdult)))
+          .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](HttpResponse(UNPROCESSABLE_ENTITY, jsonUnprocessableEntityAlreadyAdult)))
 
         val result = npsService.upliftCRN(nino, npsRequest).value.futureValue
 
@@ -125,7 +126,7 @@ class NPSServiceSpec extends SpecBase{
         val response: HttpResponse = HttpResponse(UNPROCESSABLE_ENTITY, jsonUnprocessableEntity)
 
         when(mockNPSConnector.upliftCRN(any, any)(any, any()))
-          .thenReturn(EitherT.rightT(response))
+          .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](response))
 
         val result = npsService.upliftCRN(nino, npsRequest).value.futureValue
 
@@ -142,7 +143,7 @@ class NPSServiceSpec extends SpecBase{
         val response: HttpResponse = HttpResponse(BAD_REQUEST, jsonBadRequest)
 
         when(mockNPSConnector.upliftCRN(any, any)(any, any()))
-          .thenReturn(EitherT.rightT(response))
+          .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](response))
 
         val result = npsService.upliftCRN(nino, npsRequest).value.futureValue
 
@@ -157,7 +158,7 @@ class NPSServiceSpec extends SpecBase{
         val response: HttpResponse = HttpResponse(FORBIDDEN, jsonForbidden)
 
         when(mockNPSConnector.upliftCRN(any, any)(any, any()))
-          .thenReturn(EitherT.rightT(response))
+          .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](response))
 
         val result = npsService.upliftCRN(nino, npsRequest).value.futureValue
 
@@ -172,7 +173,7 @@ class NPSServiceSpec extends SpecBase{
         val response: HttpResponse = HttpResponse(NOT_FOUND, "")
 
         when(mockNPSConnector.upliftCRN(any, any)(any, any()))
-          .thenReturn(EitherT.rightT(response))
+          .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](response))
 
         val result = npsService.upliftCRN(nino, npsRequest).value.futureValue
 
@@ -187,7 +188,7 @@ class NPSServiceSpec extends SpecBase{
         val response: HttpResponse = HttpResponse(INTERNAL_SERVER_ERROR, "Something went wrong")
 
         when(mockNPSConnector.upliftCRN(any, any)(any, any()))
-          .thenReturn(EitherT.rightT(response))
+          .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](response))
 
         val result = npsService.upliftCRN(nino, npsRequest).value.futureValue
 
@@ -202,7 +203,7 @@ class NPSServiceSpec extends SpecBase{
         val upstreamErrorResponse = UpstreamErrorResponse("Bad Gateway", BAD_GATEWAY)
 
         when(mockNPSConnector.upliftCRN(any, any)(any, any()))
-          .thenReturn(EitherT.leftT(upstreamErrorResponse))
+          .thenReturn(EitherT.leftT[Future, HttpResponse](upstreamErrorResponse))
 
         val result = npsService.upliftCRN(nino, npsRequest).value.futureValue
 

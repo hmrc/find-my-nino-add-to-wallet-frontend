@@ -44,7 +44,7 @@ class IndividualDetailsRepositorySpec extends AnyFreeSpec
 
   private val mockAppConfig = mock[FrontendAppConfig]
 
-  protected val repository = new IndividualDetailsRepository(
+  protected val repository: IndividualDetailsRepository = new IndividualDetailsRepository(
     mongoComponent = mongoComponent,
     appConfig = mockAppConfig
   )
@@ -55,7 +55,7 @@ class IndividualDetailsRepositorySpec extends AnyFreeSpec
     lastUpdated = Instant.EPOCH
   )
 
-  when(mockAppConfig.cacheTtl) thenReturn 1
+  when(mockAppConfig.cacheTtl) thenReturn 1L
 
 
   "IndividualDetailsRepository" - {

@@ -20,8 +20,7 @@ import base.SpecBase
 import cats.data.EitherT
 import connectors._
 import controllers.auth.requests.UserRequest
-import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchersSugar.eqTo
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{reset, when}
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject
@@ -231,7 +230,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
       "must return InternalServerError when Apple Pass retrieval fails" in {
         when(mockApplePassConnector.getApplePass(eqTo(passId))(any(), any()))
-          .thenReturn(EitherT.leftT(UpstreamErrorResponse("some error", INTERNAL_SERVER_ERROR)))
+          .thenReturn(EitherT.leftT[Future, HttpResponse](UpstreamErrorResponse("some error", INTERNAL_SERVER_ERROR)))
 
         val application = applicationBuilderWithConfig().overrides(
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
@@ -306,7 +305,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
       "must return InternalServerError when Apple QR Code retrieval fails" in {
         when(mockApplePassConnector.getAppleQrCode(eqTo(passId))(any(), any()))
-          .thenReturn(EitherT.leftT(UpstreamErrorResponse("some error", INTERNAL_SERVER_ERROR)))
+          .thenReturn(EitherT.leftT[Future, HttpResponse](UpstreamErrorResponse("some error", INTERNAL_SERVER_ERROR)))
 
         val application = applicationBuilderWithConfig().overrides(
             inject.bind[SessionRepository].toInstance(mockSessionRepository),

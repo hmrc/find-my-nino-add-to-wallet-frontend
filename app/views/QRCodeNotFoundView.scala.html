@@ -16,13 +16,11 @@
 
 @import config.FrontendAppConfig
 @import scala.concurrent.ExecutionContext
-@import components.{H1, P, Link}
+@import components.H1
 
 @this(
     layout: templates.LayoutProvider,
-    h1: H1,
-    p: P,
-    link: Link
+    h1: H1
 )
 @()(implicit request: Request[_], messages: play.api.i18n.Messages, ec: ExecutionContext)
 

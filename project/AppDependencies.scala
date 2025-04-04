@@ -12,7 +12,7 @@ object AppDependencies {
     "uk.gov.hmrc.mongo"             %% s"hmrc-mongo-$playVersion"                           %   mongoVersion,
     "org.apache.xmlgraphics"        % "fop"                                                 %   "2.10",
     "org.typelevel"                 %% "cats-core"                                          %   "2.10.0",
-    "uk.gov.hmrc"                   %% s"sca-wrapper-$playVersion"                          %   "2.6.0",
+    "uk.gov.hmrc"                   %% s"sca-wrapper-$playVersion"                          %   "2.7.0",
     "com.google.auth"               % "google-auth-library-oauth2-http"                     %   "1.23.0",
     "com.auth0"                     % "java-jwt"                                            %   "4.4.0",
     "com.fasterxml.jackson.module"  %% "jackson-module-scala"                               %   "2.17.0",
@@ -21,7 +21,6 @@ object AppDependencies {
 
   val test: Seq[ModuleID] = Seq(
     "org.scalatestplus"     %% "mockito-5-10"                   % "3.2.18.0",
-    "org.mockito"           %% "mockito-scala"                  % "1.17.31",
     "org.scalatestplus"     %% "scalacheck-1-17"                % "3.2.18.0",
     "uk.gov.hmrc"           %% s"bootstrap-test-$playVersion"   % bootstrapVersion,
     "uk.gov.hmrc.mongo"     %% s"hmrc-mongo-test-$playVersion"  % mongoVersion,

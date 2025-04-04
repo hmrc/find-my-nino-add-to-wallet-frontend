@@ -109,7 +109,7 @@ class AppleWalletConnectorSpec extends ConnectorSpec
     "return None when called with an unknown passId" in new LocalSetup {
       stubGet(url, NOT_FOUND, None)
       val result = connector.getAppleQrCode(passId).value.futureValue
-
+      
       result mustBe a[Right[_, _]]
       result mustBe Right(None)
     }
@@ -120,6 +120,13 @@ class AppleWalletConnectorSpec extends ConnectorSpec
 
       result mustBe a[Left[UpstreamErrorResponse, _]]
       result.swap.getOrElse(UpstreamErrorResponse("", OK)).statusCode mustBe INTERNAL_SERVER_ERROR
+    }
+    "return Left(UpstreamErrorResponse) when unexpected status is returned" in new LocalSetup {
+      stubGet(url, IM_A_TEAPOT, None)
+      val result = connector.getAppleQrCode(passId).value.futureValue
+
+      result mustBe a[Left[UpstreamErrorResponse, _]]
+      result.swap.getOrElse(UpstreamErrorResponse("", OK)).statusCode mustBe IM_A_TEAPOT
     }
   }
 

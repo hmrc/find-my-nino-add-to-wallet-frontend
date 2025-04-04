@@ -15,13 +15,13 @@
  *@
 
 @import scala.concurrent.ExecutionContext
-@import components.{H1, P, Button}
+@import components.{H1, P, button}
 
 @this(
     layout: templates.LayoutProvider,
     h1: H1,
     p: P,
-    button: Button
+    button: button
 )
 
 @(retryUrl: String)(implicit request: Request[_], messages: play.api.i18n.Messages)

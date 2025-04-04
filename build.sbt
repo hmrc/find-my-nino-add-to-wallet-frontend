@@ -6,14 +6,15 @@ import uk.gov.hmrc.DefaultBuildSettings
 
 lazy val appName: String = "find-my-nino-add-to-wallet-frontend"
 
-ThisBuild / majorVersion := 0
-ThisBuild / scalaVersion := "2.13.16"
+ThisBuild / majorVersion := 1
+ThisBuild / scalaVersion := "3.3.5"
+
 
 lazy val scoverageSettings = {
   import scoverage.ScoverageKeys
   Seq(
     // Semicolon-separated list of regexs matching classes to exclude
-    ScoverageKeys.coverageExcludedPackages := "<empty>;Reverse.*;models/.data/..*;view.*;models.*;pages.*;.*queries;.*(AuthService|BuildInfo|Routes).*",
+    ScoverageKeys.coverageExcludedPackages := "<empty>;Reverse.*;models/.data/..*;view.*;models.*;pages.*;.*queries;.*(AuthService|BuildInfo|Routes).*;util.*",
     ScoverageKeys.coverageExcludedFiles := ";.*services.AuditService;.*util.BaseResourceStreamResolver;.*util.FopURIResolver;.*util.StylesheetResourceStreamResolver;.*util.XmlFoToPDF;",
     ScoverageKeys.coverageMinimumStmtTotal := 90,
     ScoverageKeys.coverageFailOnMinimum := true,
@@ -50,10 +51,19 @@ lazy val root = (project in file("."))
       ),
       PlayKeys.playDefaultPort := 14006,
     scalacOptions ++= Seq(
-      "-Wconf:cat=deprecation:ws,cat=feature:ws,cat=optimizer:ws,src=target/.*:s",
       "-unchecked",
-      "-deprecation",
-      "-feature"
+      "-feature",
+      "-language:noAutoTupling",
+      "-Werror",
+      "-Wconf:msg=unused import&src=.*views/.*:s",
+      "-Wconf:msg=unused import&src=<empty>:s",
+      "-Wconf:msg=unused&src=.*RoutesPrefix\\.scala:s",
+      "-Wconf:msg=unused&src=.*Routes\\.scala:s",
+      "-Wconf:msg=unused&src=.*ReverseRoutes\\.scala:s",
+      "-Wconf:msg=unused&src=.*JavaScriptReverseRoutes\\.scala:s",
+      "-Wconf:msg=other-match-analysis:s",
+      "-Wconf:msg=Flag.*repeatedly:s",
+      "-Wconf:src=routes/.*:s"
     ),
       libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test,
       retrieveManaged := true,
@@ -69,7 +79,7 @@ lazy val root = (project in file("."))
             ))
       ),
       pipelineStages := Seq(digest),
-  ).settings(scoverageSettings: _*)
+  ).settings(scoverageSettings: _ *)
 
 lazy val testSettings: Seq[Def.Setting[_]] = Seq(
     fork := true,

@@ -65,13 +65,13 @@ object IndividualDetailsDataCache {
       ~ (__ \ "nino").format[String]
       ~ (__ \ "address").formatNullable[AddressData]
       ~ (__ \ "crnIndicator").format[String]
-      )(IndividualDetailsData.apply, unlift(IndividualDetailsData.unapply))
+      )(IndividualDetailsData.apply, unlift{idd => Some(Tuple8(idd.fullName, idd.firstForename, idd.surname, idd.initialsName, idd.dateOfBirth, idd.nino, idd.address, idd.crnIndicator))})
   }
 
   val individualDetailsDataCacheFormat: OFormat[IndividualDetailsDataCache] = {
     ((__ \ "id").format[String]
       ~ (__ \ "individualDetails").format[IndividualDetailsData](individualDetailsDataFormat)
       ~ (__ \ "lastUpdated").format[Instant](instantFormat)
-      )(IndividualDetailsDataCache.apply, unlift(IndividualDetailsDataCache.unapply))
+      )(IndividualDetailsDataCache.apply, unlift(iddc => Some(Tuple3(iddc.id, iddc.individualDetailsData, iddc.lastUpdated))))
   }
 }

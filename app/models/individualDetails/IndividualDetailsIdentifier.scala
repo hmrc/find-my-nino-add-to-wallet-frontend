@@ -53,13 +53,13 @@ object IndividualDetailsIdentifier {
 }
 
 object IndividualDetailsNino {
-  implicit val format: Format[IndividualDetailsNino] = Json.valueFormat[IndividualDetailsNino]
+  implicit val format: Format[IndividualDetailsNino] = Json.format[IndividualDetailsNino]
 }
 
 object ChildReferenceNumber {
-  implicit val format: Format[ChildReferenceNumber] = Json.valueFormat[ChildReferenceNumber]
+  implicit val format: Format[ChildReferenceNumber] = Json.format[ChildReferenceNumber]
 }
 
 object TemporaryReferenceNumber {
-  implicit val tempFormat: Format[TemporaryReferenceNumber] = Json.valueFormat[TemporaryReferenceNumber]
+  implicit val tempFormat: Format[TemporaryReferenceNumber] = Json.format[TemporaryReferenceNumber]
 }

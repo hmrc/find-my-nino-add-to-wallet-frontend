@@ -18,7 +18,7 @@ package util
 
 import models.individualDetails.{AddressData, AddressLine, AddressType, IndividualDetailsDataCache}
 import play.api.libs.json.{Format, JsValue, Json, OFormat}
-import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
 
 import java.time.format.DateTimeFormatter
@@ -110,7 +110,7 @@ object AuditUtils {
       })
   }
 
-  private def getIndivudualsAddress(individualDetailsDataCache: IndividualDetailsDataCache): AuditAddress = {
+  private def getIndividualsAddress(individualDetailsDataCache: IndividualDetailsDataCache): AuditAddress = {
     individualDetailsDataCache.individualDetailsData.address match {
       case Some(a: AddressData) => getAuditAddress(a)
       case _ => getAuditAddress(emptyAddress)
@@ -142,26 +142,20 @@ object AuditUtils {
 
   private def buildDetails(individualDetailsDataCache: IndividualDetailsDataCache, journeyId: String, hc: HeaderCarrier, walletProvider: Option[String]): YourDetailsAuditEvent = {
 
-    val mainAddress = getIndivudualsAddress(individualDetailsDataCache)
+    val mainAddress = getIndividualsAddress(individualDetailsDataCache)
     val strLang = getLanguageFromCookieStr(hc)
     val strDevice = getUserDevice(hc)
 
-    individualDetailsDataCache.individualDetailsData.nino match {
-      case (nino:String) =>
-        YourDetailsAuditEvent(
-          journeyId,
-          timestamp(),
-          nino,
-          name = individualDetailsDataCache.individualDetailsData.fullName,
-          mainAddress = mainAddress,
-          device = Some(strDevice),
-          language = strLang,
-          walletProvider
-        )
-      case _ => throw new NotFoundException("Nino not found for person when building audit event")
-    }
-
-
+    YourDetailsAuditEvent(
+      journeyId,
+      timestamp(),
+      individualDetailsDataCache.individualDetailsData.nino,
+      name = individualDetailsDataCache.individualDetailsData.fullName,
+      mainAddress = mainAddress,
+      device = Some(strDevice),
+      language = strLang,
+      walletProvider
+    )
   }
 
   private def timestamp(): String =

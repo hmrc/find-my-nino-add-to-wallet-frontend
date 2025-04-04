@@ -23,7 +23,7 @@ import models.individualDetails.IndividualDetailsDataCache
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc._
 import play.api.{Configuration, Environment}
-import services.{AuditService, IndividualDetailsService}
+import services.AuditService
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
@@ -37,7 +37,6 @@ class AppleWalletController @Inject()(val appleWalletConnector: AppleWalletConne
                                       override val messagesApi: MessagesApi,
                                       authConnector: AuthConnector,
                                       auditService: AuditService,
-                                      individualDetailsService: IndividualDetailsService,
                                       view: AppleWalletView,
                                       passIdNotFoundView: PassIdNotFoundView,
                                       qrCodeNotFoundView: QRCodeNotFoundView,

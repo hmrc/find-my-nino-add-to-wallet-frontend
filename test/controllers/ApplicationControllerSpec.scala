@@ -21,7 +21,7 @@ import cats.data.EitherT
 import config.FrontendAppConfig
 import connectors.IdentityVerificationFrontendConnector
 import org.mockito.ArgumentMatchers.any
-import org.mockito.MockitoSugar.{reset, when}
+import org.mockito.Mockito.{reset, when}
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject
 import play.api.mvc.{AnyContentAsEmpty, MessagesControllerComponents, Result}
@@ -257,6 +257,14 @@ class ApplicationControllerSpec extends SpecBase with IndividualDetailsFixtures 
             .thenReturn(EitherT[Future, UpstreamErrorResponse, IdentityVerificationResponse](Future.successful(Right(InvalidResponse))))
 
           val result = controller.showUpliftJourneyOutcome(None)(buildFakeRequestWithAuth("GET", "/?journeyId=XXXXX"))
+          status(result) mustBe FAILED_DEPENDENCY
+        }
+      }
+
+      "showUpliftJourneyOutcome should return FailedDependency when no response given" in new LocalSetup {
+
+        running(application) {
+          val result = controller.showUpliftJourneyOutcome(None)(buildFakeRequestWithAuth("GET", "/"))
           status(result) mustBe FAILED_DEPENDENCY
         }
       }

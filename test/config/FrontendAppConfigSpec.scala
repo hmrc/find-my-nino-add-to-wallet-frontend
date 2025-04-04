@@ -17,7 +17,7 @@
 package config
 
 import base.SpecBase
-import org.mockito.MockitoSugar.when
+import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.i18n.Lang
 
@@ -60,7 +60,7 @@ class FrontendAppConfigSpec extends SpecBase with MockitoSugar {
   }
 
   "cacheTtl" in {
-    mockFrontendAppConfig.cacheTtl.isInstanceOf[Int]
+    mockFrontendAppConfig.cacheTtl.isInstanceOf[Long]
   }
 
   "appName" in {

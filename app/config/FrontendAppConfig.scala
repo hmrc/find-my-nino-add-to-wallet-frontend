@@ -56,8 +56,8 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
     "cy" -> Lang("cy")
   )
 
-  val cacheTtl: Int = configuration.get[Int]("mongodb.timeToLiveInSeconds")
-  val individualDetailsCacheTtl: Int = configuration.get[Int]("mongodb.individualDetailsTtlInSeconds")
+  val cacheTtl: Long = configuration.get[Int]("mongodb.timeToLiveInSeconds")
+  val individualDetailsCacheTtl: Long = configuration.get[Int]("mongodb.individualDetailsTtlInSeconds")
 
   val encryptionKey: String = configuration.get[String]("mongodb.encryption.key")
 

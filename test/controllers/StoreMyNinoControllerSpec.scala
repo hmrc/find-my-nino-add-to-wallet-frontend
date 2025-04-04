@@ -20,8 +20,7 @@ import base.SpecBase
 import cats.data.EitherT
 import connectors._
 import controllers.auth.requests.UserRequest
-import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchersSugar.eqTo
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{reset, times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject
@@ -29,7 +28,6 @@ import play.api.test.Helpers._
 import play.api.test.{DefaultAwaitTimeout, FakeRequest}
 import repositories.SessionRepository
 import services.{IndividualDetailsService, NPSService}
-import uk.gov.hmrc.auth.core.retrieve.v2.TrustedHelper
 import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolment, Enrolments}
 import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
@@ -435,7 +433,7 @@ class StoreMyNinoControllerSpec extends SpecBase with IndividualDetailsFixtures 
         .thenReturn(Future.successful(true))
 
       when(mockAppleWalletConnector.createApplePass(any(), any())(any(), any()))
-        .thenReturn(EitherT.leftT(UpstreamErrorResponse("Internal Server Error", INTERNAL_SERVER_ERROR)))
+        .thenReturn(EitherT.leftT[Future, HttpResponse](UpstreamErrorResponse("Internal Server Error", INTERNAL_SERVER_ERROR)))
 
       when(mockGoogleWalletConnector.createGooglePass(any(), any())(any(), any()))
         .thenReturn(Future.successful(Some(googlePassId)))

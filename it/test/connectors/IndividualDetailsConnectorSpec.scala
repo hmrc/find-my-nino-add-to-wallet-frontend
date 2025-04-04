@@ -17,14 +17,14 @@
 package connectors
 
 import config.FrontendAppConfig
-import org.mockito.ArgumentCaptor
-import org.mockito.ArgumentMatchersSugar.any
-import org.mockito.MockitoSugar.{mock, verify, when}
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
+import org.mockito.Mockito.when
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpReads, HttpResponse}
-
+import org.scalatestplus.mockito.MockitoSugar.mock
+import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -35,22 +35,19 @@ class IndividualDetailsConnectorSpec
 
 
   "IndividualDetailsConnector" should "call the correct endpoint" in {
-    val mockHttpClient = mock[HttpClient]
+    val mockHttpClient = mock[HttpClientV2]
     val appConfig = mock[FrontendAppConfig]
     val connector = new IndividualDetailsConnector(mockHttpClient, appConfig)
-    val urlCaptor: ArgumentCaptor[String] = ArgumentCaptor.forClass(classOf[String])
+    val requestBuilder: RequestBuilder = mock[RequestBuilder]
 
     when(appConfig.individualDetailsServiceUrl).thenReturn("http://localhost:8080")
-    when(mockHttpClient.GET[HttpResponse](urlCaptor.capture(), any[Seq[(String,String)]],any[Seq[(String,String)]])(any[HttpReads[HttpResponse]], any[HeaderCarrier], any[ExecutionContext]))
-      .thenReturn(Future.successful(HttpResponse(200, "{}")))
+    when(requestBuilder.execute[HttpResponse](any(), any())).thenReturn(Future.successful(HttpResponse(200, "{}")))
+    when(mockHttpClient.get(eqTo(url"http://localhost:8080/find-my-nino-add-to-wallet/individuals/details/NINO/QQ000003/Y"))(any()))
+      .thenReturn(requestBuilder)
 
     implicit val hc: HeaderCarrier = HeaderCarrier()
     val result = connector.getIndividualDetails("QQ000003B", "Y")(hc, global)
 
-    verify(mockHttpClient).GET[HttpResponse](urlCaptor.capture(),any,any)(any, any, any)
-
-    val capturedUrl = urlCaptor.getValue
-    assert(capturedUrl == "http://localhost:8080/find-my-nino-add-to-wallet/individuals/details/NINO/QQ000003/Y")
     result.futureValue.status shouldBe 200
   }
 

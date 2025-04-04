@@ -18,7 +18,7 @@ package models.encryption.id
 
 import models.encryption.EncryptedValueFormat._
 import models.individualDetails._
-import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
+import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json.{Format, Json, OFormat, __}
 import uk.gov.hmrc.crypto.{EncryptedValue, SymmetricCryptoFactory}
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats.instantFormat
@@ -56,16 +56,16 @@ object EncryptedAddressData {
   implicit val format: OFormat[EncryptedAddressData] = Json.format[EncryptedAddressData]
 }
 
-final case class EncryptedAddressLine(value: EncryptedValue)
+final case class EncryptedAddressLine(value: EncryptedValue) extends AnyVal
 object EncryptedAddressLine {
   implicit val format: Format[EncryptedAddressLine] = Json.valueFormat[EncryptedAddressLine]
 }
-final case class EncryptedAddressPostcode(value: EncryptedValue)
+final case class EncryptedAddressPostcode(value: EncryptedValue) extends AnyVal
 object EncryptedAddressPostcode {
   implicit val format: Format[EncryptedAddressPostcode] = Json.valueFormat[EncryptedAddressPostcode]
 }
 
-final case class EncryptedAddressType(value: EncryptedValue)
+final case class EncryptedAddressType(value: EncryptedValue) extends AnyVal
 object EncryptedAddressType {
   implicit val format: Format[EncryptedAddressType] = Json.valueFormat[EncryptedAddressType]
 }
@@ -83,7 +83,7 @@ object EncryptedIndividualDetailsDataCache {
       ~ (__ \ "nino").format[String]
       ~ (__ \ "address").formatNullable[EncryptedAddressData]
       ~ (__ \ "crnIndicator").format[EncryptedValue]
-      )(EncryptedIndividualDetailsData.apply, unlift(EncryptedIndividualDetailsData.unapply))
+      )(EncryptedIndividualDetailsData.apply, eidd => Tuple8(eidd.fullName, eidd.firstForename, eidd.surname, eidd.initialsName, eidd.dateOfBirth, eidd.nino, eidd.address, eidd.crnIndicator))
   }
 
 
@@ -91,7 +91,7 @@ object EncryptedIndividualDetailsDataCache {
     ((__ \ "id").format[String]
       ~ (__ \ "individualDetails").format[EncryptedIndividualDetailsData](encryptedIndividualDetailsDataFormat)
       ~ (__ \ "lastUpdated").format[Instant](instantFormat)
-      )(EncryptedIndividualDetailsDataCache.apply, unlift(EncryptedIndividualDetailsDataCache.unapply))
+      )(EncryptedIndividualDetailsDataCache.apply, eiddc => Tuple3(eiddc.id, eiddc.individualDetailsData, eiddc.lastUpdated))
   }
 
   def encryptField(fieldValue: String, key: String): EncryptedValue = {

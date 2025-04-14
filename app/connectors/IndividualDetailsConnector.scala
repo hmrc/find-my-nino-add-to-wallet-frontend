@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,23 +16,31 @@
 
 package connectors
 
+import cats.data.EitherT
 import com.google.inject.{Inject, Singleton}
 import config.FrontendAppConfig
 import play.api.Logging
 import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps, UpstreamErrorResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class IndividualDetailsConnector @Inject()(
-                                            val httpClient: HttpClientV2,
-                                            appConfig:  FrontendAppConfig) extends Logging {
+    val httpClient: HttpClientV2,
+    appConfig:  FrontendAppConfig,
+    httpClientResponse: HttpClientResponse
+  ) extends Logging {
 
   def getIndividualDetails(nino: String, resolveMerge: String
-                          )(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
+                          )(implicit hc: HeaderCarrier, ec: ExecutionContext):EitherT[Future, UpstreamErrorResponse, HttpResponse] = {
     val url = s"${appConfig.individualDetailsServiceUrl}/find-my-nino-add-to-wallet/individuals/details/NINO/${nino.take(8)}/$resolveMerge"
-    httpClient.get(url"$url").execute[HttpResponse]
+
+    httpClientResponse.read(
+      httpClient
+        .get(url"$url")
+        .execute[Either[UpstreamErrorResponse, HttpResponse]]
+    )
   }
 }

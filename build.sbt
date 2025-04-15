@@ -11,7 +11,6 @@ ThisBuild / scalaVersion := "3.3.5"
 
 
 lazy val scoverageSettings = {
-  import scoverage.ScoverageKeys
   Seq(
     // Semicolon-separated list of regexs matching classes to exclude
     ScoverageKeys.coverageExcludedPackages := "<empty>;Reverse.*;models/.data/..*;view.*;models.*;pages.*;.*queries;.*(AuthService|BuildInfo|Routes).*;util.*;.*\\$anon.*",

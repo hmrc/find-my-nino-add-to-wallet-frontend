@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,39 +17,67 @@
 package connectors
 
 import config.FrontendAppConfig
-import org.mockito.ArgumentMatchers.{any, eq as eqTo}
-import org.mockito.Mockito.when
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
-import org.scalatestplus.mockito.MockitoSugar.mock
-import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{ExecutionContext, Future}
+import org.scalatestplus.mockito.MockitoSugar
+import play.api.Application
+import play.api.libs.json.Json
+import play.api.test.{DefaultAwaitTimeout, Injecting}
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
+import util.Fixtures.fakeIndividualDetails
+import util.WireMockHelper
 
 class IndividualDetailsConnectorSpec
-  extends AnyFlatSpec
-    with Matchers
-    with ScalaFutures {
+  extends ConnectorSpec with WireMockHelper with MockitoSugar with DefaultAwaitTimeout with Injecting {
 
+  override implicit lazy val app: Application = app(
+    Map(
+      "microservice.services.individual-details.port" -> server.port(),
+      "microservice.services.individual-details.host" -> "127.0.0.1"
+    )
+  )
 
-  "IndividualDetailsConnector" should "call the correct endpoint" in {
-    val mockHttpClient = mock[HttpClientV2]
-    val appConfig = mock[FrontendAppConfig]
-    val connector = new IndividualDetailsConnector(mockHttpClient, appConfig)
-    val requestBuilder: RequestBuilder = mock[RequestBuilder]
+  trait SpecSetup {
+    val nino: String = "AA123456A"
+    val resolveMerge: String = "Y"
+    val url: String = s"/find-my-nino-add-to-wallet/individuals/details/NINO/${nino.take(8)}/$resolveMerge"
+    val responseBody: String = Json.toJson(fakeIndividualDetails).toString()
 
-    when(appConfig.individualDetailsServiceUrl).thenReturn("http://localhost:8080")
-    when(requestBuilder.execute[HttpResponse](any(), any())).thenReturn(Future.successful(HttpResponse(200, "{}")))
-    when(mockHttpClient.get(eqTo(url"http://localhost:8080/find-my-nino-add-to-wallet/individuals/details/NINO/QQ000003/Y"))(any()))
-      .thenReturn(requestBuilder)
-
-    implicit val hc: HeaderCarrier = HeaderCarrier()
-    val result = connector.getIndividualDetails("QQ000003B", "Y")(hc, global)
-
-    result.futureValue.status shouldBe 200
+    lazy val connector: IndividualDetailsConnector = {
+      val httpClientV2 = app.injector.instanceOf[HttpClientV2]
+      val appConfig = app.injector.instanceOf[FrontendAppConfig]
+      val httpClientResponse = app.injector.instanceOf[HttpClientResponse]
+      new IndividualDetailsConnector(httpClientV2, appConfig, httpClientResponse)
+    }
   }
 
 
+  "Calling getIndividualDetails" must {
+    "return HttpResponse with 200 OK" in new SpecSetup {
+      stubGet(url, OK, Some(responseBody))
+
+      val result = connector.getIndividualDetails(nino, resolveMerge).value.futureValue
+
+      result mustBe a[Right[_, _]]
+      result.getOrElse(HttpResponse(IM_A_TEAPOT, "")).status mustBe OK
+    }
+
+    List(
+      INTERNAL_SERVER_ERROR,
+      BAD_REQUEST,
+      NOT_FOUND,
+      TOO_MANY_REQUESTS,
+      REQUEST_TIMEOUT,
+      SERVICE_UNAVAILABLE,
+      BAD_GATEWAY
+    ).foreach { errorResponse =>
+      s"return an UpstreamErrorResponse containing $errorResponse when API call fails" in new SpecSetup {
+        stubGet(url, errorResponse, None)
+
+        val result = connector.getIndividualDetails(nino, resolveMerge).value.futureValue
+
+        result mustBe a[Left[UpstreamErrorResponse, _]]
+        result.swap.getOrElse(UpstreamErrorResponse("", IM_A_TEAPOT)).statusCode mustBe errorResponse
+      }
+    }
+  }
 }

@@ -20,7 +20,7 @@ import cats.data.EitherT
 import com.google.inject.Inject
 import config.FrontendAppConfig
 import play.api.Logging
-import play.api.http.Status.{BAD_GATEWAY, BAD_REQUEST, NOT_FOUND, TOO_MANY_REQUESTS, UNPROCESSABLE_ENTITY}
+import play.api.http.Status.{BAD_GATEWAY, NOT_FOUND, TOO_MANY_REQUESTS, UNPROCESSABLE_ENTITY}
 import uk.gov.hmrc.http.{HttpException, HttpResponse, UpstreamErrorResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -35,16 +35,15 @@ class HttpClientResponse @Inject() (frontendAppConfig: FrontendAppConfig)(implic
   ): EitherT[Future, UpstreamErrorResponse, HttpResponse] =
     EitherT(response.map {
       case Right(response)
-          if response.status == UNPROCESSABLE_ENTITY && response.body.contains(alreadyAnAdultErrorCode) =>
+        // only reachable if we use the corresponding reads - readEitherOfWithUnProcessableEntity
+        if response.status == UNPROCESSABLE_ENTITY && response.body.contains(alreadyAnAdultErrorCode) =>
         logger.info("UNPROCESSABLE_ENTITY - alreadyAnAdultErrorCode")
         Right(response)
       case Right(response) if response.status == NOT_FOUND                                 =>
+        // only reachable if we use the corresponding reads - readEitherOfWithNotFound
         Right(response)
       case Right(response)                                                                 =>
         Right(response)
-      case Left(error) if error.statusCode == BAD_REQUEST                                  =>
-        logger.info(error.message)
-        Left(error)
       case Left(error) if error.statusCode >= 500 || error.statusCode == TOO_MANY_REQUESTS =>
         logger.error(error.message)
         Left(error)

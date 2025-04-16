@@ -22,10 +22,8 @@ import connectors.IndividualDetailsConnector
 import models.individualDetails.*
 import org.mongodb.scala.MongoException
 import play.api.Logging
-import play.api.http.Status.{OK, UNPROCESSABLE_ENTITY}
-import play.api.libs.json.{JsError, JsSuccess}
 import repositories.IndividualDetailsRepoTrait
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -35,7 +33,7 @@ trait IndividualDetailsService {
   def getIdDataFromCache(nino: String, sessionId: String)(implicit
     ec: ExecutionContext,
     hc: HeaderCarrier
-  ): Future[Either[Int, IndividualDetailsDataCache]]
+  ): Future[Either[UpstreamErrorResponse, IndividualDetailsDataCache]]
   def deleteIdDataFromCache(nino: String)(implicit ec: ExecutionContext): Future[Boolean]
 }
 
@@ -89,32 +87,15 @@ class IndividualDetailsServiceImpl @Inject() (
 
   private def fetchIndividualDetails(
     nino: String
-  )(implicit ec: ExecutionContext, hc: HeaderCarrier): EitherT[Future, UpstreamErrorResponse, IndividualDetails] =
-    individualDetailsConnector.getIndividualDetails(nino, "Y").flatMap(response => EitherT(handleResponse(response)))
-
-  private def handleResponse(response: HttpResponse): Future[Either[UpstreamErrorResponse, IndividualDetails]] =
-    response.status match {
-      case OK =>
-        response.json.validate[IndividualDetails] match {
-          case JsSuccess(value, _) => Future.successful(Right(value))
-          case JsError(errors)     =>
-            logger.warn(s"Error parsing IndividualDetails: ${errors.toString()}")
-            Future.successful(
-              Left(
-                UpstreamErrorResponse(s"Error parsing IndividualDetails: ${errors.toString()}", UNPROCESSABLE_ENTITY)
-              )
-            )
-        }
-      case _  =>
-        Future.successful(
-          Left(UpstreamErrorResponse(s"Unexpected response: ${response.status}", response.status))
-        )
-    }
+  )(implicit ec: ExecutionContext, hc: HeaderCarrier): EitherT[Future, UpstreamErrorResponse, IndividualDetails] = {
+    individualDetailsConnector.getIndividualDetails(nino, "Y")
+      .map(_.json.as[IndividualDetails])
+  }
 
   private def createNewIndividualDataCache(nino: String, sessionId: String)(implicit
     ec: ExecutionContext,
     hc: HeaderCarrier
-  ): Future[Either[Int, IndividualDetailsDataCache]] =
+  ): Future[Either[UpstreamErrorResponse, IndividualDetailsDataCache]] =
     fetchIndividualDetails(nino).value.flatMap {
       case Right(individualDetails) =>
         insertOrReplaceIndividualDetailsDataCache(sessionId, individualDetails).map { ninoStr =>
@@ -124,19 +105,19 @@ class IndividualDetailsServiceImpl @Inject() (
             throw new RuntimeException("Failed to create individual details data cache")
         }
       case Left(upstreamError)      =>
-        Future.successful(Left(upstreamError.statusCode))
+        Future.successful(Left(UpstreamErrorResponse(upstreamError.message, upstreamError.statusCode)))
     }
 
   def getIdDataFromCache(nino: String, sessionId: String)(implicit
     ec: ExecutionContext,
     hc: HeaderCarrier
-  ): Future[Either[Int, IndividualDetailsDataCache]] =
+  ): Future[Either[UpstreamErrorResponse, IndividualDetailsDataCache]] =
     getIndividualDetailsDataCache(nino).flatMap {
       case Some(individualDetailsDataCache) =>
         logger.info(s"Individual details found in cache for Nino: $nino")
         Future.successful(Right(individualDetailsDataCache))
       case None                             =>
-        logger.warn(
+        logger.info(
           "Individual details data cache not found, potentially expired, attempting to fetch from external service and recreate cache."
         )
         createNewIndividualDataCache(nino, sessionId)

@@ -29,18 +29,18 @@ object AddressSequenceNumber {
 sealed trait AddressSource
 
 object AddressSource {
-  case object NotKnown                  extends AddressSource
-  case object Customer                  extends AddressSource
-  case object Relative                  extends AddressSource
-  case object Employer                  extends AddressSource
-  case object InlandRevenue             extends AddressSource
+  case object NotKnown extends AddressSource
+  case object Customer extends AddressSource
+  case object Relative extends AddressSource
+  case object Employer extends AddressSource
+  case object InlandRevenue extends AddressSource
   case object OtherGovernmentDepartment extends AddressSource
-  case object OtherThirdParty           extends AddressSource
-  case object Cutover                   extends AddressSource
-  case object RealTimeInformation       extends AddressSource
-  case object PersonalAccountUser       extends AddressSource
+  case object OtherThirdParty extends AddressSource
+  case object Cutover extends AddressSource
+  case object RealTimeInformation extends AddressSource
+  case object PersonalAccountUser extends AddressSource
 
-  implicit val reads: Reads[AddressSource] = JsPath
+  implicit val reads: Reads[AddressSource]   = JsPath
     .read[Int]
     .map {
       case 0 => NotKnown
@@ -76,10 +76,10 @@ object CountryCode {
 sealed trait AddressType
 
 object AddressType {
-  case object ResidentialAddress    extends AddressType
+  case object ResidentialAddress extends AddressType
   case object CorrespondenceAddress extends AddressType
 
-  implicit val reads: Reads[AddressType] = JsPath
+  implicit val reads: Reads[AddressType]   = JsPath
     .read[Int]
     .map {
       case 1 => ResidentialAddress
@@ -95,10 +95,10 @@ sealed trait AddressStatus
 
 object AddressStatus {
   case object NotDlo extends AddressStatus
-  case object Dlo    extends AddressStatus
-  case object Nfa    extends AddressStatus
+  case object Dlo extends AddressStatus
+  case object Nfa extends AddressStatus
 
-  implicit val reads: Reads[AddressStatus] = JsPath
+  implicit val reads: Reads[AddressStatus]   = JsPath
     .read[Int]
     .map {
       case 0 => NotDlo
@@ -136,23 +136,23 @@ object PafReference {
 }
 
 final case class Address(
-    addressSequenceNumber:    AddressSequenceNumber,
-    addressSource:            Option[AddressSource],
-    countryCode:              CountryCode,
-    addressType:              AddressType,
-    addressStatus:            Option[AddressStatus],
-    addressStartDate:         LocalDate,
-    addressEndDate:           Option[LocalDate],
-    addressLastConfirmedDate: Option[LocalDate],
-    vpaMail:                  Option[VpaMail],
-    deliveryInfo:             Option[DeliveryInfo],
-    pafReference:             Option[PafReference],
-    addressLine1:             AddressLine,
-    addressLine2:             AddressLine,
-    addressLine3:             Option[AddressLine],
-    addressLine4:             Option[AddressLine],
-    addressLine5:             Option[AddressLine],
-    addressPostcode:          Option[AddressPostcode]
+  addressSequenceNumber: AddressSequenceNumber,
+  addressSource: Option[AddressSource],
+  countryCode: CountryCode,
+  addressType: AddressType,
+  addressStatus: Option[AddressStatus],
+  addressStartDate: LocalDate,
+  addressEndDate: Option[LocalDate],
+  addressLastConfirmedDate: Option[LocalDate],
+  vpaMail: Option[VpaMail],
+  deliveryInfo: Option[DeliveryInfo],
+  pafReference: Option[PafReference],
+  addressLine1: AddressLine,
+  addressLine2: AddressLine,
+  addressLine3: Option[AddressLine],
+  addressLine4: Option[AddressLine],
+  addressLine5: Option[AddressLine],
+  addressPostcode: Option[AddressPostcode]
 )
 
 object Address {

@@ -31,37 +31,53 @@ import javax.inject.Inject
 import scala.util.{Failure, Success, Try}
 
 trait LayoutProvider {
-  //noinspection ScalaStyle
+  // noinspection ScalaStyle
   def apply(
-             pageTitle: String,
-             showBackLink: Boolean = true,
-             timeout: Boolean = true,
-             showSignOut: Boolean = false,
-             stylesheets: Option[Html] = None,
-             fullWidth: Boolean = false,
-             accountHome: Boolean = false,
-             yourProfileActive: Boolean = false,
-             hideAccountMenu: Boolean = false,
-             backLinkID: Boolean = true,
-             backLinkUrl: String = "#",
-             disableSessionExpired: Boolean = false,
-             sidebarContent: Option[Html] = None,
-             messagesActive: Boolean = false
-           )(contentBlock: Html)(
-             implicit request: Request[_],
-             messages: Messages
-           ): HtmlFormat.Appendable
+    pageTitle: String,
+    showBackLink: Boolean = true,
+    timeout: Boolean = true,
+    showSignOut: Boolean = false,
+    stylesheets: Option[Html] = None,
+    fullWidth: Boolean = false,
+    accountHome: Boolean = false,
+    yourProfileActive: Boolean = false,
+    hideAccountMenu: Boolean = false,
+    backLinkID: Boolean = true,
+    backLinkUrl: String = "#",
+    disableSessionExpired: Boolean = false,
+    sidebarContent: Option[Html] = None,
+    messagesActive: Boolean = false
+  )(contentBlock: Html)(implicit
+    request: Request[_],
+    messages: Messages
+  ): HtmlFormat.Appendable
 }
 
-class NewLayoutProvider @Inject()(wrapperService: WrapperService, additionalScript: AdditionalScript,
-                                  headBlock: HeadBlock, appConfig: FrontendAppConfig) extends LayoutProvider with Logging {
+class NewLayoutProvider @Inject() (
+  wrapperService: WrapperService,
+  additionalScript: AdditionalScript,
+  headBlock: HeadBlock,
+  appConfig: FrontendAppConfig
+) extends LayoutProvider
+    with Logging {
 
-  //noinspection ScalaStyle
-  override def apply(pageTitle: String, showBackLink: Boolean, timeout: Boolean, showSignOut: Boolean,
-                     stylesheets: Option[Html], fullWidth: Boolean, accountHome: Boolean, yourProfileActive: Boolean,
-                     hideAccountMenu: Boolean, backLinkID: Boolean, backLinkUrl: String,
-                     disableSessionExpired: Boolean, sidebarContent: Option[Html], messagesActive: Boolean)(contentBlock: Html)
-                    (implicit request: Request[_], messages: Messages): HtmlFormat.Appendable = {
+  // noinspection ScalaStyle
+  override def apply(
+    pageTitle: String,
+    showBackLink: Boolean,
+    timeout: Boolean,
+    showSignOut: Boolean,
+    stylesheets: Option[Html],
+    fullWidth: Boolean,
+    accountHome: Boolean,
+    yourProfileActive: Boolean,
+    hideAccountMenu: Boolean,
+    backLinkID: Boolean,
+    backLinkUrl: String,
+    disableSessionExpired: Boolean,
+    sidebarContent: Option[Html],
+    messagesActive: Boolean
+  )(contentBlock: Html)(implicit request: Request[_], messages: Messages): HtmlFormat.Appendable = {
     val trustedHelper: Option[TrustedHelper] = Try(request.asInstanceOf[UserRequest[_]]) match {
       case Success(userRequest) => userRequest.trustedHelper
       case Failure(_)           => None

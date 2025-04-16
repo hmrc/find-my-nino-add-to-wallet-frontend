@@ -43,15 +43,14 @@ import scala.reflect.ClassTag
 
 class SpecBase extends WireMockSupport with MockitoSugar with GuiceOneAppPerSuite {
 
-  implicit lazy val application: Application = applicationBuilder().build()
+  implicit lazy val application: Application           = applicationBuilder().build()
   implicit lazy val applicationWithConfig: Application = applicationBuilderWithConfig().build()
-  implicit val hc: HeaderCarrier = HeaderCarrier()
-  val userAnswersId: String = "id"
+  implicit val hc: HeaderCarrier                       = HeaderCarrier()
+  val userAnswersId: String                            = "id"
 
   def emptyUserAnswers: UserAnswers = UserAnswers(userAnswersId)
 
   def messages(app: Application): Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
-
 
   def messages(app: Application, request: RequestHeader): Messages =
     app.injector.instanceOf[MessagesApi].preferred(request)
@@ -59,13 +58,12 @@ class SpecBase extends WireMockSupport with MockitoSugar with GuiceOneAppPerSuit
   protected implicit def hc(implicit rh: RequestHeader): HeaderCarrier =
     HeaderCarrierConverter.fromRequestAndSession(rh, rh.session)
 
-  protected def applicationBuilderWithConfig(
-                                              config: Map[String, Any] = Map()): GuiceApplicationBuilder =
+  protected def applicationBuilderWithConfig(config: Map[String, Any] = Map()): GuiceApplicationBuilder =
     new GuiceApplicationBuilder()
       .configure(
         config ++ Map(
           "microservice.services.auth.port" -> wiremockPort,
-          "microservice.host" -> "http://localhost:9900/fmn"
+          "microservice.host"               -> "http://localhost:9900/fmn"
         )
       )
       .overrides(
@@ -79,9 +77,9 @@ class SpecBase extends WireMockSupport with MockitoSugar with GuiceOneAppPerSuit
       )
 
   protected def assertSameHtmlAfter(
-                                     transformation: String => String
-                                   )(left: String, right: String)(implicit position: Position): Assertion = {
-    val leftHtml = Jsoup.parse(transformation(left))
+    transformation: String => String
+  )(left: String, right: String)(implicit position: Position): Assertion = {
+    val leftHtml  = Jsoup.parse(transformation(left))
     val rightHtml = Jsoup.parse(transformation(right))
     leftHtml.html() mustBe rightHtml.html()
   }
@@ -103,21 +101,52 @@ class SpecBase extends WireMockSupport with MockitoSugar with GuiceOneAppPerSuit
 
   val mockScaWrapperDataConnector: ScaWrapperDataConnector = mock[ScaWrapperDataConnector]
 
-  val ptaMenuConfig: PtaMinMenuConfig = PtaMinMenuConfig(menuName = "Account menu", backName = "Back")
-  val menuItemConfig1: MenuItemConfig = MenuItemConfig("home", "Account home", "pertaxUrl", leftAligned = true, position = 0, Some("hmrc-account-icon hmrc-account-icon--home"), None)
-  val menuItemConfig2: MenuItemConfig = MenuItemConfig("messages", "Messages", "pertaxUrl-messages", leftAligned = false, position = 0, None, None)
-  val menuItemConfig3: MenuItemConfig = MenuItemConfig("progress", "Check progress", "trackingUrl-track", leftAligned = false, position = 1, None, None)
-  val menuItemConfig4: MenuItemConfig = MenuItemConfig("profile", "Profile and settings", "pertaxUrl-profile-and-settings", leftAligned = false, position = 2, None, None)
-  val menuItemConfig5: MenuItemConfig = MenuItemConfig("signout", "Sign out", "pertaxUrl-signout-feedback-PERTAX", leftAligned = false, position = 3, None, None)
-  val wrapperDataResponse: WrapperDataResponse = WrapperDataResponse(Seq(menuItemConfig1, menuItemConfig2, menuItemConfig3, menuItemConfig4, menuItemConfig5), ptaMenuConfig, List.empty, List.empty)
-
+  val ptaMenuConfig: PtaMinMenuConfig          = PtaMinMenuConfig(menuName = "Account menu", backName = "Back")
+  val menuItemConfig1: MenuItemConfig          = MenuItemConfig(
+    "home",
+    "Account home",
+    "pertaxUrl",
+    leftAligned = true,
+    position = 0,
+    Some("hmrc-account-icon hmrc-account-icon--home"),
+    None
+  )
+  val menuItemConfig2: MenuItemConfig          =
+    MenuItemConfig("messages", "Messages", "pertaxUrl-messages", leftAligned = false, position = 0, None, None)
+  val menuItemConfig3: MenuItemConfig          =
+    MenuItemConfig("progress", "Check progress", "trackingUrl-track", leftAligned = false, position = 1, None, None)
+  val menuItemConfig4: MenuItemConfig          = MenuItemConfig(
+    "profile",
+    "Profile and settings",
+    "pertaxUrl-profile-and-settings",
+    leftAligned = false,
+    position = 2,
+    None,
+    None
+  )
+  val menuItemConfig5: MenuItemConfig          = MenuItemConfig(
+    "signout",
+    "Sign out",
+    "pertaxUrl-signout-feedback-PERTAX",
+    leftAligned = false,
+    position = 3,
+    None,
+    None
+  )
+  val wrapperDataResponse: WrapperDataResponse = WrapperDataResponse(
+    Seq(menuItemConfig1, menuItemConfig2, menuItemConfig3, menuItemConfig4, menuItemConfig5),
+    ptaMenuConfig,
+    List.empty,
+    List.empty
+  )
 
   val messageDataResponse: Option[Int] = Some(2)
 
   val requestAttributeMap: TypedMap = TypedMap(
-    Keys.wrapperDataKey -> wrapperDataResponse,
-    Keys.messageDataKey -> messageDataResponse.get,
-    RequestAttrKey.Cookies -> Cell(Cookies(Seq(Cookie("PLAY_LANG", "en")))))
+    Keys.wrapperDataKey    -> wrapperDataResponse,
+    Keys.messageDataKey    -> messageDataResponse.get,
+    RequestAttrKey.Cookies -> Cell(Cookies(Seq(Cookie("PLAY_LANG", "en"))))
+  )
 
   implicit class StringOps(s: String) {
     def removeAllNonces(): String = s.replaceAll("""nonce="[^"]*"""", "")

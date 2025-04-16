@@ -29,56 +29,68 @@ import scala.concurrent.{ExecutionContext, Future}
 
 case class GooglePassDetails(fullName: String, nino: String)
 
-class GoogleWalletConnector @Inject()(frontendAppConfig: FrontendAppConfig, http: HttpClientV2) {
+class GoogleWalletConnector @Inject() (frontendAppConfig: FrontendAppConfig, http: HttpClientV2) {
 
-  private val headers: Seq[(String, String)] = Seq("Content-Type" -> "application/json")
+  private val headers: Seq[(String, String)]     = Seq("Content-Type" -> "application/json")
   implicit val writes: Writes[GooglePassDetails] = Json.writes[GooglePassDetails]
 
-  def createGooglePass(fullName: String, nino: String)
-                      (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Some[String]] = {
+  def createGooglePass(fullName: String, nino: String)(implicit
+    ec: ExecutionContext,
+    headerCarrier: HeaderCarrier
+  ): Future[Some[String]] = {
 
-    val url = s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/create-google-pass-with-credentials"
+    val url                        =
+      s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/create-google-pass-with-credentials"
     implicit val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
 
     val details = GooglePassDetails(fullName, nino)
 
-    http.post(url"$url").withBody(Json.toJson(details)).execute[HttpResponse]
+    http
+      .post(url"$url")
+      .withBody(Json.toJson(details))
+      .execute[HttpResponse]
       .map { response =>
         response.status match {
           case OK => Some(response.body)
-          case _ => throw new HttpException(response.body, response.status)
+          case _  => throw new HttpException(response.body, response.status)
         }
       }
   }
 
-  def getGooglePassUrl(passId: String)
-                      (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Option[String]] = {
+  def getGooglePassUrl(
+    passId: String
+  )(implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Option[String]] = {
 
-    val url = s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-google-pass-url?passId=$passId"
+    val url                        = s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-google-pass-url?passId=$passId"
     implicit val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
 
-    http.get(url"$url").execute[HttpResponse]
+    http
+      .get(url"$url")
+      .execute[HttpResponse]
       .map { response =>
         response.status match {
-          case OK => Some(response.body)
+          case OK        => Some(response.body)
           case NOT_FOUND => None
-          case _ => throw new HttpException(response.body, response.status)
+          case _         => throw new HttpException(response.body, response.status)
         }
       }
   }
 
-  def getGooglePassQrCode(passId: String)
-                         (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Option[Array[Byte]]] = {
+  def getGooglePassQrCode(
+    passId: String
+  )(implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Option[Array[Byte]]] = {
 
-    val url = s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-google-qr-code?passId=$passId"
+    val url                        = s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-google-qr-code?passId=$passId"
     implicit val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
 
-    http.get(url"$url").execute[HttpResponse]
+    http
+      .get(url"$url")
+      .execute[HttpResponse]
       .map { response =>
         response.status match {
-          case OK => Some(Base64.getDecoder.decode(response.body))
+          case OK        => Some(Base64.getDecoder.decode(response.body))
           case NOT_FOUND => None
-          case _ => throw new HttpException(response.body, response.status)
+          case _         => throw new HttpException(response.body, response.status)
         }
       }
   }

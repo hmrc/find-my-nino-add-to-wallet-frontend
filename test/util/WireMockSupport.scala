@@ -34,7 +34,7 @@ trait WireMockSupport extends SBase with BeforeAndAfterEach with BeforeAndAfterA
   private val stubHost = "localhost"
 
   protected val wiremockBaseUrl: String = s"http://localhost:$wiremockPort"
-  private val wireMockServer = new WireMockServer(wireMockConfig().port(wiremockPort))
+  private val wireMockServer            = new WireMockServer(wireMockConfig().port(wiremockPort))
 
   def afterReset(block: => Assertion): Assertion = {
     WireMock.reset()

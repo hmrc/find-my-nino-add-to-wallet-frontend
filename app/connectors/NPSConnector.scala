@@ -29,23 +29,26 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class NPSConnector@Inject() (
+class NPSConnector @Inject() (
   httpClientV2: HttpClientV2,
   appConfig: FrontendAppConfig,
-  httpClientResponse: HttpClientResponse) {
+  httpClientResponse: HttpClientResponse
+) {
 
   private val alreadyAnAdultErrorCode: String = appConfig.crnUpliftAPIAlreadyAdultErrorCode
 
-
   val readEitherOfWithUnProcessableEntity: HttpReads[Either[UpstreamErrorResponse, HttpResponse]] =
     HttpReads.ask.flatMap {
-      case (_, _, response) if response.status == UNPROCESSABLE_ENTITY && response.body.contains(alreadyAnAdultErrorCode) =>
+      case (_, _, response)
+          if response.status == UNPROCESSABLE_ENTITY && response.body.contains(alreadyAnAdultErrorCode) =>
         HttpReads[HttpResponse].map(Right.apply)
       case _ => HttpReads[Either[UpstreamErrorResponse, HttpResponse]]
     }
 
-  def upliftCRN(nino: String, body: CRNUpliftRequest)(implicit hc: HeaderCarrier, ec: ExecutionContext):
-  EitherT[Future, UpstreamErrorResponse, HttpResponse] = {
+  def upliftCRN(nino: String, body: CRNUpliftRequest)(implicit
+    hc: HeaderCarrier,
+    ec: ExecutionContext
+  ): EitherT[Future, UpstreamErrorResponse, HttpResponse] = {
 
     val url = s"${appConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/adult-registration/$nino"
 
@@ -56,5 +59,5 @@ class NPSConnector@Inject() (
         .execute(readEitherOfWithUnProcessableEntity)
     )
   }
-  
+
 }

@@ -16,7 +16,7 @@
 
 package pages
 
-import models.{UserAnswers}
+import models.UserAnswers
 import play.api.mvc.Call
 
 import scala.language.implicitConversions

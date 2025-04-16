@@ -71,16 +71,17 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
     super.beforeEach()
   }
 
-  val passId = "googlePassId"
-  val fakeBase64String = "UEsDBBQACAgIABxqJlYAAAAAAA"
+  val passId                = "googlePassId"
+  val fakeBase64String      = "UEsDBBQACAgIABxqJlYAAAAAAA"
   val fakeGooglePassSaveUrl = "testURL"
 
   val controller: GoogleWalletController = applicationWithConfig.injector.instanceOf[GoogleWalletController]
 
-  val mockSessionRepository: SessionRepository = mock[SessionRepository]
-  val mockGooglePassConnector: GoogleWalletConnector = mock[GoogleWalletConnector]
-  val mockIndividualDetailsService: IndividualDetailsService = mock[IndividualDetailsService]
-  val mockIdentityVerificationFrontendConnector: IdentityVerificationFrontendConnector = mock[IdentityVerificationFrontendConnector]
+  val mockSessionRepository: SessionRepository                                         = mock[SessionRepository]
+  val mockGooglePassConnector: GoogleWalletConnector                                   = mock[GoogleWalletConnector]
+  val mockIndividualDetailsService: IndividualDetailsService                           = mock[IndividualDetailsService]
+  val mockIdentityVerificationFrontendConnector: IdentityVerificationFrontendConnector =
+    mock[IdentityVerificationFrontendConnector]
 
   "Google Wallet Controller" - {
 
@@ -94,7 +95,8 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
               inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
               inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
               inject.bind[IdentityVerificationFrontendConnector].toInstance(mockIdentityVerificationFrontendConnector)
-            ).configure("features.google-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true)
+            )
+            .configure("features.google-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true)
             .build()
 
         when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
@@ -120,7 +122,8 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
               inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
               inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),
               inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-            ).configure("features.google-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true)
+            )
+            .configure("features.google-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true)
             .build()
 
         val view = application.injector.instanceOf[GoogleWalletView]
@@ -129,26 +132,31 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
           userLoggedInFMNUser(NinoUser)
           val request = FakeRequest(GET, routes.GoogleWalletController.onPageLoad().url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result  = route(application, request).value
           status(result) mustEqual OK
-          contentAsString(result).removeAllNonces() mustEqual (view(passId, false)(request.withAttrs(requestAttributeMap), messages(application)).toString())
+          contentAsString(result).removeAllNonces() mustEqual (view(passId, false)(
+            request.withAttrs(requestAttributeMap),
+            messages(application)
+          ).toString())
         }
       }
 
       "must return google pass" in {
 
-        val application = applicationBuilderWithConfig().overrides(
+        val application = applicationBuilderWithConfig()
+          .overrides(
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-          ).configure("features.google-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true)
+          )
+          .configure("features.google-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true)
           .build()
 
         running(application) {
           userLoggedInFMNUser(NinoUser)
           val request = FakeRequest(GET, routes.GoogleWalletController.getGooglePass(passId).url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result  = route(application, request).value
           status(result) mustEqual 303
           redirectLocation(result) mustEqual Some(fakeGooglePassSaveUrl)
         }
@@ -158,20 +166,22 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
         when(mockGooglePassConnector.getGooglePassUrl(eqTo(passId))(any(), any()))
           .thenReturn(Future(None))
 
-        val application = applicationBuilderWithConfig().overrides(
+        val application = applicationBuilderWithConfig()
+          .overrides(
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-          ).configure("features.google-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true)
+          )
+          .configure("features.google-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true)
           .build()
 
         val view = application.injector.instanceOf[PassIdNotFoundView]
 
         running(application) {
           userLoggedInFMNUser(NinoUser)
-          val request = FakeRequest(GET, routes.GoogleWalletController.getGooglePass(passId).url)
+          val request     = FakeRequest(GET, routes.GoogleWalletController.getGooglePass(passId).url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result      = route(application, request).value
           val userRequest = UserRequest(
             None,
             ConfidenceLevel.L200,
@@ -181,7 +191,11 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
             None
           )
 
-          contentAsString(result).removeAllNonces() mustEqual (view()(userRequest, messages(application), scala.concurrent.ExecutionContext.global).toString())
+          contentAsString(result).removeAllNonces() mustEqual (view()(
+            userRequest,
+            messages(application),
+            scala.concurrent.ExecutionContext.global
+          ).toString())
 
         }
       }
@@ -192,14 +206,15 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-          ).configure("features.google-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true)
+          )
+          .configure("features.google-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true)
           .build()
 
         running(application) {
           userLoggedInFMNUser(NinoUser)
           val request = FakeRequest(GET, routes.GoogleWalletController.getGooglePassQrCode(passId).url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result  = route(application, request).value
           status(result) mustEqual OK
           contentAsBytes(result) mustEqual Base64.getDecoder.decode(fakeBase64String)
         }
@@ -209,20 +224,22 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
         when(mockGooglePassConnector.getGooglePassQrCode(eqTo(passId))(any(), any()))
           .thenReturn(Future(None))
 
-        val application = applicationBuilderWithConfig().overrides(
+        val application = applicationBuilderWithConfig()
+          .overrides(
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-          ).configure("features.google-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true)
+          )
+          .configure("features.google-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true)
           .build()
 
         val view = application.injector.instanceOf[QRCodeNotFoundView]
 
         running(application) {
           userLoggedInFMNUser(NinoUser)
-          val request = FakeRequest(GET, routes.GoogleWalletController.getGooglePassQrCode(passId).url)
+          val request     = FakeRequest(GET, routes.GoogleWalletController.getGooglePassQrCode(passId).url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result      = route(application, request).value
           val userRequest = UserRequest(
             None,
             ConfidenceLevel.L200,
@@ -232,7 +249,11 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
             None
           )
 
-          contentAsString(result).removeAllNonces() mustEqual (view()(userRequest, messages(application), scala.concurrent.ExecutionContext.global).toString())
+          contentAsString(result).removeAllNonces() mustEqual (view()(
+            userRequest,
+            messages(application),
+            scala.concurrent.ExecutionContext.global
+          ).toString())
 
         }
       }
@@ -243,14 +264,15 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-          ).configure("features.google-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true)
+          )
+          .configure("features.google-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true)
           .build()
 
         running(application) {
           userLoggedInIsNotFMNUser(NinoUser)
           val request = FakeRequest(GET, routes.GoogleWalletController.onPageLoad().url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result  = route(application, request).value
           status(result) mustEqual 500
         }
       }
@@ -261,14 +283,15 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-          ).configure("features.google-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true)
+          )
+          .configure("features.google-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true)
           .build()
 
         running(application) {
           userLoggedInFMNUser(trustedHelperUser)
           val request = FakeRequest(GET, routes.GoogleWalletController.onPageLoad().url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result  = route(application, request).value
           status(result) mustEqual 303
           redirectLocation(result) mustEqual Some(controllers.routes.StoreMyNinoController.onPageLoad.toString)
         }
@@ -285,7 +308,8 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
               inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
               inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
               inject.bind[IdentityVerificationFrontendConnector].toInstance(mockIdentityVerificationFrontendConnector)
-            ).configure("features.google-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true)
+            )
+            .configure("features.google-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true)
             .build()
 
         when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
@@ -311,14 +335,15 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
               inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
               inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),
               inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-            ).configure("features.google-wallet-enabled" -> false)
+            )
+            .configure("features.google-wallet-enabled" -> false)
             .build()
 
         running(application) {
           userLoggedInFMNUser(NinoUser)
           val request = FakeRequest(GET, routes.GoogleWalletController.onPageLoad().url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result  = route(application, request).value
           status(result) mustEqual SEE_OTHER
           redirectLocation(result).value mustBe routes.UnauthorisedController.onPageLoad.url
         }
@@ -326,18 +351,20 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
 
       "must return google pass" in {
 
-        val application = applicationBuilderWithConfig().overrides(
+        val application = applicationBuilderWithConfig()
+          .overrides(
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-          ).configure("features.google-wallet-enabled" -> false)
+          )
+          .configure("features.google-wallet-enabled" -> false)
           .build()
 
         running(application) {
           userLoggedInFMNUser(NinoUser)
           val request = FakeRequest(GET, routes.GoogleWalletController.getGooglePass(passId).url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result  = route(application, request).value
           status(result) mustEqual 303
           redirectLocation(result) mustEqual Some(fakeGooglePassSaveUrl)
         }
@@ -347,20 +374,22 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
         when(mockGooglePassConnector.getGooglePassUrl(eqTo(passId))(any(), any()))
           .thenReturn(Future(None))
 
-        val application = applicationBuilderWithConfig().overrides(
+        val application = applicationBuilderWithConfig()
+          .overrides(
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-          ).configure("features.google-wallet-enabled" -> false)
+          )
+          .configure("features.google-wallet-enabled" -> false)
           .build()
 
         val view = application.injector.instanceOf[PassIdNotFoundView]
 
         running(application) {
           userLoggedInFMNUser(NinoUser)
-          val request = FakeRequest(GET, routes.GoogleWalletController.getGooglePass(passId).url)
+          val request     = FakeRequest(GET, routes.GoogleWalletController.getGooglePass(passId).url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result      = route(application, request).value
           val userRequest = UserRequest(
             None,
             ConfidenceLevel.L200,
@@ -370,7 +399,11 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
             None
           )
 
-          contentAsString(result).removeAllNonces() mustEqual (view()(userRequest, messages(application), scala.concurrent.ExecutionContext.global).toString())
+          contentAsString(result).removeAllNonces() mustEqual (view()(
+            userRequest,
+            messages(application),
+            scala.concurrent.ExecutionContext.global
+          ).toString())
 
         }
       }
@@ -389,7 +422,7 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
           userLoggedInFMNUser(NinoUser)
           val request = FakeRequest(GET, routes.GoogleWalletController.getGooglePassQrCode(passId).url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result  = route(application, request).value
           status(result) mustEqual OK
           contentAsBytes(result) mustEqual Base64.getDecoder.decode(fakeBase64String)
         }
@@ -399,20 +432,22 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
         when(mockGooglePassConnector.getGooglePassQrCode(eqTo(passId))(any(), any()))
           .thenReturn(Future(None))
 
-        val application = applicationBuilderWithConfig().overrides(
+        val application = applicationBuilderWithConfig()
+          .overrides(
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-          ).configure("features.google-wallet-enabled" -> false)
+          )
+          .configure("features.google-wallet-enabled" -> false)
           .build()
 
         val view = application.injector.instanceOf[QRCodeNotFoundView]
 
         running(application) {
           userLoggedInFMNUser(NinoUser)
-          val request = FakeRequest(GET, routes.GoogleWalletController.getGooglePassQrCode(passId).url)
+          val request     = FakeRequest(GET, routes.GoogleWalletController.getGooglePassQrCode(passId).url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result      = route(application, request).value
           val userRequest = UserRequest(
             None,
             ConfidenceLevel.L200,
@@ -422,7 +457,11 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
             None
           )
 
-          contentAsString(result).removeAllNonces() mustEqual (view()(userRequest, messages(application), scala.concurrent.ExecutionContext.global).toString())
+          contentAsString(result).removeAllNonces() mustEqual (view()(
+            userRequest,
+            messages(application),
+            scala.concurrent.ExecutionContext.global
+          ).toString())
 
         }
       }
@@ -433,14 +472,15 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-          ).configure("features.google-wallet-enabled" -> false)
+          )
+          .configure("features.google-wallet-enabled" -> false)
           .build()
 
         running(application) {
           userLoggedInIsNotFMNUser(NinoUser)
           val request = FakeRequest(GET, routes.GoogleWalletController.onPageLoad().url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result  = route(application, request).value
           status(result) mustEqual 500
         }
       }
@@ -450,14 +490,15 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-          ).configure("features.google-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true)
+          )
+          .configure("features.google-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true)
           .build()
 
         running(application) {
           userLoggedInFMNUser(trustedHelperUser)
           val request = FakeRequest(GET, routes.GoogleWalletController.onPageLoad().url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result  = route(application, request).value
           status(result) mustEqual 303
           redirectLocation(result) mustEqual Some(controllers.routes.StoreMyNinoController.onPageLoad.toString)
         }

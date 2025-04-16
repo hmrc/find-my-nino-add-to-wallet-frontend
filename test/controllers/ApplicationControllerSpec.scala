@@ -32,7 +32,7 @@ import services._
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.UpstreamErrorResponse
 import uk.gov.hmrc.http.HttpResponse
-import util.{IndividualDetailsFixtures, Fixtures, UserDetails}
+import util.{Fixtures, IndividualDetailsFixtures, UserDetails}
 import views.html.identity._
 import cats.instances.future._
 import uk.gov.hmrc.domain.Nino
@@ -59,10 +59,12 @@ class ApplicationControllerSpec extends SpecBase with IndividualDetailsFixtures 
       .thenReturn(cats.data.EitherT.right[UpstreamErrorResponse](Future.successful(HttpResponse(OK, ""))))
   }
 
-  val mockSessionRepository: SessionRepository = mock[SessionRepository]
-  val mockIndividualDetailsService = mock[IndividualDetailsService]
-  val mockIdentityVerificationFrontendConnector: IdentityVerificationFrontendConnector = mock[IdentityVerificationFrontendConnector]
-  val mockIdentityVerificationFrontendService: IdentityVerificationFrontendService = mock[IdentityVerificationFrontendService]
+  val mockSessionRepository: SessionRepository                                         = mock[SessionRepository]
+  val mockIndividualDetailsService                                                     = mock[IndividualDetailsService]
+  val mockIdentityVerificationFrontendConnector: IdentityVerificationFrontendConnector =
+    mock[IdentityVerificationFrontendConnector]
+  val mockIdentityVerificationFrontendService: IdentityVerificationFrontendService     =
+    mock[IdentityVerificationFrontendService]
 
   implicit lazy val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
 
@@ -99,7 +101,7 @@ class ApplicationControllerSpec extends SpecBase with IndividualDetailsFixtures 
     }
 
     def routeWrapper[T](req: FakeRequest[AnyContentAsEmpty.type]): Option[Future[Result]] = {
-      controller //Call to inject mocks
+      controller // Call to inject mocks
       route(app, req)
     }
   }
@@ -111,7 +113,9 @@ class ApplicationControllerSpec extends SpecBase with IndividualDetailsFixtures 
       "return BAD_REQUEST status when completionURL is empty" in new LocalSetup {
 
         val result =
-          routeWrapper(buildFakeRequestWithAuth("GET", "/save-your-national-insurance-number/do-uplift?redirectUrl=")).get
+          routeWrapper(
+            buildFakeRequestWithAuth("GET", "/save-your-national-insurance-number/do-uplift?redirectUrl=")
+          ).get
 
         status(result) mustBe BAD_REQUEST
         redirectLocation(result) mustBe None
@@ -124,8 +128,8 @@ class ApplicationControllerSpec extends SpecBase with IndividualDetailsFixtures 
       "redirect to StoreMyNinoController on successful uplift" in new LocalSetup {
 
         running(application) {
-          val request = FakeRequest("GET", "/uplift")
-          val result = controller.uplift(None)(request)
+          val request             = FakeRequest("GET", "/uplift")
+          val result              = controller.uplift(None)(request)
           val expectedRedirectUrl = routes.StoreMyNinoController.onPageLoad.url
 
           assert(status(result) == SEE_OTHER)
@@ -137,7 +141,7 @@ class ApplicationControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
         running(application) {
           val request = FakeRequest(GET, "/uplift?journeyId=XXXXX").withSession("sessionId" -> "FAKE_SESSION_ID")
-          val result = controller.showUpliftJourneyOutcome(None)(request)
+          val result  = controller.showUpliftJourneyOutcome(None)(request)
 
           assert(status(result) == OK)
         }
@@ -148,10 +152,12 @@ class ApplicationControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
         running(application) {
           when(mockIdentityVerificationFrontendService.getIVJourneyStatus(any())(any(), any()))
-            .thenReturn(EitherT[Future, UpstreamErrorResponse, IdentityVerificationResponse](Future.successful(Right(LockedOut))))
+            .thenReturn(
+              EitherT[Future, UpstreamErrorResponse, IdentityVerificationResponse](Future.successful(Right(LockedOut)))
+            )
 
           val request = FakeRequest(GET, "?journeyId=XXXXX&token=XXXXXX")
-          val result = controller.showUpliftJourneyOutcome(None)(request)
+          val result  = controller.showUpliftJourneyOutcome(None)(request)
 
           assert(status(result) == UNAUTHORIZED)
         }
@@ -161,10 +167,14 @@ class ApplicationControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
         running(application) {
           when(mockIdentityVerificationFrontendService.getIVJourneyStatus(any())(any(), any()))
-            .thenReturn(EitherT[Future, UpstreamErrorResponse, IdentityVerificationResponse](Future.successful(Right(UserAborted))))
+            .thenReturn(
+              EitherT[Future, UpstreamErrorResponse, IdentityVerificationResponse](
+                Future.successful(Right(UserAborted))
+              )
+            )
 
           val request = FakeRequest(GET, "?journeyId=XXXXX&token=XXXXXX")
-          val result = controller.showUpliftJourneyOutcome(None)(request)
+          val result  = controller.showUpliftJourneyOutcome(None)(request)
 
           assert(status(result) == UNAUTHORIZED)
         }
@@ -174,10 +184,12 @@ class ApplicationControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
         running(application) {
           when(mockIdentityVerificationFrontendService.getIVJourneyStatus(any())(any(), any()))
-            .thenReturn(EitherT[Future, UpstreamErrorResponse, IdentityVerificationResponse](Future.successful(Right(Incomplete))))
+            .thenReturn(
+              EitherT[Future, UpstreamErrorResponse, IdentityVerificationResponse](Future.successful(Right(Incomplete)))
+            )
 
           val request = FakeRequest(GET, "?journeyId=XXXXX&token=XXXXXX")
-          val result = controller.showUpliftJourneyOutcome(None)(request)
+          val result  = controller.showUpliftJourneyOutcome(None)(request)
 
           assert(status(result) == UNAUTHORIZED)
         }
@@ -187,10 +199,14 @@ class ApplicationControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
         running(application) {
           when(mockIdentityVerificationFrontendService.getIVJourneyStatus(any())(any(), any()))
-            .thenReturn(EitherT[Future, UpstreamErrorResponse, IdentityVerificationResponse](Future.successful(Right(PrecondFailed))))
+            .thenReturn(
+              EitherT[Future, UpstreamErrorResponse, IdentityVerificationResponse](
+                Future.successful(Right(PrecondFailed))
+              )
+            )
 
           val request = FakeRequest(GET, "?journeyId=XXXXX&token=XXXXXX")
-          val result = controller.showUpliftJourneyOutcome(None)(request)
+          val result  = controller.showUpliftJourneyOutcome(None)(request)
 
           assert(status(result) == UNAUTHORIZED)
         }
@@ -200,10 +216,14 @@ class ApplicationControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
         running(application) {
           when(mockIdentityVerificationFrontendService.getIVJourneyStatus(any())(any(), any()))
-            .thenReturn(EitherT[Future, UpstreamErrorResponse, IdentityVerificationResponse](Future.successful(Right(InsufficientEvidence))))
+            .thenReturn(
+              EitherT[Future, UpstreamErrorResponse, IdentityVerificationResponse](
+                Future.successful(Right(InsufficientEvidence))
+              )
+            )
 
           val request = FakeRequest(GET, "?journeyId=XXXXX&token=XXXXXX")
-          val result = controller.showUpliftJourneyOutcome(None)(request)
+          val result  = controller.showUpliftJourneyOutcome(None)(request)
 
           assert(status(result) == UNAUTHORIZED)
         }
@@ -213,10 +233,14 @@ class ApplicationControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
         running(application) {
           when(mockIdentityVerificationFrontendService.getIVJourneyStatus(any())(any(), any()))
-            .thenReturn(EitherT[Future, UpstreamErrorResponse, IdentityVerificationResponse](Future.successful(Right(FailedMatching))))
+            .thenReturn(
+              EitherT[Future, UpstreamErrorResponse, IdentityVerificationResponse](
+                Future.successful(Right(FailedMatching))
+              )
+            )
 
           val request = FakeRequest(GET, "?journeyId=XXXXX&token=XXXXXX")
-          val result = controller.showUpliftJourneyOutcome(None)(request)
+          val result  = controller.showUpliftJourneyOutcome(None)(request)
 
           assert(status(result) == UNAUTHORIZED)
         }
@@ -225,11 +249,15 @@ class ApplicationControllerSpec extends SpecBase with IndividualDetailsFixtures 
       "showUpliftJourneyOutcome should return TechnicalIssue(424) when IV journey outcome was TechnicalIssues(500)" in new LocalSetup {
 
         override lazy val getIVJourneyStatusResponse
-        : EitherT[Future, UpstreamErrorResponse, IdentityVerificationResponse] =
+          : EitherT[Future, UpstreamErrorResponse, IdentityVerificationResponse] =
           EitherT[Future, UpstreamErrorResponse, IdentityVerificationResponse](Future.successful(Right(TechnicalIssue)))
         running(application) {
           when(mockIdentityVerificationFrontendService.getIVJourneyStatus(any())(any(), any()))
-            .thenReturn(EitherT[Future, UpstreamErrorResponse, IdentityVerificationResponse](Future.successful(Right(TechnicalIssue))))
+            .thenReturn(
+              EitherT[Future, UpstreamErrorResponse, IdentityVerificationResponse](
+                Future.successful(Right(TechnicalIssue))
+              )
+            )
 
           val result = controller.showUpliftJourneyOutcome(None)(buildFakeRequestWithAuth("GET", "/?journeyId=XXXXX"))
           status(result) mustBe FAILED_DEPENDENCY
@@ -241,10 +269,12 @@ class ApplicationControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
         running(application) {
           when(mockIdentityVerificationFrontendService.getIVJourneyStatus(any())(any(), any()))
-            .thenReturn(EitherT[Future, UpstreamErrorResponse, IdentityVerificationResponse](Future.successful(Right(Timeout))))
+            .thenReturn(
+              EitherT[Future, UpstreamErrorResponse, IdentityVerificationResponse](Future.successful(Right(Timeout)))
+            )
 
           val request = FakeRequest(GET, "?journeyId=XXXXX&token=XXXXXX")
-          val result = controller.showUpliftJourneyOutcome(None)(request)
+          val result  = controller.showUpliftJourneyOutcome(None)(request)
 
           assert(status(result) == UNAUTHORIZED)
         }
@@ -254,7 +284,11 @@ class ApplicationControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
         running(application) {
           when(mockIdentityVerificationFrontendService.getIVJourneyStatus(any())(any(), any()))
-            .thenReturn(EitherT[Future, UpstreamErrorResponse, IdentityVerificationResponse](Future.successful(Right(InvalidResponse))))
+            .thenReturn(
+              EitherT[Future, UpstreamErrorResponse, IdentityVerificationResponse](
+                Future.successful(Right(InvalidResponse))
+              )
+            )
 
           val result = controller.showUpliftJourneyOutcome(None)(buildFakeRequestWithAuth("GET", "/?journeyId=XXXXX"))
           status(result) mustBe FAILED_DEPENDENCY

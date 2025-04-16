@@ -27,13 +27,14 @@ import util.Fixtures.BaseSpec
 
 import scala.concurrent.Future
 
-class HttpClientResponseSpec extends BaseSpec with RecoverMethods with LogCapturing with Logging{
+class HttpClientResponseSpec extends BaseSpec with RecoverMethods with LogCapturing with Logging {
 
   private val appConfig: FrontendAppConfig = app.injector.instanceOf[FrontendAppConfig]
 
-  private lazy val httpClientResponseUsingMockLogger: HttpClientResponse = new HttpClientResponse(appConfig) with Logging
+  private lazy val httpClientResponseUsingMockLogger: HttpClientResponse = new HttpClientResponse(appConfig)
+    with Logging
 
-  private val dummyContent = "error message"
+  private val dummyContent            = "error message"
   private val alreadyAnAdultErrorCode = appConfig.crnUpliftAPIAlreadyAdultErrorCode
 
   "read" must {
@@ -42,7 +43,7 @@ class HttpClientResponseSpec extends BaseSpec with RecoverMethods with LogCaptur
       infoLevel = Set(BAD_REQUEST),
       infoLevelWithBodyCheck = UNPROCESSABLE_ENTITY,
       errorLevelWithoutThrowable = Set(TOO_MANY_REQUESTS, INTERNAL_SERVER_ERROR),
-      errorLevelWithThrowable = Set(UNAUTHORIZED),
+      errorLevelWithThrowable = Set(UNAUTHORIZED)
     )
   }
 
@@ -104,12 +105,12 @@ class HttpClientResponseSpec extends BaseSpec with RecoverMethods with LogCaptur
 
     "log message: ERROR level WITHOUT throwable when future fails with HttpException & recovers to BAD GATEWAY" in {
       val response = Future.failed(new HttpException(dummyContent, GATEWAY_TIMEOUT))
-        withCaptureOfLoggingFrom(logger) { capturedLogs =>
-          whenReady(block(response).value) { actual =>
-            actual mustBe Left(UpstreamErrorResponse(dummyContent, BAD_GATEWAY))
-            capturedLogs.exists(_.getMessage.contains(dummyContent)) mustBe true
-          }
+      withCaptureOfLoggingFrom(logger) { capturedLogs =>
+        whenReady(block(response).value) { actual =>
+          actual mustBe Left(UpstreamErrorResponse(dummyContent, BAD_GATEWAY))
+          capturedLogs.exists(_.getMessage.contains(dummyContent)) mustBe true
         }
+      }
     }
 
     "log nothing when future fails with a non-HttpException" in {

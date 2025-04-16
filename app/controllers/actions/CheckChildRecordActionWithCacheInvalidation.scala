@@ -27,24 +27,27 @@ import uk.gov.hmrc.play.http.HeaderCarrierConverter
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class CheckChildRecordActionWithCacheInvalidation @Inject()(
-                                        individualDetailsService: IndividualDetailsService,
-                                        cc: ControllerComponents,
-                                        val messagesApi: MessagesApi,
-                                        actionHelper: ActionHelper
-                                      )(implicit ec: ExecutionContext)
-  extends ActionRefiner[AuthContext, UserRequest]
+class CheckChildRecordActionWithCacheInvalidation @Inject() (
+  individualDetailsService: IndividualDetailsService,
+  cc: ControllerComponents,
+  val messagesApi: MessagesApi,
+  actionHelper: ActionHelper
+)(implicit ec: ExecutionContext)
+    extends ActionRefiner[AuthContext, UserRequest]
     with ActionFunction[AuthContext, UserRequest]
     with I18nSupport {
 
   override protected def refine[A](authContext: AuthContext[A]): Future[Either[Result, UserRequest[A]]] = {
-    implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(authContext.request, authContext.request.session)
+    implicit val hc: HeaderCarrier  =
+      HeaderCarrierConverter.fromRequestAndSession(authContext.request, authContext.request.session)
     implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
-    val identifier: String = authContext.nino.nino
+    val identifier: String          = authContext.nino.nino
 
-    val sessionId: String = hc.sessionId.map(_.value).getOrElse(
-      throw new IllegalArgumentException("Session is required")
-    )
+    val sessionId: String = hc.sessionId
+      .map(_.value)
+      .getOrElse(
+        throw new IllegalArgumentException("Session is required")
+      )
 
     individualDetailsService.deleteIdDataFromCache(identifier).flatMap {
       case true => actionHelper.checkForCrn(identifier, sessionId, authContext, messages)

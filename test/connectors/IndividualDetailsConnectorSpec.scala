@@ -36,7 +36,7 @@ import util.WireMockHelper
 import scala.concurrent.ExecutionContext
 
 class IndividualDetailsConnectorSpec
-  extends PlaySpec
+    extends PlaySpec
     with GuiceOneAppPerSuite
     with WireMockHelper
     with MockitoSugar
@@ -52,28 +52,27 @@ class IndividualDetailsConnectorSpec
       .build()
   }
 
-  implicit val hc: HeaderCarrier = HeaderCarrier()
+  implicit val hc: HeaderCarrier    = HeaderCarrier()
   implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
 
   lazy val connector: IndividualDetailsConnector = {
-    val httpClientV2 = app.injector.instanceOf[HttpClientV2]
-    val frontendAppConfig = app.injector.instanceOf[FrontendAppConfig]
+    val httpClientV2       = app.injector.instanceOf[HttpClientV2]
+    val frontendAppConfig  = app.injector.instanceOf[FrontendAppConfig]
     val httpClientResponse = app.injector.instanceOf[HttpClientResponse]
     new IndividualDetailsConnector(httpClientV2, frontendAppConfig, httpClientResponse)
   }
 
-  val nino: String = "AA123456A"
-  val resolveMerge: String = "Y"
-  val url: String = s"/find-my-nino-add-to-wallet/individuals/details/NINO/${nino.take(8)}/$resolveMerge"
+  val nino: String                      = "AA123456A"
+  val resolveMerge: String              = "Y"
+  val url: String                       = s"/find-my-nino-add-to-wallet/individuals/details/NINO/${nino.take(8)}/$resolveMerge"
   val fakeIndividualDetailsJson: String = Json.toJson(fakeIndividualDetails).toString()
 
   def stubGet(url: String, responseStatus: Int, responseBody: Option[String] = None): StubMapping =
     server.stubFor {
       val baseResponse = aResponse().withStatus(responseStatus).withHeader(CONTENT_TYPE, JSON)
-      val response = responseBody.fold(baseResponse)(body => baseResponse.withBody(body))
+      val response     = responseBody.fold(baseResponse)(body => baseResponse.withBody(body))
       get(url).willReturn(response)
     }
-
 
   "getIndividualDetails" must {
     "return a Right(HttpResponse) with status OK" in {

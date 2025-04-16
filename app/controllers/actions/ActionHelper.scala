@@ -35,43 +35,48 @@ import views.html.RedirectToPostalFormView
 import views.html.identity.TechnicalIssuesNoRetryView
 import scala.concurrent.{ExecutionContext, Future}
 
-class ActionHelper @Inject()(individualDetailsService: IndividualDetailsService,
-                             cc: ControllerComponents,
-                             technicalIssuesNoRetryView: TechnicalIssuesNoRetryView,
-                             errorHandler: ErrorHandler,
-                             postalFormView: RedirectToPostalFormView,
-                             frontendAppConfig: FrontendAppConfig,
-                             npsService: NPSService) {
-  
-  def checkForCrn[A](identifier: String,
-                     sessionId: String,
-                     authContext: AuthContext[A],
-                     messages: Messages)
-                    (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Either[Result, UserRequest[A]]] = {
+class ActionHelper @Inject() (
+  individualDetailsService: IndividualDetailsService,
+  cc: ControllerComponents,
+  technicalIssuesNoRetryView: TechnicalIssuesNoRetryView,
+  errorHandler: ErrorHandler,
+  postalFormView: RedirectToPostalFormView,
+  frontendAppConfig: FrontendAppConfig,
+  npsService: NPSService
+) {
+
+  def checkForCrn[A](identifier: String, sessionId: String, authContext: AuthContext[A], messages: Messages)(implicit
+    hc: HeaderCarrier,
+    ec: ExecutionContext
+  ): Future[Either[Result, UserRequest[A]]] =
     individualDetailsService.getIdDataFromCache(identifier, sessionId).flatMap {
       case Right(individualDetails) =>
         if (!isFullNino(individualDetails)) {
           if (frontendAppConfig.crnUpliftEnabled) {
             val request: CRNUpliftRequest = buildCrnUpliftRequest(individualDetails)
 
-             (for {
-                _ <-  npsService.upliftCRN(identifier, request)
-                _ <- EitherT[Future, UpstreamErrorResponse, Boolean](individualDetailsService.deleteIdDataFromCache(individualDetails.individualDetailsData.nino).map(Right(_)))
-              } yield  {
-
-                  UserRequest(
-                    Some(Nino(individualDetails.individualDetailsData.nino)),
-                    authContext.confidenceLevel,
-                    individualDetails,
-                    authContext.allEnrolments,
-                    authContext.request,
-                    authContext.trustedHelper
-                  )
-            }).leftMap {
-              case upstreamErrorResponse if upstreamErrorResponse.statusCode == BAD_REQUEST =>  Ok(postalFormView()(authContext.request, frontendAppConfig, messages))
-              case upstreamErrorResponse if upstreamErrorResponse.statusCode == UNPROCESSABLE_ENTITY =>  Ok(postalFormView()(authContext.request, frontendAppConfig, messages))
-              case upstreamErrorResponse if upstreamErrorResponse.statusCode == NOT_FOUND =>  Ok(postalFormView()(authContext.request, frontendAppConfig, messages))
-              case _ => InternalServerError("Failed to verify CRN uplift")
+            (for {
+              _ <- npsService.upliftCRN(identifier, request)
+              _ <- EitherT[Future, UpstreamErrorResponse, Boolean](
+                     individualDetailsService
+                       .deleteIdDataFromCache(individualDetails.individualDetailsData.nino)
+                       .map(Right(_))
+                   )
+            } yield UserRequest(
+              Some(Nino(individualDetails.individualDetailsData.nino)),
+              authContext.confidenceLevel,
+              individualDetails,
+              authContext.allEnrolments,
+              authContext.request,
+              authContext.trustedHelper
+            )).leftMap {
+              case upstreamErrorResponse if upstreamErrorResponse.statusCode == BAD_REQUEST          =>
+                Ok(postalFormView()(authContext.request, frontendAppConfig, messages))
+              case upstreamErrorResponse if upstreamErrorResponse.statusCode == UNPROCESSABLE_ENTITY =>
+                Ok(postalFormView()(authContext.request, frontendAppConfig, messages))
+              case upstreamErrorResponse if upstreamErrorResponse.statusCode == NOT_FOUND            =>
+                Ok(postalFormView()(authContext.request, frontendAppConfig, messages))
+              case _                                                                                 => InternalServerError("Failed to verify CRN uplift")
             }.value
           } else {
             Future.successful(Left(Ok(postalFormView()(authContext.request, frontendAppConfig, messages))))
@@ -79,14 +84,14 @@ class ActionHelper @Inject()(individualDetailsService: IndividualDetailsService,
         } else {
           validateNino(individualDetails, authContext, messages)
         }
-      case Left(response) => handleErrorIndividualDetails(response, authContext, frontendAppConfig)
+      case Left(response)           => handleErrorIndividualDetails(response, authContext, frontendAppConfig)
     }
-  }
 
-  private def validateNino[A](individualDetails: IndividualDetailsDataCache,
-                              authContext: AuthContext[A],
-                              messages: Messages
-                             ): Future[Either[Result, UserRequest[A]]] = {
+  private def validateNino[A](
+    individualDetails: IndividualDetailsDataCache,
+    authContext: AuthContext[A],
+    messages: Messages
+  ): Future[Either[Result, UserRequest[A]]] =
     if (Nino.isValid(individualDetails.individualDetailsData.nino)) {
       Future.successful(
         Right(
@@ -103,7 +108,6 @@ class ActionHelper @Inject()(individualDetailsService: IndividualDetailsService,
     } else {
       Future.successful(Left(Ok(postalFormView()(authContext.request, frontendAppConfig, messages))))
     }
-  }
 
   private def isFullNino(individualDetails: IndividualDetailsDataCache): Boolean =
     individualDetails.individualDetailsData.crnIndicator.toLowerCase.equals("false")
@@ -115,20 +119,23 @@ class ActionHelper @Inject()(individualDetailsService: IndividualDetailsService,
       individualDetails.individualDetailsData.dateOfBirth.toString
     )
 
-  private def handleErrorIndividualDetails[A](response: Int,
-                                              authContext: AuthContext[A],
-                                              frontendAppConfig: FrontendAppConfig)(implicit ec: ExecutionContext): Future[Left[Result, Nothing]] = {
+  private def handleErrorIndividualDetails[A](
+    response: Int,
+    authContext: AuthContext[A],
+    frontendAppConfig: FrontendAppConfig
+  )(implicit ec: ExecutionContext): Future[Left[Result, Nothing]] = {
     implicit val messages: Messages = cc.messagesApi.preferred(authContext.request)
     response match {
       case UNPROCESSABLE_ENTITY =>
         Future.successful(Left(Ok(technicalIssuesNoRetryView()(authContext.request, frontendAppConfig, messages))))
-      case _ =>
-          errorHandler.standardErrorTemplate(
+      case _                    =>
+        errorHandler
+          .standardErrorTemplate(
             Messages("global.error.InternalServerError500.title"),
             Messages("global.error.InternalServerError500.heading"),
             Messages("global.error.InternalServerError500.message")
-          )(authContext.request).map(error => Left(FailedDependency(error))
-        )
+          )(authContext.request)
+          .map(error => Left(FailedDependency(error)))
     }
   }
 }

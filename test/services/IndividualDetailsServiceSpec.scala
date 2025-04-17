@@ -25,12 +25,13 @@ import org.mockito.Mockito.*
 import org.mongodb.scala.MongoException
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers._
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.http.Status.OK
-import play.api.libs.json.Json
+import play.api.libs.json.{JsResultException, Json}
 import repositories.IndividualDetailsRepository
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, UpstreamErrorResponse}
-import util.Fixtures._
+import util.Fixtures.*
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt
@@ -130,7 +131,7 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec with ScalaFutures with Mo
     assert(result.futureValue.fold(_ => false, _.individualDetailsData.fullName == "Dr KNOWN AS NAME PhD"))
   }
 
-  "IndividualDetailsService" should "return a left of unprocessable entity where invalid json is returned" in {
+  "IndividualDetailsService" should "throw a JsResultException when invalid json is returned from api" in {
     val mockRepository = mock[IndividualDetailsRepository]
     val mockConnector  = mock[IndividualDetailsConnector]
     val service        = new IndividualDetailsServiceImpl(mockRepository, mockConnector)
@@ -142,7 +143,9 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec with ScalaFutures with Mo
 
     val result = service.getIdDataFromCache("testNino", "some-fake-Id")
 
-    assert(result.futureValue isLeft)
+    whenReady(result.failed) { ex =>
+      ex shouldBe a[JsResultException]
+    }
   }
 
   "IndividualDetailsService" should "get None from cache for non-existent NINO in cache and from 1694API" in {

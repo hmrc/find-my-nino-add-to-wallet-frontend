@@ -22,6 +22,6 @@ case class UserDetails(authProviderType: String) {
   def hasGovernmentGatewayAuthProvider = authProviderType == UserDetails.GovernmentGatewayAuthProvider
 }
 object UserDetails {
-  implicit val formats: OFormat[UserDetails]              = Json.format[UserDetails]
-  val GovernmentGatewayAuthProvider = "GovernmentGateway"
+  implicit val formats: OFormat[UserDetails] = Json.format[UserDetails]
+  val GovernmentGatewayAuthProvider          = "GovernmentGateway"
 }

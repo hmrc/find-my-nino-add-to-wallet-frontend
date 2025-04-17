@@ -23,7 +23,7 @@ import javax.inject.Inject
 import org.apache.xmlgraphics.io.{Resource, ResourceResolver}
 import play.api.Environment
 
-class DefaultFopURIResolver @Inject()(val environment: Environment) extends FopURIResolver
+class DefaultFopURIResolver @Inject() (val environment: Environment) extends FopURIResolver
 
 trait FopURIResolver extends ResourceResolver with BaseResourceStreamResolver {
   override val environment: Environment

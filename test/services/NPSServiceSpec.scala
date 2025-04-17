@@ -31,9 +31,9 @@ import uk.gov.hmrc.http.*
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class NPSServiceSpec extends SpecBase{
+class NPSServiceSpec extends SpecBase {
 
-  val nino = "AA000003B"
+  val nino                         = "AA000003B"
   val npsRequest: CRNUpliftRequest = CRNUpliftRequest("test", "test", "01/01/1990")
 
   val jsonBadRequest: String =
@@ -84,13 +84,13 @@ class NPSServiceSpec extends SpecBase{
        |}
        |""".stripMargin
 
-
   private val mockNPSConnector = mock[NPSConnector]
 
   override implicit lazy val app: Application = applicationBuilder()
     .overrides(
       bind[NPSConnector].toInstance(mockNPSConnector)
-    ).build()
+    )
+    .build()
 
   val npsService: NPSService = app.injector.instanceOf[NPSService]
 
@@ -102,7 +102,7 @@ class NPSServiceSpec extends SpecBase{
       "return Right(true)" in {
         when(mockNPSConnector.upliftCRN(any, any)(any, any()))
           .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](HttpResponse(NO_CONTENT, "")))
-        
+
         val result = npsService.upliftCRN(nino, npsRequest).value.futureValue
 
         result mustBe Right(true)
@@ -112,7 +112,11 @@ class NPSServiceSpec extends SpecBase{
     "when back end connector returns 422 (UNPROCESSABLE_ENTITY) with code 63492 (Already an adult account)" - {
       "return Right(true)" in {
         when(mockNPSConnector.upliftCRN(any, any)(any, any()))
-          .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](HttpResponse(UNPROCESSABLE_ENTITY, jsonUnprocessableEntityAlreadyAdult)))
+          .thenReturn(
+            EitherT.rightT[Future, UpstreamErrorResponse](
+              HttpResponse(UNPROCESSABLE_ENTITY, jsonUnprocessableEntityAlreadyAdult)
+            )
+          )
 
         val result = npsService.upliftCRN(nino, npsRequest).value.futureValue
 
@@ -134,8 +138,6 @@ class NPSServiceSpec extends SpecBase{
         result.swap.getOrElse(UpstreamErrorResponse("", OK)).statusCode mustBe UNPROCESSABLE_ENTITY
       }
     }
-
-
 
     "when back end connector returns 400 (BAD_REQUEST)" - {
       "return Left with status BAD_REQUEST" in {

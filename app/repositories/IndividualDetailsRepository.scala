@@ -31,37 +31,41 @@ import java.util.concurrent.TimeUnit
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class IndividualDetailsRepository @Inject()(mongoComponent: MongoComponent,
-                                            appConfig: FrontendAppConfig
-                                            )(implicit ec: ExecutionContext) extends PlayMongoRepository[IndividualDetailsDataCache](
-  collectionName = "individual-details",
-  mongoComponent = mongoComponent,
-  domainFormat = IndividualDetailsDataCache.individualDetailsDataCacheFormat,
-  indexes = Seq(
-    IndexModel(
-      Indexes.ascending("id"),
-      IndexOptions().name("idIdx")
-    ),
-    IndexModel(
-      Indexes.ascending("individualDetails.nino"),
-      IndexOptions().name("ninoIdx")
-    ),
-    IndexModel(
-      Indexes.ascending("lastUpdated"),
-      IndexOptions()
-        .name("lastUpdatedIdx")
-        .expireAfter(appConfig.individualDetailsCacheTtl, TimeUnit.SECONDS)
+class IndividualDetailsRepository @Inject() (mongoComponent: MongoComponent, appConfig: FrontendAppConfig)(implicit
+  ec: ExecutionContext
+) extends PlayMongoRepository[IndividualDetailsDataCache](
+      collectionName = "individual-details",
+      mongoComponent = mongoComponent,
+      domainFormat = IndividualDetailsDataCache.individualDetailsDataCacheFormat,
+      indexes = Seq(
+        IndexModel(
+          Indexes.ascending("id"),
+          IndexOptions().name("idIdx")
+        ),
+        IndexModel(
+          Indexes.ascending("individualDetails.nino"),
+          IndexOptions().name("ninoIdx")
+        ),
+        IndexModel(
+          Indexes.ascending("lastUpdated"),
+          IndexOptions()
+            .name("lastUpdatedIdx")
+            .expireAfter(appConfig.individualDetailsCacheTtl, TimeUnit.SECONDS)
+        )
+      ),
+      replaceIndexes = true
     )
-  ),
-  replaceIndexes = true
-) with Logging with IndividualDetailsRepoTrait {
-  def insertOrReplaceIndividualDetailsDataCache(individualDetailsData: IndividualDetailsDataCache)
-                                               (implicit ec: ExecutionContext): Future[String] = {
+    with Logging
+    with IndividualDetailsRepoTrait {
+  def insertOrReplaceIndividualDetailsDataCache(
+    individualDetailsData: IndividualDetailsDataCache
+  )(implicit ec: ExecutionContext): Future[String] = {
     logger.info(s"insert or update one in $collectionName table")
 
-    val filter = Filters.equal("individualDetails.nino", individualDetailsData.individualDetailsData.nino)
+    val filter  = Filters.equal("individualDetails.nino", individualDetailsData.individualDetailsData.nino)
     val options = ReplaceOptions().upsert(true)
-    collection.replaceOne(filter, individualDetailsData, options)
+    collection
+      .replaceOne(filter, individualDetailsData, options)
       .toFuture()
       .map(_ => individualDetailsData.individualDetailsData.nino) recover {
       case e: MongoWriteException if e.getCode == 11000 =>
@@ -70,28 +74,28 @@ class IndividualDetailsRepository @Inject()(mongoComponent: MongoComponent,
     }
   }
 
-  def findIndividualDetailsDataByNino(nino: String)
-                               (implicit ec: ExecutionContext): Future[Option[IndividualDetailsDataCache]] = {
-    //logger.info(s"find one in $collectionName table")
+  def findIndividualDetailsDataByNino(
+    nino: String
+  )(implicit ec: ExecutionContext): Future[Option[IndividualDetailsDataCache]] = {
+    // logger.info(s"find one in $collectionName table")
     val filter = Filters.regex("individualDetails.nino", nino.take(8).r)
-    collection.find(filter)
+    collection
+      .find(filter)
       .first()
       .toFutureOption()
-  } recoverWith {
-    case e: Throwable =>
-      logger.warn(s"Failed finding Individual Details Data by Nino: $nino")
-      Future.failed(e)
+  } recoverWith { case e: Throwable =>
+    logger.warn(s"Failed finding Individual Details Data by Nino: $nino")
+    Future.failed(e)
   }
 
-  def deleteIndividualDetailsDataByNino(nino: String)
-                                       (implicit ec: ExecutionContext): Future[DeleteResult] = {
+  def deleteIndividualDetailsDataByNino(nino: String)(implicit ec: ExecutionContext): Future[DeleteResult] = {
     val filter = Filters.regex("individualDetails.nino", nino.take(8).r)
-    collection.deleteOne(filter)
+    collection
+      .deleteOne(filter)
       .toFuture()
-  } recoverWith {
-    case e: Exception =>
-      logger.warn(s"Failed deleting Individual Details Data by Nino")
-      Future.failed(e)
+  } recoverWith { case e: Exception =>
+    logger.warn(s"Failed deleting Individual Details Data by Nino")
+    Future.failed(e)
   }
 
 }

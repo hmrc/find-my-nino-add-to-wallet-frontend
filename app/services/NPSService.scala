@@ -27,19 +27,22 @@ import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class NPSService @Inject()(connector: NPSConnector, frontendAppConfig: FrontendAppConfig)
-                          (implicit ec: ExecutionContext) extends Logging {
+class NPSService @Inject() (connector: NPSConnector, frontendAppConfig: FrontendAppConfig)(implicit
+  ec: ExecutionContext
+) extends Logging {
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
   val className: String                       = s"${this.getClass.getName}:upliftCRN"
   private val alreadyAnAdultErrorCode: String = frontendAppConfig.crnUpliftAPIAlreadyAdultErrorCode
-  def upliftCRN(identifier: String, crnUpliftRequest: CRNUpliftRequest)
-               (implicit hc: HeaderCarrier): EitherT[Future, UpstreamErrorResponse, Boolean] = {
+  def upliftCRN(identifier: String, crnUpliftRequest: CRNUpliftRequest)(implicit
+    hc: HeaderCarrier
+  ): EitherT[Future, UpstreamErrorResponse, Boolean] =
     connector.upliftCRN(identifier, crnUpliftRequest).transform {
       case Right(httpResponse) if httpResponse.status == NO_CONTENT => Right(true)
-      case Right(httpResponse) if httpResponse.status == UNPROCESSABLE_ENTITY && httpResponse.body.contains(alreadyAnAdultErrorCode)=> Right(true)
-      case Right(httpResponse) =>  Left(UpstreamErrorResponse("", httpResponse.status))
-      case Left(upstreamErrorResponse) => Left(upstreamErrorResponse)
+      case Right(httpResponse)
+          if httpResponse.status == UNPROCESSABLE_ENTITY && httpResponse.body.contains(alreadyAnAdultErrorCode) =>
+        Right(true)
+      case Right(httpResponse)                                      => Left(UpstreamErrorResponse("", httpResponse.status))
+      case Left(upstreamErrorResponse)                              => Left(upstreamErrorResponse)
     }
-  }
 }

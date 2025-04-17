@@ -36,7 +36,7 @@ import java.util.Base64
 import scala.concurrent.ExecutionContext
 
 class AppleWalletConnectorSpec
-  extends PlaySpec
+    extends PlaySpec
     with GuiceOneAppPerSuite
     with WireMockHelper
     with MockitoSugar
@@ -51,19 +51,19 @@ class AppleWalletConnectorSpec
       .build()
   }
 
-
   implicit val appleWrites: Writes[ApplePassDetails] = Json.writes[ApplePassDetails]
-  implicit val hc: HeaderCarrier = HeaderCarrier()
-  implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
+  implicit val hc: HeaderCarrier                     = HeaderCarrier()
+  implicit val ec: ExecutionContext                  = app.injector.instanceOf[ExecutionContext]
 
-  val passId: String = "passId"
-  val applePassCardBytes: Array[Byte] = Array(99, 71, 86, 121, 99, 50, 57, 117, 82, 71, 86, 48, 89, 87, 108, 115, 99, 49, 78, 48, 99, 109, 108, 117, 90, 119, 61, 61)
-  val applePassCard: String = Base64.getEncoder.encodeToString(applePassCardBytes)
+  val passId: String                     = "passId"
+  val applePassCardBytes: Array[Byte]    = Array(99, 71, 86, 121, 99, 50, 57, 117, 82, 71, 86, 48, 89, 87, 108, 115, 99,
+    49, 78, 48, 99, 109, 108, 117, 90, 119, 61, 61)
+  val applePassCard: String              = Base64.getEncoder.encodeToString(applePassCardBytes)
   val applePassDetails: ApplePassDetails = ApplePassDetails("fakeName", "AA123456A")
 
   lazy val connector: AppleWalletConnector = {
-    val httpClientV2 = app.injector.instanceOf[HttpClientV2]
-    val frontendAppConfig = app.injector.instanceOf[FrontendAppConfig]
+    val httpClientV2       = app.injector.instanceOf[HttpClientV2]
+    val frontendAppConfig  = app.injector.instanceOf[FrontendAppConfig]
     val httpClientResponse = app.injector.instanceOf[HttpClientResponse]
     new AppleWalletConnector(frontendAppConfig, httpClientV2, httpClientResponse)
   }
@@ -75,15 +75,19 @@ class AppleWalletConnectorSpec
     get(url).willReturn(response)
   }
 
-  def stubPost(url: String, responseStatus: Int, requestBody: Option[String], responseBody: Option[String]):
-    StubMapping = server.stubFor {
-      val baseResponse = aResponse().withStatus(responseStatus).withHeader(CONTENT_TYPE, JSON)
-      val response     = responseBody.fold(baseResponse)(body => baseResponse.withBody(body))
+  def stubPost(
+    url: String,
+    responseStatus: Int,
+    requestBody: Option[String],
+    responseBody: Option[String]
+  ): StubMapping = server.stubFor {
+    val baseResponse = aResponse().withStatus(responseStatus).withHeader(CONTENT_TYPE, JSON)
+    val response     = responseBody.fold(baseResponse)(body => baseResponse.withBody(body))
 
-      requestBody.fold(post(url).willReturn(response))(requestBody =>
-        post(url).withRequestBody(equalToJson(requestBody)).willReturn(response)
-      )
-    }
+    requestBody.fold(post(url).willReturn(response))(requestBody =>
+      post(url).withRequestBody(equalToJson(requestBody)).willReturn(response)
+    )
+  }
 
   "getApplePass" must {
     val url: String = s"/find-my-nino-add-to-wallet/get-pass-card?passId=$passId"
@@ -112,7 +116,6 @@ class AppleWalletConnectorSpec
       result.swap.getOrElse(UpstreamErrorResponse("", IM_A_TEAPOT)).statusCode mustBe INTERNAL_SERVER_ERROR
     }
   }
-
 
   "getAppleQrCode" must {
     val url: String = s"/find-my-nino-add-to-wallet/get-qr-code?passId=$passId"

@@ -33,88 +33,103 @@ import views.html.{AppleWalletView, PassIdNotFoundView, QRCodeNotFoundView}
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class AppleWalletController @Inject()(val appleWalletConnector: AppleWalletConnector,
-                                      override val messagesApi: MessagesApi,
-                                      authConnector: AuthConnector,
-                                      auditService: AuditService,
-                                      view: AppleWalletView,
-                                      passIdNotFoundView: PassIdNotFoundView,
-                                      qrCodeNotFoundView: QRCodeNotFoundView,
-                                      checkChildRecordAction: CheckChildRecordAction
-                                     )(implicit config: Configuration,
-                                       env: Environment,
-                                       ec: ExecutionContext,
-                                       cc: MessagesControllerComponents,
-                                       frontendAppConfig: FrontendAppConfig) extends FMNBaseController(authConnector) with I18nSupport {
+class AppleWalletController @Inject() (
+  val appleWalletConnector: AppleWalletConnector,
+  override val messagesApi: MessagesApi,
+  authConnector: AuthConnector,
+  auditService: AuditService,
+  view: AppleWalletView,
+  passIdNotFoundView: PassIdNotFoundView,
+  qrCodeNotFoundView: QRCodeNotFoundView,
+  checkChildRecordAction: CheckChildRecordAction
+)(implicit
+  config: Configuration,
+  env: Environment,
+  ec: ExecutionContext,
+  cc: MessagesControllerComponents,
+  frontendAppConfig: FrontendAppConfig
+) extends FMNBaseController(authConnector)
+    with I18nSupport {
 
   implicit val loginContinueUrl: Call = routes.StoreMyNinoController.onPageLoad
-  private val passFileName = "National-Insurance-number-card.pkpass"
+  private val passFileName            = "National-Insurance-number-card.pkpass"
 
   def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen checkChildRecordAction) async {
-    implicit userRequestNew => {
+    implicit userRequestNew =>
       (frontendAppConfig.appleWalletEnabled, userRequestNew.trustedHelper) match {
         case (_, Some(_)) => Future.successful(Redirect(controllers.routes.StoreMyNinoController.onPageLoad))
         case (true, None) =>
-          implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(userRequestNew.request, userRequestNew.request.session)
+          implicit val hc: HeaderCarrier  =
+            HeaderCarrierConverter.fromRequestAndSession(userRequestNew.request, userRequestNew.request.session)
           implicit val messages: Messages = cc.messagesApi.preferred(userRequestNew.request)
 
           auditApple("ViewWalletPage", userRequestNew.individualDetails, hc)
-          val nino: String = userRequestNew.nino.getOrElse(throw new IllegalArgumentException("No nino found")).nino
+          val nino: String  = userRequestNew.nino.getOrElse(throw new IllegalArgumentException("No nino found")).nino
           val ninoFormatted = nino.grouped(2).mkString(" ")
-          val fullName = userRequestNew.individualDetails.individualDetailsData.fullName
+          val fullName      = userRequestNew.individualDetails.individualDetailsData.fullName
 
-          appleWalletConnector.createApplePass(fullName, ninoFormatted)
+          appleWalletConnector
+            .createApplePass(fullName, ninoFormatted)
             .value
-            .map{
-              case Right(pId) => Ok(view(pId.value, isMobileDisplay(userRequestNew.request))(userRequestNew.request, messages))
+            .map {
+              case Right(pId)  =>
+                Ok(view(pId.value, isMobileDisplay(userRequestNew.request))(userRequestNew.request, messages))
               case Left(error) => InternalServerError(s"Failed to create Apple Pass: ${error.message}")
             }
-        case (false, _) =>Future.successful(Redirect(controllers.routes.UnauthorisedController.onPageLoad))
+        case (false, _)   => Future.successful(Redirect(controllers.routes.UnauthorisedController.onPageLoad))
       }
-    }
   }
 
   def getPassCard(passId: String): Action[AnyContent] = (authorisedAsFMNUser andThen checkChildRecordAction) async {
-    implicit userRequestNew => {
-      implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(userRequestNew.request, userRequestNew.request.session)
+    implicit userRequestNew =>
+      implicit val hc: HeaderCarrier  =
+        HeaderCarrierConverter.fromRequestAndSession(userRequestNew.request, userRequestNew.request.session)
       implicit val messages: Messages = cc.messagesApi.preferred(userRequestNew.request)
 
       getApplePass(passId, userRequestNew.individualDetails, userRequestNew.request, hc, messages)
-    }
   }
 
   def getQrCode(passId: String): Action[AnyContent] = (authorisedAsFMNUser andThen checkChildRecordAction) async {
 
-    userRequestNew => {
-      implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(userRequestNew.request, userRequestNew.request.session)
+    userRequestNew =>
+      implicit val hc: HeaderCarrier  =
+        HeaderCarrierConverter.fromRequestAndSession(userRequestNew.request, userRequestNew.request.session)
       implicit val messages: Messages = cc.messagesApi.preferred(userRequestNew.request)
 
       getAppleQRCode(passId, userRequestNew.individualDetails, userRequestNew.request, hc, messages)
-    }
   }
-
 
   private def isMobileDisplay(request: Request[AnyContent]): Boolean = {
     // Display wallet options differently on mobile to pc
     val strUserAgent = request.headers
       .get("http_user_agent")
-      .getOrElse(request.headers.get("User-Agent")
-        .getOrElse(""))
+      .getOrElse(
+        request.headers
+          .get("User-Agent")
+          .getOrElse("")
+      )
 
-    config.get[String]("mobileDeviceDetectionRegexStr").r
+    config
+      .get[String]("mobileDeviceDetectionRegexStr")
+      .r
       .findFirstMatchIn(strUserAgent) match {
       case Some(_) => true
-      case None => false
+      case None    => false
     }
   }
 
-  private def getApplePass(passId: String, individualDetailsDataCache: IndividualDetailsDataCache,
-                           request: Request[AnyContent], hc:HeaderCarrier, messages: Messages): Future[Result] = {
+  private def getApplePass(
+    passId: String,
+    individualDetailsDataCache: IndividualDetailsDataCache,
+    request: Request[AnyContent],
+    hc: HeaderCarrier,
+    messages: Messages
+  ): Future[Result] =
     appleWalletConnector.getApplePass(passId)(ec, hc).value.map {
       case Right(Some(data)) =>
         val eventType = request.getQueryString("qr-code") match {
           case Some("true") => "AddNinoToWalletFromQRCode"
-          case _ => "AddNinoToWallet"
+          case _            => "AddNinoToWallet"
         }
         auditApple(eventType, individualDetailsDataCache, hc)
         Ok(data).withHeaders("Content-Disposition" -> s"attachment; filename=$passFileName")
@@ -124,10 +139,14 @@ class AppleWalletController @Inject()(val appleWalletConnector: AppleWalletConne
 
       case Left(error) => InternalServerError(s"Failed to get Apple Pass: ${error.message}")
     }
-  }
 
-  private def getAppleQRCode(passId: String, individualDetailsDataCache: IndividualDetailsDataCache,
-                             request: Request[AnyContent], hc:HeaderCarrier, messages: Messages): Future[Result] = {
+  private def getAppleQRCode(
+    passId: String,
+    individualDetailsDataCache: IndividualDetailsDataCache,
+    request: Request[AnyContent],
+    hc: HeaderCarrier,
+    messages: Messages
+  ): Future[Result] =
     appleWalletConnector.getAppleQrCode(passId)(ec, hc).value.map {
       case Right(Some(data)) =>
         auditApple("DisplayQRCode", individualDetailsDataCache, hc)
@@ -138,14 +157,14 @@ class AppleWalletController @Inject()(val appleWalletConnector: AppleWalletConne
 
       case Left(error) => InternalServerError(s"Failed to get Apple QR Code: ${error.message}")
     }
-  }
 
-  private def auditApple(eventType:String, individualDataCache:IndividualDetailsDataCache, hc:HeaderCarrier): Unit = {
-    auditService.audit(AuditUtils.buildAuditEvent(
-      individualDataCache,
-      eventType,
-      frontendAppConfig.appName,
-      Some("Apple")
-    )(hc))(hc)
-  }
+  private def auditApple(eventType: String, individualDataCache: IndividualDetailsDataCache, hc: HeaderCarrier): Unit =
+    auditService.audit(
+      AuditUtils.buildAuditEvent(
+        individualDataCache,
+        eventType,
+        frontendAppConfig.appName,
+        Some("Apple")
+      )(hc)
+    )(hc)
 }

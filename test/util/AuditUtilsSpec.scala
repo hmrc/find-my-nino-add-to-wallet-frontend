@@ -19,7 +19,7 @@ package util
 import base.SpecBase
 
 class AuditUtilsSpec extends SpecBase {
-  
+
   "getLanguageFromCookieStr" - {
     "return the language in header carrier" in {
       val lang = "languageChoice"
@@ -33,9 +33,8 @@ class AuditUtilsSpec extends SpecBase {
   "getUserDevice" - {
     "return the correct user device when value is in header carrier" in {
       val userDevice = Map("other info iPhone" -> "iOS", "other info Android" -> "Android", "other info unknown" -> "")
-      userDevice.map {
-        pair =>
-          AuditUtils.getUserDevice(hc.copy(otherHeaders = Seq("User-Agent" -> pair._1))) mustBe pair._2
+      userDevice.map { pair =>
+        AuditUtils.getUserDevice(hc.copy(otherHeaders = Seq("User-Agent" -> pair._1))) mustBe pair._2
       }
     }
   }

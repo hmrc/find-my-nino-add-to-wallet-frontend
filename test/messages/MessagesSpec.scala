@@ -21,12 +21,12 @@ import play.api.i18n.Messages
 import play.api.i18n.Messages.MessageSource
 import scala.io.Source
 
-class MessagesSpec extends SpecBase{
-  private val MatchSingleQuoteOnly = """\w+'{1}\w+""".r
+class MessagesSpec extends SpecBase {
+  private val MatchSingleQuoteOnly   = """\w+'{1}\w+""".r
   private val MatchBacktickQuoteOnly = """`+""".r
 
   private val englishMessages = parseMessages("conf/messages.en")
-  private val welshMessages = parseMessages("conf/messages.cy")
+  private val welshMessages   = parseMessages("conf/messages.cy")
 
   "All message files" - {
 
@@ -54,7 +54,7 @@ class MessagesSpec extends SpecBase{
       filename
     ) match {
       case Right(messages) => messages
-      case Left(e) => throw e
+      case Left(e)         => throw e
     }
 
   private def countMessagesWithArgs(messages: Map[String, String]) =

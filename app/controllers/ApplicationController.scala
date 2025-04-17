@@ -29,7 +29,7 @@ import views.html.identity._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class ApplicationController @Inject()(
+class ApplicationController @Inject() (
   val identityVerificationFrontendService: IdentityVerificationFrontendService,
   authConnector: AuthConnector,
   successView: SuccessView,
@@ -38,15 +38,19 @@ class ApplicationController @Inject()(
   lockedOutView: LockedOutView,
   timeOutView: TimeOutView,
   technicalIssuesView: TechnicalIssuesView
-)(implicit config: Configuration,
+)(implicit
+  config: Configuration,
   env: Environment,
   ec: ExecutionContext,
   cc: MessagesControllerComponents,
-  frontendAppConfig: FrontendAppConfig)
-  extends FMNBaseController(authConnector) with I18nSupport {
+  frontendAppConfig: FrontendAppConfig
+) extends FMNBaseController(authConnector)
+    with I18nSupport {
 
   def uplift(redirectUrl: Option[RedirectUrl]): Action[AnyContent] = Action.async {
-    Future.successful(Redirect(redirectUrl.getOrElse(RedirectUrl(routes.StoreMyNinoController.onPageLoad.url)).get(OnlyRelative).url))
+    Future.successful(
+      Redirect(redirectUrl.getOrElse(RedirectUrl(routes.StoreMyNinoController.onPageLoad.url)).get(OnlyRelative).url)
+    )
   }
 
   def showUpliftJourneyOutcome(continueUrl: Option[RedirectUrl]): Action[AnyContent] =
@@ -62,7 +66,14 @@ class ApplicationController @Inject()(
             .getIVJourneyStatus(jid)
             .map {
               case Success =>
-                Ok(successView(continueUrl.getOrElse(RedirectUrl(routes.StoreMyNinoController.onPageLoad.url)).get(OnlyRelative).url))
+                Ok(
+                  successView(
+                    continueUrl
+                      .getOrElse(RedirectUrl(routes.StoreMyNinoController.onPageLoad.url))
+                      .get(OnlyRelative)
+                      .url
+                  )
+                )
 
               case InsufficientEvidence =>
                 Unauthorized(cannotConfirmIdentityView(retryUrl))
@@ -109,4 +120,3 @@ class ApplicationController @Inject()(
   private def logErrorMessage(reason: String): Unit =
     logger.warn(s"Unable to confirm user identity: $reason")
 }
-

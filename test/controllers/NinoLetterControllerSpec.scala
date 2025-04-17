@@ -36,19 +36,17 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class NinoLetterControllerSpec extends SpecBase with IndividualDetailsFixtures with MockitoSugar {
 
-  override protected def beforeEach(): Unit = {
+  override protected def beforeEach(): Unit =
     reset(mockIndividualDetailsService)
-  }
 
   val personDetailsId = "pdId"
 
   lazy val mockIndividualDetailsService = mock[IndividualDetailsService]
-  val mockNPSService = mock[NPSService]
-  lazy val ninoLetterController = applicationWithConfig.injector.instanceOf[NinoLetterController]
-  lazy val view = applicationWithConfig.injector.instanceOf[PrintNationalInsuranceNumberView]
+  val mockNPSService                    = mock[NPSService]
+  lazy val ninoLetterController         = applicationWithConfig.injector.instanceOf[NinoLetterController]
+  lazy val view                         = applicationWithConfig.injector.instanceOf[PrintNationalInsuranceNumberView]
 
   implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
-
 
   "NinoLetter Controller" - {
     "must return OK and the correct view for a GET" in {
@@ -106,8 +104,10 @@ class NinoLetterControllerSpec extends SpecBase with IndividualDetailsFixtures w
     "must uplift CRN and return OK and the correct view for a GET" in {
       userLoggedInFMNUser(NinoUser)
       when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
-        .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCacheWithCRN)),
-          Future.successful(Right(fakeIndividualDetailsDataCache)))
+        .thenReturn(
+          Future.successful(Right(fakeIndividualDetailsDataCacheWithCRN)),
+          Future.successful(Right(fakeIndividualDetailsDataCache))
+        )
       when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
         .thenReturn(Future.successful(true))
       when(mockNPSService.upliftCRN(any(), any())(any()))

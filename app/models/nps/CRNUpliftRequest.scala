@@ -27,7 +27,8 @@ object CRNUpliftRequest {
   def empty = CRNUpliftRequest(StringUtils.EMPTY, StringUtils.EMPTY, StringUtils.EMPTY)
 
   implicit val format: OFormat[CRNUpliftRequest] = Json.format[CRNUpliftRequest]
-  implicit def jsonBodyWritable[T](implicit writes: Writes[T],
-                                   jsValueBodyWritable: BodyWritable[JsValue]
-                                  ): BodyWritable[T] = jsValueBodyWritable.map(writes.writes)
+  implicit def jsonBodyWritable[T](implicit
+    writes: Writes[T],
+    jsValueBodyWritable: BodyWritable[JsValue]
+  ): BodyWritable[T] = jsValueBodyWritable.map(writes.writes)
 }

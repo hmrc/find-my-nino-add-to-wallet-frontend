@@ -21,26 +21,26 @@ import models.individualDetails.CountryCodeLookup
 
 class CountryCodeLookupSpec extends SpecBase {
 
-  val countryGB = 1
+  val countryGB        = 1
   val countryAustralia = 12
-  val invalidCountry = 300
+  val invalidCountry   = 300
 
   "CountryCodeLookupSpec" - {
     "convertCodeToCountryName should return" - {
       "a valid country when valid code is supplied" in {
-        val convertedCode = CountryCodeLookup.convertCodeToCountryName(countryGB)
+        val convertedCode   = CountryCodeLookup.convertCodeToCountryName(countryGB)
         val expectedCountry = "GREAT BRITAIN"
         expectedCountry mustEqual convertedCode
       }
 
       "a valid country when a different valid code is supplied" in {
-        val convertedCode = CountryCodeLookup.convertCodeToCountryName(countryAustralia)
+        val convertedCode   = CountryCodeLookup.convertCodeToCountryName(countryAustralia)
         val expectedCountry = "AUSTRALIA"
         expectedCountry mustEqual convertedCode
       }
 
       "a country code when an invalid code is supplied" in {
-        val convertedCode = CountryCodeLookup.convertCodeToCountryName(invalidCountry)
+        val convertedCode   = CountryCodeLookup.convertCodeToCountryName(invalidCountry)
         val expectedCountry = "300"
         expectedCountry mustEqual convertedCode
       }

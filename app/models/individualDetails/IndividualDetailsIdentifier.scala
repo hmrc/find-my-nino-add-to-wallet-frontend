@@ -34,9 +34,9 @@ object IndividualDetailsIdentifier {
 
   val NinoAndCRNRegexWithAndWithoutSuffix: Regex =
     """^((?!(BG|GB|KN|NK|NT|TN|ZZ)|(D|F|I|Q|U|V)[A-Z]|[A-Z](D|F|I|O|Q|U|V))[A-Z]{2})[0-9]{6}[A-D\s]?$""".r
-  val CRNRegexWithNoSuffix: Regex =
+  val CRNRegexWithNoSuffix: Regex                =
     """^(?:[ACEHJLMOPRSWXY][A-CEGHJ-NPR-TW-Z]|B[A-CEHJ-NPR-TW-Z]|G[ACEGHJ-NPR-TW-Z]|[KT][A-CEGHJ-MPR-TW-Z]|N[A-CEGHJL-NPR-SW-Z]|Z[A-CEGHJ-NPR-TW-Y])[0-9]{6}$""".r
-  val TRNRegex: Regex = """^[0-9]{2}[A-Z]{1}[0-9]{5}$""".r
+  val TRNRegex: Regex                            = """^[0-9]{2}[A-Z]{1}[0-9]{5}$""".r
 
   implicit val reads: Reads[IndividualDetailsIdentifier] = JsPath.read[String].map {
     case NinoAndCRNRegexWithAndWithoutSuffix(nino) => IndividualDetailsNino(nino)
@@ -45,11 +45,12 @@ object IndividualDetailsIdentifier {
     case _                                         => throw new RuntimeException("Unable to parse ChildBenefitIdentifier")
   }
 
-  implicit val writes: Writes[IndividualDetailsIdentifier] = JsPath.write[String].contramap[IndividualDetailsIdentifier] {
-    case IndividualDetailsNino(nino) => nino
-    case ChildReferenceNumber(crn)     => crn
-    case TemporaryReferenceNumber(trn) => trn
-  }
+  implicit val writes: Writes[IndividualDetailsIdentifier] =
+    JsPath.write[String].contramap[IndividualDetailsIdentifier] {
+      case IndividualDetailsNino(nino)   => nino
+      case ChildReferenceNumber(crn)     => crn
+      case TemporaryReferenceNumber(trn) => trn
+    }
 }
 
 object IndividualDetailsNino {

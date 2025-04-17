@@ -23,10 +23,12 @@ import play.api.i18n.Lang
 
 class FrontendAppConfigSpec extends SpecBase with MockitoSugar {
   val mockFrontendAppConfig = mock[FrontendAppConfig]
-  when(mockFrontendAppConfig.languageMap).thenReturn(Map(
-    "en" -> Lang("en"),
-    "cy" -> Lang("cy")
-  ))
+  when(mockFrontendAppConfig.languageMap).thenReturn(
+    Map(
+      "en" -> Lang("en"),
+      "cy" -> Lang("cy")
+    )
+  )
 
   "languageMap" in {
     mockFrontendAppConfig.languageMap.isInstanceOf[Map[String, Lang]]
@@ -45,10 +47,12 @@ class FrontendAppConfigSpec extends SpecBase with MockitoSugar {
   }
 
   "languageMap returns correct map" in {
-    mockFrontendAppConfig.languageMap.equals(Map(
-      "en" -> Lang("en"),
-      "cy" -> Lang("cy")
-    ))
+    mockFrontendAppConfig.languageMap.equals(
+      Map(
+        "en" -> Lang("en"),
+        "cy" -> Lang("cy")
+      )
+    )
   }
 
   "signOutUrl" in {

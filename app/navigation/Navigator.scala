@@ -24,10 +24,10 @@ import pages._
 import models._
 
 @Singleton
-class Navigator @Inject()() {
+class Navigator @Inject() () {
 
-  private val normalRoutes: Page => UserAnswers => Call = {
-    case _ => _ => routes.StoreMyNinoController.onPageLoad
+  private val normalRoutes: Page => UserAnswers => Call = { case _ =>
+    _ => routes.StoreMyNinoController.onPageLoad
   }
 
   def nextPage(page: Page, mode: Mode, userAnswers: UserAnswers): Call = mode match {

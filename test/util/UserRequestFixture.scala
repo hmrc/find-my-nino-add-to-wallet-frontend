@@ -26,13 +26,13 @@ import uk.gov.hmrc.domain.Nino
 object UserRequestFixture {
 
   def buildUserRequest[A](
-                           nino: Option[Nino] = Some(Fixtures.fakeNino),
-                           confidenceLevel: ConfidenceLevel = ConfidenceLevel.L200,
-                           individualDetailsData: IndividualDetailsDataCache = Fixtures.fakeIndividualDetailsDataCache,
-                           enrolments: Enrolments,
-                           request: Request[A],
-                           trustedHelper: Option[TrustedHelper] = None
-                         ): UserRequest[A] =
+    nino: Option[Nino] = Some(Fixtures.fakeNino),
+    confidenceLevel: ConfidenceLevel = ConfidenceLevel.L200,
+    individualDetailsData: IndividualDetailsDataCache = Fixtures.fakeIndividualDetailsDataCache,
+    enrolments: Enrolments,
+    request: Request[A],
+    trustedHelper: Option[TrustedHelper] = None
+  ): UserRequest[A] =
     UserRequest(
       nino,
       confidenceLevel,

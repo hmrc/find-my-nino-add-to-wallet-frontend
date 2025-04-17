@@ -29,15 +29,15 @@ object AuditUtils {
   val auditSource = "find-my-nino-add-to-wallet-frontend"
 
   case class YourDetailsAuditEvent(
-                                    journeyId: String,
-                                    formCreationTimestamp: String,
-                                    nino: String,
-                                    name: String,
-                                    mainAddress: AuditAddress,
-                                    device: Option[String],
-                                    language: String = "en",
-                                    WalletProvider: Option[String]
-                                  )
+    journeyId: String,
+    formCreationTimestamp: String,
+    nino: String,
+    name: String,
+    mainAddress: AuditAddress,
+    device: Option[String],
+    language: String = "en",
+    WalletProvider: Option[String]
+  )
 
   object YourDetailsAuditEvent {
     implicit val format: OFormat[YourDetailsAuditEvent] = Json.format[YourDetailsAuditEvent]
@@ -48,27 +48,24 @@ object AuditUtils {
       if (s.length > 0 && s.contains("PLAY_LANG="))
         "PLAY_LANG=([A-Za-z]*)".r.findAllIn(s).group(1)
       else "en"
-    case _ => "en"
+    case _       => "en"
   }
 
   def getUserDevice(hc: HeaderCarrier): String = {
     val strUserAgent = hc.otherHeaders.toMap.getOrElse("User-Agent", "")
     if (strUserAgent.length > 0 && strUserAgent.contains(" ")) {
-      if(strUserAgent.contains("iPhone"))
+      if (strUserAgent.contains("iPhone"))
         "iOS"
+      else if (strUserAgent.contains("Android"))
+        "Android"
       else
-        if(strUserAgent.contains("Android"))
-          "Android"
-        else
-          ""
-    }
-    else ""
+        ""
+    } else ""
   }
 
   def getUserAgent(hc: HeaderCarrier): String = hc.otherHeaders.toMap.getOrElse("User-Agent", "")
 
   def getReferer(hc: HeaderCarrier): String = hc.otherHeaders.toMap.getOrElse("Referer", "")
-
 
   private def emptyAddress = AddressData(
     addressLine1 = AddressLine(""),
@@ -82,21 +79,24 @@ object AuditUtils {
     addressType = AddressType.ResidentialAddress
   )
 
-  final case class AuditAddress(line1: String,
-                                line2: String,
-                                line3: Option[String],
-                                line4: Option[String],
-                                line5: Option[String],
-                                postcode: Option[String],
-                                country: String,
-                                startDate: String,
-                                `type`: String)
+  final case class AuditAddress(
+    line1: String,
+    line2: String,
+    line3: Option[String],
+    line4: Option[String],
+    line5: Option[String],
+    postcode: Option[String],
+    country: String,
+    startDate: String,
+    `type`: String
+  )
 
   object AuditAddress {
     implicit val format: Format[AuditAddress] = Json.format[AuditAddress]
   }
-  private def getAuditAddress(addressData: AddressData): AuditAddress = {
-    AuditAddress(line1 = addressData.addressLine1.value,
+  private def getAuditAddress(addressData: AddressData): AuditAddress =
+    AuditAddress(
+      line1 = addressData.addressLine1.value,
       line2 = addressData.addressLine2.value,
       line3 = addressData.addressLine3.map(x => x.value),
       line4 = addressData.addressLine4.map(x => x.value),
@@ -105,46 +105,49 @@ object AuditUtils {
       country = addressData.addressCountry,
       startDate = addressData.addressStartDate.toString,
       `type` = addressData.addressType match {
-        case AddressType.ResidentialAddress => "Residential"
+        case AddressType.ResidentialAddress    => "Residential"
         case AddressType.CorrespondenceAddress => "Correspondence"
-      })
-  }
+      }
+    )
 
-  private def getIndividualsAddress(individualDetailsDataCache: IndividualDetailsDataCache): AuditAddress = {
+  private def getIndividualsAddress(individualDetailsDataCache: IndividualDetailsDataCache): AuditAddress =
     individualDetailsDataCache.individualDetailsData.address match {
       case Some(a: AddressData) => getAuditAddress(a)
-      case _ => getAuditAddress(emptyAddress)
+      case _                    => getAuditAddress(emptyAddress)
     }
-  }
-
 
   private def buildDataEvent(auditType: String, transactionName: String, detail: JsValue)(implicit
-                                                                                          hc: HeaderCarrier
+    hc: HeaderCarrier
   ): ExtendedDataEvent = {
-    val strPath = hc.otherHeaders.toMap.get("path")
+    val strPath    = hc.otherHeaders.toMap.get("path")
     val strReferer = getReferer(hc)
     ExtendedDataEvent(
       auditSource = auditSource,
       auditType = auditType,
       tags = Map(
         "transactionName" -> Some(transactionName),
-        "X-Session-ID" -> hc.sessionId.map(_.value),
-        "X-Request-ID" -> hc.requestId.map(_.value),
-        "clientIP" -> hc.trueClientIp,
-        "clientPort" -> hc.trueClientPort,
-        "deviceID" -> hc.deviceID,
-        "path" -> strPath,
-        "referer" -> Some(strReferer)
+        "X-Session-ID"    -> hc.sessionId.map(_.value),
+        "X-Request-ID"    -> hc.requestId.map(_.value),
+        "clientIP"        -> hc.trueClientIp,
+        "clientPort"      -> hc.trueClientPort,
+        "deviceID"        -> hc.deviceID,
+        "path"            -> strPath,
+        "referer"         -> Some(strReferer)
       ).map(x => x._2.map((x._1, _))).flatten.toMap,
       detail = detail
     )
   }
 
-  private def buildDetails(individualDetailsDataCache: IndividualDetailsDataCache, journeyId: String, hc: HeaderCarrier, walletProvider: Option[String]): YourDetailsAuditEvent = {
+  private def buildDetails(
+    individualDetailsDataCache: IndividualDetailsDataCache,
+    journeyId: String,
+    hc: HeaderCarrier,
+    walletProvider: Option[String]
+  ): YourDetailsAuditEvent = {
 
     val mainAddress = getIndividualsAddress(individualDetailsDataCache)
-    val strLang = getLanguageFromCookieStr(hc)
-    val strDevice = getUserDevice(hc)
+    val strLang     = getLanguageFromCookieStr(hc)
+    val strDevice   = getUserDevice(hc)
 
     YourDetailsAuditEvent(
       journeyId,
@@ -161,12 +164,16 @@ object AuditUtils {
   private def timestamp(): String =
     java.time.Instant.now().atOffset(ZoneOffset.UTC).format(DateTimeFormatter.ISO_DATE_TIME)
 
-  def buildAuditEvent(individualDetailsDataCache: IndividualDetailsDataCache,
-                     auditType: String,
-                      appName: String,
-                      walletProvider: Option[String])(implicit hc: HeaderCarrier): ExtendedDataEvent = {
-        buildDataEvent(auditType, s"$appName-$auditType",
-          Json.toJson(buildDetails(individualDetailsDataCache, auditType, hc, walletProvider)))
-    }
+  def buildAuditEvent(
+    individualDetailsDataCache: IndividualDetailsDataCache,
+    auditType: String,
+    appName: String,
+    walletProvider: Option[String]
+  )(implicit hc: HeaderCarrier): ExtendedDataEvent =
+    buildDataEvent(
+      auditType,
+      s"$appName-$auditType",
+      Json.toJson(buildDetails(individualDetailsDataCache, auditType, hc, walletProvider))
+    )
 
 }

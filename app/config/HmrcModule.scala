@@ -32,19 +32,19 @@ class HmrcModule extends Module {
     val encryptionEnabled = configuration.get[Boolean]("mongodb.encryption.enabled")
     // For session based storage instead of cred based, change to SessionIdentifierAction
     Seq(
-    bind[IdentifierAction].to(classOf[SessionIdentifierAction]),
-    bind[Clock].toInstance(Clock.systemDefaultZone.withZone(ZoneOffset.UTC)),
-    bind[FopFactory].toProvider(classOf[FopFactoryProvider]),
-    bind[FopURIResolver].to(classOf[DefaultFopURIResolver]),
-    bind[BaseResourceStreamResolver].to(classOf[DefaultResourceStreamResolver]),
-    bind[LayoutProvider].to(classOf[NewLayoutProvider]),
-    if (encryptionEnabled) {
-      bind[IndividualDetailsRepoTrait]
-        .to(classOf[EncryptedIndividualDetailsRepository])
-    } else {
-      bind[IndividualDetailsRepoTrait]
-        .to(classOf[IndividualDetailsRepository])
-    }
+      bind[IdentifierAction].to(classOf[SessionIdentifierAction]),
+      bind[Clock].toInstance(Clock.systemDefaultZone.withZone(ZoneOffset.UTC)),
+      bind[FopFactory].toProvider(classOf[FopFactoryProvider]),
+      bind[FopURIResolver].to(classOf[DefaultFopURIResolver]),
+      bind[BaseResourceStreamResolver].to(classOf[DefaultResourceStreamResolver]),
+      bind[LayoutProvider].to(classOf[NewLayoutProvider]),
+      if (encryptionEnabled) {
+        bind[IndividualDetailsRepoTrait]
+          .to(classOf[EncryptedIndividualDetailsRepository])
+      } else {
+        bind[IndividualDetailsRepoTrait]
+          .to(classOf[IndividualDetailsRepository])
+      }
     )
   }
 }

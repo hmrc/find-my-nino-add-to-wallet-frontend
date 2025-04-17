@@ -34,14 +34,15 @@ import util.Fixtures.fakeIndividualDetailsData
 import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class EncryptedIndividualDetailsRepositorySpec extends AnyFreeSpec
-  with Matchers
-  with DefaultPlayMongoRepositorySupport[EncryptedIndividualDetailsDataCache]
-  with ScalaFutures
-  with OptionValues
-  with IntegrationPatience
-  with MockitoSugar
-  with DefaultAwaitTimeout {
+class EncryptedIndividualDetailsRepositorySpec
+    extends AnyFreeSpec
+    with Matchers
+    with DefaultPlayMongoRepositorySupport[EncryptedIndividualDetailsDataCache]
+    with ScalaFutures
+    with OptionValues
+    with IntegrationPatience
+    with MockitoSugar
+    with DefaultAwaitTimeout {
 
   private val mockAppConfig = mock[FrontendAppConfig]
 
@@ -59,7 +60,6 @@ class EncryptedIndividualDetailsRepositorySpec extends AnyFreeSpec
   when(mockAppConfig.cacheTtl) thenReturn 1L
   when(mockAppConfig.encryptionKey) thenReturn "z4rWoRLf7a1OHTXLutSDJjhrUzZTBE3b"
 
-
   "EncryptedIndividualDetailsRepository" - {
 
     "insertOrReplaceIndividualDetailsData" - {
@@ -71,12 +71,12 @@ class EncryptedIndividualDetailsRepositorySpec extends AnyFreeSpec
           individualDetailsData = fakeIndividualDetailsData,
           lastUpdated = Instant.EPOCH
         )
-        val result = repository.insertOrReplaceIndividualDetailsDataCache(individualDetailsDataCache).futureValue
+        val result                                                 = repository.insertOrReplaceIndividualDetailsDataCache(individualDetailsDataCache).futureValue
         result mustBe "AB123456C"
       }
     }
 
-}
+  }
   "findIndividualDetailsDataByNino" - {
 
     val individualDetailsDataCache: IndividualDetailsDataCache = IndividualDetailsDataCache(
@@ -92,13 +92,15 @@ class EncryptedIndividualDetailsRepositorySpec extends AnyFreeSpec
       val result1 = repository.insertOrReplaceIndividualDetailsDataCache(individualDetailsDataCache).futureValue
       result1 mustBe "AB123456C"
 
-      //we search with NINO plus suffix
+      // we search with NINO plus suffix
       val result = repository.findIndividualDetailsDataByNino(nino + "C").futureValue
-      result.value.copy(lastUpdated = Instant.EPOCH) mustEqual individualDetailsDataCache.copy(lastUpdated = Instant.EPOCH)
+      result.value.copy(lastUpdated = Instant.EPOCH) mustEqual individualDetailsDataCache.copy(lastUpdated =
+        Instant.EPOCH
+      )
     }
 
     "must return None when the IndividualDetailsData does not exist" in {
-      val nino = "ZZ999999Z"
+      val nino   = "ZZ999999Z"
       val result = repository.findIndividualDetailsDataByNino(nino).futureValue
       result mustBe None
     }
@@ -106,7 +108,7 @@ class EncryptedIndividualDetailsRepositorySpec extends AnyFreeSpec
   "deleteIndividualDetailsData" - {
 
     "must delete the cache and return a DeleteResult" in {
-      val nino = "AB123456C"
+      val nino                       = "AB123456C"
       val individualDetailsDataCache = createFakeIdCache
       repository.insertOrReplaceIndividualDetailsDataCache(individualDetailsDataCache).futureValue mustBe nino
       await(repository.deleteIndividualDetailsDataByNino(nino)) mustBe DeleteResult.acknowledged(1)

@@ -67,8 +67,8 @@ class ActionHelper @Inject() (
               authContext.request,
               authContext.trustedHelper
             )).leftMap { _ =>
-                val messages: Messages = cc.messagesApi.preferred(authContext.request)
-                InternalServerError(technicalIssuesNoRetryView()(authContext.request, frontendAppConfig, messages))
+              val messages: Messages = cc.messagesApi.preferred(authContext.request)
+              InternalServerError(technicalIssuesNoRetryView()(authContext.request, frontendAppConfig, messages))
             }.value
           } else {
             Future.successful(Left(Ok(postalFormView()(authContext.request, frontendAppConfig, messages))))
@@ -87,9 +87,11 @@ class ActionHelper @Inject() (
             )
           )
         }
-      case Left(upstreamError)           =>
+      case Left(upstreamError)      =>
         val messages: Messages = cc.messagesApi.preferred(authContext.request)
-        Future.successful(Left(InternalServerError(technicalIssuesNoRetryView()(authContext.request, frontendAppConfig, messages))))
+        Future.successful(
+          Left(InternalServerError(technicalIssuesNoRetryView()(authContext.request, frontendAppConfig, messages)))
+        )
     }
 
   private def isFullNino(individualDetails: IndividualDetailsDataCache): Boolean =

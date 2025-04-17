@@ -35,8 +35,8 @@ class HttpClientResponse @Inject() (frontendAppConfig: FrontendAppConfig)(implic
   ): EitherT[Future, UpstreamErrorResponse, HttpResponse] =
     EitherT(response.map {
       case Right(response)
-        // only reachable if we use the corresponding reads - readEitherOfWithUnProcessableEntity
-        if response.status == UNPROCESSABLE_ENTITY && response.body.contains(alreadyAnAdultErrorCode) =>
+          // only reachable if we use the corresponding reads - readEitherOfWithUnProcessableEntity
+          if response.status == UNPROCESSABLE_ENTITY && response.body.contains(alreadyAnAdultErrorCode) =>
         logger.info("UNPROCESSABLE_ENTITY - alreadyAnAdultErrorCode")
         Right(response)
       case Right(response) if response.status == NOT_FOUND                                 =>

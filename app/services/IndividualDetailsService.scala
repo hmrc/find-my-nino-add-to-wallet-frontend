@@ -87,10 +87,10 @@ class IndividualDetailsServiceImpl @Inject() (
 
   private def fetchIndividualDetails(
     nino: String
-  )(implicit ec: ExecutionContext, hc: HeaderCarrier): EitherT[Future, UpstreamErrorResponse, IndividualDetails] = {
-    individualDetailsConnector.getIndividualDetails(nino, "Y")
+  )(implicit ec: ExecutionContext, hc: HeaderCarrier): EitherT[Future, UpstreamErrorResponse, IndividualDetails] =
+    individualDetailsConnector
+      .getIndividualDetails(nino, "Y")
       .map(_.json.as[IndividualDetails])
-  }
 
   private def createNewIndividualDataCache(nino: String, sessionId: String)(implicit
     ec: ExecutionContext,

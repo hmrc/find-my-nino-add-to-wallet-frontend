@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -100,7 +100,7 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
             .build()
 
         when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
-          .thenReturn(Future.successful(Left(NOT_FOUND)))
+          .thenReturn(Future.successful(Left(UpstreamErrorResponse("Not Found", NOT_FOUND))))
 
         running(application) {
           userLoggedInFMNUser(NinoUser)
@@ -109,8 +109,8 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
 
           val result = route(application, request).value
 
-          status(result) mustEqual FAILED_DEPENDENCY
-          contentAsString(result) must include("Sorry, there is a problem with the service")
+          status(result) mustEqual INTERNAL_SERVER_ERROR
+          contentAsString(result) must include("Sorry, the service is unavailable")
         }
       }
 
@@ -313,7 +313,7 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
             .build()
 
         when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
-          .thenReturn(Future.successful(Left(NOT_FOUND)))
+          .thenReturn(Future.successful(Left(UpstreamErrorResponse("Not Found", NOT_FOUND))))
 
         running(application) {
           userLoggedInFMNUser(NinoUser)
@@ -322,8 +322,8 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
 
           val result = route(application, request).value
 
-          status(result) mustEqual FAILED_DEPENDENCY
-          contentAsString(result) must include("Sorry, there is a problem with the service")
+          status(result) mustEqual INTERNAL_SERVER_ERROR
+          contentAsString(result) must include("Sorry, the service is unavailable")
         }
       }
 

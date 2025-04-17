@@ -258,12 +258,12 @@ class StoreMyNinoControllerSpec
       }
     }
 
-    "must redirect to ErrorView when individuals details could not be found" in {
+    "must redirect to error view when individuals details could not be found" in {
       when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
         .thenReturn(Future.successful(true))
 
       when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
-        .thenReturn(Future.successful(Left(NOT_FOUND)))
+        .thenReturn(Future.successful(Left(UpstreamErrorResponse("Not Found", NOT_FOUND))))
 
       val application =
         applicationBuilderWithConfig()
@@ -283,18 +283,17 @@ class StoreMyNinoControllerSpec
 
         val result = route(application, request).value
 
-        status(result) mustEqual FAILED_DEPENDENCY
-        contentAsString(result) must include("Sorry, there is a problem with the service")
-
+        status(result) mustEqual INTERNAL_SERVER_ERROR
+        contentAsString(result) must include("Sorry, the service is unavailable")
       }
     }
 
-    "must redirect to technical error contact hmrc when individuals details could not be parsed" in {
+    "must redirect to error view when individuals details could not be parsed" in {
       when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
         .thenReturn(Future.successful(true))
 
       when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
-        .thenReturn(Future.successful(Left(UNPROCESSABLE_ENTITY)))
+        .thenReturn(Future.successful(Left(UpstreamErrorResponse(" ", UNPROCESSABLE_ENTITY))))
 
       val application =
         applicationBuilderWithConfig()
@@ -314,7 +313,7 @@ class StoreMyNinoControllerSpec
 
         val result = route(application, request).value
 
-        status(result) mustEqual OK
+        status(result) mustEqual INTERNAL_SERVER_ERROR
         contentAsString(result) must include("Sorry, the service is unavailable")
         contentAsString(result) must include("To get help with this service, you need to")
         contentAsString(result) must include("contact HMRC")

@@ -30,4 +30,3 @@ final case class UserRequest[A](
   request: Request[A],
   trustedHelper: Option[TrustedHelper]
 ) extends WrappedRequest[A](request) {}
-

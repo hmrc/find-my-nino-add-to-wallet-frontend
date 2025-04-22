@@ -46,12 +46,17 @@ class AuthControllerSpec extends SpecBase with MockitoSugar {
       running(application) {
 
         val sentLocation = "http://example.com&origin=STORE_MY_NINO"
-        val request = FakeRequest(GET, routes.AuthController.signout(Some(RedirectUrl(sentLocation)), Some(Origin("STORE_MY_NINO"))).url)
+        val request      = FakeRequest(
+          GET,
+          routes.AuthController.signout(Some(RedirectUrl(sentLocation)), Some(Origin("STORE_MY_NINO"))).url
+        )
 
         val result = route(application, request).value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result) mustBe Some("http://localhost:9553/bas-gateway/sign-out-without-state?continue=http://localhost:9514/feedback/STORE_MY_NINO")
+        redirectLocation(result) mustBe Some(
+          "http://localhost:9553/bas-gateway/sign-out-without-state?continue=http://localhost:9514/feedback/STORE_MY_NINO"
+        )
       }
     }
 
@@ -72,7 +77,9 @@ class AuthControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result) mustBe Some("http://localhost:9553/bas-gateway/sign-out-without-state?continue=http://localhost:9514/feedback/unknown")
+        redirectLocation(result) mustBe Some(
+          "http://localhost:9553/bas-gateway/sign-out-without-state?continue=http://localhost:9514/feedback/unknown"
+        )
       }
     }
 
@@ -93,7 +100,9 @@ class AuthControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result) mustBe Some("http://localhost:9553/bas-gateway/sign-out-without-state?continue=http://localhost:9514/feedback/STORE_MY_NINO")
+        redirectLocation(result) mustBe Some(
+          "http://localhost:9553/bas-gateway/sign-out-without-state?continue=http://localhost:9514/feedback/STORE_MY_NINO"
+        )
       }
     }
   }

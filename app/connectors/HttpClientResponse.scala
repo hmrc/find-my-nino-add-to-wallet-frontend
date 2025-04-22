@@ -25,7 +25,8 @@ import uk.gov.hmrc.http.{HttpException, HttpResponse, UpstreamErrorResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class HttpClientResponse @Inject()(frontendAppConfig: FrontendAppConfig)(implicit ec: ExecutionContext) extends Logging {
+class HttpClientResponse @Inject() (frontendAppConfig: FrontendAppConfig)(implicit ec: ExecutionContext)
+    extends Logging {
 
   private val alreadyAnAdultErrorCode: String = frontendAppConfig.crnUpliftAPIAlreadyAdultErrorCode
 
@@ -33,20 +34,21 @@ class HttpClientResponse @Inject()(frontendAppConfig: FrontendAppConfig)(implici
     response: Future[Either[UpstreamErrorResponse, HttpResponse]]
   ): EitherT[Future, UpstreamErrorResponse, HttpResponse] =
     EitherT(response.map {
-      case Right(response) if response.status == UNPROCESSABLE_ENTITY && response.body.contains(alreadyAnAdultErrorCode)  =>
+      case Right(response)
+          if response.status == UNPROCESSABLE_ENTITY && response.body.contains(alreadyAnAdultErrorCode) =>
         logger.info("UNPROCESSABLE_ENTITY - alreadyAnAdultErrorCode")
         Right(response)
-      case Right(response) if response.status == NOT_FOUND =>
+      case Right(response) if response.status == NOT_FOUND                                 =>
         Right(response)
       case Right(response)                                                                 =>
         Right(response)
-      case Left(error) if error.statusCode == BAD_REQUEST =>
+      case Left(error) if error.statusCode == BAD_REQUEST                                  =>
         logger.info(error.message)
         Left(error)
       case Left(error) if error.statusCode >= 500 || error.statusCode == TOO_MANY_REQUESTS =>
         logger.error(error.message)
         Left(error)
-      case Left(error) =>
+      case Left(error)                                                                     =>
         logger.error(error.message, error)
         Left(error)
     } recover {

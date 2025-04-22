@@ -27,10 +27,10 @@ import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class IdentityVerificationFrontendConnector @Inject()(
-                                                       val httpClient: HttpClientV2,
-                                                       servicesConfig: ServicesConfig,
-                                                       httpClientResponse: HttpClientResponse
+class IdentityVerificationFrontendConnector @Inject() (
+  val httpClient: HttpClientV2,
+  servicesConfig: ServicesConfig,
+  httpClientResponse: HttpClientResponse
 ) extends Logging {
 
   lazy val identityVerificationFrontendUrl: String = servicesConfig.baseUrl("identity-verification-frontend")
@@ -41,8 +41,9 @@ class IdentityVerificationFrontendConnector @Inject()(
     val url = s"$identityVerificationFrontendUrl/mdtp/journey/journeyId/$journeyId"
     httpClientResponse
       .read(
-        httpClient.get(url"$url")
+        httpClient
+          .get(url"$url")
           .execute[Either[UpstreamErrorResponse, HttpResponse]]
-        )
+      )
   }
 }

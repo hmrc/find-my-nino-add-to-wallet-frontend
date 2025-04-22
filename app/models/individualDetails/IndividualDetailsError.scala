@@ -29,9 +29,7 @@ final case class InvalidIdentifier(identifier: IndividualDetailsIdentifier)
 
 case object CacheNotFound extends IndividualDetailsError("cache not found")
 
-
 case object LockError extends IndividualDetailsError("Could not acquire lock")
-
 
 final case class DataLockedException(sdesCorrelationId: String)
     extends IndividualDetailsError(s"Item with sdesCorrelationId $sdesCorrelationId was locked")

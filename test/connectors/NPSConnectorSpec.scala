@@ -34,7 +34,7 @@ import util.WireMockHelper
 import scala.concurrent.ExecutionContext
 
 class NPSConnectorSpec
-  extends PlaySpec
+    extends PlaySpec
     with GuiceOneAppPerSuite
     with WireMockHelper
     with MockitoSugar
@@ -49,15 +49,14 @@ class NPSConnectorSpec
       .build()
   }
 
-
-  implicit val hc: HeaderCarrier = HeaderCarrier()
+  implicit val hc: HeaderCarrier    = HeaderCarrier()
   implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
 
   lazy val npsConnector: NPSConnector = app.injector.instanceOf[NPSConnector]
 
-  val nino: String = "AA123456A"
+  val nino: String                  = "AA123456A"
   val requestBody: CRNUpliftRequest = CRNUpliftRequest("test", "test", "01/01/1990")
-  val url: String = s"/find-my-nino-add-to-wallet/adult-registration/$nino"
+  val url: String                   = s"/find-my-nino-add-to-wallet/adult-registration/$nino"
 
   val jsonUnprocessableEntity: String =
     s"""
@@ -71,7 +70,6 @@ class NPSConnectorSpec
        |}
        |""".stripMargin
 
-
   val jsonUnprocessableEntityAlreadyAdult: String =
     s"""
        |{
@@ -84,12 +82,10 @@ class NPSConnectorSpec
        |}
        |""".stripMargin
 
-
-
   def stubPut(url: String, responseStatus: Int, responseBody: Option[String] = None): StubMapping =
     server.stubFor {
       val baseResponse = aResponse().withStatus(responseStatus).withHeader(CONTENT_TYPE, JSON)
-      val response = responseBody.fold(baseResponse)(body => baseResponse.withBody(body))
+      val response     = responseBody.fold(baseResponse)(body => baseResponse.withBody(body))
       put(url).willReturn(response)
     }
 

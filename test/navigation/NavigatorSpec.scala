@@ -33,7 +33,7 @@ class NavigatorSpec extends SpecBase {
       "must go from a page that doesn't exist in the route map to Index" in {
 
         case object UnknownPage extends Page {
-          override def route(): Call = ???
+          override def route(): Call                                  = ???
           override def nextPageNormalMode(answers: UserAnswers): Page = ???
         }
         navigator.nextPage(UnknownPage, NormalMode, UserAnswers("id")) mustBe routes.StoreMyNinoController.onPageLoad

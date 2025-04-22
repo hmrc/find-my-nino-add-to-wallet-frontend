@@ -23,12 +23,11 @@ import org.scalatestplus.mockito.MockitoSugar
 import play.api.i18n.Lang
 import uk.gov.hmrc.play.language.LanguageUtils
 
-
 class LanguageSwitchControllerSpec extends SpecBase with MockitoSugar {
 
   val appConfig: FrontendAppConfig = mock[FrontendAppConfig]
   val languageUtils: LanguageUtils = mock[LanguageUtils]
-  //val cc: ControllerComponents = Helpers.stubControllerComponents()
+  // val cc: ControllerComponents = Helpers.stubControllerComponents()
 
   val controller = new LanguageSwitchController(appConfig, languageUtils, cc)
 
@@ -43,7 +42,7 @@ class LanguageSwitchControllerSpec extends SpecBase with MockitoSugar {
     "return the language map" in {
       val expectedLanguageMap = Map("en" -> Lang("en"), "fr" -> Lang("fr"))
       when(appConfig.languageMap).thenReturn(expectedLanguageMap)
-      val result = controller.languageMap
+      val result              = controller.languageMap
       result mustBe expectedLanguageMap
     }
   }

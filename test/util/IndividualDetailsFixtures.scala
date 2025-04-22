@@ -43,53 +43,51 @@ import scala.util.Random
 
 trait IndividualDetailsFixtures {
 
-trait BaseSpec
-    extends AnyWordSpec
-    with GuiceOneAppPerSuite
-    with Matchers
-    with PatienceConfiguration
-    with BeforeAndAfterEach
-    with MockitoSugar
-    with ScalaFutures
-    with Injecting {
-  this: Suite =>
+  trait BaseSpec
+      extends AnyWordSpec
+      with GuiceOneAppPerSuite
+      with Matchers
+      with PatienceConfiguration
+      with BeforeAndAfterEach
+      with MockitoSugar
+      with ScalaFutures
+      with Injecting {
+    this: Suite =>
 
-  implicit val hc: HeaderCarrier = HeaderCarrier()
-  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
+    implicit val hc: HeaderCarrier    = HeaderCarrier()
+    implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
 
-  val mockPartialRetriever = mock[FormPartialRetriever]
-  when(mockPartialRetriever.getPartialContentAsync(any(), any(), any())(any(), any())) thenReturn Future(Html(""))
+    val mockPartialRetriever = mock[FormPartialRetriever]
+    when(mockPartialRetriever.getPartialContentAsync(any(), any(), any())(any(), any())) thenReturn Future(Html(""))
 
-
-  val configValues: Map[String, Any] =
-    Map(
-      "cookie.encryption.key"         -> "gvBoGdgzqG1AarzF1LY0zQ==",
-      "sso.encryption.key"            -> "gvBoGdgzqG1AarzF1LY0zQ==",
-      "queryParameter.encryption.key" -> "gvBoGdgzqG1AarzF1LY0zQ==",
-      "json.encryption.key"           -> "gvBoGdgzqG1AarzF1LY0zQ==",
-      "metrics.enabled"               -> false,
-      "auditing.enabled"              -> false
-    )
-
-  protected def localGuiceApplicationBuilder(): GuiceApplicationBuilder =
-    GuiceApplicationBuilder()
-      .overrides(
-        bind[FormPartialRetriever].toInstance(mockPartialRetriever)
+    val configValues: Map[String, Any] =
+      Map(
+        "cookie.encryption.key"         -> "gvBoGdgzqG1AarzF1LY0zQ==",
+        "sso.encryption.key"            -> "gvBoGdgzqG1AarzF1LY0zQ==",
+        "queryParameter.encryption.key" -> "gvBoGdgzqG1AarzF1LY0zQ==",
+        "json.encryption.key"           -> "gvBoGdgzqG1AarzF1LY0zQ==",
+        "metrics.enabled"               -> false,
+        "auditing.enabled"              -> false
       )
-      .configure(configValues)
 
-  override implicit lazy val app: Application = localGuiceApplicationBuilder().build()
+    protected def localGuiceApplicationBuilder(): GuiceApplicationBuilder =
+      GuiceApplicationBuilder()
+        .overrides(
+          bind[FormPartialRetriever].toInstance(mockPartialRetriever)
+        )
+        .configure(configValues)
 
+    override implicit lazy val app: Application = localGuiceApplicationBuilder().build()
+
+  }
+  trait ActionBuilderFixture extends ActionBuilder[UserRequest, AnyContent] {
+    override def invokeBlock[A](a: Request[A], block: UserRequest[A] => Future[Result]): Future[Result]
+    override def parser: BodyParser[AnyContent]               = Helpers.stubBodyParser()
+    override protected def executionContext: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
+  }
 }
-trait ActionBuilderFixture extends ActionBuilder[UserRequest, AnyContent] {
-  override def invokeBlock[A](a: Request[A], block: UserRequest[A] => Future[Result]): Future[Result]
-  override def parser: BodyParser[AnyContent]               = Helpers.stubBodyParser()
-  override protected def executionContext: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
-}
-}
 
-
-object Fixtures extends IndividualDetailsFixtures  {
+object Fixtures extends IndividualDetailsFixtures {
 
   val fakeNino = Nino(new Generator(new Random()).nextNino.nino)
 
@@ -101,9 +99,9 @@ object Fixtures extends IndividualDetailsFixtures  {
     FakeRequest(method, "/personal-account").withSession("sessionId" -> "FAKE_SESSION_ID")
 
   def buildFakeRequestWithAuth(
-                                method: String,
-                                uri: String = "/find-my-nino-add-to-wallet"
-                              ): FakeRequest[AnyContentAsEmpty.type] = {
+    method: String,
+    uri: String = "/find-my-nino-add-to-wallet"
+  ): FakeRequest[AnyContentAsEmpty.type] = {
     val session = Map(
       SessionKeys.sessionId            -> s"session-${UUID.randomUUID()}",
       SessionKeys.lastRequestTimestamp -> LocalDate.now().toEpochDay.toString
@@ -292,9 +290,11 @@ object Fixtures extends IndividualDetailsFixtures  {
     addressList = AddressList(Some(List(fakeAddress)))
   )
 
-  val fakeIndividualDetailsWithKnownAsName = fakeIndividualDetails.copy(nameList = NameList(List(fakeName, fakeKnownAsName)))
+  val fakeIndividualDetailsWithKnownAsName =
+    fakeIndividualDetails.copy(nameList = NameList(List(fakeName, fakeKnownAsName)))
 
-  val fakeIndividualDetailsWithoutMiddleName = fakeIndividualDetails.copy(nameList = NameList(List(fakeNameWithoutMiddleName)))
+  val fakeIndividualDetailsWithoutMiddleName =
+    fakeIndividualDetails.copy(nameList = NameList(List(fakeNameWithoutMiddleName)))
 
   val fakeIndividualDetailsData = IndividualDetailsData(
     fullName = "Dr Firstname Middlename Lastname Phd.",
@@ -323,9 +323,12 @@ object Fixtures extends IndividualDetailsFixtures  {
 
   val fakeIndividualDetailsDataWithCRN = fakeIndividualDetailsData.copy(crnIndicator = "true")
 
-  val fakeIndividualDetailsDataCacheWithCRN = fakeIndividualDetailsDataCache.copy(individualDetailsData = fakeIndividualDetailsDataWithCRN)
+  val fakeIndividualDetailsDataCacheWithCRN =
+    fakeIndividualDetailsDataCache.copy(individualDetailsData = fakeIndividualDetailsDataWithCRN)
 
   val fakeIndividualDetailsDataCacheMissingNinoSuffix = fakeIndividualDetailsDataCache
-    .copy(individualDetailsData = fakeIndividualDetailsData
-      .copy(nino = "AB123456"))
+    .copy(individualDetailsData =
+      fakeIndividualDetailsData
+        .copy(nino = "AB123456")
+    )
 }

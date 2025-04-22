@@ -36,55 +36,79 @@ import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class NinoLetterController @Inject()(
-                                      override val messagesApi: MessagesApi,
-                                      authConnector: AuthConnector,
-                                      auditService: AuditService,
-                                      view: PrintNationalInsuranceNumberView,
-                                      checkChildRecordAction: CheckChildRecordActionWithCacheInvalidation,
-                                      fopService: FopService,
-                                      pdfTemplate: NinoPdf
-                                    )(implicit config: Configuration,
-                                      env: Environment,
-                                      ec: ExecutionContext,
-                                      cc: MessagesControllerComponents,
-                                      frontendAppConfig: FrontendAppConfig) extends FMNBaseController(authConnector) with I18nSupport {
+class NinoLetterController @Inject() (
+  override val messagesApi: MessagesApi,
+  authConnector: AuthConnector,
+  auditService: AuditService,
+  view: PrintNationalInsuranceNumberView,
+  checkChildRecordAction: CheckChildRecordActionWithCacheInvalidation,
+  fopService: FopService,
+  pdfTemplate: NinoPdf
+)(implicit
+  config: Configuration,
+  env: Environment,
+  ec: ExecutionContext,
+  cc: MessagesControllerComponents,
+  frontendAppConfig: FrontendAppConfig
+) extends FMNBaseController(authConnector)
+    with I18nSupport {
 
   implicit val loginContinueUrl: Call = routes.StoreMyNinoController.onPageLoad
 
   def onPageLoad: Action[AnyContent] = (authorisedAsFMNUser andThen checkChildRecordAction) async {
-    implicit userRequestNew => {
+    implicit userRequestNew =>
       implicit val messages: Messages = cc.messagesApi.preferred(userRequestNew.request)
 
-      val nino: String = userRequestNew.nino.getOrElse(throw new IllegalArgumentException("No nino found")).nino
+      val nino: String  = userRequestNew.nino.getOrElse(throw new IllegalArgumentException("No nino found")).nino
       val ninoFormatted = nino.grouped(2).mkString(" ")
 
       auditNinoLetter("ViewNinoLetter", userRequestNew.individualDetails, hc)
-      Future.successful(Ok(view(userRequestNew.individualDetails, LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
-        true, ninoFormatted)(userRequestNew.request, messages)))
-    }
+      Future.successful(
+        Ok(
+          view(
+            userRequestNew.individualDetails,
+            LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY")),
+            true,
+            ninoFormatted
+          )(userRequestNew.request, messages)
+        )
+      )
   }
 
-  def saveNationalInsuranceNumberAsPdf: Action[AnyContent] = (authorisedAsFMNUser andThen checkChildRecordAction) async {
-    implicit userRequestNew => {
-      val filename = messagesApi.preferred(userRequestNew.request).messages("label.your_national_insurance_number_letter")
+  def saveNationalInsuranceNumberAsPdf: Action[AnyContent] =
+    (authorisedAsFMNUser andThen checkChildRecordAction) async { implicit userRequestNew =>
+      val filename =
+        messagesApi.preferred(userRequestNew.request).messages("label.your_national_insurance_number_letter")
 
       auditNinoLetter("DownloadNinoLetter", userRequestNew.individualDetails, hc)
       createPDF(userRequestNew.individualDetails, userRequestNew).flatMap(pdf =>
-        Future.successful(Ok(pdf).as(MimeConstants.MIME_PDF)
-          .withHeaders(CONTENT_TYPE -> "application/x-download", CONTENT_DISPOSITION -> s"attachment; filename=${filename.replaceAll(" ", "-")}.pdf"))
+        Future.successful(
+          Ok(pdf)
+            .as(MimeConstants.MIME_PDF)
+            .withHeaders(
+              CONTENT_TYPE        -> "application/x-download",
+              CONTENT_DISPOSITION -> s"attachment; filename=${filename.replaceAll(" ", "-")}.pdf"
+            )
+        )
       )
     }
-  }
 
-  private def createPDF(individualDetailsDataCache: IndividualDetailsDataCache, userRequestNew: UserRequest[AnyContent]): Future[Array[Byte]] = {
+  private def createPDF(
+    individualDetailsDataCache: IndividualDetailsDataCache,
+    userRequestNew: UserRequest[AnyContent]
+  ): Future[Array[Byte]] = {
     implicit val messages: Messages = cc.messagesApi.preferred(userRequestNew.request)
     val date: String                = LocalDate.now.format(DateTimeFormatter.ofPattern("MM/YY"))
 
     fopService.render(pdfTemplate(individualDetailsDataCache, date, XSLScalaBridge(messages).getLang()).body)
   }
 
-  private def auditNinoLetter(eventType: String, individualDetailsDataCache: IndividualDetailsDataCache, hc: HeaderCarrier): Unit = {
-    auditService.audit(AuditUtils.buildAuditEvent(individualDetailsDataCache, eventType, frontendAppConfig.appName, None)(hc))(hc)
-  }
+  private def auditNinoLetter(
+    eventType: String,
+    individualDetailsDataCache: IndividualDetailsDataCache,
+    hc: HeaderCarrier
+  ): Unit =
+    auditService.audit(
+      AuditUtils.buildAuditEvent(individualDetailsDataCache, eventType, frontendAppConfig.appName, None)(hc)
+    )(hc)
 }

@@ -30,8 +30,9 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Using
 
 @Singleton
-class FopService @Inject()(fopURIResolver: FopURIResolver,
-                           resourceStreamResolver: BaseResourceStreamResolver)(implicit ec: ExecutionContext) {
+class FopService @Inject() (fopURIResolver: FopURIResolver, resourceStreamResolver: BaseResourceStreamResolver)(implicit
+  ec: ExecutionContext
+) {
 
   def render(input: String): Future[Array[Byte]] = Future {
 
@@ -41,10 +42,13 @@ class FopService @Inject()(fopURIResolver: FopURIResolver,
 
       val restrictedIO: EnvironmentProfile =
         EnvironmentalProfileFactory.createRestrictedIO(new File(".").toURI, fopURIResolver)
-      val parser: FopConfParser =
-        new FopConfParser(resourceStreamResolver.resolvePath(fopConfigFilePath).getInputStream, restrictedIO) //parsing configuration
+      val parser: FopConfParser            =
+        new FopConfParser(
+          resourceStreamResolver.resolvePath(fopConfigFilePath).getInputStream,
+          restrictedIO
+        ) // parsing configuration
 
-      val builder: FopFactoryBuilder = parser.getFopFactoryBuilder //building the factory with the user options
+      val builder: FopFactoryBuilder = parser.getFopFactoryBuilder // building the factory with the user options
       val fopFactory: FopFactory     = builder.build()
 
       // Turn on accessibility features

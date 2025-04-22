@@ -31,58 +31,73 @@ import scala.concurrent.{ExecutionContext, Future}
 
 case class ApplePassDetails(fullName: String, nino: String)
 
+class AppleWalletConnector @Inject() (
+  frontendAppConfig: FrontendAppConfig,
+  httpClientV2: HttpClientV2,
+  httpClientResponse: HttpClientResponse
+) {
 
-class AppleWalletConnector @Inject()(frontendAppConfig: FrontendAppConfig, httpClientV2: HttpClientV2,
-                                     httpClientResponse: HttpClientResponse) {
-
-  private val headers: Seq[(String, String)] = Seq("Content-Type" -> "application/json")
+  private val headers: Seq[(String, String)]    = Seq("Content-Type" -> "application/json")
   implicit val writes: Writes[ApplePassDetails] = Json.writes[ApplePassDetails]
 
-  def createApplePass(fullName: String, nino: String)
-                     (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): EitherT[Future, UpstreamErrorResponse, Some[String]] = {
+  def createApplePass(fullName: String, nino: String)(implicit
+    ec: ExecutionContext,
+    headerCarrier: HeaderCarrier
+  ): EitherT[Future, UpstreamErrorResponse, Some[String]] = {
 
-    val url = s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/create-apple-pass"
+    val url                        = s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/create-apple-pass"
     implicit val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
 
     val details = ApplePassDetails(fullName, nino)
 
-    httpClientResponse.read(
-      httpClientV2
-        .post(url"$url")(hc)
-        .withBody(Json.toJson(details))
-        .execute[Either[UpstreamErrorResponse, HttpResponse]](readEitherOf(readRaw), ec)
-    ).map(response => Some(response.body))
+    httpClientResponse
+      .read(
+        httpClientV2
+          .post(url"$url")(hc)
+          .withBody(Json.toJson(details))
+          .execute[Either[UpstreamErrorResponse, HttpResponse]](readEitherOf(readRaw), ec)
+      )
+      .map(response => Some(response.body))
   }
 
-  def getApplePass(passId: String)
-                  (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): EitherT[Future, UpstreamErrorResponse, Option[Array[Byte]]] = {
+  def getApplePass(passId: String)(implicit
+    ec: ExecutionContext,
+    headerCarrier: HeaderCarrier
+  ): EitherT[Future, UpstreamErrorResponse, Option[Array[Byte]]] = {
 
     val url = s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-pass-card?passId=$passId"
-                    
+
     fetchAppleData(url)
   }
 
-  def getAppleQrCode(passId: String)
-               (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): EitherT[Future, UpstreamErrorResponse, Option[Array[Byte]]] = {
+  def getAppleQrCode(passId: String)(implicit
+    ec: ExecutionContext,
+    headerCarrier: HeaderCarrier
+  ): EitherT[Future, UpstreamErrorResponse, Option[Array[Byte]]] = {
 
     val url = s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-qr-code?passId=$passId"
 
     fetchAppleData(url)
   }
 
-  private def fetchAppleData(url: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): EitherT[Future, UpstreamErrorResponse, Option[Array[Byte]]] = {
+  private def fetchAppleData(
+    url: String
+  )(implicit hc: HeaderCarrier, ec: ExecutionContext): EitherT[Future, UpstreamErrorResponse, Option[Array[Byte]]] = {
     val updatedHc = hc.withExtraHeaders(headers: _*)
 
-    httpClientResponse.read(
-      httpClientV2
-        .get(url"$url")(updatedHc)
-        .execute[Either[UpstreamErrorResponse, HttpResponse]](readEitherOfWithNotFound, implicitly)
-    ).transform {
-      case Right(httpResponse) if httpResponse.status == OK => Right(Some(Base64.getDecoder.decode(httpResponse.body)))
-      case Right(httpResponse) if httpResponse.status == NOT_FOUND => Right(None)
-      case Right(httpResponse) =>  Left(UpstreamErrorResponse("", httpResponse.status))
-      case Left(upstreamErrorResponse) => Left(upstreamErrorResponse)
-    }
+    httpClientResponse
+      .read(
+        httpClientV2
+          .get(url"$url")(updatedHc)
+          .execute[Either[UpstreamErrorResponse, HttpResponse]](readEitherOfWithNotFound, implicitly)
+      )
+      .transform {
+        case Right(httpResponse) if httpResponse.status == OK        =>
+          Right(Some(Base64.getDecoder.decode(httpResponse.body)))
+        case Right(httpResponse) if httpResponse.status == NOT_FOUND => Right(None)
+        case Right(httpResponse)                                     => Left(UpstreamErrorResponse("", httpResponse.status))
+        case Left(upstreamErrorResponse)                             => Left(upstreamErrorResponse)
+      }
   }
 
   private def readEitherOfWithNotFound[A: HttpReads]: HttpReads[Either[UpstreamErrorResponse, A]] =

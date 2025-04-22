@@ -22,12 +22,11 @@ object XSLScalaBridge {
   def apply(messages: Messages): XSLScalaBridge = new XSLScalaBridge(messages)
 }
 
-class XSLScalaBridge private(messages: Messages) {
+class XSLScalaBridge private (messages: Messages) {
   def getMessagesText(key: String): String = messages(key)
 
-  def getMessagesTextWithParameter(key: String, parameter:String ): String = messages(key, parameter)
+  def getMessagesTextWithParameter(key: String, parameter: String): String = messages(key, parameter)
 
   def getLang(): String = messages.lang.language
 
 }
-

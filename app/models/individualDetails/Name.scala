@@ -19,10 +19,9 @@ package models.individualDetails
 import models.json.WritesNumber
 import play.api.libs.json._
 
-
 sealed trait NameType
 object NameType {
-  object RealName    extends NameType
+  object RealName extends NameType
   object KnownAsName extends NameType
 
   implicit val reads: Reads[NameType] = JsPath
@@ -32,10 +31,10 @@ object NameType {
       case 2 => KnownAsName
     }
 
-  implicit val writes: Writes[NameType] = WritesNumber[NameType]({
+  implicit val writes: Writes[NameType] = WritesNumber[NameType] {
     case RealName    => 1
     case KnownAsName => 2
-  })
+  }
 
   implicit val format: Format[NameType] = Format[NameType](reads, writes)
 }
@@ -44,13 +43,13 @@ sealed trait TitleType
 
 object TitleType {
   object NotKnown extends TitleType
-  object Mr       extends TitleType
-  object Mrs      extends TitleType
-  object Miss     extends TitleType
-  object Ms       extends TitleType
-  object Dr       extends TitleType
-  object Rev      extends TitleType
-  implicit val reads: Reads[TitleType] = JsPath
+  object Mr extends TitleType
+  object Mrs extends TitleType
+  object Miss extends TitleType
+  object Ms extends TitleType
+  object Dr extends TitleType
+  object Rev extends TitleType
+  implicit val reads: Reads[TitleType]   = JsPath
     .read[Int]
     .map {
       case 0 => NotKnown
@@ -87,15 +86,15 @@ object Honours {
 }
 
 final case class Name(
-    nameSequenceNumber: Int,
-    nameType:           NameType,
-    titleType:          Option[TitleType],
-    requestedName:      Option[RequestedName],
-    otherTitle:         Option[OtherTitle],
-    honours:            Option[Honours],
-    firstForename:      String,
-    secondForename:     Option[String],
-    surname:            String
+  nameSequenceNumber: Int,
+  nameType: NameType,
+  titleType: Option[TitleType],
+  requestedName: Option[RequestedName],
+  otherTitle: Option[OtherTitle],
+  honours: Option[Honours],
+  firstForename: String,
+  secondForename: Option[String],
+  surname: String
 )
 
 object Name {

@@ -109,7 +109,7 @@ class SpecBase extends WireMockSupport with MockitoSugar with GuiceOneAppPerSuit
   val menuItemConfig3: MenuItemConfig = MenuItemConfig("progress", "Check progress", "trackingUrl-track", leftAligned = false, position = 1, None, None)
   val menuItemConfig4: MenuItemConfig = MenuItemConfig("profile", "Profile and settings", "pertaxUrl-profile-and-settings", leftAligned = false, position = 2, None, None)
   val menuItemConfig5: MenuItemConfig = MenuItemConfig("signout", "Sign out", "pertaxUrl-signout-feedback-PERTAX", leftAligned = false, position = 3, None, None)
-  val wrapperDataResponse: WrapperDataResponse = WrapperDataResponse(Seq(menuItemConfig1, menuItemConfig2, menuItemConfig3, menuItemConfig4, menuItemConfig5), ptaMenuConfig, List.empty)
+  val wrapperDataResponse: WrapperDataResponse = WrapperDataResponse(Seq(menuItemConfig1, menuItemConfig2, menuItemConfig3, menuItemConfig4, menuItemConfig5), ptaMenuConfig, List.empty, List.empty)
 
 
   val messageDataResponse: Option[Int] = Some(2)

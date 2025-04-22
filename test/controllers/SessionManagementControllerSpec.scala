@@ -20,7 +20,6 @@ import base.SpecBase
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 
-
 class SessionManagementControllerSpec extends SpecBase {
 
   trait LocalSetup {
@@ -63,4 +62,3 @@ class SessionManagementControllerSpec extends SpecBase {
   }
 
 }
-

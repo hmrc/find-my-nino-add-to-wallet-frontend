@@ -23,11 +23,10 @@ import uk.gov.hmrc.sca.filters.WrapperDataFilter
 import javax.inject.{Inject, Singleton}
 
 @Singleton
-class Filters @Inject()(
-                         defaultFilters: EnabledFilters,
-                         wrapperDataFilter: WrapperDataFilter
-                       ) extends HttpFilters {
-  override val filters: Seq[EssentialFilter] = {
+class Filters @Inject() (
+  defaultFilters: EnabledFilters,
+  wrapperDataFilter: WrapperDataFilter
+) extends HttpFilters {
+  override val filters: Seq[EssentialFilter] =
     defaultFilters.filters ++ Option(wrapperDataFilter)
-  }
 }

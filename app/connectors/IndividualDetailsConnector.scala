@@ -26,13 +26,15 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class IndividualDetailsConnector @Inject()(
-                                            val httpClient: HttpClientV2,
-                                            appConfig:  FrontendAppConfig) extends Logging {
+class IndividualDetailsConnector @Inject() (val httpClient: HttpClientV2, appConfig: FrontendAppConfig)
+    extends Logging {
 
-  def getIndividualDetails(nino: String, resolveMerge: String
-                          )(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
-    val url = s"${appConfig.individualDetailsServiceUrl}/find-my-nino-add-to-wallet/individuals/details/NINO/${nino.take(8)}/$resolveMerge"
+  def getIndividualDetails(nino: String, resolveMerge: String)(implicit
+    hc: HeaderCarrier,
+    ec: ExecutionContext
+  ): Future[HttpResponse] = {
+    val url =
+      s"${appConfig.individualDetailsServiceUrl}/find-my-nino-add-to-wallet/individuals/details/NINO/${nino.take(8)}/$resolveMerge"
     httpClient.get(url"$url").execute[HttpResponse]
   }
 }

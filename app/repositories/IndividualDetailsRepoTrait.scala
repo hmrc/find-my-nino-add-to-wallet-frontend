@@ -21,15 +21,15 @@ import com.mongodb.client.result.DeleteResult
 
 import scala.concurrent.{ExecutionContext, Future}
 
-
 trait IndividualDetailsRepoTrait {
-  def insertOrReplaceIndividualDetailsDataCache(individualDetailsData: IndividualDetailsDataCache
-                                          )(implicit ec: ExecutionContext): Future[String]
+  def insertOrReplaceIndividualDetailsDataCache(individualDetailsData: IndividualDetailsDataCache)(implicit
+    ec: ExecutionContext
+  ): Future[String]
 
-  def findIndividualDetailsDataByNino(nino: String
-                                     )(implicit ec: ExecutionContext): Future[Option[IndividualDetailsDataCache]]
+  def findIndividualDetailsDataByNino(nino: String)(implicit
+    ec: ExecutionContext
+  ): Future[Option[IndividualDetailsDataCache]]
 
-  def deleteIndividualDetailsDataByNino(nino: String)
-                                       (implicit ec: ExecutionContext): Future[DeleteResult]
+  def deleteIndividualDetailsDataByNino(nino: String)(implicit ec: ExecutionContext): Future[DeleteResult]
 
 }

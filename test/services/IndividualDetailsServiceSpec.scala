@@ -35,20 +35,18 @@ import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
 
-class IndividualDetailsServiceSpec extends AnyFlatSpec
-  with ScalaFutures
-  with MockitoSugar {
+class IndividualDetailsServiceSpec extends AnyFlatSpec with ScalaFutures with MockitoSugar {
 
-  implicit val hc: HeaderCarrier = mock[HeaderCarrier]
-  implicit val defaultPatience: PatienceConfig = PatienceConfig(timeout = 5.seconds, interval = 50.millis) // Increase timeout to 5 seconds
+  implicit val hc: HeaderCarrier               = mock[HeaderCarrier]
+  implicit val defaultPatience: PatienceConfig =
+    PatienceConfig(timeout = 5.seconds, interval = 50.millis) // Increase timeout to 5 seconds
 
   "IndividualDetailsService" should "create individual details data cache when the cache has expired and there is a valid nino" in {
     val mockRepository = mock[IndividualDetailsRepository]
-    val mockConnector = mock[IndividualDetailsConnector]
-    val service = new IndividualDetailsServiceImpl(mockRepository, mockConnector)
+    val mockConnector  = mock[IndividualDetailsConnector]
+    val service        = new IndividualDetailsServiceImpl(mockRepository, mockConnector)
 
     val fakeIndividualDetailsJson = Json.toJson(fakeIndividualDetails).toString()
-
 
     when(mockRepository.findIndividualDetailsDataByNino(any)(any))
       .thenReturn(Future.successful(None))
@@ -60,15 +58,16 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec
     val result = service.getIdDataFromCache("testNino", "some-fake-Id")
 
     assert(result.futureValue isRight)
-    assert(result.futureValue.fold( _ => false, _.individualDetailsData.nino == "AB123456C"))
-    assert(result.futureValue.fold(_ => false, _.individualDetailsData.fullName == "Dr FIRSTNAME MIDDLENAME LASTNAME PhD"))
+    assert(result.futureValue.fold(_ => false, _.individualDetailsData.nino == "AB123456C"))
+    assert(
+      result.futureValue.fold(_ => false, _.individualDetailsData.fullName == "Dr FIRSTNAME MIDDLENAME LASTNAME PhD")
+    )
   }
 
   "IndividualDetailsService" should "create individual details data cache when details retrieved from mongo" in {
     val mockRepository = mock[IndividualDetailsRepository]
-    val mockConnector = mock[IndividualDetailsConnector]
-    val service = new IndividualDetailsServiceImpl(mockRepository, mockConnector)
-
+    val mockConnector  = mock[IndividualDetailsConnector]
+    val service        = new IndividualDetailsServiceImpl(mockRepository, mockConnector)
 
     when(mockRepository.findIndividualDetailsDataByNino(any)(any))
       .thenReturn(Future.successful(Some(fakeIndividualDetailsDataCache)))
@@ -79,13 +78,18 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec
 
     assert(result.futureValue isRight)
     assert(result.futureValue.fold(_ => false, _.individualDetailsData.nino == "AB123456C"))
-    assert(result.futureValue.fold(_ => false, _.individualDetailsData.fullName == fakeIndividualDetailsDataCache.individualDetailsData.fullName))
+    assert(
+      result.futureValue.fold(
+        _ => false,
+        _.individualDetailsData.fullName == fakeIndividualDetailsDataCache.individualDetailsData.fullName
+      )
+    )
   }
 
   "IndividualDetailsService" should "create individual details data cache where no middle name present" in {
     val mockRepository = mock[IndividualDetailsRepository]
-    val mockConnector = mock[IndividualDetailsConnector]
-    val service = new IndividualDetailsServiceImpl(mockRepository, mockConnector)
+    val mockConnector  = mock[IndividualDetailsConnector]
+    val service        = new IndividualDetailsServiceImpl(mockRepository, mockConnector)
 
     val fakeIndividualDetailsJson = Json.toJson(fakeIndividualDetailsWithoutMiddleName).toString()
 
@@ -105,8 +109,8 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec
 
   "IndividualDetailsService" should "create individual details data cache where the known as name is present" in {
     val mockRepository = mock[IndividualDetailsRepository]
-    val mockConnector = mock[IndividualDetailsConnector]
-    val service = new IndividualDetailsServiceImpl(mockRepository, mockConnector)
+    val mockConnector  = mock[IndividualDetailsConnector]
+    val service        = new IndividualDetailsServiceImpl(mockRepository, mockConnector)
 
     val fakeIndividualDetailsJson = Json.toJson(fakeIndividualDetailsWithKnownAsName).toString()
 
@@ -126,8 +130,8 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec
 
   "IndividualDetailsService" should "return a left of unprcessible entity where invalid json is returned" in {
     val mockRepository = mock[IndividualDetailsRepository]
-    val mockConnector = mock[IndividualDetailsConnector]
-    val service = new IndividualDetailsServiceImpl(mockRepository, mockConnector)
+    val mockConnector  = mock[IndividualDetailsConnector]
+    val service        = new IndividualDetailsServiceImpl(mockRepository, mockConnector)
 
     when(mockRepository.findIndividualDetailsDataByNino(any)(any))
       .thenReturn(Future.successful(None))
@@ -141,8 +145,8 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec
 
   "IndividualDetailsService" should "get None from cache for non-existent NINO in cache and from 1694API" in {
     val mockRepository = mock[IndividualDetailsRepository]
-    val mockConnector = mock[IndividualDetailsConnector]
-    val service = new IndividualDetailsServiceImpl(mockRepository, mockConnector)
+    val mockConnector  = mock[IndividualDetailsConnector]
+    val service        = new IndividualDetailsServiceImpl(mockRepository, mockConnector)
 
     when(mockRepository.findIndividualDetailsDataByNino(any)(any))
       .thenReturn(Future.successful(None))
@@ -150,14 +154,14 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec
     when(mockConnector.getIndividualDetails(any, any)(any, any))
       .thenReturn(Future.successful(HttpResponse(404, "Not found")))
 
-    val result = service.getIdDataFromCache("testNino","testSessionId")
+    val result = service.getIdDataFromCache("testNino", "testSessionId")
     assert(result.futureValue.isLeft)
   }
 
   "IndividualDetailsService" should "return true when an entry has been deleted from the cache" in {
     val mockRepository = mock[IndividualDetailsRepository]
-    val mockConnector = mock[IndividualDetailsConnector]
-    val service = new IndividualDetailsServiceImpl(mockRepository, mockConnector)
+    val mockConnector  = mock[IndividualDetailsConnector]
+    val service        = new IndividualDetailsServiceImpl(mockRepository, mockConnector)
 
     when(mockRepository.deleteIndividualDetailsDataByNino(any)(any))
       .thenReturn(Future.successful(DeleteResult.acknowledged(1)))
@@ -168,8 +172,8 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec
 
   "IndividualDetailsService" should "handle MongoException" in {
     val mockRepository = mock[IndividualDetailsRepository]
-    val mockConnector = mock[IndividualDetailsConnector]
-    val service = new IndividualDetailsServiceImpl(mockRepository, mockConnector)
+    val mockConnector  = mock[IndividualDetailsConnector]
+    val service        = new IndividualDetailsServiceImpl(mockRepository, mockConnector)
 
     val nino = "testNino"
     when(mockRepository.findIndividualDetailsDataByNino(any)(any))
@@ -184,8 +188,8 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec
 
   "IndividualDetailsService" should "throw exception when invalid json returned" in {
     val mockRepository = mock[IndividualDetailsRepository]
-    val mockConnector = mock[IndividualDetailsConnector]
-    val service = new IndividualDetailsServiceImpl(mockRepository, mockConnector)
+    val mockConnector  = mock[IndividualDetailsConnector]
+    val service        = new IndividualDetailsServiceImpl(mockRepository, mockConnector)
 
     val nino = "testNino"
     when(mockRepository.findIndividualDetailsDataByNino(any)(any))
@@ -199,9 +203,9 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec
     }
   }
   "IndividualDetailsService" should "throw empty string returned from insert insertOrReplaceIndividualDetailsDataCache" in {
-    val mockRepository = mock[IndividualDetailsRepository]
-    val mockConnector = mock[IndividualDetailsConnector]
-    val service = new IndividualDetailsServiceImpl(mockRepository, mockConnector)
+    val mockRepository            = mock[IndividualDetailsRepository]
+    val mockConnector             = mock[IndividualDetailsConnector]
+    val service                   = new IndividualDetailsServiceImpl(mockRepository, mockConnector)
     val fakeIndividualDetailsJson = Json.toJson(fakeIndividualDetailsWithoutMiddleName).toString()
 
     val nino = "testNino"

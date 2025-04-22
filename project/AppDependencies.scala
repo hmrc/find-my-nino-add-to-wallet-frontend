@@ -8,15 +8,15 @@ object AppDependencies {
 
   val compile: Seq[ModuleID] = Seq(
     play.sbt.PlayImport.ws,
-    "uk.gov.hmrc"                   %% s"play-conditional-form-mapping-$playVersion"        %   "3.2.0",
+    "uk.gov.hmrc"                   %% s"play-conditional-form-mapping-$playVersion"        %   "3.3.0",
     "uk.gov.hmrc.mongo"             %% s"hmrc-mongo-$playVersion"                           %   mongoVersion,
     "org.apache.xmlgraphics"        % "fop"                                                 %   "2.10",
-    "org.typelevel"                 %% "cats-core"                                          %   "2.10.0",
-    "uk.gov.hmrc"                   %% s"sca-wrapper-$playVersion"                          %   "2.7.0",
-    "com.google.auth"               % "google-auth-library-oauth2-http"                     %   "1.23.0",
-    "com.auth0"                     % "java-jwt"                                            %   "4.4.0",
-    "com.fasterxml.jackson.module"  %% "jackson-module-scala"                               %   "2.17.0",
-    "com.google.api-client"         % "google-api-client"                                   %   "2.4.0"
+    "org.typelevel"                 %% "cats-core"                                          %   "2.13.0",
+    "uk.gov.hmrc"                   %% s"sca-wrapper-$playVersion"                          %   "2.9.0",
+    "com.google.auth"               % "google-auth-library-oauth2-http"                     %   "1.33.1",
+    "com.auth0"                     % "java-jwt"                                            %   "4.5.0",
+    "com.fasterxml.jackson.module"  %% "jackson-module-scala"                               %   "2.18.3",
+    "com.google.api-client"         % "google-api-client"                                   %   "2.7.2"
   )
 
   val test: Seq[ModuleID] = Seq(

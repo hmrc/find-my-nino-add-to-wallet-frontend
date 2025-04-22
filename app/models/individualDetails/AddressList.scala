@@ -24,7 +24,7 @@ object AddressList {
   implicit class AddressListOps(private val addressList: AddressList) extends AnyVal {
     def getAddress: List[Address] = addressList.address match {
       case Some(addList) => addList
-      case _ => List.empty[Address]
+      case _             => List.empty[Address]
     }
   }
 

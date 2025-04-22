@@ -37,11 +37,11 @@ object CrnIndicator {
   object False extends CrnIndicator {
     override val asString: String = "false"
   }
-  object True  extends CrnIndicator {
+  object True extends CrnIndicator {
     override val asString: String = "true"
   }
 
-  implicit val reads: Reads[CrnIndicator] = JsPath
+  implicit val reads: Reads[CrnIndicator]   = JsPath
     .read[Int]
     .map {
       case 0 => False
@@ -54,14 +54,14 @@ object CrnIndicator {
 }
 
 final case class IndividualDetails(
-    ninoWithoutSuffix:  String,
-    ninoSuffix:         Option[NinoSuffix],
-    dateOfBirth:        LocalDate,
-    crnIndicator:       CrnIndicator,
-    nameList:           NameList,
-    addressList:        AddressList
+  ninoWithoutSuffix: String,
+  ninoSuffix: Option[NinoSuffix],
+  dateOfBirth: LocalDate,
+  crnIndicator: CrnIndicator,
+  nameList: NameList,
+  addressList: AddressList
 ) {
-  def fullIdentifier: String = s"""${ninoWithoutSuffix}${ninoSuffix.map(_.value).getOrElse("")}"""
+  def fullIdentifier: String = s"""$ninoWithoutSuffix${ninoSuffix.map(_.value).getOrElse("")}"""
 
   def getResidenceAddress: Option[Address] = addressList.getAddress
     .find(_.addressType.equals(ResidentialAddress))
@@ -71,55 +71,63 @@ final case class IndividualDetails(
 
   private def getAddress: Option[Address] = getCorrespondenceAddress.orElse(getResidenceAddress)
 
-  def getAddressData: Option[AddressData] = {
-    getAddress.map(addr => AddressData(addr.addressLine1,
-      addr.addressLine2,
-      addr.addressLine3,
-      addr.addressLine4,
-      addr.addressLine5,
-      addr.addressPostcode,
-      CountryCodeLookup.convertCodeToCountryName(addr.countryCode.value),
-      addr.addressStartDate,
-      addr.addressType))
-
-  }
+  def getAddressData: Option[AddressData] =
+    getAddress.map(addr =>
+      AddressData(
+        addr.addressLine1,
+        addr.addressLine2,
+        addr.addressLine3,
+        addr.addressLine4,
+        addr.addressLine5,
+        addr.addressPostcode,
+        CountryCodeLookup.convertCodeToCountryName(addr.countryCode.value),
+        addr.addressStartDate,
+        addr.addressType
+      )
+    )
 
   def getNino: String = ninoWithoutSuffix + ninoSuffix.map(_.value).getOrElse("")
 
-  lazy val preferredName: Name = {
+  lazy val preferredName: Name =
     nameList.name.find(_.nameType.equals(NameType.KnownAsName)).getOrElse(nameList.name.head)
-  }
 
-
-  private def getTitle: String =  {
-    val maybeTitle: TitleType = preferredName
-      .titleType.getOrElse(TitleType.NotKnown)
+  private def getTitle: String = {
+    val maybeTitle: TitleType = preferredName.titleType.getOrElse(TitleType.NotKnown)
     maybeTitle match {
-      case TitleType.Mr => "Mr"
-      case TitleType.Mrs => "Mrs"
+      case TitleType.Mr   => "Mr"
+      case TitleType.Mrs  => "Mrs"
       case TitleType.Miss => "Miss"
-      case TitleType.Ms => "Ms"
-      case TitleType.Dr => "Dr"
-      case TitleType.Rev => "Rev"
-      case _ => ""
+      case TitleType.Ms   => "Ms"
+      case TitleType.Dr   => "Dr"
+      case TitleType.Rev  => "Rev"
+      case _              => ""
     }
   }
 
-  private def getHonours: String = {
+  private def getHonours: String =
     preferredName.honours.map(_.value).getOrElse("")
-  }
 
-  def getFullName: String = {
-    List(getTitle, preferredName.firstForename.toUpperCase(), preferredName.secondForename.getOrElse("").toUpperCase(), preferredName.surname.toUpperCase(), getHonours)
+  def getFullName: String =
+    List(
+      getTitle,
+      preferredName.firstForename.toUpperCase(),
+      preferredName.secondForename.getOrElse("").toUpperCase(),
+      preferredName.surname.toUpperCase(),
+      getHonours
+    )
       .filter(_.nonEmpty)
       .mkString(" ")
-  }
 
-  def getInitialsName: String = {
-    List(getTitle, preferredName.firstForename.toUpperCase().take(1), preferredName.secondForename.getOrElse("").toUpperCase().take(1), preferredName.surname.toUpperCase(), getHonours)
+  def getInitialsName: String =
+    List(
+      getTitle,
+      preferredName.firstForename.toUpperCase().take(1),
+      preferredName.secondForename.getOrElse("").toUpperCase().take(1),
+      preferredName.surname.toUpperCase(),
+      getHonours
+    )
       .filter(_.nonEmpty)
       .mkString(" ")
-  }
 
 }
 
@@ -127,10 +135,15 @@ object IndividualDetails {
 
   implicit val reads: Format[IndividualDetails] =
     ((JsPath \ "details" \ "nino").format[String] ~
-    (__ \ "details" \ "ninoSuffix").formatNullable[NinoSuffix].inmap(_.filter(_ != NinoSuffix(" ")), identity[Option[NinoSuffix]]) ~
-    (__ \ "details" \ "dateOfBirth").format[LocalDate] ~
-    (__ \ "details" \ "crnIndicator").format[CrnIndicator] ~
-    (__ \ "nameList").format[NameList] ~
-    (__ \ "addressList").format[AddressList])(IndividualDetails.apply, id => Tuple6(id.ninoWithoutSuffix, id.ninoSuffix, id.dateOfBirth, id.crnIndicator, id.nameList, id.addressList))
+      (__ \ "details" \ "ninoSuffix")
+        .formatNullable[NinoSuffix]
+        .inmap(_.filter(_ != NinoSuffix(" ")), identity[Option[NinoSuffix]]) ~
+      (__ \ "details" \ "dateOfBirth").format[LocalDate] ~
+      (__ \ "details" \ "crnIndicator").format[CrnIndicator] ~
+      (__ \ "nameList").format[NameList] ~
+      (__ \ "addressList").format[AddressList])(
+      IndividualDetails.apply,
+      id => Tuple6(id.ninoWithoutSuffix, id.ninoSuffix, id.dateOfBirth, id.crnIndicator, id.nameList, id.addressList)
+    )
 
 }

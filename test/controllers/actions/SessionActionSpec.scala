@@ -30,10 +30,10 @@ import uk.gov.hmrc.http.SessionKeys
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class SessionActionSpec extends SpecBase with MockitoSugar{
+class SessionActionSpec extends SpecBase with MockitoSugar {
 
   class Harness(action: IdentifierAction) {
-    def onPageLoad(): Action[AnyContent] = action { _ => Results.Ok }
+    def onPageLoad(): Action[AnyContent] = action(_ => Results.Ok)
   }
 
   "Session Action" - {
@@ -48,11 +48,11 @@ class SessionActionSpec extends SpecBase with MockitoSugar{
         val application =
           applicationBuilder()
             .overrides(
-              inject.bind[SessionRepository].toInstance(mockSessionRepository),
+              inject.bind[SessionRepository].toInstance(mockSessionRepository)
             )
             .build()
 
-        running(application){
+        running(application) {
           val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
 
           val sessionAction = new SessionIdentifierAction(bodyParsers)
@@ -77,7 +77,7 @@ class SessionActionSpec extends SpecBase with MockitoSugar{
         val application =
           applicationBuilder()
             .overrides(
-              inject.bind[SessionRepository].toInstance(mockSessionRepository),
+              inject.bind[SessionRepository].toInstance(mockSessionRepository)
             )
             .build()
 

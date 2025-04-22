@@ -52,21 +52,23 @@ class JourneyRecoveryControllerSpec extends SpecBase with MockitoSugar {
         val application =
           applicationBuilder()
             .overrides(
-              inject.bind[SessionRepository].toInstance(mockSessionRepository),
+              inject.bind[SessionRepository].toInstance(mockSessionRepository)
             )
-
             .build()
 
         running(application) {
           val continueUrl = RedirectUrl("/foo")
-          val request = FakeRequest(GET, routes.JourneyRecoveryController.onPageLoad(Some(continueUrl)).url)
+          val request     = FakeRequest(GET, routes.JourneyRecoveryController.onPageLoad(Some(continueUrl)).url)
 
           val result = route(application, request).value
 
           val continueView = application.injector.instanceOf[JourneyRecoveryContinueView]
 
           status(result) mustEqual OK
-          contentAsString(result).removeAllNonces() mustEqual continueView(continueUrl.unsafeValue)(request, messages(application)).toString()
+          contentAsString(result).removeAllNonces() mustEqual continueView(continueUrl.unsafeValue)(
+            request,
+            messages(application)
+          ).toString()
         }
       }
     }
@@ -81,21 +83,21 @@ class JourneyRecoveryControllerSpec extends SpecBase with MockitoSugar {
         val application =
           applicationBuilder()
             .overrides(
-              inject.bind[SessionRepository].toInstance(mockSessionRepository),
+              inject.bind[SessionRepository].toInstance(mockSessionRepository)
             )
-
             .build()
 
         running(application) {
           val continueUrl = RedirectUrl("https://foo.com")
-          val request = FakeRequest(GET, routes.JourneyRecoveryController.onPageLoad(Some(continueUrl)).url)
+          val request     = FakeRequest(GET, routes.JourneyRecoveryController.onPageLoad(Some(continueUrl)).url)
 
           val result = route(application, request).value
 
           val startAgainView = application.injector.instanceOf[JourneyRecoveryStartAgainView]
 
           status(result) mustEqual OK
-          contentAsString(result).removeAllNonces() mustEqual startAgainView()(request, messages(application)).toString()
+          contentAsString(result).removeAllNonces() mustEqual startAgainView()(request, messages(application))
+            .toString()
         }
       }
     }
@@ -110,9 +112,8 @@ class JourneyRecoveryControllerSpec extends SpecBase with MockitoSugar {
         val application =
           applicationBuilder()
             .overrides(
-              inject.bind[SessionRepository].toInstance(mockSessionRepository),
+              inject.bind[SessionRepository].toInstance(mockSessionRepository)
             )
-
             .build()
 
         running(application) {
@@ -123,7 +124,8 @@ class JourneyRecoveryControllerSpec extends SpecBase with MockitoSugar {
           val startAgainView = application.injector.instanceOf[JourneyRecoveryStartAgainView]
 
           status(result) mustEqual OK
-          contentAsString(result).removeAllNonces() mustEqual startAgainView()(request, messages(application)).toString()
+          contentAsString(result).removeAllNonces() mustEqual startAgainView()(request, messages(application))
+            .toString()
         }
       }
     }

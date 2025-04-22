@@ -21,19 +21,18 @@ import javax.xml.transform.stream.StreamSource
 import play.api.Logging
 import play.api.Environment
 
-class DefaultResourceStreamResolver @Inject()(val environment: Environment) extends BaseResourceStreamResolver
+class DefaultResourceStreamResolver @Inject() (val environment: Environment) extends BaseResourceStreamResolver
 
 trait BaseResourceStreamResolver extends Logging {
   val environment: Environment
 
-  def resolvePath(filePath: String): StreamSource = {
+  def resolvePath(filePath: String): StreamSource =
     environment.resourceAsStream(filePath) match {
-      case None =>
+      case None         =>
         logger.error("[ResourceStreamResolver] No resolver stream available")
         throw new RuntimeException("[ResourceStreamResolver] No resolver stream available")
       case Some(stream) =>
         logger.info("[ResourceStreamResolver] Valid input stream found")
         new StreamSource(stream)
     }
-  }
 }

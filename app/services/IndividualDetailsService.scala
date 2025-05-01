@@ -88,16 +88,15 @@ class IndividualDetailsServiceImpl @Inject() (
   private def createNewIndividualDataCache(nino: String, sessionId: String)(implicit
     ec: ExecutionContext,
     hc: HeaderCarrier
-  ): EitherT[Future, UpstreamErrorResponse, IndividualDetailsDataCache] = {
+  ): EitherT[Future, UpstreamErrorResponse, IndividualDetailsDataCache] =
     for {
-      individualDetails <- individualDetailsConnector
-          .getIndividualDetails(nino, "Y")
+      individualDetails      <- individualDetailsConnector
+                                  .getIndividualDetails(nino, "Y")
       individualDetailsObject = individualDetails.json.as[IndividualDetails]
-      _ <- EitherT[Future, UpstreamErrorResponse, String](insertOrReplaceIndividualDetailsDataCache(sessionId, individualDetailsObject).map(Right(_)))
-    } yield {
-      getIndividualDetailsDataCache(sessionId, individualDetailsObject)
-    }
-  }
+      _                      <- EitherT[Future, UpstreamErrorResponse, String](
+                                  insertOrReplaceIndividualDetailsDataCache(sessionId, individualDetailsObject).map(Right(_))
+                                )
+    } yield getIndividualDetailsDataCache(sessionId, individualDetailsObject)
 
   def getIdDataFromCache(nino: String, sessionId: String)(implicit
     ec: ExecutionContext,
@@ -107,7 +106,7 @@ class IndividualDetailsServiceImpl @Inject() (
       case Some(individualDetailsDataCache) =>
         logger.info(s"Individual details found in cache for Nino: $nino")
         Future.successful(Right(individualDetailsDataCache))
-      case None =>
+      case None                             =>
         logger.info(
           "Individual details data cache not found, potentially expired, attempting to fetch from external service and recreate cache."
         )

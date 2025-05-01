@@ -17,14 +17,16 @@
 package controllers
 
 import base.SpecBase
+import cats.data.EitherT
 import connectors.{GoogleWalletConnector, IdentityVerificationFrontendConnector}
 import controllers.auth.requests.UserRequest
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import models.individualDetails.IndividualDetailsDataCache
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{reset, when}
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import repositories.SessionRepository
 import services.IndividualDetailsService
 import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolment, Enrolments}
@@ -34,7 +36,7 @@ import util.IndividualDetailsFixtures
 import util.Fixtures.fakeIndividualDetailsDataCache
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
 import util.TestData.{NinoUser, trustedHelperUser}
-import views.html._
+import views.html.*
 
 import java.util.Base64
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -62,7 +64,7 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
 
     reset(mockIndividualDetailsService)
     when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
-      .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCache)))
+      .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCache))
 
     reset(mockIdentityVerificationFrontendConnector)
     when(mockIdentityVerificationFrontendConnector.getIVJourneyStatus(any())(any(), any()))
@@ -100,7 +102,7 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
             .build()
 
         when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
-          .thenReturn(Future.successful(Left(UpstreamErrorResponse("Not Found", NOT_FOUND))))
+          .thenReturn(EitherT.leftT[Future, IndividualDetailsDataCache](UpstreamErrorResponse("Not Found", NOT_FOUND)))
 
         running(application) {
           userLoggedInFMNUser(NinoUser)
@@ -313,7 +315,7 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
             .build()
 
         when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
-          .thenReturn(Future.successful(Left(UpstreamErrorResponse("Not Found", NOT_FOUND))))
+          .thenReturn(EitherT.leftT[Future, IndividualDetailsDataCache](UpstreamErrorResponse("Not Found", NOT_FOUND)))
 
         running(application) {
           userLoggedInFMNUser(NinoUser)

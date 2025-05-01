@@ -20,6 +20,7 @@ import base.SpecBase
 import cats.data.EitherT
 import connectors.*
 import controllers.auth.requests.UserRequest
+import models.individualDetails.IndividualDetailsDataCache
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{reset, when}
 import org.scalatestplus.mockito.MockitoSugar
@@ -65,7 +66,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
     reset(mockIndividualDetailsService)
     when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
-      .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCache)))
+      .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCache))
 
     reset(mockIdentityVerificationFrontendConnector)
     when(mockIdentityVerificationFrontendConnector.getIVJourneyStatus(any())(any(), any()))
@@ -92,7 +93,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
       "must redirect to error view when ID cache is not found" in {
 
         when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
-          .thenReturn(Future.successful(Left(UpstreamErrorResponse("Not Found", NOT_FOUND))))
+          .thenReturn(EitherT.leftT[Future, IndividualDetailsDataCache](UpstreamErrorResponse("Not Found", NOT_FOUND)))
 
         val application = applicationBuilderWithConfig()
           .overrides(
@@ -133,7 +134,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
         val view = application.injector.instanceOf[AppleWalletView]
 
         when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
-          .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCache)))
+          .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCache))
 
         running(application) {
           userLoggedInFMNUser(NinoUser)
@@ -166,7 +167,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
         val view = application.injector.instanceOf[AppleWalletView]
 
         when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
-          .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCacheNoAddress)))
+          .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCacheNoAddress))
 
         running(application) {
           userLoggedInFMNUser(NinoUser)
@@ -433,7 +434,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
             .build()
 
         when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
-          .thenReturn(Future.successful(Left(UpstreamErrorResponse("Not Found", NOT_FOUND))))
+          .thenReturn(EitherT.leftT[Future, IndividualDetailsDataCache](UpstreamErrorResponse("Not Found", NOT_FOUND)))
 
         running(application) {
           userLoggedInFMNUser(NinoUser)
@@ -460,7 +461,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
             .build()
 
         when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
-          .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCache)))
+          .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCache))
 
         running(application) {
           userLoggedInFMNUser(NinoUser)

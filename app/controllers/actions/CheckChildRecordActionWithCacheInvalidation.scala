@@ -50,7 +50,7 @@ class CheckChildRecordActionWithCacheInvalidation @Inject() (
       )
 
     individualDetailsService.deleteIdDataFromCache(identifier).flatMap {
-      case true => actionHelper.checkForCrn(identifier, sessionId, authContext, messages)
+      case true => actionHelper.checkForCrn(identifier, sessionId, authContext, messages).value
       case _    => throw new RuntimeException("Failed to invalidate individual details data cache")
     }
   }

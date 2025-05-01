@@ -47,7 +47,7 @@ class CheckChildRecordAction @Inject() (
         throw new IllegalArgumentException("Session is required")
       )
 
-    actionHelper.checkForCrn(identifier, sessionId, authContext, messages)
+    actionHelper.checkForCrn(identifier, sessionId, authContext, messages).value
   }
   override protected def executionContext: ExecutionContext                                             = cc.executionContext
 }

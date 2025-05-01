@@ -45,20 +45,36 @@ class ActionHelper @Inject() (
   def checkForCrn[A](identifier: String, sessionId: String, authContext: AuthContext[A], messages: Messages)(implicit
     hc: HeaderCarrier,
     ec: ExecutionContext
-  ): Future[Either[Result, UserRequest[A]]] =
-    individualDetailsService.getIdDataFromCache(identifier, sessionId).flatMap {
+  ): EitherT[Future,Result, UserRequest[A]] = EitherT {
+    individualDetailsService.getIdDataFromCache(identifier, sessionId).value.flatMap {
+      case Left(_) =>
+        val messages: Messages = cc.messagesApi.preferred(authContext.request)
+        Future.successful(Left(InternalServerError(technicalIssuesNoRetryView()(authContext.request, frontendAppConfig, messages))))
+
       case Right(individualDetails) =>
-        if (!isFullNino(individualDetails)) {
-          if (frontendAppConfig.crnUpliftEnabled) {
+        (isFullNino(individualDetails), frontendAppConfig.crnUpliftEnabled) match {
+          case (true, _) =>
+            Future.successful(Right(
+              UserRequest(
+                Some(Nino(individualDetails.individualDetailsData.nino)),
+                authContext.confidenceLevel,
+                individualDetails,
+                authContext.allEnrolments,
+                authContext.request,
+                authContext.trustedHelper
+              )
+            ))
+          case (false, true) =>
+            // Nino is not a full nino and uplift is enabled, Uplift nino with NPS
             val request: CRNUpliftRequest = buildCrnUpliftRequest(individualDetails)
 
             (for {
               _ <- npsService.upliftCRN(identifier, request)
               _ <- EitherT[Future, UpstreamErrorResponse, Boolean](
-                     individualDetailsService
-                       .deleteIdDataFromCache(individualDetails.individualDetailsData.nino)
-                       .map(Right(_))
-                   )
+                individualDetailsService
+                  .deleteIdDataFromCache(individualDetails.individualDetailsData.nino)
+                  .map(Right(_))
+              )
             } yield UserRequest(
               Some(Nino(individualDetails.individualDetailsData.nino)),
               authContext.confidenceLevel,
@@ -70,29 +86,13 @@ class ActionHelper @Inject() (
               val messages: Messages = cc.messagesApi.preferred(authContext.request)
               InternalServerError(technicalIssuesNoRetryView()(authContext.request, frontendAppConfig, messages))
             }.value
-          } else {
+
+          case _ => 
+            // CRN uplift disabled, redirecting user to paper form
             Future.successful(Left(Ok(postalFormView()(authContext.request, frontendAppConfig, messages))))
-          }
-        } else {
-          Future.successful(
-            Right(
-              UserRequest(
-                Some(Nino(individualDetails.individualDetailsData.nino)),
-                authContext.confidenceLevel,
-                individualDetails,
-                authContext.allEnrolments,
-                authContext.request,
-                authContext.trustedHelper
-              )
-            )
-          )
         }
-      case Left(upstreamError)      =>
-        val messages: Messages = cc.messagesApi.preferred(authContext.request)
-        Future.successful(
-          Left(InternalServerError(technicalIssuesNoRetryView()(authContext.request, frontendAppConfig, messages)))
-        )
     }
+  }
 
   private def isFullNino(individualDetails: IndividualDetailsDataCache): Boolean =
     individualDetails.individualDetailsData.crnIndicator.toLowerCase.equals("false")

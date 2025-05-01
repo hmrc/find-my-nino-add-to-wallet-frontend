@@ -33,7 +33,7 @@ trait IndividualDetailsService {
   def getIdDataFromCache(nino: String, sessionId: String)(implicit
     ec: ExecutionContext,
     hc: HeaderCarrier
-  ): Future[Either[UpstreamErrorResponse, IndividualDetailsDataCache]]
+  ): EitherT[Future, UpstreamErrorResponse, IndividualDetailsDataCache]
   def deleteIdDataFromCache(nino: String)(implicit ec: ExecutionContext): Future[Boolean]
 }
 
@@ -85,43 +85,35 @@ class IndividualDetailsServiceImpl @Inject() (
     )
   }
 
-  private def fetchIndividualDetails(
-    nino: String
-  )(implicit ec: ExecutionContext, hc: HeaderCarrier): EitherT[Future, UpstreamErrorResponse, IndividualDetails] =
-    individualDetailsConnector
-      .getIndividualDetails(nino, "Y")
-      .map(_.json.as[IndividualDetails])
-
   private def createNewIndividualDataCache(nino: String, sessionId: String)(implicit
     ec: ExecutionContext,
     hc: HeaderCarrier
-  ): Future[Either[UpstreamErrorResponse, IndividualDetailsDataCache]] =
-    fetchIndividualDetails(nino).value.flatMap {
-      case Right(individualDetails) =>
-        insertOrReplaceIndividualDetailsDataCache(sessionId, individualDetails).map { ninoStr =>
-          if (ninoStr.nonEmpty)
-            Right(getIndividualDetailsDataCache(sessionId, individualDetails))
-          else
-            throw new RuntimeException("Failed to create individual details data cache")
-        }
-      case Left(upstreamError)      =>
-        Future.successful(Left(UpstreamErrorResponse(upstreamError.message, upstreamError.statusCode)))
+  ): EitherT[Future, UpstreamErrorResponse, IndividualDetailsDataCache] = {
+    for {
+      individualDetails <- individualDetailsConnector
+          .getIndividualDetails(nino, "Y")
+      individualDetailsObject = individualDetails.json.as[IndividualDetails]
+      _ <- EitherT[Future, UpstreamErrorResponse, String](insertOrReplaceIndividualDetailsDataCache(sessionId, individualDetailsObject).map(Right(_)))
+    } yield {
+      getIndividualDetailsDataCache(sessionId, individualDetailsObject)
     }
+  }
 
   def getIdDataFromCache(nino: String, sessionId: String)(implicit
     ec: ExecutionContext,
     hc: HeaderCarrier
-  ): Future[Either[UpstreamErrorResponse, IndividualDetailsDataCache]] =
+  ): EitherT[Future, UpstreamErrorResponse, IndividualDetailsDataCache] = EitherT {
     getIndividualDetailsDataCache(nino).flatMap {
       case Some(individualDetailsDataCache) =>
         logger.info(s"Individual details found in cache for Nino: $nino")
         Future.successful(Right(individualDetailsDataCache))
-      case None                             =>
+      case None =>
         logger.info(
           "Individual details data cache not found, potentially expired, attempting to fetch from external service and recreate cache."
         )
-        createNewIndividualDataCache(nino, sessionId)
+        createNewIndividualDataCache(nino, sessionId).value
     }
+  }
 
   def deleteIdDataFromCache(nino: String)(implicit ec: ExecutionContext): Future[Boolean] =
     individualDetailsRepository.deleteIndividualDetailsDataByNino(nino) map { r =>

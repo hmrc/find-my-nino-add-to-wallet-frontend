@@ -56,7 +56,7 @@ class NinoLetterControllerSpec extends SpecBase with IndividualDetailsFixtures w
 
       when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
         .thenReturn(
-          Future.successful(Right(fakeIndividualDetailsDataCache))
+          EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCache)
         )
 
       val application = applicationBuilderWithConfig()
@@ -81,7 +81,7 @@ class NinoLetterControllerSpec extends SpecBase with IndividualDetailsFixtures w
 
       when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
         .thenReturn(
-          Future.successful(Right(fakeIndividualDetailsDataCache))
+          EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCache)
         )
 
       val application = applicationBuilderWithConfig()
@@ -105,8 +105,8 @@ class NinoLetterControllerSpec extends SpecBase with IndividualDetailsFixtures w
       userLoggedInFMNUser(NinoUser)
       when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
         .thenReturn(
-          Future.successful(Right(fakeIndividualDetailsDataCacheWithCRN)),
-          Future.successful(Right(fakeIndividualDetailsDataCache))
+          EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCacheWithCRN),
+          EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCache)
         )
       when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
         .thenReturn(Future.successful(true))
@@ -139,7 +139,7 @@ class NinoLetterControllerSpec extends SpecBase with IndividualDetailsFixtures w
 
       when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
         .thenReturn(
-          Future.successful(Right(fakeIndividualDetailsDataCache))
+          EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCache)
         )
 
       val application = applicationBuilderWithConfig()

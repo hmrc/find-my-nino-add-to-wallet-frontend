@@ -18,13 +18,14 @@ package controllers
 
 import base.SpecBase
 import cats.data.EitherT
-import connectors._
+import connectors.*
 import controllers.auth.requests.UserRequest
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import models.individualDetails.IndividualDetailsDataCache
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{reset, times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import play.api.test.{DefaultAwaitTimeout, FakeRequest}
 import repositories.SessionRepository
 import services.{IndividualDetailsService, NPSService}
@@ -59,7 +60,7 @@ class StoreMyNinoControllerSpec
 
     reset(mockIndividualDetailsService)
     when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
-      .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCache)))
+      .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCache))
 
     reset(mockNPSService)
 
@@ -263,7 +264,7 @@ class StoreMyNinoControllerSpec
         .thenReturn(Future.successful(true))
 
       when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
-        .thenReturn(Future.successful(Left(UpstreamErrorResponse("Not Found", NOT_FOUND))))
+        .thenReturn(EitherT.leftT[Future, IndividualDetailsDataCache](UpstreamErrorResponse("Not Found", NOT_FOUND)))
 
       val application =
         applicationBuilderWithConfig()
@@ -293,7 +294,7 @@ class StoreMyNinoControllerSpec
         .thenReturn(Future.successful(true))
 
       when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
-        .thenReturn(Future.successful(Left(UpstreamErrorResponse(" ", UNPROCESSABLE_ENTITY))))
+        .thenReturn(EitherT.leftT[Future, IndividualDetailsDataCache](UpstreamErrorResponse(" ", UNPROCESSABLE_ENTITY)))
 
       val application =
         applicationBuilderWithConfig()
@@ -565,8 +566,8 @@ class StoreMyNinoControllerSpec
 
       when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
         .thenReturn(
-          Future.successful(Right(fakeIndividualDetailsDataCacheWithCRN)),
-          Future.successful(Right(fakeIndividualDetailsDataCache))
+          EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCacheWithCRN),
+          EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCache)
         )
       when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
         .thenReturn(Future.successful(true))
@@ -620,7 +621,7 @@ class StoreMyNinoControllerSpec
         .thenReturn(Future.successful(true))
 
       when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
-        .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCacheWithCRN)))
+        .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCacheWithCRN))
 
       val app =
         applicationBuilderWithConfig()
@@ -655,7 +656,7 @@ class StoreMyNinoControllerSpec
         .thenReturn(Future.successful(true))
 
       when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
-        .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCacheWithCRN)))
+        .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCacheWithCRN))
       when(mockNPSService.upliftCRN(any(), any())(any()))
         .thenReturn(EitherT.leftT[Future, Boolean](UpstreamErrorResponse(" ", INTERNAL_SERVER_ERROR)))
 

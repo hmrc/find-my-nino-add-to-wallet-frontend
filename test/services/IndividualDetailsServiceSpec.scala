@@ -58,7 +58,7 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec with ScalaFutures with Mo
     when(mockRepository.insertOrReplaceIndividualDetailsDataCache(any)(any[ExecutionContext]))
       .thenReturn(Future.successful("testNino"))
 
-    val result = service.getIdDataFromCache("testNino", "some-fake-Id")
+    val result = service.getIdDataFromCache("testNino", "some-fake-Id").value
 
     assert(result.futureValue isRight)
     assert(result.futureValue.fold(_ => false, _.individualDetailsData.nino == "AB123456C"))
@@ -77,7 +77,7 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec with ScalaFutures with Mo
     when(mockRepository.insertOrReplaceIndividualDetailsDataCache(any)(any[ExecutionContext]))
       .thenReturn(Future.successful("testNino"))
 
-    val result = service.getIdDataFromCache("testNino", "some-fake-Id")
+    val result = service.getIdDataFromCache("testNino", "some-fake-Id").value
 
     assert(result.futureValue isRight)
     assert(result.futureValue.fold(_ => false, _.individualDetailsData.nino == "AB123456C"))
@@ -103,7 +103,7 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec with ScalaFutures with Mo
     when(mockRepository.insertOrReplaceIndividualDetailsDataCache(any)(any[ExecutionContext]))
       .thenReturn(Future.successful("testNino"))
 
-    val result = service.getIdDataFromCache("testNino", "some-fake-Id")
+    val result = service.getIdDataFromCache("testNino", "some-fake-Id").value
 
     assert(result.futureValue isRight)
     assert(result.futureValue.fold(_ => false, _.individualDetailsData.nino == "AB123456C"))
@@ -124,7 +124,7 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec with ScalaFutures with Mo
     when(mockRepository.insertOrReplaceIndividualDetailsDataCache(any)(any[ExecutionContext]))
       .thenReturn(Future.successful("testNino"))
 
-    val result = service.getIdDataFromCache("testNino", "some-fake-Id")
+    val result = service.getIdDataFromCache("testNino", "some-fake-Id").value
 
     assert(result.futureValue isRight)
     assert(result.futureValue.fold(_ => false, _.individualDetailsData.nino == "AB123456C"))
@@ -141,7 +141,7 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec with ScalaFutures with Mo
     when(mockConnector.getIndividualDetails(any, any)(any, any))
       .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](HttpResponse(OK, individualRespJsonInvalid)))
 
-    val result = service.getIdDataFromCache("testNino", "some-fake-Id")
+    val result = service.getIdDataFromCache("testNino", "some-fake-Id").value
 
     whenReady(result.failed) { ex =>
       ex shouldBe a[JsResultException]
@@ -159,7 +159,7 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec with ScalaFutures with Mo
     when(mockConnector.getIndividualDetails(any, any)(any, any))
       .thenReturn(EitherT.leftT(UpstreamErrorResponse("Not found", 404)))
 
-    val result = service.getIdDataFromCache("testNino", "testSessionId")
+    val result = service.getIdDataFromCache("testNino", "testSessionId").value
     assert(result.futureValue.isLeft)
   }
 
@@ -187,7 +187,7 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec with ScalaFutures with Mo
     when(mockConnector.getIndividualDetails(any, any)(any, any))
       .thenReturn(EitherT.leftT(UpstreamErrorResponse("Not found", 404)))
 
-    val result = service.getIdDataFromCache(nino, "testSessionId")
+    val result = service.getIdDataFromCache(nino, "testSessionId").value
     assert(result.futureValue.isLeft)
   }
 
@@ -203,7 +203,7 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec with ScalaFutures with Mo
     when(mockConnector.getIndividualDetails(any, any)(any, any))
       .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](HttpResponse(OK, "")))
     assertThrows[RuntimeException] {
-      val result = service.getIdDataFromCache(nino, "testSessionId")
+      val result = service.getIdDataFromCache(nino, "testSessionId").value
       assert(result.futureValue.isLeft)
     }
   }
@@ -222,7 +222,7 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec with ScalaFutures with Mo
       .thenReturn(Future.successful(""))
 
     assertThrows[RuntimeException] {
-      val result = service.getIdDataFromCache(nino, "testSessionId")
+      val result = service.getIdDataFromCache(nino, "testSessionId").value
       assert(result.futureValue.isLeft)
     }
   }

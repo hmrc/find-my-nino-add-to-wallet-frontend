@@ -99,5 +99,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
   lazy val individualDetailsPort: String     = configuration.get[String]("microservice.services.individual-details.port")
   val individualDetailsServiceUrl: String    =
     s"$individualDetailsProtocol://$individualDetailsHost:$individualDetailsPort"
+    
+  val ninoByPost: String = "https://www.tax.service.gov.uk/fill-online/get-your-national-insurance-number-by-post"  
 
 }

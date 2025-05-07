@@ -10,7 +10,7 @@ object AppDependencies {
     play.sbt.PlayImport.ws,
     "uk.gov.hmrc"                   %% s"play-conditional-form-mapping-$playVersion"        %   "3.3.0",
     "uk.gov.hmrc.mongo"             %% s"hmrc-mongo-$playVersion"                           %   mongoVersion,
-    "org.apache.xmlgraphics"        % "fop"                                                 %   "2.10",
+    "org.apache.xmlgraphics"        % "fop"                                                 %   "2.11",
     "org.typelevel"                 %% "cats-core"                                          %   "2.13.0",
     "uk.gov.hmrc"                   %% s"sca-wrapper-$playVersion"                          %   "2.9.0",
     "com.google.auth"               % "google-auth-library-oauth2-http"                     %   "1.33.1",

@@ -25,16 +25,16 @@ import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import java.net.URLEncoder
 
 @Singleton
-class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig: ServicesConfig) {
+class FrontendAppConfig @Inject()(configuration: Configuration, servicesConfig: ServicesConfig) {
 
   val appName: String = configuration.get[String]("appName")
 
-  lazy val gtmContainer: String    = configuration.get[String]("tracking-consent-frontend.gtm.container")
-  val enc                          = URLEncoder.encode(_: String, "UTF-8")
-  lazy val generalQueriesUrl       = "https://www.gov.uk/contact-hmrc"
+  lazy val gtmContainer: String = configuration.get[String]("tracking-consent-frontend.gtm.container")
+  val enc = URLEncoder.encode(_: String, "UTF-8")
+  lazy val generalQueriesUrl = "https://www.gov.uk/contact-hmrc"
   lazy val enquiriesForIndividuals =
     "https://www.gov.uk/government/organisations/hm-revenue-customs/contact/national-insurance-enquiries-for-employees-and-individuals"
-  val serviceName                  = "save-your-national-insurance-number"
+  val serviceName = "save-your-national-insurance-number"
 
   def getBasGatewayFrontendSignOutUrl(continueUrl: String): String =
     basGatewayFrontendHost + s"/bas-gateway/sign-out-without-state?continue=$continueUrl"
@@ -47,9 +47,9 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
 
   lazy val feedbackSurveyFrontendHost = getExternalUrl(s"feedback-survey-frontend.host").getOrElse("")
 
-  val loginUrl: String                  = configuration.get[String]("urls.login")
-  val loginContinueUrl: String          = configuration.get[String]("urls.loginContinue")
-  val signOutUrl: String                = configuration.get[String]("sca-wrapper.signout.url")
+  val loginUrl: String = configuration.get[String]("urls.login")
+  val loginContinueUrl: String = configuration.get[String]("urls.loginContinue")
+  val signOutUrl: String = configuration.get[String]("sca-wrapper.signout.url")
   lazy val findMyNinoServiceUrl: String = servicesConfig.baseUrl("find-my-nino-add-to-wallet-service")
 
   def languageMap: Map[String, Lang] = Map(
@@ -57,7 +57,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
     "cy" -> Lang("cy")
   )
 
-  val cacheTtl: Long                  = configuration.get[Int]("mongodb.timeToLiveInSeconds")
+  val cacheTtl: Long = configuration.get[Int]("mongodb.timeToLiveInSeconds")
   val individualDetailsCacheTtl: Long = configuration.get[Int]("mongodb.individualDetailsTtlInSeconds")
 
   val encryptionKey: String = configuration.get[String]("mongodb.encryption.key")
@@ -66,24 +66,24 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
 
   lazy val googleWalletEnabled: Boolean =
     configuration.getOptional[Boolean]("features.google-wallet-enabled").getOrElse(false)
-  lazy val appleWalletEnabled: Boolean  =
+  lazy val appleWalletEnabled: Boolean =
     configuration.getOptional[Boolean]("features.apple-wallet-enabled").getOrElse(false)
-  lazy val crnUpliftEnabled: Boolean    = configuration.getOptional[Boolean]("features.crn-uplift-enabled").getOrElse(true)
+  lazy val crnUpliftEnabled: Boolean = configuration.getOptional[Boolean]("features.crn-uplift-enabled").getOrElse(true)
 
-  lazy val basGatewayFrontendHost: String     = getExternalUrl(s"bas-gateway-frontend.host").getOrElse("")
+  lazy val basGatewayFrontendHost: String = getExternalUrl(s"bas-gateway-frontend.host").getOrElse("")
   lazy val multiFactorAuthenticationUpliftUrl = s"$basGatewayFrontendHost/bas-gateway/uplift-mfa"
 
-  lazy val pertaxFrontendHost                             = getExternalUrl(s"pertax-frontend.host").getOrElse("")
+  lazy val pertaxFrontendHost = getExternalUrl(s"pertax-frontend.host").getOrElse("")
   lazy val checkNationalInsuranceRecordAndPension: String =
     s"$pertaxFrontendHost/personal-account/your-national-insurance-state-pension"
 
   lazy val origin: String = configuration.getOptional[String]("sosOrigin").orElse(Some(appName)).getOrElse("undefined")
 
-  private lazy val identityVerificationHost: String   = getExternalUrl(s"identity-verification.host").getOrElse("")
+  private lazy val identityVerificationHost: String = getExternalUrl(s"identity-verification.host").getOrElse("")
   private lazy val identityVerificationPrefix: String =
     getExternalUrl(s"identity-verification.prefix").getOrElse("mdtp")
-  lazy val identityVerificationUpliftUrl              = s"$identityVerificationHost/$identityVerificationPrefix/uplift"
-  val defaultOrigin: Origin                           = Origin("STORE_MY_NINO")
+  lazy val identityVerificationUpliftUrl = s"$identityVerificationHost/$identityVerificationPrefix/uplift"
+  val defaultOrigin: Origin = Origin("STORE_MY_NINO")
   lazy val saveYourNationalNumberFrontendHost: String =
     getExternalUrl(s"save-your-national-insurance-number-frontend.host").getOrElse("")
 
@@ -95,11 +95,11 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
 
   lazy val individualDetailsProtocol: String =
     configuration.get[String]("microservice.services.individual-details.protocol")
-  lazy val individualDetailsHost: String     = configuration.get[String]("microservice.services.individual-details.host")
-  lazy val individualDetailsPort: String     = configuration.get[String]("microservice.services.individual-details.port")
-  val individualDetailsServiceUrl: String    =
+  lazy val individualDetailsHost: String = configuration.get[String]("microservice.services.individual-details.host")
+  lazy val individualDetailsPort: String = configuration.get[String]("microservice.services.individual-details.port")
+  val individualDetailsServiceUrl: String =
     s"$individualDetailsProtocol://$individualDetailsHost:$individualDetailsPort"
-    
-  val ninoByPost: String = "https://www.tax.service.gov.uk/fill-online/get-your-national-insurance-number-by-post"  
+
+  val ninoByPost: String = "https://www.tax.service.gov.uk/fill-online/get-your-national-insurance-number-by-post"
 
 }

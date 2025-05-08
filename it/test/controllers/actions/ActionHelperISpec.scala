@@ -96,7 +96,7 @@ with Matchers {
           .willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR))
       )
 
-      val eitherResult = actionHelper.checkForCrn(nino, sessionId, fakeAuthContext, messages).value.futureValue
+      val eitherResult = actionHelper.checkForCrn(nino, sessionId, fakeAuthContext, messages).futureValue
 
       eitherResult mustBe a[Left[_, _]]
 
@@ -116,7 +116,7 @@ with Matchers {
           .willReturn(okJson(individualDetailsJson))
       )
 
-      val result = actionHelper.checkForCrn(nino, sessionId, fakeAuthContext, messages).value.futureValue
+      val result = actionHelper.checkForCrn(nino, sessionId, fakeAuthContext, messages).futureValue
 
       result mustBe a[Right[_, _]]
       val userRequest = result.toOption.get
@@ -141,7 +141,6 @@ with Matchers {
 
       val eitherResult = actionHelperWithDisabledFeature
         .checkForCrn(nino, sessionId, fakeAuthContext, messages)
-        .value
         .futureValue
 
       eitherResult mustBe a[Left[_, _]]
@@ -164,7 +163,7 @@ with Matchers {
           .willReturn(aResponse().withStatus(NO_CONTENT))
       )
 
-      val result = actionHelper.checkForCrn(nino, sessionId, fakeAuthContext, messages).value.futureValue
+      val result = actionHelper.checkForCrn(nino, sessionId, fakeAuthContext, messages).futureValue
 
       result mustBe a[Right[_, _]]
       val userRequest = result.toOption.get
@@ -196,7 +195,7 @@ with Matchers {
           .willReturn(aResponse().withStatus(UNPROCESSABLE_ENTITY).withBody(jsonUnprocessableEntityAlreadyAdult))
       )
 
-      val result = actionHelper.checkForCrn(nino, sessionId, fakeAuthContext, messages).value.futureValue
+      val result = actionHelper.checkForCrn(nino, sessionId, fakeAuthContext, messages).futureValue
 
       result mustBe a[Right[_, _]]
       val userRequest = result.toOption.get
@@ -222,7 +221,7 @@ with Matchers {
             .willReturn(aResponse().withStatus(errorCode))
         )
 
-        val eitherResult = actionHelper.checkForCrn(nino, sessionId, fakeAuthContext, messages).value.futureValue
+        val eitherResult = actionHelper.checkForCrn(nino, sessionId, fakeAuthContext, messages).futureValue
 
         eitherResult mustBe a[Left[_, _]]
 

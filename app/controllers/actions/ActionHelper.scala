@@ -45,7 +45,7 @@ class ActionHelper @Inject() (
   def checkForCrn[A](identifier: String, sessionId: String, authContext: AuthContext[A], messages: Messages)(implicit
     hc: HeaderCarrier,
     ec: ExecutionContext
-  ): EitherT[Future, Result, UserRequest[A]] = EitherT {
+  ): Future[Either[Result, UserRequest[A]]] =
     individualDetailsService.getIdDataFromCache(identifier, sessionId).value.flatMap {
       case Left(_) =>
         val messages: Messages = cc.messagesApi.preferred(authContext.request)
@@ -96,7 +96,6 @@ class ActionHelper @Inject() (
             Future.successful(Left(Ok(postalFormView()(authContext.request, frontendAppConfig, messages))))
         }
     }
-  }
 
   private def isFullNino(individualDetails: IndividualDetailsDataCache): Boolean =
     individualDetails.individualDetailsData.crnIndicator.toLowerCase.equals("false")

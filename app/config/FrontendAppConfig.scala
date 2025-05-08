@@ -39,13 +39,15 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
   def getBasGatewayFrontendSignOutUrl(continueUrl: String): String =
     basGatewayFrontendHost + s"/bas-gateway/sign-out-without-state?continue=$continueUrl"
 
-  private def getExternalUrl(key: String): Option[String] =
-    configuration.getOptional[String](s"external-url.$key")
+  private def getExternalUrl(serviceName: String): String =
+    configuration.get[String](s"external-url.$serviceName.host") +
+    configuration.getOptional[String](s"external-url.$serviceName.path").getOrElse("")
+    
 
   def getFeedbackSurveyUrl(origin: Origin): String =
     feedbackSurveyFrontendHost + "/feedback/" + enc(origin.origin)
 
-  lazy val feedbackSurveyFrontendHost = getExternalUrl(s"feedback-survey-frontend.host").getOrElse("")
+  lazy val feedbackSurveyFrontendHost = getExternalUrl("feedback-survey-frontend")
 
   val loginUrl: String                  = configuration.get[String]("urls.login")
   val loginContinueUrl: String          = configuration.get[String]("urls.loginContinue")
@@ -70,25 +72,25 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
     configuration.getOptional[Boolean]("features.apple-wallet-enabled").getOrElse(false)
   lazy val crnUpliftEnabled: Boolean    = configuration.getOptional[Boolean]("features.crn-uplift-enabled").getOrElse(true)
 
-  lazy val basGatewayFrontendHost: String     = getExternalUrl(s"bas-gateway-frontend.host").getOrElse("")
+  lazy val basGatewayFrontendHost: String     = getExternalUrl("bas-gateway-frontend")
   lazy val multiFactorAuthenticationUpliftUrl = s"$basGatewayFrontendHost/bas-gateway/uplift-mfa"
 
-  lazy val pertaxFrontendHost                             = getExternalUrl(s"pertax-frontend.host").getOrElse("")
+  lazy val pertaxFrontendHost                             = getExternalUrl("pertax-frontend")
   lazy val checkNationalInsuranceRecordAndPension: String =
     s"$pertaxFrontendHost/personal-account/your-national-insurance-state-pension"
 
   lazy val origin: String = configuration.getOptional[String]("sosOrigin").orElse(Some(appName)).getOrElse("undefined")
 
-  private lazy val identityVerificationHost: String   = getExternalUrl(s"identity-verification.host").getOrElse("")
+  private lazy val identityVerificationHost: String   = getExternalUrl("identity-verification")
   private lazy val identityVerificationPrefix: String =
-    getExternalUrl(s"identity-verification.prefix").getOrElse("mdtp")
+    getExternalUrl(s"identity-verification.prefix")
   lazy val identityVerificationUpliftUrl              = s"$identityVerificationHost/$identityVerificationPrefix/uplift"
   val defaultOrigin: Origin                           = Origin("STORE_MY_NINO")
   lazy val saveYourNationalNumberFrontendHost: String =
-    getExternalUrl(s"save-your-national-insurance-number-frontend.host").getOrElse("")
+    getExternalUrl("save-your-national-insurance-number-frontend")
 
   private lazy val taxEnrolmentAssignmentFrontendHost: String =
-    getExternalUrl(s"tax-enrolment-assignment-frontend.host").getOrElse("")
+    getExternalUrl("tax-enrolment-assignment-frontend")
 
   def getTaxEnrolmentAssignmentRedirectUrl(url: String): String =
     s"$taxEnrolmentAssignmentFrontendHost/protect-tax-info?redirectUrl=${enc(url)}"
@@ -100,7 +102,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
   val individualDetailsServiceUrl: String    =
     s"$individualDetailsProtocol://$individualDetailsHost:$individualDetailsPort"
 
-  val ninoByPost: String =
-    "https://www.tax.service.gov.uk/fill-online/get-your-national-insurance-number-by-post"
+  lazy val ninoByPost: String =
+    getExternalUrl("national-insurance-number-letter-spike-frontend")
 
 }

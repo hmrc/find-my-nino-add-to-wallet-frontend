@@ -82,7 +82,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
 
   private lazy val identityVerificationHost: String   = getExternalUrl("identity-verification")
   private lazy val identityVerificationPrefix: String =
-    configuration.get[String]("identity-verification.prefix")
+    configuration.get[String]("external-url.identity-verification.prefix")
   lazy val identityVerificationUpliftUrl              = s"$identityVerificationHost/$identityVerificationPrefix/uplift"
   val defaultOrigin: Origin                           = Origin("STORE_MY_NINO")
   lazy val saveYourNationalNumberFrontendHost: String =

@@ -41,8 +41,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
 
   private def getExternalUrl(serviceName: String): String =
     configuration.get[String](s"external-url.$serviceName.host") +
-    configuration.getOptional[String](s"external-url.$serviceName.path").getOrElse("")
-    
+      configuration.getOptional[String](s"external-url.$serviceName.path").getOrElse("")
 
   def getFeedbackSurveyUrl(origin: Origin): String =
     feedbackSurveyFrontendHost + "/feedback/" + enc(origin.origin)

@@ -18,13 +18,14 @@ package controllers
 
 import base.SpecBase
 import cats.data.EitherT
-import connectors._
+import connectors.*
 import controllers.auth.requests.UserRequest
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import models.individualDetails.IndividualDetailsDataCache
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{reset, times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import play.api.test.{DefaultAwaitTimeout, FakeRequest}
 import repositories.SessionRepository
 import services.{IndividualDetailsService, NPSService}
@@ -32,7 +33,7 @@ import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolment, Enrolments}
 import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
 import util.IndividualDetailsFixtures
-import util.Fixtures.{fakeIndividualDetailsDataCache, fakeIndividualDetailsDataCacheMissingNinoSuffix, fakeIndividualDetailsDataCacheWithCRN}
+import util.Fixtures.{fakeIndividualDetailsDataCache, fakeIndividualDetailsDataCacheWithCRN}
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
 import util.TestData.{NinoUser, NinoUserNoEnrolments, NinoUser_With_CL50, NinoUser_With_Credential_Strength_Weak, trustedHelper, trustedHelperUser}
 import views.html.{PassIdNotFoundView, RedirectToPostalFormView, StoreMyNinoView}
@@ -59,7 +60,7 @@ class StoreMyNinoControllerSpec
 
     reset(mockIndividualDetailsService)
     when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
-      .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCache)))
+      .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCache))
 
     reset(mockNPSService)
 
@@ -258,12 +259,12 @@ class StoreMyNinoControllerSpec
       }
     }
 
-    "must redirect to ErrorView when individuals details could not be found" in {
+    "must redirect to error view when individuals details could not be found" in {
       when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
         .thenReturn(Future.successful(true))
 
       when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
-        .thenReturn(Future.successful(Left(NOT_FOUND)))
+        .thenReturn(EitherT.leftT[Future, IndividualDetailsDataCache](UpstreamErrorResponse("Not Found", NOT_FOUND)))
 
       val application =
         applicationBuilderWithConfig()
@@ -283,18 +284,17 @@ class StoreMyNinoControllerSpec
 
         val result = route(application, request).value
 
-        status(result) mustEqual FAILED_DEPENDENCY
-        contentAsString(result) must include("Sorry, there is a problem with the service")
-
+        status(result) mustEqual INTERNAL_SERVER_ERROR
+        contentAsString(result) must include("Sorry, the service is unavailable")
       }
     }
 
-    "must redirect to technical error contact hmrc when individuals details could not be parsed" in {
+    "must redirect to error view when individuals details could not be parsed" in {
       when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
         .thenReturn(Future.successful(true))
 
       when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
-        .thenReturn(Future.successful(Left(UNPROCESSABLE_ENTITY)))
+        .thenReturn(EitherT.leftT[Future, IndividualDetailsDataCache](UpstreamErrorResponse(" ", UNPROCESSABLE_ENTITY)))
 
       val application =
         applicationBuilderWithConfig()
@@ -314,7 +314,7 @@ class StoreMyNinoControllerSpec
 
         val result = route(application, request).value
 
-        status(result) mustEqual OK
+        status(result) mustEqual INTERNAL_SERVER_ERROR
         contentAsString(result) must include("Sorry, the service is unavailable")
         contentAsString(result) must include("To get help with this service, you need to")
         contentAsString(result) must include("contact HMRC")
@@ -566,8 +566,8 @@ class StoreMyNinoControllerSpec
 
       when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
         .thenReturn(
-          Future.successful(Right(fakeIndividualDetailsDataCacheWithCRN)),
-          Future.successful(Right(fakeIndividualDetailsDataCache))
+          EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCacheWithCRN),
+          EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCache)
         )
       when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
         .thenReturn(Future.successful(true))
@@ -616,44 +616,12 @@ class StoreMyNinoControllerSpec
       }
     }
 
-    "must return OK and RedirectToPostalFormView when NINO is missing suffix" in {
-      when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
-        .thenReturn(Future.successful(true))
-
-      when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
-        .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCacheMissingNinoSuffix)))
-
-      val app =
-        applicationBuilderWithConfig()
-          .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
-            inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
-            inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
-            inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),
-            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
-          )
-          .build()
-
-      val view = app.injector.instanceOf[RedirectToPostalFormView]
-
-      running(app) {
-        userLoggedInFMNUser(NinoUser)
-        val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
-          .withSession(("authToken", "Bearer 123"))
-        val result  = route(app, request).value
-
-        status(result) mustEqual OK
-        contentAsString(result).removeAllNonces() mustEqual
-          view()(request.withAttrs(requestAttributeMap), frontendAppConfig, messages(app)).toString
-      }
-    }
-
     "must return OK and RedirectToPostalFormView when CRN uplift is toggled off" in {
       when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
         .thenReturn(Future.successful(true))
 
       when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
-        .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCacheWithCRN)))
+        .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCacheWithCRN))
 
       val app =
         applicationBuilderWithConfig()
@@ -683,14 +651,14 @@ class StoreMyNinoControllerSpec
       }
     }
 
-    "must return OK and RedirectToPostalFormView for BAD_REQUEST from CRN uplift" in {
+    "must return INTERNAL_SERVER_ERROR with error view for Left(UpstreamErrorResponse) from CRN uplift" in {
       when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
         .thenReturn(Future.successful(true))
 
       when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
-        .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCacheWithCRN)))
+        .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCacheWithCRN))
       when(mockNPSService.upliftCRN(any(), any())(any()))
-        .thenReturn(EitherT.leftT[Future, Boolean](UpstreamErrorResponse("Some error", BAD_REQUEST)))
+        .thenReturn(EitherT.leftT[Future, Boolean](UpstreamErrorResponse(" ", INTERNAL_SERVER_ERROR)))
 
       val application =
         applicationBuilderWithConfig()
@@ -704,91 +672,14 @@ class StoreMyNinoControllerSpec
           )
           .build()
 
-      val view = application.injector.instanceOf[RedirectToPostalFormView]
-
       running(application) {
         userLoggedInFMNUser(NinoUser)
         val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
         val result  = route(application, request).value
 
-        status(result) mustEqual OK
-        contentAsString(result).removeAllNonces() mustEqual
-          view()(request.withAttrs(requestAttributeMap), frontendAppConfig, messages(application)).toString
-
-        verify(mockNPSService, times(1)).upliftCRN(any(), any())(any())
-      }
-    }
-
-    "must return OK and RedirectToPostalFormView for UNPROCESSABLE_ENTITY from CRN uplift" in {
-      when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
-        .thenReturn(Future.successful(true))
-
-      when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
-        .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCacheWithCRN)))
-      when(mockNPSService.upliftCRN(any(), any())(any()))
-        .thenReturn(EitherT.leftT[Future, Boolean](UpstreamErrorResponse("Unprocessable Entity", UNPROCESSABLE_ENTITY)))
-
-      val application =
-        applicationBuilderWithConfig()
-          .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
-            inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
-            inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
-            inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),
-            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
-            inject.bind[NPSService].toInstance(mockNPSService)
-          )
-          .build()
-
-      val view = application.injector.instanceOf[RedirectToPostalFormView]
-
-      running(application) {
-        userLoggedInFMNUser(NinoUser)
-        val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
-          .withSession(("authToken", "Bearer 123"))
-        val result  = route(application, request).value
-
-        status(result) mustEqual OK
-        contentAsString(result).removeAllNonces() mustEqual
-          view()(request.withAttrs(requestAttributeMap), frontendAppConfig, messages(application)).toString
-
-        verify(mockNPSService, times(1)).upliftCRN(any(), any())(any())
-      }
-    }
-
-    "must return OK and RedirectToPostalFormView for NOT_FOUND from CRN uplift" in {
-      when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
-        .thenReturn(Future.successful(true))
-
-      when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
-        .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCacheWithCRN)))
-      when(mockNPSService.upliftCRN(any(), any())(any()))
-        .thenReturn(EitherT.leftT[Future, Boolean](UpstreamErrorResponse("Not Found", NOT_FOUND)))
-
-      val application =
-        applicationBuilderWithConfig()
-          .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
-            inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
-            inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
-            inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),
-            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
-            inject.bind[NPSService].toInstance(mockNPSService)
-          )
-          .build()
-
-      val view = application.injector.instanceOf[RedirectToPostalFormView]
-
-      running(application) {
-        userLoggedInFMNUser(NinoUser)
-        val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
-          .withSession(("authToken", "Bearer 123"))
-        val result  = route(application, request).value
-
-        status(result) mustEqual OK
-        contentAsString(result).removeAllNonces() mustEqual
-          view()(request.withAttrs(requestAttributeMap), frontendAppConfig, messages(application)).toString
+        status(result) mustEqual INTERNAL_SERVER_ERROR
+        contentAsString(result) must include("Sorry, the service is unavailable")
 
         verify(mockNPSService, times(1)).upliftCRN(any(), any())(any())
       }

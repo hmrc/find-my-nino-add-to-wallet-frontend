@@ -88,10 +88,7 @@ class EncryptedIndividualDetailsRepository @Inject() (mongoComponent: MongoCompo
         optEncryptedIndividualDetailsDataCache.map(encryptedIndividualDetailsDataCache =>
           decrypt(encryptedIndividualDetailsDataCache, appConfig.encryptionKey)
         )
-      ) recoverWith { case e: Throwable =>
-      logger.info(s"Failed finding Individual Details Data by Nino: $nino")
-      Future.failed(e)
-    }
+      )
   }
 
   def deleteIndividualDetailsDataByNino(
@@ -101,8 +98,5 @@ class EncryptedIndividualDetailsRepository @Inject() (mongoComponent: MongoCompo
     collection
       .deleteOne(filter)
       .toFuture()
-  } recoverWith { case e: Exception =>
-    logger.warn(s"Failed deleting Individual Details Data by Nino")
-    Future.failed(e)
   }
 }

@@ -325,10 +325,4 @@ object Fixtures extends IndividualDetailsFixtures {
 
   val fakeIndividualDetailsDataCacheWithCRN =
     fakeIndividualDetailsDataCache.copy(individualDetailsData = fakeIndividualDetailsDataWithCRN)
-
-  val fakeIndividualDetailsDataCacheMissingNinoSuffix = fakeIndividualDetailsDataCache
-    .copy(individualDetailsData =
-      fakeIndividualDetailsData
-        .copy(nino = "AB123456")
-    )
 }

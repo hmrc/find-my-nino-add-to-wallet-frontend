@@ -18,14 +18,15 @@ package controllers
 
 import base.SpecBase
 import cats.data.EitherT
-import connectors._
+import connectors.*
 import controllers.auth.requests.UserRequest
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import models.individualDetails.IndividualDetailsDataCache
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{reset, when}
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import repositories.SessionRepository
 import services.IndividualDetailsService
 import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolment, Enrolments}
@@ -35,7 +36,7 @@ import util.Fixtures.{fakeIndividualDetailsDataCache, fakeIndividualDetailsDataC
 import util.IndividualDetailsFixtures
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
 import util.TestData.{NinoUser, NinoUser_With_CL50, trustedHelperUser}
-import views.html._
+import views.html.*
 
 import java.util.Base64
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -65,7 +66,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
     reset(mockIndividualDetailsService)
     when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
-      .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCache)))
+      .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCache))
 
     reset(mockIdentityVerificationFrontendConnector)
     when(mockIdentityVerificationFrontendConnector.getIVJourneyStatus(any())(any(), any()))
@@ -89,10 +90,10 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
     "Apple wallet enabled" - {
 
-      "must redirect to errorHandler.standardErrorTemplate when ID cache is not found" in {
+      "must redirect to error view when ID cache is not found" in {
 
         when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
-          .thenReturn(Future.successful(Left(NOT_FOUND)))
+          .thenReturn(EitherT.leftT[Future, IndividualDetailsDataCache](UpstreamErrorResponse("Not Found", NOT_FOUND)))
 
         val application = applicationBuilderWithConfig()
           .overrides(
@@ -111,8 +112,8 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
           val result = route(application, request).value
 
-          status(result) mustEqual FAILED_DEPENDENCY
-          contentAsString(result) must include("Sorry, there is a problem with the service")
+          status(result) mustEqual INTERNAL_SERVER_ERROR
+          contentAsString(result) must include("Sorry, the service is unavailable")
         }
       }
 
@@ -133,7 +134,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
         val view = application.injector.instanceOf[AppleWalletView]
 
         when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
-          .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCache)))
+          .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCache))
 
         running(application) {
           userLoggedInFMNUser(NinoUser)
@@ -166,7 +167,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
         val view = application.injector.instanceOf[AppleWalletView]
 
         when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
-          .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCacheNoAddress)))
+          .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCacheNoAddress))
 
         running(application) {
           userLoggedInFMNUser(NinoUser)
@@ -420,7 +421,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
     "Apple wallet disabled" - {
 
-      "must redirect to errorHandler.standardErrorTemplate when ID cache is not found" in {
+      "must redirect to error view when ID cache is not found" in {
         val application =
           applicationBuilderWithConfig()
             .overrides(
@@ -433,7 +434,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
             .build()
 
         when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
-          .thenReturn(Future.successful(Left(NOT_FOUND)))
+          .thenReturn(EitherT.leftT[Future, IndividualDetailsDataCache](UpstreamErrorResponse("Not Found", NOT_FOUND)))
 
         running(application) {
           userLoggedInFMNUser(NinoUser)
@@ -442,8 +443,8 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
           val result = route(application, request).value
 
-          status(result) mustEqual FAILED_DEPENDENCY
-          contentAsString(result) must include("Sorry, there is a problem with the service")
+          status(result) mustEqual INTERNAL_SERVER_ERROR
+          contentAsString(result) must include("Sorry, the service is unavailable")
         }
       }
 
@@ -460,7 +461,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
             .build()
 
         when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
-          .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCache)))
+          .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCache))
 
         running(application) {
           userLoggedInFMNUser(NinoUser)

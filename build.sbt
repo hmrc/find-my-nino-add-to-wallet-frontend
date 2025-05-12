@@ -1,5 +1,6 @@
 import play.sbt.routes.RoutesKeys
 import sbt.Def
+import scoverage.ScoverageKeys
 import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
 import uk.gov.hmrc.DefaultBuildSettings
 
@@ -10,10 +11,9 @@ ThisBuild / scalaVersion := "3.3.5"
 
 
 lazy val scoverageSettings = {
-  import scoverage.ScoverageKeys
   Seq(
     // Semicolon-separated list of regexs matching classes to exclude
-    ScoverageKeys.coverageExcludedPackages := "<empty>;Reverse.*;models/.data/..*;view.*;models.*;pages.*;.*queries;.*(AuthService|BuildInfo|Routes).*;util.*",
+    ScoverageKeys.coverageExcludedPackages := "<empty>;Reverse.*;models/.data/..*;view.*;models.*;pages.*;.*queries;.*(AuthService|BuildInfo|Routes).*;util.*;.*\\$anon.*",
     ScoverageKeys.coverageExcludedFiles := ";.*services.AuditService;.*util.BaseResourceStreamResolver;.*util.FopURIResolver;.*util.StylesheetResourceStreamResolver;.*util.XmlFoToPDF;",
     ScoverageKeys.coverageMinimumStmtTotal := 90,
     ScoverageKeys.coverageFailOnMinimum := true,

@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 
 package services
 
+import cats.data.EitherT
+import cats.instances.future.*
 import com.mongodb.client.result.DeleteResult
 import connectors.IndividualDetailsConnector
 import org.mockito.ArgumentMatchers.any
@@ -23,12 +25,13 @@ import org.mockito.Mockito.*
 import org.mongodb.scala.MongoException
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers._
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.http.Status.OK
-import play.api.libs.json.Json
+import play.api.libs.json.{JsResultException, Json}
 import repositories.IndividualDetailsRepository
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
-import util.Fixtures.{fakeIndividualDetails, fakeIndividualDetailsDataCache, fakeIndividualDetailsWithKnownAsName, fakeIndividualDetailsWithoutMiddleName, individualRespJsonInvalid}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, UpstreamErrorResponse}
+import util.Fixtures.*
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt
@@ -51,11 +54,11 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec with ScalaFutures with Mo
     when(mockRepository.findIndividualDetailsDataByNino(any)(any))
       .thenReturn(Future.successful(None))
     when(mockConnector.getIndividualDetails(any, any)(any, any))
-      .thenReturn(Future.successful(HttpResponse(200, fakeIndividualDetailsJson)))
+      .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](HttpResponse(OK, fakeIndividualDetailsJson)))
     when(mockRepository.insertOrReplaceIndividualDetailsDataCache(any)(any[ExecutionContext]))
       .thenReturn(Future.successful("testNino"))
 
-    val result = service.getIdDataFromCache("testNino", "some-fake-Id")
+    val result = service.getIdDataFromCache("testNino", "some-fake-Id").value
 
     assert(result.futureValue isRight)
     assert(result.futureValue.fold(_ => false, _.individualDetailsData.nino == "AB123456C"))
@@ -74,7 +77,7 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec with ScalaFutures with Mo
     when(mockRepository.insertOrReplaceIndividualDetailsDataCache(any)(any[ExecutionContext]))
       .thenReturn(Future.successful("testNino"))
 
-    val result = service.getIdDataFromCache("testNino", "some-fake-Id")
+    val result = service.getIdDataFromCache("testNino", "some-fake-Id").value
 
     assert(result.futureValue isRight)
     assert(result.futureValue.fold(_ => false, _.individualDetailsData.nino == "AB123456C"))
@@ -96,11 +99,11 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec with ScalaFutures with Mo
     when(mockRepository.findIndividualDetailsDataByNino(any)(any))
       .thenReturn(Future.successful(None))
     when(mockConnector.getIndividualDetails(any, any)(any, any))
-      .thenReturn(Future.successful(HttpResponse(200, fakeIndividualDetailsJson)))
+      .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](HttpResponse(OK, fakeIndividualDetailsJson)))
     when(mockRepository.insertOrReplaceIndividualDetailsDataCache(any)(any[ExecutionContext]))
       .thenReturn(Future.successful("testNino"))
 
-    val result = service.getIdDataFromCache("testNino", "some-fake-Id")
+    val result = service.getIdDataFromCache("testNino", "some-fake-Id").value
 
     assert(result.futureValue isRight)
     assert(result.futureValue.fold(_ => false, _.individualDetailsData.nino == "AB123456C"))
@@ -117,18 +120,18 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec with ScalaFutures with Mo
     when(mockRepository.findIndividualDetailsDataByNino(any)(any))
       .thenReturn(Future.successful(None))
     when(mockConnector.getIndividualDetails(any, any)(any, any))
-      .thenReturn(Future.successful(HttpResponse(200, fakeIndividualDetailsJson)))
+      .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](HttpResponse(OK, fakeIndividualDetailsJson)))
     when(mockRepository.insertOrReplaceIndividualDetailsDataCache(any)(any[ExecutionContext]))
       .thenReturn(Future.successful("testNino"))
 
-    val result = service.getIdDataFromCache("testNino", "some-fake-Id")
+    val result = service.getIdDataFromCache("testNino", "some-fake-Id").value
 
     assert(result.futureValue isRight)
     assert(result.futureValue.fold(_ => false, _.individualDetailsData.nino == "AB123456C"))
     assert(result.futureValue.fold(_ => false, _.individualDetailsData.fullName == "Dr KNOWN AS NAME PhD"))
   }
 
-  "IndividualDetailsService" should "return a left of unprcessible entity where invalid json is returned" in {
+  "IndividualDetailsService" should "throw a JsResultException when invalid json is returned from api" in {
     val mockRepository = mock[IndividualDetailsRepository]
     val mockConnector  = mock[IndividualDetailsConnector]
     val service        = new IndividualDetailsServiceImpl(mockRepository, mockConnector)
@@ -136,11 +139,13 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec with ScalaFutures with Mo
     when(mockRepository.findIndividualDetailsDataByNino(any)(any))
       .thenReturn(Future.successful(None))
     when(mockConnector.getIndividualDetails(any, any)(any, any))
-      .thenReturn(Future.successful(HttpResponse(OK, individualRespJsonInvalid)))
+      .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](HttpResponse(OK, individualRespJsonInvalid)))
 
-    val result = service.getIdDataFromCache("testNino", "some-fake-Id")
+    val result = service.getIdDataFromCache("testNino", "some-fake-Id").value
 
-    assert(result.futureValue isLeft)
+    whenReady(result.failed) { ex =>
+      ex shouldBe a[JsResultException]
+    }
   }
 
   "IndividualDetailsService" should "get None from cache for non-existent NINO in cache and from 1694API" in {
@@ -152,9 +157,9 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec with ScalaFutures with Mo
       .thenReturn(Future.successful(None))
 
     when(mockConnector.getIndividualDetails(any, any)(any, any))
-      .thenReturn(Future.successful(HttpResponse(404, "Not found")))
+      .thenReturn(EitherT.leftT(UpstreamErrorResponse("Not found", 404)))
 
-    val result = service.getIdDataFromCache("testNino", "testSessionId")
+    val result = service.getIdDataFromCache("testNino", "testSessionId").value
     assert(result.futureValue.isLeft)
   }
 
@@ -180,9 +185,9 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec with ScalaFutures with Mo
       .thenReturn(Future.failed(new MongoException("MongoException")))
 
     when(mockConnector.getIndividualDetails(any, any)(any, any))
-      .thenReturn(Future.successful(HttpResponse(404, "Not found")))
+      .thenReturn(EitherT.leftT(UpstreamErrorResponse("Not found", 404)))
 
-    val result = service.getIdDataFromCache(nino, "testSessionId")
+    val result = service.getIdDataFromCache(nino, "testSessionId").value
     assert(result.futureValue.isLeft)
   }
 
@@ -196,9 +201,9 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec with ScalaFutures with Mo
       .thenReturn(Future.successful(None))
 
     when(mockConnector.getIndividualDetails(any, any)(any, any))
-      .thenReturn(Future.successful(HttpResponse(200, "")))
+      .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](HttpResponse(OK, "")))
     assertThrows[RuntimeException] {
-      val result = service.getIdDataFromCache(nino, "testSessionId")
+      val result = service.getIdDataFromCache(nino, "testSessionId").value
       assert(result.futureValue.isLeft)
     }
   }
@@ -212,12 +217,12 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec with ScalaFutures with Mo
     when(mockRepository.findIndividualDetailsDataByNino(any)(any))
       .thenReturn(Future.successful(None))
     when(mockConnector.getIndividualDetails(any, any)(any, any))
-      .thenReturn(Future.successful(HttpResponse(200, fakeIndividualDetailsJson)))
+      .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](HttpResponse(OK, fakeIndividualDetailsJson)))
     when(mockRepository.insertOrReplaceIndividualDetailsDataCache(any)(any[ExecutionContext]))
       .thenReturn(Future.successful(""))
 
     assertThrows[RuntimeException] {
-      val result = service.getIdDataFromCache(nino, "testSessionId")
+      val result = service.getIdDataFromCache(nino, "testSessionId").value
       assert(result.futureValue.isLeft)
     }
   }

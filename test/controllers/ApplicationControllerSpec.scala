@@ -52,7 +52,7 @@ class ApplicationControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
     reset(mockIndividualDetailsService)
     when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
-      .thenReturn(Future.successful(Right(fakeIndividualDetailsDataCache)))
+      .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCache))
 
     reset(mockIdentityVerificationFrontendConnector)
     when(mockIdentityVerificationFrontendConnector.getIVJourneyStatus(any())(any(), any()))

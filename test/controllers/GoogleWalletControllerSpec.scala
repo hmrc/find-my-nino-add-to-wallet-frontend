@@ -32,8 +32,8 @@ import services.IndividualDetailsService
 import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolment, Enrolments}
 import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
-import util.IndividualDetailsFixtures
 import util.Fixtures.fakeIndividualDetailsDataCache
+import util.IndividualDetailsFixtures
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
 import util.TestData.{NinoUser, trustedHelperUser}
 import views.html.*
@@ -63,7 +63,7 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
     when(mockSessionRepository.get(any())) thenReturn Future.successful(Some(emptyUserAnswers))
 
     reset(mockIndividualDetailsService)
-    when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
+    when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
       .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCache))
 
     reset(mockIdentityVerificationFrontendConnector)
@@ -101,7 +101,7 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
             .configure("features.google-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true)
             .build()
 
-        when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
+        when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
           .thenReturn(EitherT.leftT[Future, IndividualDetailsDataCache](UpstreamErrorResponse("Not Found", NOT_FOUND)))
 
         running(application) {
@@ -136,10 +136,10 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
             .withSession(("authToken", "Bearer 123"))
           val result  = route(application, request).value
           status(result) mustEqual OK
-          contentAsString(result).removeAllNonces() mustEqual (view(passId, false)(
+          contentAsString(result).removeAllNonces() mustEqual view(passId, false)(
             request.withAttrs(requestAttributeMap),
             messages(application)
-          ).toString())
+          ).toString()
         }
       }
 
@@ -193,11 +193,11 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
             None
           )
 
-          contentAsString(result).removeAllNonces() mustEqual (view()(
+          contentAsString(result).removeAllNonces() mustEqual view()(
             userRequest,
             messages(application),
             scala.concurrent.ExecutionContext.global
-          ).toString())
+          ).toString()
 
         }
       }
@@ -251,11 +251,11 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
             None
           )
 
-          contentAsString(result).removeAllNonces() mustEqual (view()(
+          contentAsString(result).removeAllNonces() mustEqual view()(
             userRequest,
             messages(application),
             scala.concurrent.ExecutionContext.global
-          ).toString())
+          ).toString()
 
         }
       }
@@ -314,7 +314,7 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
             .configure("features.google-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true)
             .build()
 
-        when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
+        when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
           .thenReturn(EitherT.leftT[Future, IndividualDetailsDataCache](UpstreamErrorResponse("Not Found", NOT_FOUND)))
 
         running(application) {
@@ -401,11 +401,11 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
             None
           )
 
-          contentAsString(result).removeAllNonces() mustEqual (view()(
+          contentAsString(result).removeAllNonces() mustEqual view()(
             userRequest,
             messages(application),
             scala.concurrent.ExecutionContext.global
-          ).toString())
+          ).toString()
 
         }
       }
@@ -459,11 +459,11 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
             None
           )
 
-          contentAsString(result).removeAllNonces() mustEqual (view()(
+          contentAsString(result).removeAllNonces() mustEqual view()(
             userRequest,
             messages(application),
             scala.concurrent.ExecutionContext.global
-          ).toString())
+          ).toString()
 
         }
       }

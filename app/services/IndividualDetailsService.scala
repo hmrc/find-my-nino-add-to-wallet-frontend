@@ -18,11 +18,9 @@ package services
 
 import cats.data.EitherT
 import com.google.inject.ImplementedBy
-import connectors.IndividualDetailsConnector
-import models.individualDetails.*
-import org.mongodb.scala.MongoException
+import connectors.CachingIndividualDetailsConnector
+import models.individualDetails.IndividualDetailsDataCache
 import play.api.Logging
-import repositories.IndividualDetailsRepoTrait
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
 import javax.inject.Inject
@@ -30,92 +28,26 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @ImplementedBy(classOf[IndividualDetailsServiceImpl])
 trait IndividualDetailsService {
-  def getIdDataFromCache(nino: String, sessionId: String)(implicit
-    ec: ExecutionContext,
-    hc: HeaderCarrier
+  def getIdData(nino: String, sessionId: String)(implicit
+                                                 ec: ExecutionContext,
+                                                 hc: HeaderCarrier
   ): EitherT[Future, UpstreamErrorResponse, IndividualDetailsDataCache]
-  def deleteIdDataFromCache(nino: String)(implicit ec: ExecutionContext): Future[Boolean]
+
+  def deleteIdData(nino: String)(implicit ec: ExecutionContext): Future[Boolean]
 }
 
 class IndividualDetailsServiceImpl @Inject() (
-  individualDetailsRepository: IndividualDetailsRepoTrait,
-  individualDetailsConnector: IndividualDetailsConnector
-)(implicit ec: ExecutionContext)
-    extends IndividualDetailsService
+                                               connector: CachingIndividualDetailsConnector
+                                             )
+  extends IndividualDetailsService
     with Logging {
 
-  implicit val hc: HeaderCarrier = HeaderCarrier()
-
-  private def insertOrReplaceIndividualDetailsDataCache(
-    sessionId: String,
-    individualDetails: IndividualDetails
-  ): Future[String] =
-    individualDetailsRepository.insertOrReplaceIndividualDetailsDataCache(
-      getIndividualDetailsDataCache(sessionId, individualDetails)
-    )
-
-  private def getIndividualDetailsDataCache(nino: String): Future[Option[IndividualDetailsDataCache]] =
-    individualDetailsRepository.findIndividualDetailsDataByNino(nino) map {
-      case Some(individualDetailsData) => Some(individualDetailsData)
-      case _                           => None
-    } recover { case e: MongoException =>
-      logger.warn(s"Failed finding Individual Details Data by NINO: $nino, ${e.getMessage}")
-      None
-    }
-
-  private def getIndividualDetailsDataCache(
-    sessionId: String,
-    individualDetails: IndividualDetails
-  ): IndividualDetailsDataCache = {
-
-    val iDetails = IndividualDetailsData(
-      individualDetails.getFullName,
-      individualDetails.preferredName.firstForename,
-      individualDetails.preferredName.surname,
-      individualDetails.getInitialsName,
-      individualDetails.dateOfBirth,
-      individualDetails.getNino,
-      individualDetails.getAddressData,
-      individualDetails.crnIndicator.asString
-    )
-
-    IndividualDetailsDataCache(
-      sessionId,
-      iDetails
-    )
-  }
-
-  private def createNewIndividualDataCache(nino: String, sessionId: String)(implicit
-    ec: ExecutionContext,
-    hc: HeaderCarrier
+  def getIdData(nino: String, sessionId: String)(implicit
+                                                 ec: ExecutionContext,
+                                                 hc: HeaderCarrier
   ): EitherT[Future, UpstreamErrorResponse, IndividualDetailsDataCache] =
-    for {
-      individualDetails      <- individualDetailsConnector
-                                  .getIndividualDetails(nino, "Y")
-      individualDetailsObject = individualDetails.json.as[IndividualDetails]
-      _                      <- EitherT[Future, UpstreamErrorResponse, String](
-                                  insertOrReplaceIndividualDetailsDataCache(sessionId, individualDetailsObject).map(Right(_))
-                                )
-    } yield getIndividualDetailsDataCache(sessionId, individualDetailsObject)
+    connector.getIndividualDetailsWithCache(nino, sessionId)
 
-  def getIdDataFromCache(nino: String, sessionId: String)(implicit
-    ec: ExecutionContext,
-    hc: HeaderCarrier
-  ): EitherT[Future, UpstreamErrorResponse, IndividualDetailsDataCache] = EitherT {
-    getIndividualDetailsDataCache(nino).flatMap {
-      case Some(individualDetailsDataCache) =>
-        logger.info(s"Individual details found in cache for Nino: $nino")
-        Future.successful(Right(individualDetailsDataCache))
-      case None                             =>
-        logger.info(
-          "Individual details data cache not found, potentially expired, attempting to fetch from external service and recreate cache."
-        )
-        createNewIndividualDataCache(nino, sessionId).value
-    }
-  }
-
-  def deleteIdDataFromCache(nino: String)(implicit ec: ExecutionContext): Future[Boolean] =
-    individualDetailsRepository.deleteIndividualDetailsDataByNino(nino) map { r =>
-      r.wasAcknowledged()
-    }
+  def deleteIdData(nino: String)(implicit ec: ExecutionContext): Future[Boolean] =
+    connector.deleteIndividualDetailsCache(nino)
 }

@@ -18,9 +18,9 @@ package controllers.actions
 
 import com.google.inject.Inject
 import controllers.auth.AuthContext
-import controllers.auth.requests._
+import controllers.auth.requests.*
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
-import play.api.mvc._
+import play.api.mvc.*
 import services.IndividualDetailsService
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
@@ -49,7 +49,7 @@ class CheckChildRecordActionWithCacheInvalidation @Inject() (
         throw new IllegalArgumentException("Session is required")
       )
 
-    individualDetailsService.deleteIdDataFromCache(identifier).flatMap {
+    individualDetailsService.deleteIdData(identifier).flatMap {
       case true => actionHelper.checkForCrn(identifier, sessionId, authContext, messages)
       case _    => throw new RuntimeException("Failed to invalidate individual details data cache")
     }

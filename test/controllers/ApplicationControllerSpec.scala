@@ -23,18 +23,18 @@ import connectors.IdentityVerificationFrontendConnector
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{reset, when}
 import org.scalatestplus.mockito.MockitoSugar
-import play.api.inject
+import play.api.{Application, inject}
 import play.api.mvc.{AnyContentAsEmpty, MessagesControllerComponents, Result}
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import repositories.SessionRepository
-import services._
+import services.*
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.UpstreamErrorResponse
 import uk.gov.hmrc.http.HttpResponse
 import util.{Fixtures, IndividualDetailsFixtures, UserDetails}
-import views.html.identity._
-import cats.instances.future._
+import views.html.identity.*
+import cats.instances.future.*
 import uk.gov.hmrc.domain.Nino
 import util.Fixtures.{buildFakeRequestWithAuth, fakeIndividualDetailsDataCache}
 
@@ -51,7 +51,7 @@ class ApplicationControllerSpec extends SpecBase with IndividualDetailsFixtures 
     when(mockSessionRepository.get(any())) thenReturn Future.successful(Some(emptyUserAnswers))
 
     reset(mockIndividualDetailsService)
-    when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
+    when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
       .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCache))
 
     reset(mockIdentityVerificationFrontendConnector)
@@ -60,7 +60,7 @@ class ApplicationControllerSpec extends SpecBase with IndividualDetailsFixtures 
   }
 
   val mockSessionRepository: SessionRepository                                         = mock[SessionRepository]
-  val mockIndividualDetailsService                                                     = mock[IndividualDetailsService]
+  val mockIndividualDetailsService: IndividualDetailsService = mock[IndividualDetailsService]
   val mockIdentityVerificationFrontendConnector: IdentityVerificationFrontendConnector =
     mock[IdentityVerificationFrontendConnector]
   val mockIdentityVerificationFrontendService: IdentityVerificationFrontendService     =
@@ -76,7 +76,7 @@ class ApplicationControllerSpec extends SpecBase with IndividualDetailsFixtures 
     lazy val getIVJourneyStatusResponse: EitherT[Future, UpstreamErrorResponse, IdentityVerificationResponse] =
       EitherT[Future, UpstreamErrorResponse, IdentityVerificationResponse](Future.successful(Right(Success)))
 
-    lazy val application = applicationBuilderWithConfig()
+    lazy val application: Application = applicationBuilderWithConfig()
       .overrides(
         inject.bind[SessionRepository].toInstance(mockSessionRepository),
         inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
@@ -112,7 +112,7 @@ class ApplicationControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
       "return BAD_REQUEST status when completionURL is empty" in new LocalSetup {
 
-        val result =
+        val result: Future[Result] =
           routeWrapper(
             buildFakeRequestWithAuth("GET", "/save-your-national-insurance-number/do-uplift?redirectUrl=")
           ).get
@@ -304,7 +304,7 @@ class ApplicationControllerSpec extends SpecBase with IndividualDetailsFixtures 
       }
 
       "return bad request when continueUrl is not relative" in new LocalSetup {
-        val result = routeWrapper(
+        val result: Future[Result] = routeWrapper(
           buildFakeRequestWithAuth(
             "GET",
             "/save-your-national-insurance-number/identity-check-complete?continueUrl=http://example.com&journeyId=XXXXX"

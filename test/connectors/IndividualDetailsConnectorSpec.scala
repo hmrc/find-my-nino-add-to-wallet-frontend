@@ -24,19 +24,19 @@ import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
-import play.api.http.Status._
+import play.api.http.Status.*
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.test.Helpers.{CONTENT_TYPE, JSON}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import util.Fixtures.fakeIndividualDetails
 import util.WireMockHelper
 
 import scala.concurrent.ExecutionContext
 
 class IndividualDetailsConnectorSpec
-    extends PlaySpec
+  extends PlaySpec
     with GuiceOneAppPerSuite
     with WireMockHelper
     with MockitoSugar
@@ -55,11 +55,11 @@ class IndividualDetailsConnectorSpec
   implicit val hc: HeaderCarrier    = HeaderCarrier()
   implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
 
-  lazy val connector: IndividualDetailsConnector = {
+  lazy val connector: DefaultIndividualDetailsConnector = {
     val httpClientV2       = app.injector.instanceOf[HttpClientV2]
     val frontendAppConfig  = app.injector.instanceOf[FrontendAppConfig]
     val httpClientResponse = app.injector.instanceOf[HttpClientResponse]
-    new IndividualDetailsConnector(httpClientV2, frontendAppConfig, httpClientResponse)
+    new DefaultIndividualDetailsConnector(httpClientV2, frontendAppConfig, httpClientResponse)
   }
 
   val nino: String                      = "AA123456A"
@@ -74,21 +74,22 @@ class IndividualDetailsConnectorSpec
       get(url).willReturn(response)
     }
 
-  "getIndividualDetails" must {
-    "return a Right(HttpResponse) with status OK" in {
+  "DefaultIndividualDetailsConnector#getIndividualDetails" must {
+    "return Right(IndividualDetails) when API returns 200 and valid JSON" in {
       stubGet(url, OK, Some(fakeIndividualDetailsJson))
+
       val result = connector.getIndividualDetails(nino, resolveMerge).value.futureValue
 
-      result mustBe a[Right[_, _]]
-      result.getOrElse(HttpResponse(UNPROCESSABLE_ENTITY, "")).status mustBe OK
+      result mustBe Right(fakeIndividualDetails)
     }
 
-    "return Left(UpstreamErrorResponse) when API call fails" in {
-      stubGet(url, INTERNAL_SERVER_ERROR, None)
+    "return Left(UpstreamErrorResponse) when API returns an error" in {
+      stubGet(url, INTERNAL_SERVER_ERROR)
+
       val result = connector.getIndividualDetails(nino, resolveMerge).value.futureValue
 
       result mustBe a[Left[UpstreamErrorResponse, _]]
-      result.swap.getOrElse(UpstreamErrorResponse("", IM_A_TEAPOT)).statusCode mustBe INTERNAL_SERVER_ERROR
+      result.swap.getOrElse(fail("Expected a Left but got a Right")).statusCode mustBe INTERNAL_SERVER_ERROR
     }
   }
 }

@@ -23,11 +23,11 @@ import org.mockito.Mockito.{reset, times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject.bind
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import services.{IndividualDetailsService, NPSService}
 import uk.gov.hmrc.http.UpstreamErrorResponse
-import util.IndividualDetailsFixtures
 import util.Fixtures.{fakeIndividualDetailsDataCache, fakeIndividualDetailsDataCacheWithCRN}
+import util.IndividualDetailsFixtures
 import util.Stubs.userLoggedInFMNUser
 import util.TestData.NinoUser
 import views.html.print.PrintNationalInsuranceNumberView
@@ -41,20 +41,20 @@ class NinoLetterControllerSpec extends SpecBase with IndividualDetailsFixtures w
 
   val personDetailsId = "pdId"
 
-  lazy val mockIndividualDetailsService = mock[IndividualDetailsService]
-  val mockNPSService                    = mock[NPSService]
-  lazy val ninoLetterController         = applicationWithConfig.injector.instanceOf[NinoLetterController]
-  lazy val view                         = applicationWithConfig.injector.instanceOf[PrintNationalInsuranceNumberView]
+  lazy val mockIndividualDetailsService: IndividualDetailsService = mock[IndividualDetailsService]
+  val mockNPSService: NPSService = mock[NPSService]
+  lazy val ninoLetterController: NinoLetterController = applicationWithConfig.injector.instanceOf[NinoLetterController]
+  lazy val view: PrintNationalInsuranceNumberView = applicationWithConfig.injector.instanceOf[PrintNationalInsuranceNumberView]
 
   implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
   "NinoLetter Controller" - {
     "must return OK and the correct view for a GET" in {
       userLoggedInFMNUser(NinoUser)
-      when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
+      when(mockIndividualDetailsService.deleteIdData(any())(any()))
         .thenReturn(Future.successful(true))
 
-      when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
+      when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
         .thenReturn(
           EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCache)
         )
@@ -76,10 +76,10 @@ class NinoLetterControllerSpec extends SpecBase with IndividualDetailsFixtures w
 
     "must throw an exception when the individual details cache can't be invalidated" in {
       userLoggedInFMNUser(NinoUser)
-      when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
+      when(mockIndividualDetailsService.deleteIdData(any())(any()))
         .thenReturn(Future.successful(false))
 
-      when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
+      when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
         .thenReturn(
           EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCache)
         )
@@ -103,12 +103,12 @@ class NinoLetterControllerSpec extends SpecBase with IndividualDetailsFixtures w
 
     "must uplift CRN and return OK and the correct view for a GET" in {
       userLoggedInFMNUser(NinoUser)
-      when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
+      when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
         .thenReturn(
           EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCacheWithCRN),
           EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCache)
         )
-      when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
+      when(mockIndividualDetailsService.deleteIdData(any())(any()))
         .thenReturn(Future.successful(true))
       when(mockNPSService.upliftCRN(any(), any())(any()))
         .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](true))
@@ -134,10 +134,10 @@ class NinoLetterControllerSpec extends SpecBase with IndividualDetailsFixtures w
   "NinoLetterController saveNationalInsuranceNumberAsPdf" - {
     "must return OK and pdf file with correct content" in {
       userLoggedInFMNUser(NinoUser)
-      when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
+      when(mockIndividualDetailsService.deleteIdData(any())(any()))
         .thenReturn(Future.successful(true))
 
-      when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
+      when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
         .thenReturn(
           EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCache)
         )

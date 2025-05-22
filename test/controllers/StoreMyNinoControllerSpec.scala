@@ -92,13 +92,14 @@ class StoreMyNinoControllerSpec
   val googlePassId = "googlePassId"
   val applePassId  = "applePassId"
 
-  val mockAppleWalletConnector: AppleWalletConnector = mock[AppleWalletConnector]
+  val mockAppleWalletConnector: AppleWalletConnector   = mock[AppleWalletConnector]
   val mockGoogleWalletConnector: GoogleWalletConnector = mock[GoogleWalletConnector]
 
-  val mockSessionRepository: SessionRepository = mock[SessionRepository]
-  val mockIndividualDetailsService: IndividualDetailsService = mock[IndividualDetailsService]
-  val mockIdentityVerificationFrontendConnector: IdentityVerificationFrontendConnector = mock[IdentityVerificationFrontendConnector]
-  val mockNPSService: NPSService = mock[NPSService]
+  val mockSessionRepository: SessionRepository                                         = mock[SessionRepository]
+  val mockIndividualDetailsService: IndividualDetailsService                           = mock[IndividualDetailsService]
+  val mockIdentityVerificationFrontendConnector: IdentityVerificationFrontendConnector =
+    mock[IdentityVerificationFrontendConnector]
+  val mockNPSService: NPSService                                                       = mock[NPSService]
 
   val fakeBase64String      = "UEsDBBQACAgIABxqJlYAAAAAAA"
   val fakeGooglePassSaveUrl = "testURL"

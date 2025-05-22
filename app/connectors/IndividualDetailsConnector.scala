@@ -28,53 +28,54 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps, Upstream
 
 import scala.concurrent.{ExecutionContext, Future}
 
-
 trait IndividualDetailsConnector {
   def getIndividualDetails(nino: String, resolveMerge: String)(implicit
-                                                               hc: HeaderCarrier,
-                                                               ec: ExecutionContext
+    hc: HeaderCarrier,
+    ec: ExecutionContext
   ): EitherT[Future, UpstreamErrorResponse, IndividualDetails]
 }
 
 @Singleton
-class DefaultIndividualDetailsConnector @Inject()(
-                                                   httpClient: HttpClientV2,
-                                                   appConfig: FrontendAppConfig,
-                                                   httpClientResponse: HttpClientResponse
-                                                 )
-  extends IndividualDetailsConnector
+class DefaultIndividualDetailsConnector @Inject() (
+  httpClient: HttpClientV2,
+  appConfig: FrontendAppConfig,
+  httpClientResponse: HttpClientResponse
+) extends IndividualDetailsConnector
     with Logging {
 
   override def getIndividualDetails(nino: String, resolveMerge: String)(implicit
-                                                                        hc: HeaderCarrier,
-                                                                        ec: ExecutionContext
+    hc: HeaderCarrier,
+    ec: ExecutionContext
   ): EitherT[Future, UpstreamErrorResponse, IndividualDetails] = {
     val url =
       s"${appConfig.individualDetailsServiceUrl}/find-my-nino-add-to-wallet/individuals/details/NINO/${nino.take(8)}/$resolveMerge"
 
-    httpClientResponse.read(
-      httpClient
-        .get(url"$url")
-        .execute[Either[UpstreamErrorResponse, HttpResponse]]
-    ).map(_.json.as[IndividualDetails])
+    httpClientResponse
+      .read(
+        httpClient
+          .get(url"$url")
+          .execute[Either[UpstreamErrorResponse, HttpResponse]]
+      )
+      .map(_.json.as[IndividualDetails])
   }
 }
 
 @Singleton
-class CachingIndividualDetailsConnector @Inject()(
-                                                   @javax.inject.Named("default") underlying: IndividualDetailsConnector,
-                                                   repo: IndividualDetailsRepoTrait
-                                                 )(implicit ec: ExecutionContext)
-  extends IndividualDetailsConnector with Logging {
+class CachingIndividualDetailsConnector @Inject() (
+  @javax.inject.Named("default") underlying: IndividualDetailsConnector,
+  repo: IndividualDetailsRepoTrait
+)(implicit ec: ExecutionContext)
+    extends IndividualDetailsConnector
+    with Logging {
 
   override def getIndividualDetails(nino: String, resolveMerge: String)(implicit
-                                                                        hc: HeaderCarrier,
-                                                                        ec: ExecutionContext
+    hc: HeaderCarrier,
+    ec: ExecutionContext
   ): EitherT[Future, UpstreamErrorResponse, IndividualDetails] =
     underlying.getIndividualDetails(nino, resolveMerge)
 
   def getIndividualDetailsWithCache(nino: String, sessionId: String)(implicit
-                                                                     hc: HeaderCarrier
+    hc: HeaderCarrier
   ): EitherT[Future, UpstreamErrorResponse, IndividualDetailsDataCache] = EitherT {
     repo.findIndividualDetailsDataByNino(nino).flatMap {
       case Some(cache) =>
@@ -99,10 +100,9 @@ class CachingIndividualDetailsConnector @Inject()(
           )
           repo.insertOrReplaceIndividualDetailsDataCache(cache).map(_ => cache)
         }.value
-    } recover {
-      case ex =>
-        logger.warn(s"Cache lookup failed for nino=$nino: ${ex.getMessage}")
-        Left(UpstreamErrorResponse(s"Cache error: ${ex.getMessage}", 500))
+    } recover { case ex =>
+      logger.warn(s"Cache lookup failed for nino=$nino: ${ex.getMessage}")
+      Left(UpstreamErrorResponse(s"Cache error: ${ex.getMessage}", 500))
     }
   }
 

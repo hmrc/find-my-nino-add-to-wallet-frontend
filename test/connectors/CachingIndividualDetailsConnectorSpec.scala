@@ -31,11 +31,7 @@ import util.Fixtures
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class CachingIndividualDetailsConnectorSpec
-  extends AnyFlatSpec
-    with Matchers
-    with ScalaFutures
-    with MockitoSugar {
+class CachingIndividualDetailsConnectorSpec extends AnyFlatSpec with Matchers with ScalaFutures with MockitoSugar {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
@@ -65,7 +61,7 @@ class CachingIndividualDetailsConnectorSpec
 
     val result = connector.getIndividualDetailsWithCache("AA123456A", "session-123").value.futureValue
 
-    result shouldBe a[Right[_, _]]
+    result                                         shouldBe a[Right[_, _]]
     result.toOption.get.individualDetailsData.nino shouldBe "AB123456C"
   }
 
@@ -90,10 +86,11 @@ class CachingIndividualDetailsConnectorSpec
     val mockRepo       = mock[IndividualDetailsRepoTrait]
     val connector      = new CachingIndividualDetailsConnector(mockUnderlying, mockRepo)
 
-    when(mockRepo.deleteIndividualDetailsDataByNino(any)(any)).thenReturn(Future.successful(new org.mongodb.scala.result.DeleteResult {
-      override def wasAcknowledged(): Boolean = false
-      override def getDeletedCount: Long      = 0
-    }))
+    when(mockRepo.deleteIndividualDetailsDataByNino(any)(any))
+      .thenReturn(Future.successful(new org.mongodb.scala.result.DeleteResult {
+        override def wasAcknowledged(): Boolean = false
+        override def getDeletedCount: Long      = 0
+      }))
 
     connector.deleteIndividualDetailsCache("AA123456A").futureValue shouldBe false
   }
@@ -103,10 +100,11 @@ class CachingIndividualDetailsConnectorSpec
     val mockRepo       = mock[IndividualDetailsRepoTrait]
     val connector      = new CachingIndividualDetailsConnector(mockUnderlying, mockRepo)
 
-    when(mockRepo.deleteIndividualDetailsDataByNino(any)(any)).thenReturn(Future.successful(new org.mongodb.scala.result.DeleteResult {
-      override def wasAcknowledged(): Boolean = true
-      override def getDeletedCount: Long      = 1
-    }))
+    when(mockRepo.deleteIndividualDetailsDataByNino(any)(any))
+      .thenReturn(Future.successful(new org.mongodb.scala.result.DeleteResult {
+        override def wasAcknowledged(): Boolean = true
+        override def getDeletedCount: Long      = 1
+      }))
 
     connector.deleteIndividualDetailsCache("AA123456A").futureValue shouldBe true
   }

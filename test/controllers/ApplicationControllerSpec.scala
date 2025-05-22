@@ -60,7 +60,7 @@ class ApplicationControllerSpec extends SpecBase with IndividualDetailsFixtures 
   }
 
   val mockSessionRepository: SessionRepository                                         = mock[SessionRepository]
-  val mockIndividualDetailsService: IndividualDetailsService = mock[IndividualDetailsService]
+  val mockIndividualDetailsService: IndividualDetailsService                           = mock[IndividualDetailsService]
   val mockIdentityVerificationFrontendConnector: IdentityVerificationFrontendConnector =
     mock[IdentityVerificationFrontendConnector]
   val mockIdentityVerificationFrontendService: IdentityVerificationFrontendService     =

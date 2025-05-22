@@ -84,4 +84,3 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec with ScalaFutures with Mo
     result.futureValue shouldBe false
   }
 }
-

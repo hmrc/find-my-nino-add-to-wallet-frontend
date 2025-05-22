@@ -42,9 +42,10 @@ class NinoLetterControllerSpec extends SpecBase with IndividualDetailsFixtures w
   val personDetailsId = "pdId"
 
   lazy val mockIndividualDetailsService: IndividualDetailsService = mock[IndividualDetailsService]
-  val mockNPSService: NPSService = mock[NPSService]
-  lazy val ninoLetterController: NinoLetterController = applicationWithConfig.injector.instanceOf[NinoLetterController]
-  lazy val view: PrintNationalInsuranceNumberView = applicationWithConfig.injector.instanceOf[PrintNationalInsuranceNumberView]
+  val mockNPSService: NPSService                                  = mock[NPSService]
+  lazy val ninoLetterController: NinoLetterController             = applicationWithConfig.injector.instanceOf[NinoLetterController]
+  lazy val view: PrintNationalInsuranceNumberView                 =
+    applicationWithConfig.injector.instanceOf[PrintNationalInsuranceNumberView]
 
   implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 

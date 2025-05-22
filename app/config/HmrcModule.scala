@@ -41,7 +41,7 @@ class HmrcModule extends Module {
       bind[LayoutProvider].to(classOf[NewLayoutProvider]),
       bind[IndividualDetailsConnector].qualifiedWith("default").to(classOf[DefaultIndividualDetailsConnector]),
       bind[IndividualDetailsConnector].to(classOf[CachingIndividualDetailsConnector]),
-    if (encryptionEnabled) {
+      if (encryptionEnabled) {
         bind[IndividualDetailsRepoTrait]
           .to(classOf[EncryptedIndividualDetailsRepository])
       } else {

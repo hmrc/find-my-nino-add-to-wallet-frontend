@@ -36,7 +36,7 @@ import util.WireMockHelper
 import scala.concurrent.ExecutionContext
 
 class IndividualDetailsConnectorSpec
-  extends PlaySpec
+    extends PlaySpec
     with GuiceOneAppPerSuite
     with WireMockHelper
     with MockitoSugar

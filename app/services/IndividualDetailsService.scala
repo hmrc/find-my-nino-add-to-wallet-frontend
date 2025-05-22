@@ -29,22 +29,21 @@ import scala.concurrent.{ExecutionContext, Future}
 @ImplementedBy(classOf[IndividualDetailsServiceImpl])
 trait IndividualDetailsService {
   def getIdData(nino: String, sessionId: String)(implicit
-                                                 ec: ExecutionContext,
-                                                 hc: HeaderCarrier
+    ec: ExecutionContext,
+    hc: HeaderCarrier
   ): EitherT[Future, UpstreamErrorResponse, IndividualDetailsDataCache]
 
   def deleteIdData(nino: String)(implicit ec: ExecutionContext): Future[Boolean]
 }
 
 class IndividualDetailsServiceImpl @Inject() (
-                                               connector: CachingIndividualDetailsConnector
-                                             )
-  extends IndividualDetailsService
+  connector: CachingIndividualDetailsConnector
+) extends IndividualDetailsService
     with Logging {
 
   def getIdData(nino: String, sessionId: String)(implicit
-                                                 ec: ExecutionContext,
-                                                 hc: HeaderCarrier
+    ec: ExecutionContext,
+    hc: HeaderCarrier
   ): EitherT[Future, UpstreamErrorResponse, IndividualDetailsDataCache] =
     connector.getIndividualDetailsWithCache(nino, sessionId)
 

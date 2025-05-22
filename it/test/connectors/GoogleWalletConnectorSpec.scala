@@ -19,7 +19,7 @@ package connectors
 import config.FrontendAppConfig
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.Application
-import play.api.libs.json.{Json, Writes}
+import play.api.libs.json.{JsObject, Json, Writes}
 import play.api.mvc.Results.InternalServerError
 import play.api.test.{DefaultAwaitTimeout, Injecting}
 import uk.gov.hmrc.http.client.HttpClientV2
@@ -45,11 +45,11 @@ class GoogleWalletConnectorSpec extends ConnectorSpec
   val fakeName: String = "fakeName"
   val fakeNino:String = "fakeNino"
   val googlePassUrl = " https://pay.google.com/gp/v/save/eyJhbGci6IkpXVCJ9"
-  val createGooglePassDetails = GooglePassDetails(fakeName, fakeNino)
+  val createGooglePassDetails: GooglePassDetails = GooglePassDetails(fakeName, fakeNino)
   val googlePassCardBytes: Array[Byte] = Array(99, 71, 86, 121, 99, 50, 57, 117, 82, 71, 86, 48, 89, 87, 108, 115, 99, 49, 78, 48, 99, 109, 108, 117, 90, 119, 61, 61)
-  val googlePassUrlImage = Base64.getEncoder.encodeToString(googlePassCardBytes)
+  val googlePassUrlImage: String = Base64.getEncoder.encodeToString(googlePassCardBytes)
 
-  val errMsg = Json.obj(
+  val errMsg: JsObject = Json.obj(
     "status" -> "500",
     "message" -> "someMsg"
   )
@@ -59,7 +59,7 @@ class GoogleWalletConnectorSpec extends ConnectorSpec
 
     def url: String
 
-    lazy val connector = {
+    lazy val connector: GoogleWalletConnector = {
       val httpClient = app.injector.instanceOf[HttpClientV2]
       val frontendAppConfig = app.injector.instanceOf[FrontendAppConfig]
       new GoogleWalletConnector(frontendAppConfig, httpClient)
@@ -74,26 +74,26 @@ class GoogleWalletConnectorSpec extends ConnectorSpec
 
     "return Google pass when called with an existing pass Id" in new LocalSetup {
       stubGet(url, OK, Some(googlePassUrl))
-      val result = connector.getGooglePassUrl(passId).futureValue.get
+      val result: String = connector.getGooglePassUrl(passId).futureValue.get
       result mustBe googlePassUrl
     }
 
     "return empty when called with an unknown passId" in new LocalSetup {
       stubGet(url, OK, None)
-      val result = connector.getGooglePassUrl(passId).futureValue.get
+      val result: String = connector.getGooglePassUrl(passId).futureValue.get
       result mustBe ""
 
     }
 
     "return None when NOT_FOUND status returned" in new LocalSetup {
       stubGet(url, NOT_FOUND, None)
-      val result = connector.getGooglePassUrl(passId).futureValue
+      val result: Option[String] = connector.getGooglePassUrl(passId).futureValue
       result mustBe None
     }
     "throw an exception when unexpected status returned" in new LocalSetup {
       stubGet(url, IM_A_TEAPOT, None)
       assertThrows[RuntimeException] {
-        val result = connector.getGooglePassUrl(passId).futureValue
+        connector.getGooglePassUrl(passId).futureValue
       }
     }
   }
@@ -106,25 +106,25 @@ class GoogleWalletConnectorSpec extends ConnectorSpec
 
     "return Google pass when called with an existing pass Id" in new LocalSetup {
       stubGet(url, OK, Some(googlePassUrlImage))
-      val result = connector.getGooglePassQrCode(passId).futureValue.get
+      val result: Array[Byte] = connector.getGooglePassQrCode(passId).futureValue.get
       result mustBe googlePassCardBytes
     }
 
     "return empty Array when called with an unknown passId" in new LocalSetup {
       stubGet(url, OK, None)
-      val result = connector.getGooglePassQrCode(passId).futureValue.get
+      val result: Array[Byte] = connector.getGooglePassQrCode(passId).futureValue.get
       result mustBe Array[Byte]()
     }
 
     "return None when NOT_FOUND status returned" in new LocalSetup {
       stubGet(url, NOT_FOUND, None)
-      val result = connector.getGooglePassQrCode(passId).futureValue
+      val result: Option[Array[Byte]] = connector.getGooglePassQrCode(passId).futureValue
       result mustBe None
     }
     "throw an exception when unexpected status returned" in new LocalSetup {
       stubGet(url, IM_A_TEAPOT, None)
       assertThrows[RuntimeException] {
-        val result = connector.getGooglePassQrCode(passId).futureValue
+        connector.getGooglePassQrCode(passId).futureValue
       }
     }
   }
@@ -143,14 +143,14 @@ class GoogleWalletConnectorSpec extends ConnectorSpec
 
     "return error when called create google pass " in new LocalSetup {
       stubWithDelay(url, INTERNAL_SERVER_ERROR, Some(Json.toJson(createGooglePassDetails).toString()), None, delay)
-      val result = connector.createGooglePass(createGooglePassDetails.fullName, createGooglePassDetails.nino)
+      val result: Product = connector.createGooglePass(createGooglePassDetails.fullName, createGooglePassDetails.nino)
         .value.getOrElse(InternalServerError(Json.toJson(errMsg)))
       result mustBe InternalServerError(Json.toJson(errMsg))
     }
     "throw an exception when expected status returned" in new LocalSetup {
       stubWithDelay(url, IM_A_TEAPOT, None, None, delay)
       assertThrows[RuntimeException] {
-        val result = connector.createGooglePass(createGooglePassDetails.fullName, createGooglePassDetails.nino).futureValue
+        connector.createGooglePass(createGooglePassDetails.fullName, createGooglePassDetails.nino).futureValue
       }
     }
   }

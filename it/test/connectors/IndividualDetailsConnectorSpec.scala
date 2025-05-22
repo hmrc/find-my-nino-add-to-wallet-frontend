@@ -17,12 +17,13 @@
 package connectors
 
 import config.FrontendAppConfig
+import models.individualDetails.IndividualDetails
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.Application
 import play.api.libs.json.Json
 import play.api.test.{DefaultAwaitTimeout, Injecting}
+import uk.gov.hmrc.http.UpstreamErrorResponse
 import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
 import util.Fixtures.fakeIndividualDetails
 import util.WireMockHelper
 
@@ -46,19 +47,21 @@ class IndividualDetailsConnectorSpec
       val httpClientV2 = app.injector.instanceOf[HttpClientV2]
       val appConfig = app.injector.instanceOf[FrontendAppConfig]
       val httpClientResponse = app.injector.instanceOf[HttpClientResponse]
-      new IndividualDetailsConnector(httpClientV2, appConfig, httpClientResponse)
+      new DefaultIndividualDetailsConnector(httpClientV2, appConfig, httpClientResponse)
     }
   }
 
-
   "Calling getIndividualDetails" must {
-    "return HttpResponse with 200 OK" in new SpecSetup {
+    "return IndividualDetails on successful response (200 OK)" in new SpecSetup {
       stubGet(url, OK, Some(responseBody))
 
-      val result = connector.getIndividualDetails(nino, resolveMerge).value.futureValue
+      val result: Either[UpstreamErrorResponse, IndividualDetails] = connector.getIndividualDetails(nino, resolveMerge).value.futureValue
 
       result mustBe a[Right[_, _]]
-      result.getOrElse(HttpResponse(IM_A_TEAPOT, "")).status mustBe OK
+      result.fold(
+        _ => fail("Expected Right but got Left"),
+        details => details.getNino mustBe "AB123456C"
+      )
     }
 
     List(
@@ -70,13 +73,13 @@ class IndividualDetailsConnectorSpec
       SERVICE_UNAVAILABLE,
       BAD_GATEWAY
     ).foreach { errorResponse =>
-      s"return an UpstreamErrorResponse containing $errorResponse when API call fails" in new SpecSetup {
+      s"return a Left(UpstreamErrorResponse) with status $errorResponse when API call fails" in new SpecSetup {
         stubGet(url, errorResponse, None)
 
-        val result = connector.getIndividualDetails(nino, resolveMerge).value.futureValue
+        val result: Either[UpstreamErrorResponse, IndividualDetails] = connector.getIndividualDetails(nino, resolveMerge).value.futureValue
 
         result mustBe a[Left[UpstreamErrorResponse, _]]
-        result.swap.getOrElse(UpstreamErrorResponse("", IM_A_TEAPOT)).statusCode mustBe errorResponse
+        result.swap.getOrElse(fail("Expected Left but got Right")).statusCode mustBe errorResponse
       }
     }
   }

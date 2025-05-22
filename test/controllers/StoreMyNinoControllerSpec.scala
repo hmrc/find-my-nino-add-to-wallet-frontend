@@ -32,8 +32,8 @@ import services.{IndividualDetailsService, NPSService}
 import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolment, Enrolments}
 import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
-import util.IndividualDetailsFixtures
 import util.Fixtures.{fakeIndividualDetailsDataCache, fakeIndividualDetailsDataCacheWithCRN}
+import util.IndividualDetailsFixtures
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
 import util.TestData.{NinoUser, NinoUserNoEnrolments, NinoUser_With_CL50, NinoUser_With_Credential_Strength_Weak, trustedHelper, trustedHelperUser}
 import views.html.{PassIdNotFoundView, RedirectToPostalFormView, StoreMyNinoView}
@@ -59,7 +59,7 @@ class StoreMyNinoControllerSpec
     when(mockSessionRepository.get(any())) thenReturn Future.successful(Some(emptyUserAnswers))
 
     reset(mockIndividualDetailsService)
-    when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
+    when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
       .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCache))
 
     reset(mockNPSService)
@@ -87,18 +87,19 @@ class StoreMyNinoControllerSpec
   }
 
   // val pd = buildPersonDetails
-  val controller = applicationWithConfig.injector.instanceOf[StoreMyNinoController]
+  val controller: StoreMyNinoController = applicationWithConfig.injector.instanceOf[StoreMyNinoController]
 
   val googlePassId = "googlePassId"
   val applePassId  = "applePassId"
 
-  val mockAppleWalletConnector  = mock[AppleWalletConnector]
-  val mockGoogleWalletConnector = mock[GoogleWalletConnector]
+  val mockAppleWalletConnector: AppleWalletConnector   = mock[AppleWalletConnector]
+  val mockGoogleWalletConnector: GoogleWalletConnector = mock[GoogleWalletConnector]
 
-  val mockSessionRepository                     = mock[SessionRepository]
-  val mockIndividualDetailsService              = mock[IndividualDetailsService]
-  val mockIdentityVerificationFrontendConnector = mock[IdentityVerificationFrontendConnector]
-  val mockNPSService                            = mock[NPSService]
+  val mockSessionRepository: SessionRepository                                         = mock[SessionRepository]
+  val mockIndividualDetailsService: IndividualDetailsService                           = mock[IndividualDetailsService]
+  val mockIdentityVerificationFrontendConnector: IdentityVerificationFrontendConnector =
+    mock[IdentityVerificationFrontendConnector]
+  val mockNPSService: NPSService                                                       = mock[NPSService]
 
   val fakeBase64String      = "UEsDBBQACAgIABxqJlYAAAAAAA"
   val fakeGooglePassSaveUrl = "testURL"
@@ -106,7 +107,7 @@ class StoreMyNinoControllerSpec
   "StoreMyNino Controller" - {
 
     "must return OK and the correct view for a GET" in {
-      when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
+      when(mockIndividualDetailsService.deleteIdData(any())(any()))
         .thenReturn(Future.successful(true))
 
       val application =
@@ -153,7 +154,7 @@ class StoreMyNinoControllerSpec
     }
 
     "must return correct view with the trusted helpers displayed and no add to wallet links when loaded by trusted helper" in {
-      when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
+      when(mockIndividualDetailsService.deleteIdData(any())(any()))
         .thenReturn(Future.successful(true))
 
       val application =
@@ -200,7 +201,7 @@ class StoreMyNinoControllerSpec
     }
 
     "must throw an exception when the individual details cache can't be invalidated" in {
-      when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
+      when(mockIndividualDetailsService.deleteIdData(any())(any()))
         .thenReturn(Future.successful(false))
 
       val application =
@@ -230,7 +231,7 @@ class StoreMyNinoControllerSpec
     }
 
     "must redirect to redirect url" in {
-      when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
+      when(mockIndividualDetailsService.deleteIdData(any())(any()))
         .thenReturn(Future.successful(true))
 
       val application =
@@ -260,10 +261,10 @@ class StoreMyNinoControllerSpec
     }
 
     "must redirect to error view when individuals details could not be found" in {
-      when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
+      when(mockIndividualDetailsService.deleteIdData(any())(any()))
         .thenReturn(Future.successful(true))
 
-      when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
+      when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
         .thenReturn(EitherT.leftT[Future, IndividualDetailsDataCache](UpstreamErrorResponse("Not Found", NOT_FOUND)))
 
       val application =
@@ -290,10 +291,10 @@ class StoreMyNinoControllerSpec
     }
 
     "must redirect to error view when individuals details could not be parsed" in {
-      when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
+      when(mockIndividualDetailsService.deleteIdData(any())(any()))
         .thenReturn(Future.successful(true))
 
-      when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
+      when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
         .thenReturn(EitherT.leftT[Future, IndividualDetailsDataCache](UpstreamErrorResponse(" ", UNPROCESSABLE_ENTITY)))
 
       val application =
@@ -322,7 +323,7 @@ class StoreMyNinoControllerSpec
     }
 
     "must return google pass" in {
-      when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
+      when(mockIndividualDetailsService.deleteIdData(any())(any()))
         .thenReturn(Future.successful(true))
 
       val application = applicationBuilderWithConfig()
@@ -345,7 +346,7 @@ class StoreMyNinoControllerSpec
     }
 
     "must redirect to passIdNotFoundView when no Google pass is returned" in {
-      when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
+      when(mockIndividualDetailsService.deleteIdData(any())(any()))
         .thenReturn(Future.successful(true))
 
       when(mockGoogleWalletConnector.getGooglePassUrl(eqTo(googlePassId))(any(), any()))
@@ -376,17 +377,17 @@ class StoreMyNinoControllerSpec
           None
         )
 
-        contentAsString(result).removeAllNonces() mustEqual (view()(
+        contentAsString(result).removeAllNonces() mustEqual view()(
           userRequest,
           messages(application),
           scala.concurrent.ExecutionContext.global
-        ).toString())
+        ).toString()
 
       }
     }
 
     "must return apple pass" in {
-      when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
+      when(mockIndividualDetailsService.deleteIdData(any())(any()))
         .thenReturn(Future.successful(true))
 
       val application = applicationBuilderWithConfig()
@@ -409,7 +410,7 @@ class StoreMyNinoControllerSpec
     }
 
     "must redirect to passIdNotFoundView when no Apple pass is returned" in {
-      when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
+      when(mockIndividualDetailsService.deleteIdData(any())(any()))
         .thenReturn(Future.successful(true))
 
       when(mockAppleWalletConnector.getApplePass(eqTo(applePassId))(any(), any()))
@@ -440,18 +441,18 @@ class StoreMyNinoControllerSpec
           None
         )
 
-        contentAsString(result).removeAllNonces() mustEqual (view()(
+        contentAsString(result).removeAllNonces() mustEqual view()(
           userRequest,
           messages(application),
           scala.concurrent.ExecutionContext.global
-        ).toString())
+        ).toString()
 
       }
 
     }
 
     "must return InternalServerError when Apple pass creation fails" in {
-      when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
+      when(mockIndividualDetailsService.deleteIdData(any())(any()))
         .thenReturn(Future.successful(true))
 
       when(mockAppleWalletConnector.createApplePass(any(), any())(any(), any()))
@@ -561,15 +562,15 @@ class StoreMyNinoControllerSpec
     }
 
     "must uplift a CRN when CRN uplift is toggled on" in {
-      when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
+      when(mockIndividualDetailsService.deleteIdData(any())(any()))
         .thenReturn(Future.successful(true))
 
-      when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
+      when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
         .thenReturn(
           EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCacheWithCRN),
           EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCache)
         )
-      when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
+      when(mockIndividualDetailsService.deleteIdData(any())(any()))
         .thenReturn(Future.successful(true))
       when(mockNPSService.upliftCRN(any(), any())(any()))
         .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](true))
@@ -617,10 +618,10 @@ class StoreMyNinoControllerSpec
     }
 
     "must return OK and RedirectToPostalFormView when CRN uplift is toggled off" in {
-      when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
+      when(mockIndividualDetailsService.deleteIdData(any())(any()))
         .thenReturn(Future.successful(true))
 
-      when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
+      when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
         .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCacheWithCRN))
 
       val app =
@@ -652,10 +653,10 @@ class StoreMyNinoControllerSpec
     }
 
     "must return INTERNAL_SERVER_ERROR with error view for Left(UpstreamErrorResponse) from CRN uplift" in {
-      when(mockIndividualDetailsService.deleteIdDataFromCache(any())(any()))
+      when(mockIndividualDetailsService.deleteIdData(any())(any()))
         .thenReturn(Future.successful(true))
 
-      when(mockIndividualDetailsService.getIdDataFromCache(any(), any())(any(), any()))
+      when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
         .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCacheWithCRN))
       when(mockNPSService.upliftCRN(any(), any())(any()))
         .thenReturn(EitherT.leftT[Future, Boolean](UpstreamErrorResponse(" ", INTERNAL_SERVER_ERROR)))

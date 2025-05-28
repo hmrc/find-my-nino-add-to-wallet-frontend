@@ -29,83 +29,87 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps, Upstream
 import scala.concurrent.{ExecutionContext, Future}
 
 trait IndividualDetailsConnector {
-  def getIndividualDetails(nino: String, resolveMerge: String)(implicit
-    hc: HeaderCarrier,
-    ec: ExecutionContext
-  ): EitherT[Future, UpstreamErrorResponse, IndividualDetails]
+  def getIndividualDetails(nino: String, sessionId: String)(implicit
+                                                            hc: HeaderCarrier,
+                                                            ec: ExecutionContext
+  ): EitherT[Future, UpstreamErrorResponse, IndividualDetailsDataCache]
+
+  def deleteIndividualDetails(nino: String)(implicit
+                                            ec: ExecutionContext
+  ): Future[Boolean]
 }
 
 @Singleton
 class DefaultIndividualDetailsConnector @Inject() (
-  httpClient: HttpClientV2,
-  appConfig: FrontendAppConfig,
-  httpClientResponse: HttpClientResponse
-) extends IndividualDetailsConnector
-    with Logging {
+                                                    httpClient: HttpClientV2,
+                                                    appConfig: FrontendAppConfig,
+                                                    httpClientResponse: HttpClientResponse
+                                                  ) extends IndividualDetailsConnector
+  with Logging {
 
-  override def getIndividualDetails(nino: String, resolveMerge: String)(implicit
-    hc: HeaderCarrier,
-    ec: ExecutionContext
-  ): EitherT[Future, UpstreamErrorResponse, IndividualDetails] = {
-    val url =
-      s"${appConfig.individualDetailsServiceUrl}/find-my-nino-add-to-wallet/individuals/details/NINO/${nino.take(8)}/$resolveMerge"
+  override def getIndividualDetails(nino: String, sessionId: String)(implicit
+                                                                     hc: HeaderCarrier,
+                                                                     ec: ExecutionContext
+  ): EitherT[Future, UpstreamErrorResponse, IndividualDetailsDataCache] = {
+    val url = s"${appConfig.individualDetailsServiceUrl}/find-my-nino-add-to-wallet/individuals/details/NINO/${nino.take(8)}/Y"
 
-    httpClientResponse
-      .read(
-        httpClient
-          .get(url"$url")
-          .execute[Either[UpstreamErrorResponse, HttpResponse]]
+    httpClientResponse.read(
+      httpClient
+        .get(url"$url")
+        .execute[Either[UpstreamErrorResponse, HttpResponse]]
+    ).map { response =>
+      val individualDetails = response.json.as[IndividualDetails]
+      IndividualDetailsDataCache(
+        sessionId,
+        IndividualDetailsData(
+          individualDetails.getFullName,
+          individualDetails.preferredName.firstForename,
+          individualDetails.preferredName.surname,
+          individualDetails.getInitialsName,
+          individualDetails.dateOfBirth,
+          individualDetails.getNino,
+          individualDetails.getAddressData,
+          individualDetails.crnIndicator.asString
+        )
       )
-      .map(_.json.as[IndividualDetails])
+    }
   }
+
+  override def deleteIndividualDetails(nino: String)(implicit ec: ExecutionContext): Future[Boolean] =
+    Future.successful(false)
 }
 
 @Singleton
 class CachingIndividualDetailsConnector @Inject() (
-  @javax.inject.Named("default") underlying: IndividualDetailsConnector,
-  repo: IndividualDetailsRepoTrait
-)(implicit ec: ExecutionContext)
-    extends IndividualDetailsConnector
+                                                    @javax.inject.Named("default") underlying: IndividualDetailsConnector,
+                                                    repo: IndividualDetailsRepoTrait
+                                                  )
+  extends IndividualDetailsConnector
     with Logging {
 
-  override def getIndividualDetails(nino: String, resolveMerge: String)(implicit
-    hc: HeaderCarrier,
-    ec: ExecutionContext
-  ): EitherT[Future, UpstreamErrorResponse, IndividualDetails] =
-    underlying.getIndividualDetails(nino, resolveMerge)
+  override def getIndividualDetails(nino: String, sessionId: String)(implicit
+                                                                     hc: HeaderCarrier,
+                                                                     ec: ExecutionContext
+  ): EitherT[Future, UpstreamErrorResponse, IndividualDetailsDataCache] = {
 
-  def getIndividualDetailsWithCache(nino: String, sessionId: String)(implicit
-    hc: HeaderCarrier
-  ): EitherT[Future, UpstreamErrorResponse, IndividualDetailsDataCache] = EitherT {
-    repo.findIndividualDetailsDataByNino(nino).flatMap {
-      case Some(cache) =>
-        logger.info(s"Cache hit for IndividualDetails: $nino")
-        Future.successful(Right(cache))
+    EitherT {
+      repo.findIndividualDetailsDataByNino(nino).flatMap {
+        case Some(cache) =>
+          logger.info(s"[Cache Hit] Individual details for NINO: $nino")
+          Future.successful(Right(cache))
 
-      case None =>
-        logger.info(s"Cache miss for IndividualDetails: $nino, fetching from service.")
-        getIndividualDetails(nino, "Y").semiflatMap { details =>
-          val cache = IndividualDetailsDataCache(
-            sessionId,
-            IndividualDetailsData(
-              details.getFullName,
-              details.preferredName.firstForename,
-              details.preferredName.surname,
-              details.getInitialsName,
-              details.dateOfBirth,
-              details.getNino,
-              details.getAddressData,
-              details.crnIndicator.asString
-            )
-          )
-          repo.insertOrReplaceIndividualDetailsDataCache(cache).map(_ => cache)
-        }.value
-    } recover { case ex =>
-      logger.warn(s"Cache lookup failed for nino=$nino: ${ex.getMessage}")
-      Left(UpstreamErrorResponse(s"Cache error: ${ex.getMessage}", 500))
+        case None =>
+          logger.info(s"[Cache Miss] Fetching individual details for NINO: $nino")
+          underlying.getIndividualDetails(nino, sessionId).semiflatMap { fetched =>
+            repo.insertOrReplaceIndividualDetailsDataCache(fetched).map(_ => fetched)
+          }.value
+      }.recover { case ex =>
+        logger.warn(s"[Cache Error] Failed to lookup individual details for NINO: $nino - ${ex.getMessage}")
+        Left(UpstreamErrorResponse(s"Cache error: ${ex.getMessage}", 500))
+      }
     }
   }
 
-  def deleteIndividualDetailsCache(nino: String): Future[Boolean] =
+  override def deleteIndividualDetails(nino: String)(implicit ec: ExecutionContext): Future[Boolean] =
     repo.deleteIndividualDetailsDataByNino(nino).map(_.wasAcknowledged())
 }

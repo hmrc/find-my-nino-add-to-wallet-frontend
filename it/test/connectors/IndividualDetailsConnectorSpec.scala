@@ -17,7 +17,7 @@
 package connectors
 
 import config.FrontendAppConfig
-import models.individualDetails.IndividualDetails
+import models.individualDetails.{IndividualDetails, IndividualDetailsDataCache}
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.Application
 import play.api.libs.json.Json
@@ -28,7 +28,11 @@ import util.Fixtures.fakeIndividualDetails
 import util.WireMockHelper
 
 class IndividualDetailsConnectorSpec
-  extends ConnectorSpec with WireMockHelper with MockitoSugar with DefaultAwaitTimeout with Injecting {
+  extends ConnectorSpec
+    with WireMockHelper
+    with MockitoSugar
+    with DefaultAwaitTimeout
+    with Injecting {
 
   override implicit lazy val app: Application = app(
     Map(
@@ -37,31 +41,35 @@ class IndividualDetailsConnectorSpec
     )
   )
 
-  trait SpecSetup {
+  trait Setup {
     val nino: String = "AA123456A"
-    val resolveMerge: String = "Y"
-    val url: String = s"/find-my-nino-add-to-wallet/individuals/details/NINO/${nino.take(8)}/$resolveMerge"
-    val responseBody: String = Json.toJson(fakeIndividualDetails).toString()
+    val sessionId: String = "session-123"
+    val url: String =
+      s"/find-my-nino-add-to-wallet/individuals/details/NINO/${nino.take(8)}/Y"
+
+    val jsonBody: String = Json.toJson(fakeIndividualDetails).toString()
 
     lazy val connector: IndividualDetailsConnector = {
-      val httpClientV2 = app.injector.instanceOf[HttpClientV2]
-      val appConfig = app.injector.instanceOf[FrontendAppConfig]
-      val httpClientResponse = app.injector.instanceOf[HttpClientResponse]
+      val httpClientV2 = inject[HttpClientV2]
+      val appConfig = inject[FrontendAppConfig]
+      val httpClientResponse = inject[HttpClientResponse]
       new DefaultIndividualDetailsConnector(httpClientV2, appConfig, httpClientResponse)
     }
   }
 
-  "Calling getIndividualDetails" must {
-    "return IndividualDetails on successful response (200 OK)" in new SpecSetup {
-      stubGet(url, OK, Some(responseBody))
+  "DefaultIndividualDetailsConnector#getIndividualDetails" should {
 
-      val result: Either[UpstreamErrorResponse, IndividualDetails] = connector.getIndividualDetails(nino, resolveMerge).value.futureValue
+    "return IndividualDetailsDataCache when API call succeeds" in new Setup {
+      stubGet(url, OK, Some(jsonBody))
+
+      val result: Either[UpstreamErrorResponse, IndividualDetailsDataCache] = connector.getIndividualDetails(nino, sessionId).value.futureValue
 
       result mustBe a[Right[_, _]]
-      result.fold(
-        _ => fail("Expected Right but got Left"),
-        details => details.getNino mustBe "AB123456C"
-      )
+      result match {
+        case Right(cache: IndividualDetailsDataCache) =>
+          cache.individualDetailsData.nino mustBe fakeIndividualDetails.getNino
+        case _ => fail("Expected Right[IndividualDetailsDataCache]")
+      }
     }
 
     List(
@@ -72,14 +80,14 @@ class IndividualDetailsConnectorSpec
       REQUEST_TIMEOUT,
       SERVICE_UNAVAILABLE,
       BAD_GATEWAY
-    ).foreach { errorResponse =>
-      s"return a Left(UpstreamErrorResponse) with status $errorResponse when API call fails" in new SpecSetup {
-        stubGet(url, errorResponse, None)
+    ).foreach { errorStatus =>
+      s"return UpstreamErrorResponse($errorStatus) when API call fails" in new Setup {
+        stubGet(url, errorStatus, None)
 
-        val result: Either[UpstreamErrorResponse, IndividualDetails] = connector.getIndividualDetails(nino, resolveMerge).value.futureValue
+        val result: Either[UpstreamErrorResponse, IndividualDetailsDataCache] = connector.getIndividualDetails(nino, sessionId).value.futureValue
 
         result mustBe a[Left[UpstreamErrorResponse, _]]
-        result.swap.getOrElse(fail("Expected Left but got Right")).statusCode mustBe errorResponse
+        result.swap.toOption.get.statusCode mustBe errorStatus
       }
     }
   }

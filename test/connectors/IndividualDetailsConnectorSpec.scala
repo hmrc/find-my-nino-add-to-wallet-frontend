@@ -20,6 +20,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get}
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import config.FrontendAppConfig
 import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
@@ -28,15 +29,15 @@ import play.api.http.Status.*
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.test.Helpers.{CONTENT_TYPE, JSON}
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
-import util.Fixtures.fakeIndividualDetails
+import util.Fixtures.*
 import util.WireMockHelper
 
 import scala.concurrent.ExecutionContext
 
 class IndividualDetailsConnectorSpec
-    extends PlaySpec
+  extends PlaySpec
     with GuiceOneAppPerSuite
     with WireMockHelper
     with MockitoSugar
@@ -63,9 +64,11 @@ class IndividualDetailsConnectorSpec
   }
 
   val nino: String                      = "AA123456A"
-  val resolveMerge: String              = "Y"
-  val url: String                       = s"/find-my-nino-add-to-wallet/individuals/details/NINO/${nino.take(8)}/$resolveMerge"
+  val sessionId: String                 = "test-session-id"
   val fakeIndividualDetailsJson: String = Json.toJson(fakeIndividualDetails).toString()
+  val url: String                       = s"/find-my-nino-add-to-wallet/individuals/details/NINO/${nino.take(8)}/Y"
+  implicit override val patienceConfig: PatienceConfig =
+    PatienceConfig(timeout = Span(2, Seconds), interval = Span(50, Millis))
 
   def stubGet(url: String, responseStatus: Int, responseBody: Option[String] = None): StubMapping =
     server.stubFor {
@@ -74,22 +77,28 @@ class IndividualDetailsConnectorSpec
       get(url).willReturn(response)
     }
 
-  "DefaultIndividualDetailsConnector#getIndividualDetails" must {
-    "return Right(IndividualDetails) when API returns 200 and valid JSON" in {
+  "DefaultIndividualDetailsConnector#getIndividualDetails" should {
+
+    "should return IndividualDetailsDataCache when API call succeeds" in {
       stubGet(url, OK, Some(fakeIndividualDetailsJson))
 
-      val result = connector.getIndividualDetails(nino, resolveMerge).value.futureValue
+      val result = connector.getIndividualDetails(nino, "testSessionId").value
 
-      result mustBe Right(fakeIndividualDetails)
+      whenReady(result) {
+        case Right(cache) =>
+          cache.individualDetailsData.nino mustBe "AB123456C"
+        case Left(err) =>
+          fail(s"Expected Right but got Left: $err")
+      }
     }
 
-    "return Left(UpstreamErrorResponse) when API returns an error" in {
-      stubGet(url, INTERNAL_SERVER_ERROR)
+    "return Left(UpstreamErrorResponse) when API fails" in {
+      stubGet(url, INTERNAL_SERVER_ERROR, None)
 
-      val result = connector.getIndividualDetails(nino, resolveMerge).value.futureValue
+      val result = connector.getIndividualDetails(nino, sessionId).value.futureValue
 
-      result mustBe a[Left[UpstreamErrorResponse, _]]
-      result.swap.getOrElse(fail("Expected a Left but got a Right")).statusCode mustBe INTERNAL_SERVER_ERROR
+      result mustBe a[Left[_, _]]
+      result.swap.getOrElse(fail("Expected Left but got Right")).statusCode mustBe INTERNAL_SERVER_ERROR
     }
   }
 }

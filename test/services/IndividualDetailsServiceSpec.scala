@@ -18,7 +18,8 @@ package services
 
 import cats.data.EitherT
 import cats.instances.future.*
-import connectors.CachingIndividualDetailsConnector
+import connectors.IndividualDetailsConnector
+import models.individualDetails.IndividualDetailsDataCache
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.*
 import org.scalatest.concurrent.ScalaFutures
@@ -35,52 +36,57 @@ import scala.language.postfixOps
 
 class IndividualDetailsServiceSpec extends AnyFlatSpec with ScalaFutures with MockitoSugar {
 
-  implicit val hc: HeaderCarrier               = HeaderCarrier()
+  implicit val hc: HeaderCarrier               = mock[HeaderCarrier]
   implicit val defaultPatience: PatienceConfig =
     PatienceConfig(timeout = 5.seconds, interval = 50.millis)
 
-  "IndividualDetailsService" should "return cached data when available" in {
-    val mockConnector = mock[CachingIndividualDetailsConnector]
+  "IndividualDetailsService" should "return data from connector when cache exists or is fetched" in {
+    val mockConnector = mock[IndividualDetailsConnector]
     val service       = new IndividualDetailsServiceImpl(mockConnector)
 
-    when(mockConnector.getIndividualDetailsWithCache(any[String], any[String])(any))
-      .thenReturn(EitherT.rightT(fakeIndividualDetailsDataCache))
+    when(mockConnector.getIndividualDetails(any, any)(any, any))
+      .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCache))
 
-    val result = service.getIdData("AB123456C", "session-123").value
+    val result = service.getIdData("testNino", "testSessionId").value
+
     result.futureValue shouldBe Right(fakeIndividualDetailsDataCache)
   }
 
-  "IndividualDetailsService" should "return error if connector returns Left" in {
-    val mockConnector = mock[CachingIndividualDetailsConnector]
+  it should "propagate UpstreamErrorResponse when connector returns an error" in {
+    val mockConnector = mock[IndividualDetailsConnector]
     val service       = new IndividualDetailsServiceImpl(mockConnector)
+    val error         = UpstreamErrorResponse("Not found", 404)
 
-    val error = UpstreamErrorResponse("Not found", 404)
-    when(mockConnector.getIndividualDetailsWithCache(any[String], any[String])(any))
-      .thenReturn(EitherT.leftT(error))
+    when(mockConnector.getIndividualDetails(any, any)(any, any))
+      .thenReturn(EitherT.leftT[Future, IndividualDetailsDataCache](error))
 
-    val result = service.getIdData("AB123456C", "session-123").value
+    val result = service.getIdData("testNino", "testSessionId").value
+
     result.futureValue shouldBe Left(error)
   }
 
-  "IndividualDetailsService" should "delete data and return true when acknowledged" in {
-    val mockConnector = mock[CachingIndividualDetailsConnector]
+  it should "delegate delete to connector and return true if acknowledged" in {
+    val mockConnector = mock[IndividualDetailsConnector]
     val service       = new IndividualDetailsServiceImpl(mockConnector)
 
-    when(mockConnector.deleteIndividualDetailsCache(any[String]))
+    when(mockConnector.deleteIndividualDetails(any)(any))
       .thenReturn(Future.successful(true))
 
-    val result = service.deleteIdData("AB123456C")
+    val result = service.deleteIdData("testNino")
+
     result.futureValue shouldBe true
   }
 
-  "IndividualDetailsService" should "delete data and return false when not acknowledged" in {
-    val mockConnector = mock[CachingIndividualDetailsConnector]
+  it should "return false if deletion not acknowledged" in {
+    val mockConnector = mock[IndividualDetailsConnector]
     val service       = new IndividualDetailsServiceImpl(mockConnector)
 
-    when(mockConnector.deleteIndividualDetailsCache(any[String]))
+    when(mockConnector.deleteIndividualDetails(any)(any))
       .thenReturn(Future.successful(false))
 
-    val result = service.deleteIdData("AB123456C")
+    val result = service.deleteIdData("testNino")
+
     result.futureValue shouldBe false
   }
 }
+

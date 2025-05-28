@@ -35,6 +35,9 @@ class CachingIndividualDetailsConnectorSpec extends AnyFlatSpec with Matchers wi
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
+  val nino = "AA123456A"
+  val sessionId = "session-123"
+
   "CachingIndividualDetailsConnector" should "return cached data if present in repository" in {
     val mockUnderlying = mock[IndividualDetailsConnector]
     val mockRepo       = mock[IndividualDetailsRepoTrait]
@@ -43,7 +46,7 @@ class CachingIndividualDetailsConnectorSpec extends AnyFlatSpec with Matchers wi
     when(mockRepo.findIndividualDetailsDataByNino(any)(any))
       .thenReturn(Future.successful(Some(Fixtures.fakeIndividualDetailsDataCache)))
 
-    val result = connector.getIndividualDetailsWithCache("AA123456A", "session-123").value.futureValue
+    val result = connector.getIndividualDetails(nino, sessionId).value.futureValue
 
     result shouldBe Right(Fixtures.fakeIndividualDetailsDataCache)
     verify(mockUnderlying, never).getIndividualDetails(any, any)(any, any)
@@ -56,13 +59,13 @@ class CachingIndividualDetailsConnectorSpec extends AnyFlatSpec with Matchers wi
 
     when(mockRepo.findIndividualDetailsDataByNino(any)(any)).thenReturn(Future.successful(None))
     when(mockUnderlying.getIndividualDetails(any, any)(any, any))
-      .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](Fixtures.fakeIndividualDetails))
-    when(mockRepo.insertOrReplaceIndividualDetailsDataCache(any)(any)).thenReturn(Future.successful("AA123456A"))
+      .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](Fixtures.fakeIndividualDetailsDataCache))
+    when(mockRepo.insertOrReplaceIndividualDetailsDataCache(any)(any)).thenReturn(Future.successful(nino))
 
-    val result = connector.getIndividualDetailsWithCache("AA123456A", "session-123").value.futureValue
+    val result = connector.getIndividualDetails(nino, sessionId).value.futureValue
 
     result                                         shouldBe a[Right[_, _]]
-    result.toOption.get.individualDetailsData.nino shouldBe "AB123456C"
+    result.toOption.get.individualDetailsData.nino shouldBe Fixtures.fakeIndividualDetailsDataCache.individualDetailsData.nino
   }
 
   it should "return Left if API fails and repo has no data" in {
@@ -74,9 +77,9 @@ class CachingIndividualDetailsConnectorSpec extends AnyFlatSpec with Matchers wi
 
     when(mockRepo.findIndividualDetailsDataByNino(any)(any)).thenReturn(Future.successful(None))
     when(mockUnderlying.getIndividualDetails(any, any)(any, any))
-      .thenReturn(EitherT.leftT[Future, IndividualDetails](error))
+      .thenReturn(EitherT.leftT[Future, IndividualDetailsDataCache](error))
 
-    val result = connector.getIndividualDetailsWithCache("AA123456A", "session-123").value.futureValue
+    val result = connector.getIndividualDetails(nino, sessionId).value.futureValue
 
     result shouldBe Left(error)
   }
@@ -87,12 +90,9 @@ class CachingIndividualDetailsConnectorSpec extends AnyFlatSpec with Matchers wi
     val connector      = new CachingIndividualDetailsConnector(mockUnderlying, mockRepo)
 
     when(mockRepo.deleteIndividualDetailsDataByNino(any)(any))
-      .thenReturn(Future.successful(new org.mongodb.scala.result.DeleteResult {
-        override def wasAcknowledged(): Boolean = false
-        override def getDeletedCount: Long      = 0
-      }))
+      .thenReturn(Future.successful(newDeleteResult(acknowledged = false)))
 
-    connector.deleteIndividualDetailsCache("AA123456A").futureValue shouldBe false
+    connector.deleteIndividualDetails(nino).futureValue shouldBe false
   }
 
   it should "return true if delete is acknowledged" in {
@@ -101,11 +101,14 @@ class CachingIndividualDetailsConnectorSpec extends AnyFlatSpec with Matchers wi
     val connector      = new CachingIndividualDetailsConnector(mockUnderlying, mockRepo)
 
     when(mockRepo.deleteIndividualDetailsDataByNino(any)(any))
-      .thenReturn(Future.successful(new org.mongodb.scala.result.DeleteResult {
-        override def wasAcknowledged(): Boolean = true
-        override def getDeletedCount: Long      = 1
-      }))
+      .thenReturn(Future.successful(newDeleteResult(acknowledged = true)))
 
-    connector.deleteIndividualDetailsCache("AA123456A").futureValue shouldBe true
+    connector.deleteIndividualDetails(nino).futureValue shouldBe true
   }
+
+  private def newDeleteResult(acknowledged: Boolean, deletedCount: Long = 1): org.mongodb.scala.result.DeleteResult =
+    new org.mongodb.scala.result.DeleteResult {
+      override def wasAcknowledged(): Boolean = acknowledged
+      override def getDeletedCount: Long      = deletedCount
+    }
 }

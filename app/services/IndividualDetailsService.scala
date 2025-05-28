@@ -18,7 +18,7 @@ package services
 
 import cats.data.EitherT
 import com.google.inject.ImplementedBy
-import connectors.CachingIndividualDetailsConnector
+import connectors.IndividualDetailsConnector
 import models.individualDetails.IndividualDetailsDataCache
 import play.api.Logging
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
@@ -37,16 +37,16 @@ trait IndividualDetailsService {
 }
 
 class IndividualDetailsServiceImpl @Inject() (
-  connector: CachingIndividualDetailsConnector
-) extends IndividualDetailsService
-    with Logging {
+                                               connector: IndividualDetailsConnector
+                                             ) extends IndividualDetailsService
+  with Logging {
 
-  def getIdData(nino: String, sessionId: String)(implicit
-    ec: ExecutionContext,
-    hc: HeaderCarrier
+  override def getIdData(nino: String, sessionId: String)(implicit
+                                                          ec: ExecutionContext,
+                                                          hc: HeaderCarrier
   ): EitherT[Future, UpstreamErrorResponse, IndividualDetailsDataCache] =
-    connector.getIndividualDetailsWithCache(nino, sessionId)
+    connector.getIndividualDetails(nino, sessionId)
 
-  def deleteIdData(nino: String)(implicit ec: ExecutionContext): Future[Boolean] =
-    connector.deleteIndividualDetailsCache(nino)
+  override def deleteIdData(nino: String)(implicit ec: ExecutionContext): Future[Boolean] =
+    connector.deleteIndividualDetails(nino)
 }

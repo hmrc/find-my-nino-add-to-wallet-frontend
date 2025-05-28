@@ -60,24 +60,24 @@ class StoreMyNinoController @Inject() (
 
       auditSMNLandingPage("ViewNinoLanding", userRequestNew.individualDetails, hc)
 
-      val fullName  = userRequestNew.individualDetails.individualDetailsData.fullName
-      val googleIdf = googleWalletConnector.createGooglePass(fullName, ninoFormatted)
-      val appleIdET = appleWalletConnector.createApplePass(fullName, ninoFormatted)
+      val fullName = userRequestNew.individualDetails.individualDetailsData.fullName
 
-      googleIdf.flatMap { googleId =>
-        appleIdET.value.map {
-          case Right(appleId) =>
-            Ok(
-              view(
-                appleId.value,
-                googleId.value,
-                ninoFormatted,
-                isMobileDisplay(userRequestNew.request),
-                userRequestNew.trustedHelper
-              )(userRequestNew, messages)
-            )
-          case Left(error)    => InternalServerError(s"Error: ${error.message}")
-        }
+      val result = for {
+        googleId <- googleWalletConnector.createGooglePass(fullName, ninoFormatted)
+        appleId  <- appleWalletConnector.createApplePass(fullName, ninoFormatted)
+      } yield Ok(
+        view(
+          appleId.value,
+          googleId.value,
+          ninoFormatted,
+          isMobileDisplay(userRequestNew.request),
+          userRequestNew.trustedHelper
+        )(userRequestNew, messages)
+      )
+
+      result.value.map {
+        case Right(result) => result
+        case Left(error)   => InternalServerError(s"Error: ${error.message}")
       }
   }
 

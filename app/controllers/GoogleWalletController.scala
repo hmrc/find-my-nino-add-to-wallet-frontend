@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,10 +65,16 @@ class GoogleWalletController @Inject() (
         val nino: String  = userRequestNew.nino.getOrElse(throw new IllegalArgumentException("No nino found")).nino
         val ninoFormatted = nino.grouped(2).mkString(" ")
         val fullName      = userRequestNew.individualDetails.individualDetailsData.fullName
-        for {
-          pId: Some[String] <- googleWalletConnector.createGooglePass(fullName, ninoFormatted)
-        } yield Ok(view(pId.value, isMobileDisplay(userRequestNew.request))(userRequestNew.request, messages))
-      case (false, _)   => Future.successful(Redirect(controllers.routes.UnauthorisedController.onPageLoad))
+        googleWalletConnector
+          .createGooglePass(fullName, ninoFormatted)
+          .value
+          .map {
+            case Right(pId)  =>
+              Ok(view(pId.value, isMobileDisplay(userRequestNew.request))(userRequestNew.request, messages))
+            case Left(error) => InternalServerError(s"Failed to create Google Pass: ${error.message}")
+          }
+
+      case (false, _) => Future.successful(Redirect(controllers.routes.UnauthorisedController.onPageLoad))
     }
   }
 
@@ -97,15 +103,16 @@ class GoogleWalletController @Inject() (
         HeaderCarrierConverter.fromRequestAndSession(userRequestNew.request, userRequestNew.request.session)
       implicit val messages: Messages = cc.messagesApi.preferred(userRequestNew.request)
 
-      googleWalletConnector.getGooglePassUrl(passId).map {
-        case Some(data) =>
+      googleWalletConnector.getGooglePassUrl(passId).value.map {
+        case Right(Some(data)) =>
           val eventType = userRequestNew.request.getQueryString("qr-code") match {
             case Some("true") => "AddNinoToWalletFromQRCode"
             case _            => "AddNinoToWallet"
           }
           auditGoogleWallet(eventType, userRequestNew.individualDetails, hc)
           Redirect(data)
-        case _          => NotFound(passIdNotFoundView()(userRequestNew.request, messages, ec))
+        case Right(None)       => NotFound(passIdNotFoundView()(userRequestNew.request, messages, ec))
+        case Left(error)       => InternalServerError(s"Failed to get Google Pass: ${error.message}")
       }
   }
 
@@ -115,11 +122,12 @@ class GoogleWalletController @Inject() (
         HeaderCarrierConverter.fromRequestAndSession(userRequestNew.request, userRequestNew.request.session)
       implicit val messages: Messages = cc.messagesApi.preferred(userRequestNew.request)
 
-      googleWalletConnector.getGooglePassQrCode(passId).map {
-        case Some(data) =>
+      googleWalletConnector.getGooglePassQrCode(passId).value.map {
+        case Right(Some(data)) =>
           auditGoogleWallet("DisplayQRCode", userRequestNew.individualDetails, hc)
           Ok(data)
-        case _          => NotFound(qrCodeNotFoundView()(userRequestNew.request, messages, ec))
+        case Right(None)       => NotFound(qrCodeNotFoundView()(userRequestNew.request, messages, ec))
+        case Left(error)       => InternalServerError(s"Failed to get Google Pass QR Code: ${error.message}")
       }
     }
 

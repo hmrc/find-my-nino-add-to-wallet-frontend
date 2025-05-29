@@ -67,7 +67,6 @@ lazy val root = (project in file("."))
     Global / excludeLintKeys += update / evictionWarningOptions,
     update / evictionWarningOptions :=
       EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
-    resolvers ++= Seq(Resolver.jcenterRepo),
     // concatenate js
     Concat.groups := Seq(
       "javascripts/application.js" ->

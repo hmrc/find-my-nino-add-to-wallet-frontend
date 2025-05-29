@@ -37,7 +37,7 @@ import util.WireMockHelper
 import scala.concurrent.ExecutionContext
 
 class IndividualDetailsConnectorSpec
-  extends PlaySpec
+    extends PlaySpec
     with GuiceOneAppPerSuite
     with WireMockHelper
     with MockitoSugar
@@ -63,10 +63,10 @@ class IndividualDetailsConnectorSpec
     new DefaultIndividualDetailsConnector(httpClientV2, frontendAppConfig, httpClientResponse)
   }
 
-  val nino: String                      = "AA123456A"
-  val sessionId: String                 = "test-session-id"
-  val fakeIndividualDetailsJson: String = Json.toJson(fakeIndividualDetails).toString()
-  val url: String                       = s"/find-my-nino-add-to-wallet/individuals/details/NINO/${nino.take(8)}/Y"
+  val nino: String                                     = "AA123456A"
+  val sessionId: String                                = "test-session-id"
+  val fakeIndividualDetailsJson: String                = Json.toJson(fakeIndividualDetails).toString()
+  val url: String                                      = s"/find-my-nino-add-to-wallet/individuals/details/NINO/${nino.take(8)}/Y"
   implicit override val patienceConfig: PatienceConfig =
     PatienceConfig(timeout = Span(2, Seconds), interval = Span(50, Millis))
 
@@ -87,7 +87,7 @@ class IndividualDetailsConnectorSpec
       whenReady(result) {
         case Right(cache) =>
           cache.individualDetailsData.nino mustBe "AB123456C"
-        case Left(err) =>
+        case Left(err)    =>
           fail(s"Expected Right but got Left: $err")
       }
     }

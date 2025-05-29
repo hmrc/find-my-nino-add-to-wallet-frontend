@@ -37,13 +37,13 @@ trait IndividualDetailsService {
 }
 
 class IndividualDetailsServiceImpl @Inject() (
-                                               connector: IndividualDetailsConnector
-                                             ) extends IndividualDetailsService
-  with Logging {
+  connector: IndividualDetailsConnector
+) extends IndividualDetailsService
+    with Logging {
 
   override def getIdData(nino: String, sessionId: String)(implicit
-                                                          ec: ExecutionContext,
-                                                          hc: HeaderCarrier
+    ec: ExecutionContext,
+    hc: HeaderCarrier
   ): EitherT[Future, UpstreamErrorResponse, IndividualDetailsDataCache] =
     connector.getIndividualDetails(nino, sessionId)
 

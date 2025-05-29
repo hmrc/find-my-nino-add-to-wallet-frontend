@@ -35,7 +35,7 @@ class CachingIndividualDetailsConnectorSpec extends AnyFlatSpec with Matchers wi
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
-  val nino = "AA123456A"
+  val nino      = "AA123456A"
   val sessionId = "session-123"
 
   "CachingIndividualDetailsConnector" should "return cached data if present in repository" in {

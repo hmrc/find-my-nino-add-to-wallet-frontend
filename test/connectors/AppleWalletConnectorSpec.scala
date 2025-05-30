@@ -108,6 +108,14 @@ class AppleWalletConnectorSpec
       result mustBe Right(None)
     }
 
+    "return Left(UpstreamErrorResponse) when API call returns an unexpected status" in {
+      stubGet(url, NO_CONTENT, None)
+      val result = connector.getApplePass(passId).value.futureValue
+
+      result mustBe a[Left[UpstreamErrorResponse, _]]
+      result.swap.getOrElse(UpstreamErrorResponse("", INTERNAL_SERVER_ERROR)).statusCode mustBe NO_CONTENT
+    }
+
     "return Left(UpstreamErrorResponse) when API call fails" in {
       stubGet(url, INTERNAL_SERVER_ERROR, None)
       val result = connector.getApplePass(passId).value.futureValue

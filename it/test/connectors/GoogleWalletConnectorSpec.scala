@@ -87,6 +87,14 @@ class GoogleWalletConnectorSpec extends ConnectorSpec
       result mustBe Right(None)
     }
 
+    "return Left(UpstreamErrorResponse) when API call returns an unexpected status" in new LocalSetup {
+      stubGet(url, NO_CONTENT, None)
+      val result = connector.getGooglePassUrl(passId).value.futureValue
+
+      result mustBe a[Left[UpstreamErrorResponse, _]]
+      result.swap.getOrElse(UpstreamErrorResponse("", IM_A_TEAPOT)).statusCode mustBe NO_CONTENT
+    }
+
     "return Left(UpstreamErrorResponse) when API call fails" in new LocalSetup {
       stubGet(url, INTERNAL_SERVER_ERROR, None)
       val result = connector.getGooglePassUrl(passId).value.futureValue
@@ -118,6 +126,14 @@ class GoogleWalletConnectorSpec extends ConnectorSpec
       result mustBe Right(None)
     }
 
+    "return Left(UpstreamErrorResponse) when API call returns an unexpected status" in new LocalSetup {
+      stubGet(url, NO_CONTENT, None)
+      val result = connector.getGooglePassQrCode(passId).value.futureValue
+
+      result mustBe a[Left[UpstreamErrorResponse, _]]
+      result.swap.getOrElse(UpstreamErrorResponse("", IM_A_TEAPOT)).statusCode mustBe NO_CONTENT
+    }
+
     "return Left(UpstreamErrorResponse) when API call fails" in new LocalSetup {
       stubGet(url, INTERNAL_SERVER_ERROR, None)
       val result = connector.getGooglePassQrCode(passId).value.futureValue
@@ -139,6 +155,15 @@ class GoogleWalletConnectorSpec extends ConnectorSpec
 
       result mustBe a[Right[_, _]]
       result.getOrElse(None).get mustBe passId
+    }
+
+    "return Left(UpstreamErrorResponse) when API call returns an unexpected status" in new LocalSetup {
+      stubWithDelay(url, NO_CONTENT, Some(Json.toJson(createGooglePassDetails).toString()), None, delay)
+
+      val result = connector.createGooglePass(createGooglePassDetails.fullName, createGooglePassDetails.nino).value.futureValue
+
+      result mustBe a[Left[UpstreamErrorResponse, _]]
+      result.swap.getOrElse(UpstreamErrorResponse("", IM_A_TEAPOT)).statusCode mustBe NO_CONTENT
     }
 
     "return Left(UpstreamErrorResponse) when API call fails" in new LocalSetup {

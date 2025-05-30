@@ -235,7 +235,8 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
         when(mockGooglePassConnector.getGooglePassUrl(eqTo(passId))(any(), any()))
           .thenReturn(EitherT.leftT[Future, HttpResponse](UpstreamErrorResponse("some error", INTERNAL_SERVER_ERROR)))
 
-        val application = applicationBuilderWithConfig().overrides(
+        val application = applicationBuilderWithConfig()
+          .overrides(
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
@@ -245,9 +246,9 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
 
         running(application) {
           userLoggedInFMNUser(NinoUser)
-          val request     = FakeRequest(GET, routes.GoogleWalletController.getGooglePass(passId).url)
+          val request = FakeRequest(GET, routes.GoogleWalletController.getGooglePass(passId).url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result  = route(application, request).value
           status(result) mustEqual INTERNAL_SERVER_ERROR
           contentAsString(result) must include("Failed to get Google Pass: some error")
         }

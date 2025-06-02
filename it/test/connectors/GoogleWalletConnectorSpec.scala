@@ -72,7 +72,7 @@ class GoogleWalletConnectorSpec extends ConnectorSpec
 
     "return Google pass when called with an existing pass Id" in new LocalSetup {
       stubGet(url, OK, Some(googlePassUrl))
-      val result = connector.getGooglePassUrl(passId).value.futureValue
+      val result: Either[UpstreamErrorResponse, Option[String]] = connector.getGooglePassUrl(passId).value.futureValue
 
       result mustBe a[Right[_, _]]
       result.getOrElse(None).get mustBe googlePassUrl
@@ -81,7 +81,7 @@ class GoogleWalletConnectorSpec extends ConnectorSpec
     "return None when called with an unknown passId" in new LocalSetup {
       stubGet(url, NOT_FOUND, None)
       val unknownPassId = "somePassId"
-      val result = connector.getGooglePassUrl(unknownPassId).value.futureValue
+      val result: Either[UpstreamErrorResponse, Option[String]] = connector.getGooglePassUrl(unknownPassId).value.futureValue
 
       result mustBe a[Right[_, _]]
       result mustBe Right(None)
@@ -89,7 +89,7 @@ class GoogleWalletConnectorSpec extends ConnectorSpec
 
     "return Left(UpstreamErrorResponse) when API call returns an unexpected status" in new LocalSetup {
       stubGet(url, NO_CONTENT, None)
-      val result = connector.getGooglePassUrl(passId).value.futureValue
+      val result: Either[UpstreamErrorResponse, Option[String]] = connector.getGooglePassUrl(passId).value.futureValue
 
       result mustBe a[Left[UpstreamErrorResponse, _]]
       result.swap.getOrElse(UpstreamErrorResponse("", IM_A_TEAPOT)).statusCode mustBe NO_CONTENT
@@ -97,7 +97,7 @@ class GoogleWalletConnectorSpec extends ConnectorSpec
 
     "return Left(UpstreamErrorResponse) when API call fails" in new LocalSetup {
       stubGet(url, INTERNAL_SERVER_ERROR, None)
-      val result = connector.getGooglePassUrl(passId).value.futureValue
+      val result: Either[UpstreamErrorResponse, Option[String]] = connector.getGooglePassUrl(passId).value.futureValue
 
       result mustBe a[Left[UpstreamErrorResponse, _]]
       result.swap.getOrElse(UpstreamErrorResponse("", IM_A_TEAPOT)).statusCode mustBe INTERNAL_SERVER_ERROR
@@ -112,7 +112,7 @@ class GoogleWalletConnectorSpec extends ConnectorSpec
 
     "return Google pass when called with an existing pass Id" in new LocalSetup {
       stubGet(url, OK, Some(googlePassUrlImage))
-      val result = connector.getGooglePassQrCode(passId).value.futureValue
+      val result: Either[UpstreamErrorResponse, Option[Array[Byte]]] = connector.getGooglePassQrCode(passId).value.futureValue
 
       result mustBe a[Right[_, _]]
       result.getOrElse(None).get must contain theSameElementsAs googlePassCardBytes
@@ -120,7 +120,7 @@ class GoogleWalletConnectorSpec extends ConnectorSpec
 
     "return None when called with an unknown passId" in new LocalSetup {
       stubGet(url, NOT_FOUND, None)
-      val result = connector.getGooglePassQrCode(passId).value.futureValue
+      val result: Either[UpstreamErrorResponse, Option[Array[Byte]]] = connector.getGooglePassQrCode(passId).value.futureValue
 
       result mustBe a[Right[_, _]]
       result mustBe Right(None)
@@ -128,7 +128,7 @@ class GoogleWalletConnectorSpec extends ConnectorSpec
 
     "return Left(UpstreamErrorResponse) when API call returns an unexpected status" in new LocalSetup {
       stubGet(url, NO_CONTENT, None)
-      val result = connector.getGooglePassQrCode(passId).value.futureValue
+      val result: Either[UpstreamErrorResponse, Option[Array[Byte]]] = connector.getGooglePassQrCode(passId).value.futureValue
 
       result mustBe a[Left[UpstreamErrorResponse, _]]
       result.swap.getOrElse(UpstreamErrorResponse("", IM_A_TEAPOT)).statusCode mustBe NO_CONTENT
@@ -136,7 +136,7 @@ class GoogleWalletConnectorSpec extends ConnectorSpec
 
     "return Left(UpstreamErrorResponse) when API call fails" in new LocalSetup {
       stubGet(url, INTERNAL_SERVER_ERROR, None)
-      val result = connector.getGooglePassQrCode(passId).value.futureValue
+      val result: Either[UpstreamErrorResponse, Option[Array[Byte]]] = connector.getGooglePassQrCode(passId).value.futureValue
 
       result mustBe a[Left[UpstreamErrorResponse, _]]
       result.swap.getOrElse(UpstreamErrorResponse("", IM_A_TEAPOT)).statusCode mustBe INTERNAL_SERVER_ERROR
@@ -151,7 +151,7 @@ class GoogleWalletConnectorSpec extends ConnectorSpec
 
     "return passId when called create google pass" in new LocalSetup {
       stubPost(url, OK, Some(Json.toJson(createGooglePassDetails).toString()), Some(passId))
-      val result = connector.createGooglePass(createGooglePassDetails.fullName, createGooglePassDetails.nino).value.futureValue
+      val result: Either[UpstreamErrorResponse, Some[String]] = connector.createGooglePass(createGooglePassDetails.fullName, createGooglePassDetails.nino).value.futureValue
 
       result mustBe a[Right[_, _]]
       result.getOrElse(None).get mustBe passId
@@ -160,7 +160,7 @@ class GoogleWalletConnectorSpec extends ConnectorSpec
     "return Left(UpstreamErrorResponse) when API call returns an unexpected status" in new LocalSetup {
       stubWithDelay(url, NO_CONTENT, Some(Json.toJson(createGooglePassDetails).toString()), None, delay)
 
-      val result = connector.createGooglePass(createGooglePassDetails.fullName, createGooglePassDetails.nino).value.futureValue
+      val result: Either[UpstreamErrorResponse, Some[String]] = connector.createGooglePass(createGooglePassDetails.fullName, createGooglePassDetails.nino).value.futureValue
 
       result mustBe a[Left[UpstreamErrorResponse, _]]
       result.swap.getOrElse(UpstreamErrorResponse("", IM_A_TEAPOT)).statusCode mustBe NO_CONTENT
@@ -169,7 +169,7 @@ class GoogleWalletConnectorSpec extends ConnectorSpec
     "return Left(UpstreamErrorResponse) when API call fails" in new LocalSetup {
       stubWithDelay(url, INTERNAL_SERVER_ERROR, Some(Json.toJson(createGooglePassDetails).toString()), None, delay)
 
-      val result = connector.createGooglePass(createGooglePassDetails.fullName, createGooglePassDetails.nino).value.futureValue
+      val result: Either[UpstreamErrorResponse, Some[String]] = connector.createGooglePass(createGooglePassDetails.fullName, createGooglePassDetails.nino).value.futureValue
 
       result mustBe a[Left[UpstreamErrorResponse, _]]
       result.swap.getOrElse(UpstreamErrorResponse("", IM_A_TEAPOT)).statusCode mustBe INTERNAL_SERVER_ERROR

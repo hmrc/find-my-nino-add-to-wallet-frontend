@@ -45,13 +45,10 @@ class GoogleWalletConnector @Inject() (
     ec: ExecutionContext,
     headerCarrier: HeaderCarrier
   ): EitherT[Future, UpstreamErrorResponse, Some[String]] = {
-
     val url                        =
       s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/create-google-pass-with-credentials"
     implicit val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
-
-    val details = Json.toJson(GooglePassDetails(fullName, nino))
-    logger.info(s"Attempting to create google pass with payload: $details")
+    val details                    = Json.toJson(GooglePassDetails(fullName, nino))
 
     httpClientResponse
       .read(

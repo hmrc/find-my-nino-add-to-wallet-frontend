@@ -84,6 +84,22 @@ class CachingIndividualDetailsConnectorSpec extends AnyFlatSpec with Matchers wi
     result shouldBe Left(error)
   }
 
+  it should "return Left with a cache error if repository lookup fails" in {
+    val mockUnderlying = mock[IndividualDetailsConnector]
+    val mockRepo = mock[IndividualDetailsRepoTrait]
+    val connector = new CachingIndividualDetailsConnector(mockUnderlying, mockRepo)
+    val exception = new RuntimeException("Failed to connect to MongoDB")
+
+    when(mockRepo.findIndividualDetailsDataByNino(any)(any)).thenReturn(Future.failed(exception))
+    val error = UpstreamErrorResponse(s"Cache error: Failed to connect to MongoDB", 500)
+
+    val result = connector.getIndividualDetails(nino, sessionId).value.futureValue
+
+    result shouldBe a[Left[_, _]]
+    result shouldBe Left(error)
+    verify(mockUnderlying, never).getIndividualDetails(any, any)(any, any)
+  }
+
   it should "return false if delete is not acknowledged" in {
     val mockUnderlying = mock[IndividualDetailsConnector]
     val mockRepo       = mock[IndividualDetailsRepoTrait]

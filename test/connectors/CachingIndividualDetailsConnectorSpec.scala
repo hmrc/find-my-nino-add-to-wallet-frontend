@@ -86,9 +86,9 @@ class CachingIndividualDetailsConnectorSpec extends AnyFlatSpec with Matchers wi
 
   it should "return Left with a cache error if repository lookup fails" in {
     val mockUnderlying = mock[IndividualDetailsConnector]
-    val mockRepo = mock[IndividualDetailsRepoTrait]
-    val connector = new CachingIndividualDetailsConnector(mockUnderlying, mockRepo)
-    val exception = new RuntimeException("Failed to connect to MongoDB")
+    val mockRepo       = mock[IndividualDetailsRepoTrait]
+    val connector      = new CachingIndividualDetailsConnector(mockUnderlying, mockRepo)
+    val exception      = new RuntimeException("Failed to connect to MongoDB")
 
     when(mockRepo.findIndividualDetailsDataByNino(any)(any)).thenReturn(Future.failed(exception))
     val error = UpstreamErrorResponse(s"Cache error: Failed to connect to MongoDB", 500)

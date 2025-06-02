@@ -31,6 +31,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import views.html.RedirectToPostalFormView
 import views.html.identity.TechnicalIssuesNoRetryView
+
 import scala.concurrent.{ExecutionContext, Future}
 
 class ActionHelper @Inject() (
@@ -46,7 +47,7 @@ class ActionHelper @Inject() (
     hc: HeaderCarrier,
     ec: ExecutionContext
   ): Future[Either[Result, UserRequest[A]]] =
-    individualDetailsService.getIdDataFromCache(identifier, sessionId).value.flatMap {
+    individualDetailsService.getIdData(identifier, sessionId).value.flatMap {
       case Left(_) =>
         val messages: Messages = cc.messagesApi.preferred(authContext.request)
         Future.successful(
@@ -76,7 +77,7 @@ class ActionHelper @Inject() (
               _ <- npsService.upliftCRN(identifier, request)
               _ <- EitherT[Future, UpstreamErrorResponse, Boolean](
                      individualDetailsService
-                       .deleteIdDataFromCache(individualDetails.individualDetailsData.nino)
+                       .deleteIdData(individualDetails.individualDetailsData.nino)
                        .map(Right(_))
                    )
             } yield UserRequest(

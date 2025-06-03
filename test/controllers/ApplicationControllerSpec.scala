@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -303,7 +303,20 @@ class ApplicationControllerSpec extends SpecBase with IndividualDetailsFixtures 
         }
       }
 
-      "return bad request when continueUrl is not relative" in new LocalSetup {
+      "showUpliftJourneyOutcome should return InternalServerError when IV journey service call fails" in new LocalSetup {
+
+        running(application) {
+          when(mockIdentityVerificationFrontendService.getIVJourneyStatus(any())(any(), any()))
+            .thenReturn(EitherT.leftT[Future, IdentityVerificationResponse](UpstreamErrorResponse("some error", INTERNAL_SERVER_ERROR)))
+
+          val request = FakeRequest(GET, "?journeyId=XXXXX&token=XXXXXX")
+          val result = controller.showUpliftJourneyOutcome(None)(request)
+
+          status(result) mustBe INTERNAL_SERVER_ERROR
+        }
+      }
+
+      "showUpliftJourneyOutcome should return InternalServerError when continueUrl is not relative" in new LocalSetup {
         val result: Future[Result] = routeWrapper(
           buildFakeRequestWithAuth(
             "GET",
@@ -311,8 +324,7 @@ class ApplicationControllerSpec extends SpecBase with IndividualDetailsFixtures 
           )
         ).get
 
-        status(result) mustBe BAD_REQUEST
-
+        status(result) mustBe INTERNAL_SERVER_ERROR
       }
     }
   }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,58 +64,59 @@ class ApplicationController @Inject() (
         case Some(jid) =>
           identityVerificationFrontendService
             .getIVJourneyStatus(jid)
-            .map {
-              case Success =>
-                Ok(
-                  successView(
-                    continueUrl
-                      .getOrElse(RedirectUrl(routes.StoreMyNinoController.onPageLoad.url))
-                      .get(OnlyRelative)
-                      .url
-                  )
-                )
+            .fold(
+              error => {
+                logErrorMessage(s"Call to IdentityVerificationFrontendService failed: ${error.message}")
+                InternalServerError(technicalIssuesView(retryUrl))
+              },
+              response => handleIVResponse(response, continueUrl, retryUrl)
+            )
 
-              case InsufficientEvidence =>
-                Unauthorized(cannotConfirmIdentityView(retryUrl))
-
-              case UserAborted =>
-                logErrorMessage(UserAborted.toString)
-                Unauthorized(cannotConfirmIdentityView(retryUrl))
-
-              case FailedMatching =>
-                logErrorMessage(FailedMatching.toString)
-                Unauthorized(cannotConfirmIdentityView(retryUrl))
-
-              case Incomplete =>
-                logErrorMessage(Incomplete.toString)
-                Unauthorized(failedIvIncompleteView(retryUrl))
-
-              case PrecondFailed =>
-                logErrorMessage(PrecondFailed.toString)
-                Unauthorized(cannotConfirmIdentityView(retryUrl))
-
-              case LockedOut =>
-                logErrorMessage(LockedOut.toString)
-                Unauthorized(lockedOutView(allowContinue = false))
-
-              case Timeout =>
-                logErrorMessage(Timeout.toString)
-                Unauthorized(timeOutView(retryUrl))
-
-              case TechnicalIssue =>
-                logErrorMessage(s"TechnicalIssue response from IdentityVerificationFrontendService")
-                FailedDependency(technicalIssuesView(retryUrl))
-
-              case _ =>
-                logErrorMessage("unknown status from IdentityVerificationFrontendService")
-                FailedDependency(technicalIssuesView(retryUrl))
-            }
-            .getOrElse(BadRequest(technicalIssuesView(retryUrl)))
-        case _         =>
-          logErrorMessage("journeyId missing or incorect")
+        case None =>
+          logErrorMessage("journeyId missing or incorrect")
           Future.successful(FailedDependency(technicalIssuesView(retryUrl)))
       }
     }
+
+  private def handleIVResponse(
+    response: IdentityVerificationResponse,
+    continueUrl: Option[RedirectUrl],
+    retryUrl: String
+  )(implicit request: Request[_]): Result = response match {
+    case Success =>
+      Ok(
+        successView(
+          continueUrl
+            .getOrElse(RedirectUrl(routes.StoreMyNinoController.onPageLoad.url))
+            .get(OnlyRelative)
+            .url
+        )
+      )
+
+    case InsufficientEvidence | UserAborted | FailedMatching | PrecondFailed =>
+      logErrorMessage(response.toString)
+      Unauthorized(cannotConfirmIdentityView(retryUrl))
+
+    case Incomplete =>
+      logErrorMessage(Incomplete.toString)
+      Unauthorized(failedIvIncompleteView(retryUrl))
+
+    case LockedOut =>
+      logErrorMessage(LockedOut.toString)
+      Unauthorized(lockedOutView(allowContinue = false))
+
+    case Timeout =>
+      logErrorMessage(Timeout.toString)
+      Unauthorized(timeOutView(retryUrl))
+
+    case TechnicalIssue =>
+      logErrorMessage("TechnicalIssue response from IdentityVerificationFrontendService")
+      FailedDependency(technicalIssuesView(retryUrl))
+
+    case _ =>
+      logErrorMessage("unknown status from IdentityVerificationFrontendService")
+      FailedDependency(technicalIssuesView(retryUrl))
+  }
 
   private def logErrorMessage(reason: String): Unit =
     logger.warn(s"Unable to confirm user identity: $reason")

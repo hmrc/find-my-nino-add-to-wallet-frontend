@@ -79,9 +79,9 @@ class StoreMyNinoControllerSpec
       .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](Some(applePassId)))
 
     when(mockGoogleWalletConnector.getGooglePassUrl(eqTo(googlePassId))(any(), any()))
-      .thenReturn(Future(Some(fakeGooglePassSaveUrl)))
+      .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](Some(fakeGooglePassSaveUrl)))
     when(mockGoogleWalletConnector.createGooglePass(any(), any())(any(), any()))
-      .thenReturn(Future(Some(googlePassId)))
+      .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](Some(googlePassId)))
 
     super.beforeEach()
   }
@@ -350,7 +350,7 @@ class StoreMyNinoControllerSpec
         .thenReturn(Future.successful(true))
 
       when(mockGoogleWalletConnector.getGooglePassUrl(eqTo(googlePassId))(any(), any()))
-        .thenReturn(Future(None))
+        .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](None))
 
       val application = applicationBuilderWithConfig()
         .overrides(
@@ -461,7 +461,40 @@ class StoreMyNinoControllerSpec
         )
 
       when(mockGoogleWalletConnector.createGooglePass(any(), any())(any(), any()))
-        .thenReturn(Future.successful(Some(googlePassId)))
+        .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](Some(googlePassId)))
+
+      val application = applicationBuilderWithConfig()
+        .overrides(
+          inject.bind[SessionRepository].toInstance(mockSessionRepository),
+          inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
+          inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
+          inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+        )
+        .build()
+
+      running(application) {
+        userLoggedInFMNUser(NinoUser)
+        val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
+          .withSession(("authToken", "Bearer 123"))
+
+        val result = route(application, request).value
+
+        status(result) mustBe INTERNAL_SERVER_ERROR
+        contentAsString(result) must include("Error: Internal Server Error")
+      }
+    }
+
+    "must return InternalServerError when Google Pass creation fails" in {
+      when(mockIndividualDetailsService.deleteIdData(any())(any()))
+        .thenReturn(Future.successful(true))
+
+      when(mockAppleWalletConnector.createApplePass(any(), any())(any(), any()))
+        .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](Some(applePassId)))
+
+      when(mockGoogleWalletConnector.createGooglePass(any(), any())(any(), any()))
+        .thenReturn(
+          EitherT.leftT[Future, HttpResponse](UpstreamErrorResponse("Internal Server Error", INTERNAL_SERVER_ERROR))
+        )
 
       val application = applicationBuilderWithConfig()
         .overrides(

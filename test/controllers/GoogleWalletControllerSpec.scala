@@ -53,11 +53,13 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
 
     reset(mockGooglePassConnector)
     when(mockGooglePassConnector.getGooglePassUrl(eqTo(passId))(any(), any()))
-      .thenReturn(Future(Some(fakeGooglePassSaveUrl)))
+      .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](Some(fakeGooglePassSaveUrl)))
+
     when(mockGooglePassConnector.createGooglePass(any(), any())(any(), any()))
-      .thenReturn(Future(Some(passId)))
+      .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](Some(passId)))
+
     when(mockGooglePassConnector.getGooglePassQrCode(eqTo(passId))(any(), any()))
-      .thenReturn(Future(Some(Base64.getDecoder.decode(fakeBase64String))))
+      .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](Some(Base64.getDecoder.decode(fakeBase64String))))
 
     reset(mockSessionRepository)
     when(mockSessionRepository.get(any())) thenReturn Future.successful(Some(emptyUserAnswers))
@@ -143,6 +145,33 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
         }
       }
 
+      "must return InternalServerError when Google Pass creation fails" in {
+
+        when(mockGooglePassConnector.createGooglePass(any(), any())(any(), any()))
+          .thenReturn(EitherT.leftT[Future, HttpResponse](UpstreamErrorResponse("some error", INTERNAL_SERVER_ERROR)))
+
+        val application =
+          applicationBuilderWithConfig()
+            .overrides(
+              inject.bind[SessionRepository].toInstance(mockSessionRepository),
+              inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
+              inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),
+              inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+            )
+            .configure("features.google-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true)
+            .build()
+
+        running(application) {
+          userLoggedInFMNUser(NinoUser)
+          val request = FakeRequest(GET, routes.GoogleWalletController.onPageLoad().url)
+            .withSession(("authToken", "Bearer 123"))
+
+          val result = route(application, request).value
+          status(result) mustEqual INTERNAL_SERVER_ERROR
+          contentAsString(result) must include("Failed to create Google Pass: some error")
+        }
+      }
+
       "must return google pass" in {
 
         val application = applicationBuilderWithConfig()
@@ -166,7 +195,7 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
 
       "must redirect to passIdNotFoundView when no Google pass is returned" in {
         when(mockGooglePassConnector.getGooglePassUrl(eqTo(passId))(any(), any()))
-          .thenReturn(Future(None))
+          .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](None))
 
         val application = applicationBuilderWithConfig()
           .overrides(
@@ -202,6 +231,29 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
         }
       }
 
+      "must return InternalServerError when Google Pass retrieval fails" in {
+        when(mockGooglePassConnector.getGooglePassUrl(eqTo(passId))(any(), any()))
+          .thenReturn(EitherT.leftT[Future, HttpResponse](UpstreamErrorResponse("some error", INTERNAL_SERVER_ERROR)))
+
+        val application = applicationBuilderWithConfig()
+          .overrides(
+            inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
+            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+          )
+          .configure("features.google-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true)
+          .build()
+
+        running(application) {
+          userLoggedInFMNUser(NinoUser)
+          val request = FakeRequest(GET, routes.GoogleWalletController.getGooglePass(passId).url)
+            .withSession(("authToken", "Bearer 123"))
+          val result  = route(application, request).value
+          status(result) mustEqual INTERNAL_SERVER_ERROR
+          contentAsString(result) must include("Failed to get Google Pass: some error")
+        }
+      }
+
       "must return QR code" in {
         val application = applicationBuilderWithConfig()
           .overrides(
@@ -224,7 +276,7 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
 
       "must redirect to qrCodeNotFoundView when no Google pass QR code is returned" in {
         when(mockGooglePassConnector.getGooglePassQrCode(eqTo(passId))(any(), any()))
-          .thenReturn(Future(None))
+          .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](None))
 
         val application = applicationBuilderWithConfig()
           .overrides(
@@ -257,6 +309,30 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
             scala.concurrent.ExecutionContext.global
           ).toString()
 
+        }
+      }
+
+      "must return InternalServerError when Google Pass QR code retrieval fails" in {
+        when(mockGooglePassConnector.getGooglePassQrCode(eqTo(passId))(any(), any()))
+          .thenReturn(EitherT.leftT[Future, HttpResponse](UpstreamErrorResponse("some error", INTERNAL_SERVER_ERROR)))
+
+        val application = applicationBuilderWithConfig()
+          .overrides(
+            inject.bind[SessionRepository].toInstance(mockSessionRepository),
+            inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
+            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+          )
+          .configure("features.google-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true)
+          .build()
+
+        running(application) {
+          userLoggedInFMNUser(NinoUser)
+          val request = FakeRequest(GET, routes.GoogleWalletController.getGooglePassQrCode(passId).url)
+            .withSession(("authToken", "Bearer 123"))
+
+          val result = route(application, request).value
+          status(result) mustEqual INTERNAL_SERVER_ERROR
+          contentAsString(result) must include("Failed to get Google Pass QR Code: some error")
         }
       }
 
@@ -374,7 +450,7 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
 
       "must redirect to passIdNotFoundView when no Google pass is returned" in {
         when(mockGooglePassConnector.getGooglePassUrl(eqTo(passId))(any(), any()))
-          .thenReturn(Future(None))
+          .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](None))
 
         val application = applicationBuilderWithConfig()
           .overrides(
@@ -432,7 +508,7 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
 
       "must redirect to qrCodeNotFoundView when no Google pass QR code is returned" in {
         when(mockGooglePassConnector.getGooglePassQrCode(eqTo(passId))(any(), any()))
-          .thenReturn(Future(None))
+          .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](None))
 
         val application = applicationBuilderWithConfig()
           .overrides(

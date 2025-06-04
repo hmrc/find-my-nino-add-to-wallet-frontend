@@ -101,4 +101,11 @@ class IndividualDetailsConnectorSpec
       result.swap.getOrElse(fail("Expected Left but got Right")).statusCode mustBe INTERNAL_SERVER_ERROR
     }
   }
+
+  "DefaultIndividualDetailsConnector#deleteIndividualDetails" must {
+    "return false for deleteIndividualDetails" in {
+      val result = connector.deleteIndividualDetails(nino).futureValue
+      result mustBe false
+    }
+  }
 }

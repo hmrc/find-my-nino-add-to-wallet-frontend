@@ -307,10 +307,14 @@ class ApplicationControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
         running(application) {
           when(mockIdentityVerificationFrontendService.getIVJourneyStatus(any())(any(), any()))
-            .thenReturn(EitherT.leftT[Future, IdentityVerificationResponse](UpstreamErrorResponse("some error", INTERNAL_SERVER_ERROR)))
+            .thenReturn(
+              EitherT.leftT[Future, IdentityVerificationResponse](
+                UpstreamErrorResponse("some error", INTERNAL_SERVER_ERROR)
+              )
+            )
 
           val request = FakeRequest(GET, "?journeyId=XXXXX&token=XXXXXX")
-          val result = controller.showUpliftJourneyOutcome(None)(request)
+          val result  = controller.showUpliftJourneyOutcome(None)(request)
 
           status(result) mustBe INTERNAL_SERVER_ERROR
         }

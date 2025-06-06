@@ -17,6 +17,7 @@
 package controllers
 
 import config.FrontendAppConfig
+import connectors.FandFConnector
 import controllers.actions.CheckChildRecordActionWithCacheInvalidation
 import controllers.auth.requests.UserRequest
 import models.individualDetails.IndividualDetailsDataCache
@@ -39,6 +40,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class NinoLetterController @Inject() (
   override val messagesApi: MessagesApi,
   authConnector: AuthConnector,
+  fandFConnector: FandFConnector,
   auditService: AuditService,
   view: PrintNationalInsuranceNumberView,
   checkChildRecordAction: CheckChildRecordActionWithCacheInvalidation,
@@ -50,7 +52,7 @@ class NinoLetterController @Inject() (
   ec: ExecutionContext,
   cc: MessagesControllerComponents,
   frontendAppConfig: FrontendAppConfig
-) extends FMNBaseController(authConnector)
+) extends FMNBaseController(authConnector, fandFConnector)
     with I18nSupport {
 
   implicit val loginContinueUrl: Call = routes.StoreMyNinoController.onPageLoad

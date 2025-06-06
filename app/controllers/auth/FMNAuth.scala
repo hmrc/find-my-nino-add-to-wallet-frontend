@@ -17,6 +17,7 @@
 package controllers.auth
 
 import config.FrontendAppConfig
+import connectors.FandFConnector
 import controllers.auth.FMNAuth.toContinueUrl
 import controllers.routes
 import models.NationalInsuranceNumber
@@ -46,7 +47,7 @@ case class AuthContext[A](
   request: Request[A]
 )
 
-trait FMNAuth extends AuthorisedFunctions with Logging {
+trait FMNAuth (val fandfConnector: FandFConnector) extends AuthorisedFunctions with Logging {
   this: FrontendController =>
 
   protected type FMNAction[A] = AuthContext[A] => Future[Result]
@@ -122,7 +123,6 @@ trait FMNAuth extends AuthorisedFunctions with Logging {
       Retrievals.credentials and
       Retrievals.credentialStrength and
       Retrievals.confidenceLevel and
-      Retrievals.trustedHelper and
       Retrievals.profile and
       Retrievals.internalId and
       Retrievals.credentialRole
@@ -151,89 +151,58 @@ trait FMNAuth extends AuthorisedFunctions with Logging {
     hc: HeaderCarrier,
     config: FrontendAppConfig,
     request: Request[A]
-  ): Future[Result] =
-    authorised(AuthPredicate)
-      .retrieve(FMNRetrievals) {
-        case _ ~ Some(Individual | Organisation) ~ _ ~ _ ~ (Some(CredentialStrength.weak) |
-            Some("none")) ~ _ ~ _ ~ _ ~ _ ~ _ =>
-          upliftCredentialStrength()
+  ): Future[Result] = {
+    fandfConnector.getTrustedHelper().flatMap { helper =>
+      authorised(AuthPredicate)
+        .retrieve(FMNRetrievals) {
+          case _ ~ Some(Individual | Organisation) ~ _ ~ _ ~ (Some(CredentialStrength.weak) |
+                                                              Some("none")) ~ _ ~ _ ~ _ ~ _ =>
+            upliftCredentialStrength()
 
-        case _ ~ Some(Individual | Organisation) ~ _ ~ _ ~ _ ~ LT200(_) ~ _ ~ _ ~ _ ~ _ =>
-          upliftConfidenceLevel(request)
+          case _ ~ Some(Individual | Organisation) ~ _ ~ _ ~ _ ~ LT200(_) ~ _ ~ _ ~ _ =>
+            upliftConfidenceLevel(request)
 
-        case Some(nino) ~
+          case Some(nino) ~
             Some(affinityGroup) ~
             Enrolments(enrolments) ~
             _ ~
             Some(CredentialStrength.strong) ~
             GTOE200(confidenceLevel) ~
-            Some(helper) ~
             _ ~
             Some(internalId) ~
             Some(_) =>
-          val trimmedRequest: Request[A] = request
-            .map {
-              case AnyContentAsFormUrlEncoded(data) =>
-                AnyContentAsFormUrlEncoded(data.map { case (key, vals) =>
-                  (key, vals.map(_.trim))
-                })
-              case b                                => b
-            }
-            .asInstanceOf[Request[A]]
+            val trimmedRequest: Request[A] = request
+              .map {
+                case AnyContentAsFormUrlEncoded(data) =>
+                  AnyContentAsFormUrlEncoded(data.map { case (key, vals) =>
+                    (key, vals.map(_.trim))
+                  })
+                case b => b
+              }
+              .asInstanceOf[Request[A]]
 
-          implicit val authenticatedRequest: AuthContext[A] = AuthContext[A](
-            NationalInsuranceNumber(helper.principalNino.get),
-            isUser = true,
-            internalId,
-            confidenceLevel,
-            affinityGroup,
-            Enrolments(enrolments),
-            Some(helper),
-            trimmedRequest
-          )
+            implicit val authenticatedRequest: AuthContext[A] = AuthContext[A](
+              NationalInsuranceNumber(helper.fold(nino)(helper => helper.principalNino.get)),
+              isUser = true,
+              internalId,
+              confidenceLevel,
+              affinityGroup,
+              Enrolments(enrolments),
+              helper,
+              trimmedRequest
+            )
 
-          enrolmentAffinityCheck(enrolments, affinityGroup, nino, block)
+            enrolmentAffinityCheck(enrolments, affinityGroup, nino, block)
 
-        case Some(nino) ~
-            Some(affinityGroup) ~
-            Enrolments(enrolments) ~
-            _ ~
-            Some(CredentialStrength.strong) ~
-            GTOE200(confidenceLevel) ~
-            None ~
-            _ ~
-            Some(internalId) ~
-            Some(_) =>
-          val trimmedRequest: Request[A] = request
-            .map {
-              case AnyContentAsFormUrlEncoded(data) =>
-                AnyContentAsFormUrlEncoded(data.map { case (key, vals) =>
-                  (key, vals.map(_.trim))
-                })
-              case b                                => b
-            }
-            .asInstanceOf[Request[A]]
-
-          implicit val authenticatedRequest: AuthContext[A] = AuthContext[A](
-            NationalInsuranceNumber(nino),
-            isUser = true,
-            internalId,
-            confidenceLevel,
-            affinityGroup,
-            Enrolments(enrolments),
-            None,
-            trimmedRequest
-          )
-
-          enrolmentAffinityCheck(enrolments, affinityGroup, nino, block)
-
-        case _ =>
-          logger.warn("All authorize checks failed whilst attempting to authorise user")
-          Future successful Redirect(controllers.routes.UnauthorisedController.onPageLoad)
-      }
-      .recover {
-        handleFailure(toContinueUrl(loginContinueUrl))
-      }
+          case _ =>
+            logger.warn("All authorize checks failed whilst attempting to authorise user")
+            Future successful Redirect(controllers.routes.UnauthorisedController.onPageLoad)
+        }
+        .recover {
+          handleFailure(toContinueUrl(loginContinueUrl))
+        }
+    }
+  }
 
   private def handleFailure(
     loginContinueUrl: String

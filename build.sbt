@@ -8,6 +8,7 @@ lazy val appName: String = "find-my-nino-add-to-wallet-frontend"
 
 ThisBuild / majorVersion := 1
 ThisBuild / scalaVersion := "3.3.5"
+ThisBuild / scalafmtOnCompile := true
 
 lazy val scoverageSettings =
   Seq(

@@ -33,14 +33,24 @@ import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
 
 import scala.concurrent.ExecutionContext
 
-trait IntegrationSpecBase extends PlaySpec
-  with GivenWhenThen with TestSuite with ScalaFutures with IntegrationPatience
-  with WiremockHelper
-  with GuiceOneServerPerSuite with TryValues
-  with BeforeAndAfterEach with BeforeAndAfterAll with Eventually with CreateRequestHelper with CustomMatchers with DefaultAwaitTimeout {
+trait IntegrationSpecBase
+    extends PlaySpec
+    with GivenWhenThen
+    with TestSuite
+    with ScalaFutures
+    with IntegrationPatience
+    with WiremockHelper
+    with GuiceOneServerPerSuite
+    with TryValues
+    with BeforeAndAfterEach
+    with BeforeAndAfterAll
+    with Eventually
+    with CreateRequestHelper
+    with CustomMatchers
+    with DefaultAwaitTimeout {
 
   implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
-  implicit val hc: HeaderCarrier = HeaderCarrier()
+  implicit val hc: HeaderCarrier    = HeaderCarrier()
 
   override implicit lazy val app: Application = new GuiceApplicationBuilder()
     .in(Environment.simple(mode = Mode.Dev))
@@ -117,20 +127,20 @@ trait IntegrationSpecBase extends PlaySpec
         |}
         |""".stripMargin
 
-
   def config: Map[String, _] = Map(
     "play.filters.csrf.header.bypassHeaders.Csrf-Token" -> "nocheck",
-    "play.http.router" -> "testOnlyDoNotUseInAppConf.Routes",
-    "auditing.enabled" -> false,
-    "metrics.enabled" -> false,
-    "microservice.services.auth.port" -> wiremockPort,
-    "microservice.services.history.port" -> wiremockPort,
-    "microservice.services.exbForms.port" -> wiremockPort
+    "play.http.router"                                  -> "testOnlyDoNotUseInAppConf.Routes",
+    "auditing.enabled"                                  -> false,
+    "metrics.enabled"                                   -> false,
+    "microservice.services.auth.port"                   -> wiremockPort,
+    "microservice.services.history.port"                -> wiremockPort,
+    "microservice.services.exbForms.port"               -> wiremockPort
   )
 
-  implicit lazy val messagesApi: MessagesApi = app.injector.instanceOf[MessagesApi]
-  implicit lazy val appConfig: FrontendAppConfig = app.injector.instanceOf[FrontendAppConfig]
-  implicit lazy val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("", "").withSession(SessionKeys.sessionId -> "foo")
+  implicit lazy val messagesApi: MessagesApi                         = app.injector.instanceOf[MessagesApi]
+  implicit lazy val appConfig: FrontendAppConfig                     = app.injector.instanceOf[FrontendAppConfig]
+  implicit lazy val fakeRequest: FakeRequest[AnyContentAsEmpty.type] =
+    FakeRequest("", "").withSession(SessionKeys.sessionId -> "foo")
 
   override def beforeEach(): Unit = {
     resetWiremock()

@@ -24,75 +24,83 @@ import play.api.libs.ws.WSResponse
 
 trait CustomMatchers {
   def httpStatus(expectedValue: Int): HavePropertyMatcher[WSResponse, Int] =
-    (response: WSResponse) => HavePropertyMatchResult(
-      response.status == expectedValue,
-      "httpStatus",
-      expectedValue,
-      response.status
-    )
+    (response: WSResponse) =>
+      HavePropertyMatchResult(
+        response.status == expectedValue,
+        "httpStatus",
+        expectedValue,
+        response.status
+      )
 
   def redirectLocation(expectedValue: String): HavePropertyMatcher[WSResponse, Option[String]] =
-    (response: WSResponse) => HavePropertyMatchResult(
-      response.header("Location").contains(expectedValue),
-      "headerLocation",
-      Some(expectedValue),
-      response.header("Location")
-    )
+    (response: WSResponse) =>
+      HavePropertyMatchResult(
+        response.header("Location").contains(expectedValue),
+        "headerLocation",
+        Some(expectedValue),
+        response.header("Location")
+      )
 
   def continueUrl(expectedValue: String): HavePropertyMatcher[WSResponse, String] =
-    (response: WSResponse) => HavePropertyMatchResult(
-      response.header(HeaderNames.LOCATION).getOrElse("") == expectedValue,
-      "continueUrl",
-      expectedValue,
-      response.header(HeaderNames.LOCATION).getOrElse("")
-    )
+    (response: WSResponse) =>
+      HavePropertyMatchResult(
+        response.header(HeaderNames.LOCATION).getOrElse("") == expectedValue,
+        "continueUrl",
+        expectedValue,
+        response.header(HeaderNames.LOCATION).getOrElse("")
+      )
 
   def jsonBodyAs[T](expectedValue: T)(implicit reads: Reads[T]): HavePropertyMatcher[WSResponse, T] =
-    (response: WSResponse) => HavePropertyMatchResult(
-      response.json.as[T] == expectedValue,
-      "response.jsonBody",
-      expectedValue,
-      response.json.as[T]
-    )
+    (response: WSResponse) =>
+      HavePropertyMatchResult(
+        response.json.as[T] == expectedValue,
+        "response.jsonBody",
+        expectedValue,
+        response.json.as[T]
+      )
 
   def bodyAs(expectedValue: String): HavePropertyMatcher[WSResponse, String] =
-    (response: WSResponse) => HavePropertyMatchResult(
-      response.body == expectedValue,
-      "response.body",
-      expectedValue,
-      response.body
-    )
+    (response: WSResponse) =>
+      HavePropertyMatchResult(
+        response.body == expectedValue,
+        "response.body",
+        expectedValue,
+        response.body
+      )
 
   def contentExists(content: String): HavePropertyMatcher[WSResponse, String] =
-    (response: WSResponse) => HavePropertyMatchResult(
-      response.body.contains(content),
-      "response.body",
-      content,
-      response.body
-    )
+    (response: WSResponse) =>
+      HavePropertyMatchResult(
+        response.body.contains(content),
+        "response.body",
+        content,
+        response.body
+      )
 
   def contentDoesNotExist(content: String): HavePropertyMatcher[WSResponse, String] =
-    (response: WSResponse) => HavePropertyMatchResult(
-      !response.body.contains(content),
-      "response.body",
-      content,
-      response.body
-    )
-
+    (response: WSResponse) =>
+      HavePropertyMatchResult(
+        !response.body.contains(content),
+        "response.body",
+        content,
+        response.body
+      )
 
   def titleOf(expectedValue: String): HavePropertyMatcher[WSResponse, String] =
-    (response: WSResponse) => HavePropertyMatchResult(
-      Jsoup.parse(response.body).title.contains(expectedValue),
-      "response.title",
-      expectedValue,
-      Jsoup.parse(response.body).title
-    )
+    (response: WSResponse) =>
+      HavePropertyMatchResult(
+        Jsoup.parse(response.body).title.contains(expectedValue),
+        "response.title",
+        expectedValue,
+        Jsoup.parse(response.body).title
+      )
 
   val emptyBody: HavePropertyMatcher[WSResponse, String] =
-    (response: WSResponse) => HavePropertyMatchResult(
-      response.body == "",
-      "emptyBody",
-      "",
-      response.body
-    )
+    (response: WSResponse) =>
+      HavePropertyMatchResult(
+        response.body == "",
+        "emptyBody",
+        "",
+        response.body
+      )
 }

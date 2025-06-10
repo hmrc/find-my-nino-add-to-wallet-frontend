@@ -39,21 +39,21 @@ import java.net.URLDecoder
 
 class GoogleWalletControllerISpec extends IntegrationSpecBase {
 
-  val fakePassId = "googlePassId"
+  val fakePassId       = "googlePassId"
   val fakeBase64String = "UEsDBBQACAgIABxqJlYAAAAAAA"
 
   override lazy val messagesApi: MessagesApi = app.injector.instanceOf[MessagesApi]
 
   implicit lazy val frontendAppConfig: FrontendAppConfig = app.injector.instanceOf[FrontendAppConfig]
-  implicit lazy val messages: Messages = MessagesImpl(Lang("en"), messagesApi).messages
+  implicit lazy val messages: Messages                   = MessagesImpl(Lang("en"), messagesApi).messages
 
   trait LocalSetup {
     def buildUserRequest[A](
-                             nino: Option[Nino] = Some(generatedNino),
-                             confidenceLevel: ConfidenceLevel = ConfidenceLevel.L200,
-                             individualDetailsData: IndividualDetailsDataCache = Fixtures.fakeIndividualDetailsDataCache,
-                             request: Request[A] = FakeRequest().asInstanceOf[Request[A]]
-                           ): UserRequest[A] =
+      nino: Option[Nino] = Some(generatedNino),
+      confidenceLevel: ConfidenceLevel = ConfidenceLevel.L200,
+      individualDetailsData: IndividualDetailsDataCache = Fixtures.fakeIndividualDetailsDataCache,
+      request: Request[A] = FakeRequest().asInstanceOf[Request[A]]
+    ): UserRequest[A] =
       UserRequest(
         nino,
         confidenceLevel,
@@ -98,12 +98,11 @@ class GoogleWalletControllerISpec extends IntegrationSpecBase {
         s"\n\nLink $href was not rendered on the page\n"
       )
 
-    def assertContainsQRCode(doc: Document, text: String): Unit = {
+    def assertContainsQRCode(doc: Document, text: String): Unit =
       assert(
         doc.getElementById("google-qr-code").attr("src").contains(text),
         s"\n\nQR Code linking to " + text + " was not rendered on the page. \n"
       )
-    }
   }
 
   "Main" when {
@@ -114,13 +113,20 @@ class GoogleWalletControllerISpec extends IntegrationSpecBase {
       }
 
       "render the google pass QR code on desktop" in new LocalSetup {
-        wireMockServer.stubFor(get(s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-google-pass?passId=$fakePassId").willReturn(ok(fakeBase64String)))
+        wireMockServer.stubFor(
+          get(
+            s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-google-pass?passId=$fakePassId"
+          ).willReturn(ok(fakeBase64String))
+        )
         assertContainsQRCode(doc, s"/get-google-qr-code?passId=$fakePassId")
       }
 
       "render the save to Google Wallet link on mobile" in new LocalSetup {
 
-        wireMockServer.stubFor(get(s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-pass-card?passId=$fakePassId").willReturn(ok(fakeBase64String)))
+        wireMockServer.stubFor(
+          get(s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-pass-card?passId=$fakePassId")
+            .willReturn(ok(fakeBase64String))
+        )
         assertContainsLinkByContainingClass(docMobile, s"/get-google-pass?passId=$fakePassId")
       }
     }
@@ -145,7 +151,7 @@ class GoogleWalletControllerISpec extends IntegrationSpecBase {
 
       "render the sign out link" in new LocalSetup {
 
-        val href: String =  routes.AuthController
+        val href: String = routes.AuthController
           .signout(Some(RedirectUrl(frontendAppConfig.getFeedbackSurveyUrl(frontendAppConfig.defaultOrigin))), None)
           .url
 

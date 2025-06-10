@@ -40,22 +40,22 @@ import java.net.URLDecoder
 class StoreMyNinoControllerISpec extends IntegrationSpecBase {
 
   val fakeGooglePassId = "googlePassId"
-  val fakeApplePassId = "applePassId"
+  val fakeApplePassId  = "applePassId"
 
   val fakeBase64String = "UEsDBBQACAgIABxqJlYAAAAAAA"
 
   override lazy val messagesApi: MessagesApi = app.injector.instanceOf[MessagesApi]
 
   implicit lazy val frontendAppConfig: FrontendAppConfig = app.injector.instanceOf[FrontendAppConfig]
-  implicit lazy val messages: Messages = MessagesImpl(Lang("en"), messagesApi).messages
+  implicit lazy val messages: Messages                   = MessagesImpl(Lang("en"), messagesApi).messages
 
   trait LocalSetup {
     def buildUserRequest[A](
-                             nino: Option[Nino] = Some(generatedNino),
-                             confidenceLevel: ConfidenceLevel = ConfidenceLevel.L200,
-                             individualDetailsData: IndividualDetailsDataCache = Fixtures.fakeIndividualDetailsDataCache,
-                             request: Request[A] = FakeRequest().asInstanceOf[Request[A]]
-                           ): UserRequest[A] =
+      nino: Option[Nino] = Some(generatedNino),
+      confidenceLevel: ConfidenceLevel = ConfidenceLevel.L200,
+      individualDetailsData: IndividualDetailsDataCache = Fixtures.fakeIndividualDetailsDataCache,
+      request: Request[A] = FakeRequest().asInstanceOf[Request[A]]
+    ): UserRequest[A] =
       UserRequest(
         nino,
         confidenceLevel,
@@ -83,17 +83,16 @@ class StoreMyNinoControllerISpec extends IntegrationSpecBase {
     def assertContainsText(doc: Document, text: String): Assertion =
       assert(doc.toString.contains(text), "\n\ntext " + text + " was not rendered on the page.\n")
 
-    def assertContainsLink(doc: Document, text: String, href: String): Assertion =
+    def assertContainsLink(doc: Document, text: String, href: String): Assertion                      =
       assert(
         doc.getElementsContainingText(text).attr("href").contains(href),
         s"\n\nLink $href was not rendered on the page\n"
       )
-    def assertContainsLinkByContainingClass(doc: Document, href: String, passType: String): Assertion = {
+    def assertContainsLinkByContainingClass(doc: Document, href: String, passType: String): Assertion =
       assert(
         doc.getElementsByClass("show-on-phones").select(s"a#$passType").attr("href").contains(href),
         s"\n\nLink $href was not rendered on the page\n"
       )
-    }
   }
 
   "Main" when {
@@ -105,12 +104,20 @@ class StoreMyNinoControllerISpec extends IntegrationSpecBase {
       }
 
       "render the save to Google Wallet link on mobile" in new LocalSetup {
-        wireMockServer.stubFor(get(s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-google-pass?passId=$fakeGooglePassId").willReturn(ok(fakeBase64String)))
+        wireMockServer.stubFor(
+          get(
+            s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-google-pass?passId=$fakeGooglePassId"
+          ).willReturn(ok(fakeBase64String))
+        )
         assertContainsLinkByContainingClass(doc, s"/get-google-pass?passId=$fakeGooglePassId", "google")
       }
 
       "render the save to Apple Wallet link on mobile" in new LocalSetup {
-        wireMockServer.stubFor(get(s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-pass-card?passId=$fakeApplePassId").willReturn(ok(fakeBase64String)))
+        wireMockServer.stubFor(
+          get(
+            s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-pass-card?passId=$fakeApplePassId"
+          ).willReturn(ok(fakeBase64String))
+        )
         assertContainsLinkByContainingClass(doc, s"/get-pass-card?passId=$fakeApplePassId", "apple")
       }
 
@@ -136,7 +143,7 @@ class StoreMyNinoControllerISpec extends IntegrationSpecBase {
 
       "render the sign out link" in new LocalSetup {
 
-        val href: String =  routes.AuthController
+        val href: String = routes.AuthController
           .signout(Some(RedirectUrl(frontendAppConfig.getFeedbackSurveyUrl(frontendAppConfig.defaultOrigin))), None)
           .url
 

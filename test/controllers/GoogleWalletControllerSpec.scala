@@ -75,18 +75,18 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
     super.beforeEach()
   }
 
-  val passId = "googlePassId"
-  val fakeBase64String = "UEsDBBQACAgIABxqJlYAAAAAAA"
+  val passId                = "googlePassId"
+  val fakeBase64String      = "UEsDBBQACAgIABxqJlYAAAAAAA"
   val fakeGooglePassSaveUrl = "testURL"
 
   val controller: GoogleWalletController = applicationWithConfig.injector.instanceOf[GoogleWalletController]
 
-  val mockSessionRepository: SessionRepository = mock[SessionRepository]
-  val mockGooglePassConnector: GoogleWalletConnector = mock[GoogleWalletConnector]
-  val mockIndividualDetailsService: IndividualDetailsService = mock[IndividualDetailsService]
+  val mockSessionRepository: SessionRepository                                         = mock[SessionRepository]
+  val mockGooglePassConnector: GoogleWalletConnector                                   = mock[GoogleWalletConnector]
+  val mockIndividualDetailsService: IndividualDetailsService                           = mock[IndividualDetailsService]
   val mockIdentityVerificationFrontendConnector: IdentityVerificationFrontendConnector =
     mock[IdentityVerificationFrontendConnector]
-  val mockFandFConnector: FandFConnector = mock[FandFConnector]
+  val mockFandFConnector: FandFConnector                                               = mock[FandFConnector]
 
   "Google Wallet Controller" - {
 
@@ -137,7 +137,7 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
           userLoggedInFMNUser(NinoUser)
           val request = FakeRequest(GET, routes.GoogleWalletController.onPageLoad().url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result  = route(application, request).value
           status(result) mustEqual OK
           contentAsString(result).removeAllNonces() mustEqual view(passId, false)(
             request.withAttrs(requestAttributeMap),
@@ -188,7 +188,7 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
           userLoggedInFMNUser(NinoUser)
           val request = FakeRequest(GET, routes.GoogleWalletController.getGooglePass(passId).url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result  = route(application, request).value
           status(result) mustEqual 303
           redirectLocation(result) mustEqual Some(fakeGooglePassSaveUrl)
         }
@@ -211,9 +211,9 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
 
         running(application) {
           userLoggedInFMNUser(NinoUser)
-          val request = FakeRequest(GET, routes.GoogleWalletController.getGooglePass(passId).url)
+          val request     = FakeRequest(GET, routes.GoogleWalletController.getGooglePass(passId).url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result      = route(application, request).value
           val userRequest = UserRequest(
             None,
             ConfidenceLevel.L200,
@@ -249,7 +249,7 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
           userLoggedInFMNUser(NinoUser)
           val request = FakeRequest(GET, routes.GoogleWalletController.getGooglePass(passId).url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result  = route(application, request).value
           status(result) mustEqual INTERNAL_SERVER_ERROR
           contentAsString(result) must include("Failed to get Google Pass: some error")
         }
@@ -269,7 +269,7 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
           userLoggedInFMNUser(NinoUser)
           val request = FakeRequest(GET, routes.GoogleWalletController.getGooglePassQrCode(passId).url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result  = route(application, request).value
           status(result) mustEqual OK
           contentAsBytes(result) mustEqual Base64.getDecoder.decode(fakeBase64String)
         }
@@ -292,9 +292,9 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
 
         running(application) {
           userLoggedInFMNUser(NinoUser)
-          val request = FakeRequest(GET, routes.GoogleWalletController.getGooglePassQrCode(passId).url)
+          val request     = FakeRequest(GET, routes.GoogleWalletController.getGooglePassQrCode(passId).url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result      = route(application, request).value
           val userRequest = UserRequest(
             None,
             ConfidenceLevel.L200,
@@ -351,7 +351,7 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
           userLoggedInIsNotFMNUser(NinoUser)
           val request = FakeRequest(GET, routes.GoogleWalletController.onPageLoad().url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result  = route(application, request).value
           status(result) mustEqual 500
         }
       }
@@ -374,7 +374,7 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
           userLoggedInFMNUser(NinoUser)
           val request = FakeRequest(GET, routes.GoogleWalletController.onPageLoad().url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result  = route(application, request).value
           status(result) mustEqual 303
           redirectLocation(result) mustEqual Some(controllers.routes.StoreMyNinoController.onPageLoad.toString)
         }
@@ -426,7 +426,7 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
           userLoggedInFMNUser(NinoUser)
           val request = FakeRequest(GET, routes.GoogleWalletController.onPageLoad().url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result  = route(application, request).value
           status(result) mustEqual SEE_OTHER
           redirectLocation(result).value mustBe routes.UnauthorisedController.onPageLoad.url
         }
@@ -447,7 +447,7 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
           userLoggedInFMNUser(NinoUser)
           val request = FakeRequest(GET, routes.GoogleWalletController.getGooglePass(passId).url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result  = route(application, request).value
           status(result) mustEqual 303
           redirectLocation(result) mustEqual Some(fakeGooglePassSaveUrl)
         }
@@ -470,9 +470,9 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
 
         running(application) {
           userLoggedInFMNUser(NinoUser)
-          val request = FakeRequest(GET, routes.GoogleWalletController.getGooglePass(passId).url)
+          val request     = FakeRequest(GET, routes.GoogleWalletController.getGooglePass(passId).url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result      = route(application, request).value
           val userRequest = UserRequest(
             None,
             ConfidenceLevel.L200,
@@ -505,7 +505,7 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
           userLoggedInFMNUser(NinoUser)
           val request = FakeRequest(GET, routes.GoogleWalletController.getGooglePassQrCode(passId).url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result  = route(application, request).value
           status(result) mustEqual OK
           contentAsBytes(result) mustEqual Base64.getDecoder.decode(fakeBase64String)
         }
@@ -528,9 +528,9 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
 
         running(application) {
           userLoggedInFMNUser(NinoUser)
-          val request = FakeRequest(GET, routes.GoogleWalletController.getGooglePassQrCode(passId).url)
+          val request     = FakeRequest(GET, routes.GoogleWalletController.getGooglePassQrCode(passId).url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result      = route(application, request).value
           val userRequest = UserRequest(
             None,
             ConfidenceLevel.L200,
@@ -563,7 +563,7 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
           userLoggedInIsNotFMNUser(NinoUser)
           val request = FakeRequest(GET, routes.GoogleWalletController.onPageLoad().url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result  = route(application, request).value
           status(result) mustEqual 500
         }
       }
@@ -584,7 +584,7 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
           userLoggedInFMNUser(NinoUser)
           val request = FakeRequest(GET, routes.GoogleWalletController.onPageLoad().url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result  = route(application, request).value
           status(result) mustEqual 303
           redirectLocation(result) mustEqual Some(controllers.routes.StoreMyNinoController.onPageLoad.toString)
         }

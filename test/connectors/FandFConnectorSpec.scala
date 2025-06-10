@@ -33,7 +33,10 @@ import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
 class FandFConnectorSpec
-  extends PlaySpec with WireMockHelper with GuiceOneAppPerSuite with MockitoSugar
+    extends PlaySpec
+    with WireMockHelper
+    with GuiceOneAppPerSuite
+    with MockitoSugar
     with ScalaFutures {
 
   private val trustedHelperNino = new Generator().nextNino

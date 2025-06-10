@@ -26,28 +26,28 @@ import java.net.URI
 
 trait WireMockMethods {
 
-  def when(method: HTTPMethod, uri: URI, headers: Map[String, String] = Map.empty): Mapping = {
+  def when(method: HTTPMethod, uri: URI, headers: Map[String, String] = Map.empty): Mapping =
     new Mapping(method, uri, headers, None)
-  }
 
   class Mapping(method: HTTPMethod, uri: URI, headers: Map[String, String], body: Option[String]) {
     private val mapping = {
 
-      val queryParams = Option(uri.getQuery).map(_.split("&").map(x => x.splitAt(x.indexOf("="))).toMap).getOrElse(Map())
+      val queryParams =
+        Option(uri.getQuery).map(_.split("&").map(x => x.splitAt(x.indexOf("="))).toMap).getOrElse(Map())
 
       val uriMapping = method.wireMockMapping(urlPathMatching(uri.getPath))
 
-      val uriMappingWithHeaders = headers.foldLeft(uriMapping) {
-        case (m, (key, value)) => m.withHeader(key, equalTo(value))
+      val uriMappingWithHeaders = headers.foldLeft(uriMapping) { case (m, (key, value)) =>
+        m.withHeader(key, equalTo(value))
       }
 
-      val uriMappingWithOptionQueryParams = queryParams.foldLeft(uriMappingWithHeaders) {
-        case (m, (key, value)) => m.withQueryParam(key, equalTo(value.tail))
+      val uriMappingWithOptionQueryParams = queryParams.foldLeft(uriMappingWithHeaders) { case (m, (key, value)) =>
+        m.withQueryParam(key, equalTo(value.tail))
       }
 
       body match {
         case Some(extractedBody) => uriMappingWithOptionQueryParams.withRequestBody(equalTo(extractedBody))
-        case None => uriMappingWithOptionQueryParams
+        case None                => uriMappingWithOptionQueryParams
       }
     }
 
@@ -56,19 +56,18 @@ trait WireMockMethods {
       thenReturnInternal(status, Map.empty, stringBody)
     }
 
-    def thenReturn(status: Int, headers: Map[String, String] = Map.empty): StubMapping = {
+    def thenReturn(status: Int, headers: Map[String, String] = Map.empty): StubMapping =
       thenReturnInternal(status, headers, None)
-    }
 
     private def thenReturnInternal(status: Int, headers: Map[String, String], body: Option[String]): StubMapping = {
       val response = {
-        val statusResponse = aResponse().withStatus(status)
-        val responseWithHeaders = headers.foldLeft(statusResponse) {
-          case (res, (key, value)) => res.withHeader(key, value)
+        val statusResponse      = aResponse().withStatus(status)
+        val responseWithHeaders = headers.foldLeft(statusResponse) { case (res, (key, value)) =>
+          res.withHeader(key, value)
         }
         body match {
           case Some(extractedBody) => responseWithHeaders.withBody(extractedBody)
-          case None => responseWithHeaders
+          case None                => responseWithHeaders
         }
       }
 

@@ -31,7 +31,13 @@ class PublicControllerSpec extends SpecBase {
     scala.concurrent.ExecutionContext.global
 
   private def controller =
-    new PublicController(injected[SessionTimeoutView], injected[AuthConnector], injected[FandFConnector])(frontendAppConfig, cc, config, env, ec)
+    new PublicController(injected[SessionTimeoutView], injected[AuthConnector], injected[FandFConnector])(
+      frontendAppConfig,
+      cc,
+      config,
+      env,
+      ec
+    )
 
   "Calling PublicController.sessionTimeout" - {
 

@@ -75,17 +75,17 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
     super.beforeEach()
   }
 
-  val passId = "applePassId"
+  val passId           = "applePassId"
   val fakeBase64String = "UEsDBBQACAgIABxqJlYAAAAAAA"
 
   val controller: AppleWalletController = applicationWithConfig.injector.instanceOf[AppleWalletController]
 
-  val mockSessionRepository: SessionRepository = mock[SessionRepository]
-  val mockApplePassConnector: AppleWalletConnector = mock[AppleWalletConnector]
-  val mockIndividualDetailsService: IndividualDetailsService = mock[IndividualDetailsService]
+  val mockSessionRepository: SessionRepository                                         = mock[SessionRepository]
+  val mockApplePassConnector: AppleWalletConnector                                     = mock[AppleWalletConnector]
+  val mockIndividualDetailsService: IndividualDetailsService                           = mock[IndividualDetailsService]
   val mockIdentityVerificationFrontendConnector: IdentityVerificationFrontendConnector =
     mock[IdentityVerificationFrontendConnector]
-  val mockFandFConnector: FandFConnector = mock[FandFConnector]
+  val mockFandFConnector: FandFConnector                                               = mock[FandFConnector]
 
   "Apple Wallet Controller" - {
 
@@ -141,7 +141,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
           userLoggedInFMNUser(NinoUser)
           val request = FakeRequest(GET, routes.AppleWalletController.onPageLoad().url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result  = route(application, request).value
           status(result) mustEqual OK
           contentAsString(result).removeAllNonces() mustEqual view(passId, false)(
             request.withAttrs(requestAttributeMap),
@@ -161,7 +161,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
             )
             .configure(
               "features.apple-wallet-enabled" -> true,
-              "features.crn-upgrade-enabled" -> true
+              "features.crn-upgrade-enabled"  -> true
             )
             .build()
 
@@ -174,7 +174,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
           userLoggedInFMNUser(NinoUser)
           val request = FakeRequest(GET, routes.AppleWalletController.onPageLoad().url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result  = route(application, request).value
           status(result) mustEqual OK
           contentAsString(result).removeAllNonces() mustEqual view(passId, false)(
             request.withAttrs(requestAttributeMap),
@@ -193,7 +193,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
           )
           .configure(
             "features.apple-wallet-enabled" -> true,
-            "features.crn-upgrade-enabled" -> true
+            "features.crn-upgrade-enabled"  -> true
           )
           .build()
 
@@ -201,7 +201,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
           userLoggedInFMNUser(NinoUser)
           val request = FakeRequest(GET, routes.AppleWalletController.getPassCard(passId).url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result  = route(application, request).value
           status(result) mustEqual OK
           contentAsBytes(result) mustEqual Base64.getDecoder.decode(fakeBase64String)
         }
@@ -219,7 +219,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
           )
           .configure(
             "features.apple-wallet-enabled" -> true,
-            "features.crn-upgrade-enabled" -> true
+            "features.crn-upgrade-enabled"  -> true
           )
           .build()
 
@@ -227,9 +227,9 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
         running(application) {
           userLoggedInFMNUser(NinoUser)
-          val request = FakeRequest(GET, routes.AppleWalletController.getPassCard(passId).url)
+          val request     = FakeRequest(GET, routes.AppleWalletController.getPassCard(passId).url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result      = route(application, request).value
           val userRequest = UserRequest(
             None,
             ConfidenceLevel.L200,
@@ -266,7 +266,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
           userLoggedInFMNUser(NinoUser)
           val request = FakeRequest(GET, routes.AppleWalletController.getPassCard(passId).url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result  = route(application, request).value
           status(result) mustEqual INTERNAL_SERVER_ERROR
           contentAsString(result) must include("Failed to get Apple Pass: some error")
         }
@@ -286,7 +286,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
           userLoggedInFMNUser(NinoUser)
           val request = FakeRequest(GET, routes.AppleWalletController.getQrCode(passId).url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result  = route(application, request).value
           status(result) mustEqual OK
           contentAsBytes(result) mustEqual Base64.getDecoder.decode(fakeBase64String)
         }
@@ -304,7 +304,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
           )
           .configure(
             "features.apple-wallet-enabled" -> true,
-            "features.crn-upgrade-enabled" -> true
+            "features.crn-upgrade-enabled"  -> true
           )
           .build()
 
@@ -312,9 +312,9 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
         running(application) {
           userLoggedInFMNUser(NinoUser)
-          val request = FakeRequest(GET, routes.AppleWalletController.getQrCode(passId).url)
+          val request     = FakeRequest(GET, routes.AppleWalletController.getQrCode(passId).url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result      = route(application, request).value
           val userRequest = UserRequest(
             None,
             ConfidenceLevel.L200,
@@ -350,7 +350,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
           userLoggedInFMNUser(NinoUser)
           val request = FakeRequest(GET, routes.AppleWalletController.getQrCode(passId).url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result  = route(application, request).value
           status(result) mustEqual INTERNAL_SERVER_ERROR
           contentAsString(result) must include("Failed to get Apple QR Code: some error")
         }
@@ -365,7 +365,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
           )
           .configure(
             "features.apple-wallet-enabled" -> true,
-            "features.crn-upgrade-enabled" -> true
+            "features.crn-upgrade-enabled"  -> true
           )
           .build()
 
@@ -373,7 +373,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
           userLoggedInIsNotFMNUser(NinoUser)
           val request = FakeRequest(GET, routes.AppleWalletController.getQrCode(passId).url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result  = route(application, request).value
           status(result) mustEqual 500
         }
       }
@@ -387,7 +387,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
           )
           .configure(
             "features.apple-wallet-enabled" -> true,
-            "features.crn-upgrade-enabled" -> true
+            "features.crn-upgrade-enabled"  -> true
           )
           .build()
 
@@ -395,7 +395,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
           userLoggedInIsNotFMNUser(NinoUser_With_CL50)
           val request = FakeRequest(GET, routes.AppleWalletController.getQrCode(passId).url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result  = route(application, request).value
           status(result) mustEqual 500
         }
       }
@@ -416,7 +416,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
           userLoggedInFMNUser(NinoUser)
           val request = FakeRequest(GET, routes.AppleWalletController.onPageLoad().url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result  = route(application, request).value
           status(result) mustEqual 303
           redirectLocation(result) mustEqual Some(controllers.routes.StoreMyNinoController.onPageLoad.toString)
         }
@@ -471,7 +471,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
           userLoggedInFMNUser(NinoUser)
           val request = FakeRequest(GET, routes.AppleWalletController.onPageLoad().url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result  = route(application, request).value
           status(result) mustEqual SEE_OTHER
           redirectLocation(result).value mustBe routes.UnauthorisedController.onPageLoad.url
         }
@@ -492,7 +492,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
           userLoggedInFMNUser(NinoUser)
           val request = FakeRequest(GET, routes.AppleWalletController.getPassCard(passId).url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result  = route(application, request).value
           status(result) mustEqual OK
           contentAsBytes(result) mustEqual Base64.getDecoder.decode(fakeBase64String)
         }
@@ -515,9 +515,9 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
         running(application) {
           userLoggedInFMNUser(NinoUser)
-          val request = FakeRequest(GET, routes.AppleWalletController.getPassCard(passId).url)
+          val request     = FakeRequest(GET, routes.AppleWalletController.getPassCard(passId).url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result      = route(application, request).value
           val userRequest = UserRequest(
             None,
             ConfidenceLevel.L200,
@@ -553,7 +553,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
           userLoggedInFMNUser(NinoUser)
           val request = FakeRequest(GET, routes.AppleWalletController.getQrCode(passId).url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result  = route(application, request).value
           status(result) mustEqual OK
           contentAsBytes(result) mustEqual Base64.getDecoder.decode(fakeBase64String)
         }
@@ -578,9 +578,9 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
         running(application) {
           userLoggedInFMNUser(NinoUser)
-          val request = FakeRequest(GET, routes.AppleWalletController.getQrCode(passId).url)
+          val request     = FakeRequest(GET, routes.AppleWalletController.getQrCode(passId).url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result      = route(application, request).value
           val userRequest = UserRequest(
             None,
             ConfidenceLevel.L200,
@@ -615,7 +615,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
           userLoggedInIsNotFMNUser(NinoUser)
           val request = FakeRequest(GET, routes.AppleWalletController.getQrCode(passId).url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result  = route(application, request).value
           status(result) mustEqual 500
         }
       }
@@ -636,7 +636,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
           userLoggedInIsNotFMNUser(NinoUser_With_CL50)
           val request = FakeRequest(GET, routes.AppleWalletController.getQrCode(passId).url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result  = route(application, request).value
           status(result) mustEqual 500
         }
       }
@@ -657,7 +657,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
           userLoggedInFMNUser(NinoUser)
           val request = FakeRequest(GET, routes.AppleWalletController.onPageLoad().url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result  = route(application, request).value
           status(result) mustEqual 303
           redirectLocation(result) mustEqual Some(controllers.routes.StoreMyNinoController.onPageLoad.toString)
         }

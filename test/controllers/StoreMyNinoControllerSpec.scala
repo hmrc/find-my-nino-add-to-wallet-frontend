@@ -43,7 +43,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class StoreMyNinoControllerSpec
-  extends SpecBase
+    extends SpecBase
     with IndividualDetailsFixtures
     with MockitoSugar
     with DefaultAwaitTimeout {
@@ -90,19 +90,19 @@ class StoreMyNinoControllerSpec
   val controller: StoreMyNinoController = applicationWithConfig.injector.instanceOf[StoreMyNinoController]
 
   val googlePassId = "googlePassId"
-  val applePassId = "applePassId"
+  val applePassId  = "applePassId"
 
-  val mockAppleWalletConnector: AppleWalletConnector = mock[AppleWalletConnector]
+  val mockAppleWalletConnector: AppleWalletConnector   = mock[AppleWalletConnector]
   val mockGoogleWalletConnector: GoogleWalletConnector = mock[GoogleWalletConnector]
 
-  val mockSessionRepository: SessionRepository = mock[SessionRepository]
-  val mockIndividualDetailsService: IndividualDetailsService = mock[IndividualDetailsService]
+  val mockSessionRepository: SessionRepository                                         = mock[SessionRepository]
+  val mockIndividualDetailsService: IndividualDetailsService                           = mock[IndividualDetailsService]
   val mockIdentityVerificationFrontendConnector: IdentityVerificationFrontendConnector =
     mock[IdentityVerificationFrontendConnector]
-  val mockNPSService: NPSService = mock[NPSService]
-  val mockFandFConnector: FandFConnector = mock[FandFConnector]
+  val mockNPSService: NPSService                                                       = mock[NPSService]
+  val mockFandFConnector: FandFConnector                                               = mock[FandFConnector]
 
-  val fakeBase64String = "UEsDBBQACAgIABxqJlYAAAAAAA"
+  val fakeBase64String      = "UEsDBBQACAgIABxqJlYAAAAAAA"
   val fakeGooglePassSaveUrl = "testURL"
 
   "StoreMyNino Controller" - {
@@ -126,9 +126,9 @@ class StoreMyNinoControllerSpec
 
       running(application) {
         userLoggedInFMNUser(NinoUser)
-        val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
+        val request     = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
-        val result = route(application, request).value
+        val result      = route(application, request).value
         status(result) mustEqual OK
         val userRequest = UserRequest(
           None,
@@ -176,7 +176,7 @@ class StoreMyNinoControllerSpec
 
       running(application) {
         userLoggedInFMNUser(NinoUser)
-        val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
+        val request     = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
         val userRequest = UserRequest(
           None,
@@ -186,7 +186,7 @@ class StoreMyNinoControllerSpec
           request.withAttrs(requestAttributeMap),
           Some(trustedHelper)
         )
-        val result = route(application, request).value
+        val result      = route(application, request).value
         status(result) mustEqual OK
 
         contentAsString(result).removeAllNonces() mustEqual view(
@@ -225,7 +225,7 @@ class StoreMyNinoControllerSpec
         assertThrows[RuntimeException] {
           val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
             .withSession(("authToken", "Bearer 123"))
-          val result = route(application, request).value
+          val result  = route(application, request).value
           status(result)
         }
 
@@ -253,7 +253,7 @@ class StoreMyNinoControllerSpec
         userLoggedInFMNUser(NinoUserNoEnrolments)
         val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
-        val result = route(application, request).value
+        val result  = route(application, request).value
         status(result) mustEqual SEE_OTHER
 
         val target: String =
@@ -343,7 +343,7 @@ class StoreMyNinoControllerSpec
         userLoggedInFMNUser(NinoUser)
         val request = FakeRequest(GET, routes.GoogleWalletController.getGooglePass(googlePassId).url)
           .withSession(("authToken", "Bearer 123"))
-        val result = route(application, request).value
+        val result  = route(application, request).value
         status(result) mustEqual SEE_OTHER
         redirectLocation(result) mustEqual Some(fakeGooglePassSaveUrl)
       }
@@ -369,9 +369,9 @@ class StoreMyNinoControllerSpec
 
       running(application) {
         userLoggedInFMNUser(NinoUser)
-        val request = FakeRequest(GET, routes.GoogleWalletController.getGooglePass(googlePassId).url)
+        val request     = FakeRequest(GET, routes.GoogleWalletController.getGooglePass(googlePassId).url)
           .withSession(("authToken", "Bearer 123"))
-        val result = route(application, request).value
+        val result      = route(application, request).value
         val userRequest = UserRequest(
           None,
           ConfidenceLevel.L200,
@@ -407,7 +407,7 @@ class StoreMyNinoControllerSpec
         userLoggedInFMNUser(NinoUser)
         val request = FakeRequest(GET, routes.AppleWalletController.getPassCard(applePassId).url)
           .withSession(("authToken", "Bearer 123"))
-        val result = route(application, request).value
+        val result  = route(application, request).value
         status(result) mustEqual OK
         contentAsBytes(result) mustEqual Base64.getDecoder.decode(fakeBase64String)
       }
@@ -433,9 +433,9 @@ class StoreMyNinoControllerSpec
 
       running(application) {
         userLoggedInFMNUser(NinoUser)
-        val request = FakeRequest(GET, routes.AppleWalletController.getPassCard(applePassId).url)
+        val request     = FakeRequest(GET, routes.AppleWalletController.getPassCard(applePassId).url)
           .withSession(("authToken", "Bearer 123"))
-        val result = route(application, request).value
+        val result      = route(application, request).value
         val userRequest = UserRequest(
           None,
           ConfidenceLevel.L200,
@@ -536,7 +536,7 @@ class StoreMyNinoControllerSpec
         userLoggedInIsNotFMNUser(NinoUser)
         val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
-        val result = route(application, request).value
+        val result  = route(application, request).value
         status(result) mustEqual 500
       }
     }
@@ -555,7 +555,7 @@ class StoreMyNinoControllerSpec
         userLoggedInIsNotFMNUser(NinoUser)
         val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
-        val result = route(application, request).value
+        val result  = route(application, request).value
         status(result) mustEqual INTERNAL_SERVER_ERROR
       }
     }
@@ -574,7 +574,7 @@ class StoreMyNinoControllerSpec
         userLoggedInFMNUser(NinoUser_With_CL50)
         val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
-        val result = route(application, request).value
+        val result  = route(application, request).value
         status(result) mustEqual SEE_OTHER
       }
     }
@@ -593,7 +593,7 @@ class StoreMyNinoControllerSpec
         userLoggedInFMNUser(NinoUser_With_Credential_Strength_Weak)
         val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
-        val result = route(application, request).value
+        val result  = route(application, request).value
         status(result) mustEqual SEE_OTHER
       }
     }
@@ -631,7 +631,7 @@ class StoreMyNinoControllerSpec
         userLoggedInFMNUser(NinoUser)
         val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
-        val result = route(app, request).value
+        val result  = route(app, request).value
 
         val userRequest = UserRequest(
           None,
@@ -679,7 +679,7 @@ class StoreMyNinoControllerSpec
         userLoggedInFMNUser(NinoUser)
         val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
-        val result = route(app, request).value
+        val result  = route(app, request).value
 
         status(result) mustEqual OK
         contentAsString(result).removeAllNonces() mustEqual
@@ -714,7 +714,7 @@ class StoreMyNinoControllerSpec
         userLoggedInFMNUser(NinoUser)
         val request = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
-        val result = route(application, request).value
+        val result  = route(application, request).value
 
         status(result) mustEqual INTERNAL_SERVER_ERROR
         contentAsString(result) must include("Sorry, the service is unavailable")

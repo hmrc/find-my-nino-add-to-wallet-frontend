@@ -27,7 +27,7 @@ import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import scala.util.Random
 
 class IdentityVerificationFrontendConnectorSpec
-  extends ConnectorSpec
+    extends ConnectorSpec
     with WireMockHelper
     with DefaultAwaitTimeout
     with Injecting {

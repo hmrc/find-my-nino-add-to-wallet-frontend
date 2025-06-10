@@ -35,7 +35,7 @@ import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
 import util.Fixtures.{fakeIndividualDetailsDataCache, fakeIndividualDetailsDataCacheNoAddress}
 import util.IndividualDetailsFixtures
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
-import util.TestData.{NinoUser, NinoUser_With_CL50, trustedHelperUser}
+import util.TestData.{NinoUser, NinoUser_With_CL50, trustedHelper}
 import views.html.*
 
 import java.util.Base64
@@ -85,6 +85,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
   val mockIndividualDetailsService: IndividualDetailsService                           = mock[IndividualDetailsService]
   val mockIdentityVerificationFrontendConnector: IdentityVerificationFrontendConnector =
     mock[IdentityVerificationFrontendConnector]
+  val mockFandFConnector: FandFConnector = mock[FandFConnector]
 
   "Apple Wallet Controller" - {
 
@@ -399,17 +400,20 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
         }
       }
       "redirect to Store my Nino home page when trusted helper user tries to access this page" in {
+        when(mockFandFConnector.getTrustedHelper()(any())).thenReturn(Future.successful(Some(trustedHelper)))
+
         val application = applicationBuilderWithConfig()
           .overrides(
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
-            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
+            inject.bind[FandFConnector].toInstance(mockFandFConnector)
           )
           .configure("features.google-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true)
           .build()
 
         running(application) {
-          userLoggedInFMNUser(trustedHelperUser)
+          userLoggedInFMNUser(NinoUser)
           val request = FakeRequest(GET, routes.AppleWalletController.onPageLoad().url)
             .withSession(("authToken", "Bearer 123"))
           val result  = route(application, request).value
@@ -637,17 +641,20 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
         }
       }
       "redirect to Store my Nino home page when trusted helper user tries to access this page" in {
+        when(mockFandFConnector.getTrustedHelper()(any())).thenReturn(Future.successful(Some(trustedHelper)))
+
         val application = applicationBuilderWithConfig()
           .overrides(
             inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
-            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
+            inject.bind[FandFConnector].toInstance(mockFandFConnector)
           )
           .configure("features.google-wallet-enabled" -> true, "features.crn-upgrade-enabled" -> true)
           .build()
 
         running(application) {
-          userLoggedInFMNUser(trustedHelperUser)
+          userLoggedInFMNUser(NinoUser)
           val request = FakeRequest(GET, routes.AppleWalletController.onPageLoad().url)
             .withSession(("authToken", "Bearer 123"))
           val result  = route(application, request).value

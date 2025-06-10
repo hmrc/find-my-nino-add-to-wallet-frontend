@@ -17,7 +17,8 @@
 package controllers
 
 import base.SpecBase
-import play.api.test.Helpers._
+import connectors.FandFConnector
+import play.api.test.Helpers.*
 import uk.gov.hmrc.auth.core.AuthConnector
 import util.Fixtures.buildFakeRequestWithAuth
 import views.html.public.SessionTimeoutView
@@ -30,7 +31,7 @@ class PublicControllerSpec extends SpecBase {
     scala.concurrent.ExecutionContext.global
 
   private def controller =
-    new PublicController(injected[SessionTimeoutView], injected[AuthConnector])(frontendAppConfig, cc, config, env, ec)
+    new PublicController(injected[SessionTimeoutView], injected[AuthConnector], injected[FandFConnector])(frontendAppConfig, cc, config, env, ec)
 
   "Calling PublicController.sessionTimeout" - {
 

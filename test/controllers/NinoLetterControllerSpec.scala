@@ -18,6 +18,7 @@ package controllers
 
 import base.SpecBase
 import cats.data.EitherT
+import connectors.FandFConnector
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{reset, times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
@@ -44,6 +45,7 @@ class NinoLetterControllerSpec extends SpecBase with IndividualDetailsFixtures w
   lazy val mockIndividualDetailsService: IndividualDetailsService = mock[IndividualDetailsService]
   val mockNPSService: NPSService                                  = mock[NPSService]
   lazy val ninoLetterController: NinoLetterController             = applicationWithConfig.injector.instanceOf[NinoLetterController]
+  lazy val mockFandFConnector:FandFConnector = mock[FandFConnector]
   lazy val view: PrintNationalInsuranceNumberView                 =
     applicationWithConfig.injector.instanceOf[PrintNationalInsuranceNumberView]
 
@@ -60,9 +62,12 @@ class NinoLetterControllerSpec extends SpecBase with IndividualDetailsFixtures w
           EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCache)
         )
 
+      when(mockFandFConnector.getTrustedHelper()(any())).thenReturn(Future.successful(None))
+
       val application = applicationBuilderWithConfig()
         .overrides(
-          bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+          bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
+          bind[FandFConnector].toInstance(mockFandFConnector)
         )
         .build()
 
@@ -80,6 +85,8 @@ class NinoLetterControllerSpec extends SpecBase with IndividualDetailsFixtures w
       when(mockIndividualDetailsService.deleteIdData(any())(any()))
         .thenReturn(Future.successful(false))
 
+      when(mockFandFConnector.getTrustedHelper()(any())).thenReturn(Future.successful(None))
+
       when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
         .thenReturn(
           EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCache)
@@ -87,7 +94,8 @@ class NinoLetterControllerSpec extends SpecBase with IndividualDetailsFixtures w
 
       val application = applicationBuilderWithConfig()
         .overrides(
-          bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+          bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
+          bind[FandFConnector].toInstance(mockFandFConnector)
         )
         .build()
 
@@ -114,10 +122,13 @@ class NinoLetterControllerSpec extends SpecBase with IndividualDetailsFixtures w
       when(mockNPSService.upliftCRN(any(), any())(any()))
         .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](true))
 
+      when(mockFandFConnector.getTrustedHelper()(any())).thenReturn(Future.successful(None))
+
       val application = applicationBuilderWithConfig()
         .overrides(
           bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
-          bind[NPSService].toInstance(mockNPSService)
+          bind[NPSService].toInstance(mockNPSService),
+          bind[FandFConnector].toInstance(mockFandFConnector)
         )
         .build()
 
@@ -143,9 +154,12 @@ class NinoLetterControllerSpec extends SpecBase with IndividualDetailsFixtures w
           EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCache)
         )
 
+      when(mockFandFConnector.getTrustedHelper()(any())).thenReturn(Future.successful(None))
+
       val application = applicationBuilderWithConfig()
         .overrides(
-          bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+          bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
+          bind[FandFConnector].toInstance(mockFandFConnector)
         )
         .build()
 

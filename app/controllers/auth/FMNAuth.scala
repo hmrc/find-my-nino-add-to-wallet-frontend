@@ -152,25 +152,19 @@ trait FMNAuth(val fandfConnector: FandFConnector) extends AuthorisedFunctions wi
     config: FrontendAppConfig,
     request: Request[A]
   ): Future[Result] =
-    fandfConnector.getTrustedHelper().flatMap { helper =>
-      authorised(AuthPredicate)
-        .retrieve(FMNRetrievals) {
-          case _ ~ Some(Individual | Organisation) ~ _ ~ _ ~ (Some(CredentialStrength.weak) |
-              Some("none")) ~ _ ~ _ ~ _ ~ _ =>
-            upliftCredentialStrength()
+    authorised(AuthPredicate)
+      .retrieve(FMNRetrievals) {
+        case _ ~ Some(Individual | Organisation) ~ _ ~ _ ~ (Some(CredentialStrength.weak) |
+            Some("none")) ~ _ ~ _ ~ _ ~ _ =>
+          upliftCredentialStrength()
 
-          case _ ~ Some(Individual | Organisation) ~ _ ~ _ ~ _ ~ LT200(_) ~ _ ~ _ ~ _ =>
-            upliftConfidenceLevel(request)
+        case _ ~ Some(Individual | Organisation) ~ _ ~ _ ~ _ ~ LT200(_) ~ _ ~ _ ~ _ =>
+          upliftConfidenceLevel(request)
 
-          case Some(nino) ~
-              Some(affinityGroup) ~
-              Enrolments(enrolments) ~
-              _ ~
-              Some(CredentialStrength.strong) ~
-              GTOE200(confidenceLevel) ~
-              _ ~
-              Some(internalId) ~
-              Some(_) =>
+        case Some(nino) ~
+            Some(affinityGroup) ~ Enrolments(enrolments) ~ _ ~ Some(CredentialStrength.strong) ~
+            GTOE200(confidenceLevel) ~ _ ~ Some(internalId) ~ Some(_) =>
+          fandfConnector.getTrustedHelper().flatMap { helper =>
             val trimmedRequest: Request[A] = request
               .map {
                 case AnyContentAsFormUrlEncoded(data) =>
@@ -193,15 +187,15 @@ trait FMNAuth(val fandfConnector: FandFConnector) extends AuthorisedFunctions wi
             )
 
             enrolmentAffinityCheck(enrolments, affinityGroup, nino, block)
+          }
 
-          case _ =>
-            logger.warn("All authorize checks failed whilst attempting to authorise user")
-            Future successful Redirect(controllers.routes.UnauthorisedController.onPageLoad)
-        }
-        .recover {
-          handleFailure(toContinueUrl(loginContinueUrl))
-        }
-    }
+        case _ =>
+          logger.warn("All authorize checks failed whilst attempting to authorise user")
+          Future successful Redirect(controllers.routes.UnauthorisedController.onPageLoad)
+      }
+      .recover {
+        handleFailure(toContinueUrl(loginContinueUrl))
+      }
 
   private def handleFailure(
     loginContinueUrl: String

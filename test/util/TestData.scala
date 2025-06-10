@@ -103,5 +103,4 @@ object TestData {
 
   val trustedHelper: TrustedHelper = TrustedHelper("principal", "attorney", "returnLink", Some("AB000005C"))
 
-
 }

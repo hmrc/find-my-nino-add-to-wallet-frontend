@@ -47,7 +47,7 @@ case class AuthContext[A](
   request: Request[A]
 )
 
-trait FMNAuth (val fandfConnector: FandFConnector) extends AuthorisedFunctions with Logging {
+trait FMNAuth(val fandfConnector: FandFConnector) extends AuthorisedFunctions with Logging {
   this: FrontendController =>
 
   protected type FMNAction[A] = AuthContext[A] => Future[Result]
@@ -151,33 +151,33 @@ trait FMNAuth (val fandfConnector: FandFConnector) extends AuthorisedFunctions w
     hc: HeaderCarrier,
     config: FrontendAppConfig,
     request: Request[A]
-  ): Future[Result] = {
+  ): Future[Result] =
     fandfConnector.getTrustedHelper().flatMap { helper =>
       authorised(AuthPredicate)
         .retrieve(FMNRetrievals) {
           case _ ~ Some(Individual | Organisation) ~ _ ~ _ ~ (Some(CredentialStrength.weak) |
-                                                              Some("none")) ~ _ ~ _ ~ _ ~ _ =>
+              Some("none")) ~ _ ~ _ ~ _ ~ _ =>
             upliftCredentialStrength()
 
           case _ ~ Some(Individual | Organisation) ~ _ ~ _ ~ _ ~ LT200(_) ~ _ ~ _ ~ _ =>
             upliftConfidenceLevel(request)
 
           case Some(nino) ~
-            Some(affinityGroup) ~
-            Enrolments(enrolments) ~
-            _ ~
-            Some(CredentialStrength.strong) ~
-            GTOE200(confidenceLevel) ~
-            _ ~
-            Some(internalId) ~
-            Some(_) =>
+              Some(affinityGroup) ~
+              Enrolments(enrolments) ~
+              _ ~
+              Some(CredentialStrength.strong) ~
+              GTOE200(confidenceLevel) ~
+              _ ~
+              Some(internalId) ~
+              Some(_) =>
             val trimmedRequest: Request[A] = request
               .map {
                 case AnyContentAsFormUrlEncoded(data) =>
                   AnyContentAsFormUrlEncoded(data.map { case (key, vals) =>
                     (key, vals.map(_.trim))
                   })
-                case b => b
+                case b                                => b
               }
               .asInstanceOf[Request[A]]
 
@@ -202,7 +202,6 @@ trait FMNAuth (val fandfConnector: FandFConnector) extends AuthorisedFunctions w
           handleFailure(toContinueUrl(loginContinueUrl))
         }
     }
-  }
 
   private def handleFailure(
     loginContinueUrl: String

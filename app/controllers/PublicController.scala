@@ -27,7 +27,11 @@ import views.html.public.SessionTimeoutView
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class PublicController @Inject() (sessionTimeoutView: SessionTimeoutView, authConnector: AuthConnector, fandFConnector: FandFConnector)(implicit
+class PublicController @Inject() (
+  sessionTimeoutView: SessionTimeoutView,
+  authConnector: AuthConnector,
+  fandFConnector: FandFConnector
+)(implicit
   frontendAppConfig: FrontendAppConfig,
   cc: MessagesControllerComponents,
   config: Configuration,

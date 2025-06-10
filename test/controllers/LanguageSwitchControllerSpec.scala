@@ -42,7 +42,7 @@ class LanguageSwitchControllerSpec extends SpecBase with MockitoSugar {
     "return the language map" in {
       val expectedLanguageMap = Map("en" -> Lang("en"), "fr" -> Lang("fr"))
       when(appConfig.languageMap).thenReturn(expectedLanguageMap)
-      val result              = controller.languageMap
+      val result = controller.languageMap
       result mustBe expectedLanguageMap
     }
   }

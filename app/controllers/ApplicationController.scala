@@ -18,20 +18,22 @@ package controllers
 
 import com.google.inject.Inject
 import config.FrontendAppConfig
+import connectors.FandFConnector
 import play.api.i18n.I18nSupport
-import play.api.mvc._
+import play.api.mvc.*
 import play.api.{Configuration, Environment}
-import services._
+import services.*
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl.idFunctor
 import uk.gov.hmrc.play.bootstrap.binders.{OnlyRelative, RedirectUrl}
-import views.html.identity._
+import views.html.identity.*
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class ApplicationController @Inject() (
   val identityVerificationFrontendService: IdentityVerificationFrontendService,
   authConnector: AuthConnector,
+  fandFConnector: FandFConnector,
   successView: SuccessView,
   cannotConfirmIdentityView: CannotConfirmIdentityView,
   failedIvIncompleteView: FailedIvIncompleteView,
@@ -44,7 +46,7 @@ class ApplicationController @Inject() (
   ec: ExecutionContext,
   cc: MessagesControllerComponents,
   frontendAppConfig: FrontendAppConfig
-) extends FMNBaseController(authConnector)
+) extends FMNBaseController(authConnector, fandFConnector)
     with I18nSupport {
 
   def uplift(redirectUrl: Option[RedirectUrl]): Action[AnyContent] = Action.async {

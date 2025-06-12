@@ -26,7 +26,10 @@ class LanguageSwitchControllerISpec extends IntegrationSpecBase {
 
     "switch to English and redirect back to the referrer" in {
 
-      val res = getRequest("/language/en", headers = Seq(HeaderNames.REFERER -> controllers.routes.StoreMyNinoController.onPageLoad.url))()
+      val res = getRequest(
+        "/language/en",
+        headers = Seq(HeaderNames.REFERER -> controllers.routes.StoreMyNinoController.onPageLoad.url)
+      )()
 
       whenReady(res) { result =>
         result must have(

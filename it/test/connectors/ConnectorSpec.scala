@@ -33,7 +33,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import scala.concurrent.ExecutionContext
 
 trait ConnectorSpec
-  extends AnyWordSpec
+    extends AnyWordSpec
     with GuiceOneAppPerSuite
     with Status
     with HeaderNames
@@ -61,11 +61,11 @@ trait ConnectorSpec
   }
 
   def stubPost(
-                url: String,
-                responseStatus: Int,
-                requestBody: Option[String],
-                responseBody: Option[String]
-              ): StubMapping = server.stubFor {
+    url: String,
+    responseStatus: Int,
+    requestBody: Option[String],
+    responseBody: Option[String]
+  ): StubMapping = server.stubFor {
     val baseResponse = aResponse().withStatus(responseStatus).withHeader(CONTENT_TYPE, JSON)
     val response     = responseBody.fold(baseResponse)(body => baseResponse.withBody(body))
 
@@ -74,13 +74,14 @@ trait ConnectorSpec
     )
   }
 
-  def stubPut(url: String,
-              responseStatus: Int,
-              requestBody: Option[String],
-              responseBody: Option[String]
-             ): StubMapping = server.stubFor {
+  def stubPut(
+    url: String,
+    responseStatus: Int,
+    requestBody: Option[String],
+    responseBody: Option[String]
+  ): StubMapping = server.stubFor {
     val baseResponse = aResponse().withStatus(responseStatus).withHeader(CONTENT_TYPE, JSON)
-    val response = responseBody.fold(baseResponse)(body => baseResponse.withBody(body))
+    val response     = responseBody.fold(baseResponse)(body => baseResponse.withBody(body))
 
     requestBody.fold(put(url).willReturn(response))(requestBody =>
       put(url).withRequestBody(equalToJson(requestBody)).willReturn(response)
@@ -96,12 +97,12 @@ trait ConnectorSpec
   }
 
   def stubWithDelay(
-                     url: String,
-                     responseStatus: Int,
-                     requestBody: Option[String],
-                     responseBody: Option[String],
-                     delay: Int
-                   ): StubMapping = server.stubFor {
+    url: String,
+    responseStatus: Int,
+    requestBody: Option[String],
+    responseBody: Option[String],
+    delay: Int
+  ): StubMapping = server.stubFor {
     val baseResponse = aResponse().withStatus(responseStatus).withHeader(CONTENT_TYPE, JSON).withFixedDelay(delay)
     val response     = responseBody.fold(baseResponse)(body => baseResponse.withBody(body))
 

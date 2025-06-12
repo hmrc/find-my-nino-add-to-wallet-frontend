@@ -102,23 +102,5 @@ object TestData {
       |""".stripMargin
 
   val trustedHelper: TrustedHelper = TrustedHelper("principal", "attorney", "returnLink", Some("AB000005C"))
-  val trustedHelperUser: String    =
-    s"""
-       |{
-       |	"nino": "AA000003B",
-       |	"credentialRole": "User",
-       | "credentialStrength": "strong",
-       |	"internalId": "Int-8612ba91-5581-411d-9d32-fb2de937a565",
-       | "confidenceLevel": 200,
-       | "affinityGroup": "Individual",
-       | "trustedHelper": {
-       |        "principalName": "${trustedHelper.principalName}",
-       |        "attorneyName": "${trustedHelper.attorneyName}",
-       |        "returnLinkUrl": "${trustedHelper.returnLinkUrl}",
-       |        "principalNino": "${trustedHelper.principalNino}"
-       |     },
-       | $allEnrolments
-       |}
-       |""".stripMargin
 
 }

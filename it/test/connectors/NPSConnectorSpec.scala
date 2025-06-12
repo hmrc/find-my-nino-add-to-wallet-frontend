@@ -27,15 +27,14 @@ import uk.gov.hmrc.http.client.HttpClientV2
 import util.WireMockHelper
 
 class NPSConnectorSpec
-  extends ConnectorSpec
+    extends ConnectorSpec
     with WireMockHelper
     with MockitoSugar
     with DefaultAwaitTimeout
     with Injecting {
 
   override implicit lazy val app: Application = app(
-    Map("microservice.services.find-my-nino-add-to-wallet-service.port" -> server.port(),
-    )
+    Map("microservice.services.find-my-nino-add-to-wallet-service.port" -> server.port())
   )
 
   val nino = "nino"
@@ -88,14 +87,13 @@ class NPSConnectorSpec
        |}
        |""".stripMargin
 
-
   trait SpecSetup {
 
     def url(nino: String): String
 
     lazy val connector: NPSConnector = {
-      val httpClient2 = app.injector.instanceOf[HttpClientV2]
-      val config = app.injector.instanceOf[FrontendAppConfig]
+      val httpClient2        = app.injector.instanceOf[HttpClientV2]
+      val config             = app.injector.instanceOf[FrontendAppConfig]
       val httpClientResponse = app.injector.instanceOf[HttpClientResponse]
 
       new NPSConnector(httpClient2, config, httpClientResponse)
@@ -135,7 +133,12 @@ class NPSConnectorSpec
     }
 
     "return 422 UNPROCESSABLE_ENTITY with Right(HttpResponse) when the error code indicates already an adult" in new LocalSetup {
-      stubPut(url(nino), UNPROCESSABLE_ENTITY, Some(Json.toJson(body).toString()), Some(jsonUnprocessableEntityAlreadyAdult))
+      stubPut(
+        url(nino),
+        UNPROCESSABLE_ENTITY,
+        Some(Json.toJson(body).toString()),
+        Some(jsonUnprocessableEntityAlreadyAdult)
+      )
       val result: Either[UpstreamErrorResponse, HttpResponse] = connector.upliftCRN(nino, body).value.futureValue
 
       result mustBe a[Right[_, HttpResponse]]

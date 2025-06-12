@@ -35,7 +35,7 @@ import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
 import util.Fixtures.{fakeIndividualDetailsDataCache, fakeIndividualDetailsDataCacheWithCRN}
 import util.IndividualDetailsFixtures
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
-import util.TestData.{NinoUser, NinoUserNoEnrolments, NinoUser_With_CL50, NinoUser_With_Credential_Strength_Weak, trustedHelper, trustedHelperUser}
+import util.TestData.{NinoUser, NinoUserNoEnrolments, NinoUser_With_CL50, NinoUser_With_Credential_Strength_Weak, trustedHelper}
 import views.html.{PassIdNotFoundView, RedirectToPostalFormView, StoreMyNinoView}
 
 import java.util.Base64
@@ -100,6 +100,7 @@ class StoreMyNinoControllerSpec
   val mockIdentityVerificationFrontendConnector: IdentityVerificationFrontendConnector =
     mock[IdentityVerificationFrontendConnector]
   val mockNPSService: NPSService                                                       = mock[NPSService]
+  val mockFandFConnector: FandFConnector                                               = mock[FandFConnector]
 
   val fakeBase64String      = "UEsDBBQACAgIABxqJlYAAAAAAA"
   val fakeGooglePassSaveUrl = "testURL"
@@ -157,6 +158,8 @@ class StoreMyNinoControllerSpec
       when(mockIndividualDetailsService.deleteIdData(any())(any()))
         .thenReturn(Future.successful(true))
 
+      when(mockFandFConnector.getTrustedHelper()(any())).thenReturn(Future.successful(Some(trustedHelper)))
+
       val application =
         applicationBuilderWithConfig()
           .overrides(
@@ -164,14 +167,15 @@ class StoreMyNinoControllerSpec
             inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
             inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
             inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),
-            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
+            inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
+            inject.bind[FandFConnector].toInstance(mockFandFConnector)
           )
           .build()
 
       val view = application.injector.instanceOf[StoreMyNinoView]
 
       running(application) {
-        userLoggedInFMNUser(trustedHelperUser)
+        userLoggedInFMNUser(NinoUser)
         val request     = FakeRequest(GET, routes.StoreMyNinoController.onPageLoad.url)
           .withSession(("authToken", "Bearer 123"))
         val userRequest = UserRequest(

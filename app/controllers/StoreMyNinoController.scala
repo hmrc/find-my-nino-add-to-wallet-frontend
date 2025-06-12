@@ -17,11 +17,11 @@
 package controllers
 
 import config.FrontendAppConfig
-import connectors.{AppleWalletConnector, GoogleWalletConnector}
+import connectors.{AppleWalletConnector, FandFConnector, GoogleWalletConnector}
 import controllers.actions.CheckChildRecordActionWithCacheInvalidation
 import models.individualDetails.IndividualDetailsDataCache
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
-import play.api.mvc._
+import play.api.mvc.*
 import play.api.{Configuration, Environment}
 import services.AuditService
 import uk.gov.hmrc.auth.core.AuthConnector
@@ -36,6 +36,7 @@ class StoreMyNinoController @Inject() (
   val appleWalletConnector: AppleWalletConnector,
   val googleWalletConnector: GoogleWalletConnector,
   authConnector: AuthConnector,
+  fandFConnector: FandFConnector,
   auditService: AuditService,
   override val messagesApi: MessagesApi,
   view: StoreMyNinoView,
@@ -46,7 +47,7 @@ class StoreMyNinoController @Inject() (
   ec: ExecutionContext,
   cc: MessagesControllerComponents,
   frontendAppConfig: FrontendAppConfig
-) extends FMNBaseController(authConnector)
+) extends FMNBaseController(authConnector, fandFConnector)
     with I18nSupport {
 
   implicit val loginContinueUrl: Call = routes.StoreMyNinoController.onPageLoad

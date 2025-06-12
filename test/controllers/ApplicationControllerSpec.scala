@@ -19,7 +19,7 @@ package controllers
 import base.SpecBase
 import cats.data.EitherT
 import config.FrontendAppConfig
-import connectors.IdentityVerificationFrontendConnector
+import connectors.{FandFConnector, IdentityVerificationFrontendConnector}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{reset, when}
 import org.scalatestplus.mockito.MockitoSugar
@@ -88,6 +88,7 @@ class ApplicationControllerSpec extends SpecBase with IndividualDetailsFixtures 
       new ApplicationController(
         mockIdentityVerificationFrontendService,
         injected[AuthConnector],
+        injected[FandFConnector],
         injected[SuccessView],
         injected[CannotConfirmIdentityView],
         injected[FailedIvIncompleteView],

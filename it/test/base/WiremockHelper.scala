@@ -28,17 +28,17 @@ import org.scalatestplus.play.BaseOneServerPerSuite
 object WiremockHelper {
   val wiremockPort = 11111
   val wiremockHost = "localhost"
-  val wiremockURL = s"http://$wiremockHost:$wiremockPort"
+  val wiremockURL  = s"http://$wiremockHost:$wiremockPort"
 }
 
 trait WiremockHelper {
   self: BaseOneServerPerSuite =>
 
   import WiremockHelper._
-  lazy val wmConfig = wireMockConfig().port(wiremockPort)
+  lazy val wmConfig  = wireMockConfig().port(wiremockPort)
   val wireMockServer = new WireMockServer(wmConfig)
 
-  implicit val system: ActorSystem = ActorSystem("wiremock-system")
+  implicit val system: ActorSystem        = ActorSystem("wiremock-system")
   implicit val materializer: Materializer = Materializer(system)
 
   def startWiremock(): Unit = {
@@ -51,36 +51,35 @@ trait WiremockHelper {
   def resetWiremock(): Unit = WireMock.reset()
 
   def stubGet(url: String, status: Integer, body: String = ""): StubMapping =
-    stubFor(get(urlMatching(url))
-      .willReturn(
-        aResponse().
-          withStatus(status).
-          withBody(body)
-      )
+    stubFor(
+      get(urlMatching(url))
+        .willReturn(
+          aResponse().withStatus(status).withBody(body)
+        )
     )
 
   def stubPost(url: String, status: Integer, responseBody: String = ""): StubMapping =
-    stubFor(post(urlMatching(url))
-      .willReturn(
-        aResponse().
-          withStatus(status).
-          withBody(responseBody)
-      )
+    stubFor(
+      post(urlMatching(url))
+        .willReturn(
+          aResponse().withStatus(status).withBody(responseBody)
+        )
     )
 
   def stubDelete(url: String, status: Integer): StubMapping =
-    stubFor(delete(urlMatching(url))
-      .willReturn(
-        aResponse()
-          .withStatus(status)
-      ))
+    stubFor(
+      delete(urlMatching(url))
+        .willReturn(
+          aResponse()
+            .withStatus(status)
+        )
+    )
 
   def stubPut(url: String, status: Integer, responseBody: String = ""): StubMapping =
-    stubFor(put(urlMatching(url))
-      .willReturn(
-        aResponse().
-          withStatus(status).
-          withBody(responseBody)
-      )
+    stubFor(
+      put(urlMatching(url))
+        .willReturn(
+          aResponse().withStatus(status).withBody(responseBody)
+        )
     )
 }

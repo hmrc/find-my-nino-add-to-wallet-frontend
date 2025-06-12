@@ -39,21 +39,21 @@ import java.net.URLDecoder
 
 class AppleWalletControllerISpec extends IntegrationSpecBase {
 
-  val fakePassId = "applePassId"
+  val fakePassId       = "applePassId"
   val fakeBase64String = "UEsDBBQACAgIABxqJlYAAAAAAA"
 
   override lazy val messagesApi: MessagesApi = app.injector.instanceOf[MessagesApi]
 
   implicit lazy val frontendAppConfig: FrontendAppConfig = app.injector.instanceOf[FrontendAppConfig]
-  implicit lazy val messages: Messages = MessagesImpl(Lang("en"), messagesApi).messages
+  implicit lazy val messages: Messages                   = MessagesImpl(Lang("en"), messagesApi).messages
 
   trait LocalSetup {
     def buildUserRequest[A](
-                             nino: Option[Nino] = Some(generatedNino),
-                             confidenceLevel: ConfidenceLevel = ConfidenceLevel.L200,
-                             individualDetailsData: IndividualDetailsDataCache = Fixtures.fakeIndividualDetailsDataCache,
-                             request: Request[A] = FakeRequest().asInstanceOf[Request[A]]
-                           ): UserRequest[A] =
+      nino: Option[Nino] = Some(generatedNino),
+      confidenceLevel: ConfidenceLevel = ConfidenceLevel.L200,
+      individualDetailsData: IndividualDetailsDataCache = Fixtures.fakeIndividualDetailsDataCache,
+      request: Request[A] = FakeRequest().asInstanceOf[Request[A]]
+    ): UserRequest[A] =
       UserRequest(
         nino,
         confidenceLevel,
@@ -84,12 +84,11 @@ class AppleWalletControllerISpec extends IntegrationSpecBase {
         s"\n\nLink $href was not rendered on the page\n"
       )
 
-    def assertContainsQRCode(doc: Document, text: String): Unit = {
+    def assertContainsQRCode(doc: Document, text: String): Unit =
       assert(
         doc.getElementById("apple-qr-code").attr("src").contains(text),
         s"\n\nQR Code linking to " + text + " was not rendered on the page. \n"
       )
-    }
   }
 
   "Main" when {
@@ -100,13 +99,19 @@ class AppleWalletControllerISpec extends IntegrationSpecBase {
       }
 
       "render the apple pass QR code" in new LocalSetup {
-        wireMockServer.stubFor(get(s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-pass-card?passId=$fakePassId").willReturn(ok(fakeBase64String)))
+        wireMockServer.stubFor(
+          get(s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-pass-card?passId=$fakePassId")
+            .willReturn(ok(fakeBase64String))
+        )
         assertContainsQRCode(doc, s"/get-qr-code?passId=$fakePassId")
       }
 
       "render the download your National Insurance number link" in new LocalSetup {
-        wireMockServer.stubFor(get(s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-pass-card?passId=$fakePassId").willReturn(ok(fakeBase64String)))
-        assertContainsLink(doc, "download your National Insurance number",s"/get-pass-card?passId=$fakePassId")
+        wireMockServer.stubFor(
+          get(s"${frontendAppConfig.findMyNinoServiceUrl}/find-my-nino-add-to-wallet/get-pass-card?passId=$fakePassId")
+            .willReturn(ok(fakeBase64String))
+        )
+        assertContainsLink(doc, "download your National Insurance number", s"/get-pass-card?passId=$fakePassId")
       }
     }
 
@@ -130,7 +135,7 @@ class AppleWalletControllerISpec extends IntegrationSpecBase {
 
       "render the sign out link" in new LocalSetup {
 
-        val href: String =  routes.AuthController
+        val href: String = routes.AuthController
           .signout(Some(RedirectUrl(frontendAppConfig.getFeedbackSurveyUrl(frontendAppConfig.defaultOrigin))), None)
           .url
 

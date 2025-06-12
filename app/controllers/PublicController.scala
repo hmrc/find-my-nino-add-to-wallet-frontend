@@ -18,6 +18,7 @@ package controllers
 
 import com.google.inject.Inject
 import config.FrontendAppConfig
+import connectors.FandFConnector
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import play.api.{Configuration, Environment}
@@ -26,13 +27,17 @@ import views.html.public.SessionTimeoutView
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class PublicController @Inject() (sessionTimeoutView: SessionTimeoutView, authConnector: AuthConnector)(implicit
+class PublicController @Inject() (
+  sessionTimeoutView: SessionTimeoutView,
+  authConnector: AuthConnector,
+  fandFConnector: FandFConnector
+)(implicit
   frontendAppConfig: FrontendAppConfig,
   cc: MessagesControllerComponents,
   config: Configuration,
   env: Environment,
   ec: ExecutionContext
-) extends FMNBaseController(authConnector)
+) extends FMNBaseController(authConnector, fandFConnector)
     with I18nSupport {
 
   def sessionTimeout: Action[AnyContent] = Action.async { implicit request =>

@@ -27,26 +27,30 @@ import util.WireMockHelper
 
 import java.util.Base64
 
-class AppleWalletConnectorSpec extends ConnectorSpec
-  with WireMockHelper
-  with MockitoSugar
-  with DefaultAwaitTimeout
-  with Injecting {
+class AppleWalletConnectorSpec
+    extends ConnectorSpec
+    with WireMockHelper
+    with MockitoSugar
+    with DefaultAwaitTimeout
+    with Injecting {
 
   implicit val appleWrites: Writes[ApplePassDetails] = Json.writes[ApplePassDetails]
 
   override implicit lazy val app: Application = app(
-    Map("microservice.services.find-my-nino-add-to-wallet-service.port" -> server.port(),
-        "microservice.services.find-my-nino-add-to-wallet-service.host" -> "127.0.0.1")
+    Map(
+      "microservice.services.find-my-nino-add-to-wallet-service.port" -> server.port(),
+      "microservice.services.find-my-nino-add-to-wallet-service.host" -> "127.0.0.1"
+    )
   )
 
   val delay = 5000
 
-  val passId: String = "passId"
-  val applePassCardBytes: Array[Byte] = Array(99, 71, 86, 121, 99, 50, 57, 117, 82, 71, 86, 48, 89, 87, 108, 115, 99, 49, 78, 48, 99, 109, 108, 117, 90, 119, 61, 61)
-  val applePassCard: String = Base64.getEncoder.encodeToString(applePassCardBytes)
-  val fakeName: String = "fakeName"
-  val fakeNino:String = "fakeNino"
+  val passId: String                           = "passId"
+  val applePassCardBytes: Array[Byte]          = Array(99, 71, 86, 121, 99, 50, 57, 117, 82, 71, 86, 48, 89, 87, 108, 115, 99,
+    49, 78, 48, 99, 109, 108, 117, 90, 119, 61, 61)
+  val applePassCard: String                    = Base64.getEncoder.encodeToString(applePassCardBytes)
+  val fakeName: String                         = "fakeName"
+  val fakeNino: String                         = "fakeNino"
   val createApplePassDetails: ApplePassDetails = ApplePassDetails(fakeName, fakeNino)
 
   trait SpecSetup {
@@ -54,8 +58,8 @@ class AppleWalletConnectorSpec extends ConnectorSpec
     def url: String
 
     lazy val connector: AppleWalletConnector = {
-      val httpClientV2 = app.injector.instanceOf[HttpClientV2]
-      val frontendAppConfig = app.injector.instanceOf[FrontendAppConfig]
+      val httpClientV2       = app.injector.instanceOf[HttpClientV2]
+      val frontendAppConfig  = app.injector.instanceOf[FrontendAppConfig]
       val httpClientResponse = app.injector.instanceOf[HttpClientResponse]
       new AppleWalletConnector(frontendAppConfig, httpClientV2, httpClientResponse)
     }
@@ -109,7 +113,7 @@ class AppleWalletConnectorSpec extends ConnectorSpec
     "return None when called with an unknown passId" in new LocalSetup {
       stubGet(url, NOT_FOUND, None)
       val result = connector.getAppleQrCode(passId).value.futureValue
-      
+
       result mustBe a[Right[_, _]]
       result mustBe Right(None)
     }
@@ -138,7 +142,8 @@ class AppleWalletConnectorSpec extends ConnectorSpec
 
     "return Some(passId) when called create pass" in new LocalSetup {
       stubPost(url, OK, Some(Json.toJson(createApplePassDetails).toString()), Some(passId))
-      val result = connector.createApplePass(createApplePassDetails.fullName, createApplePassDetails.nino).value.futureValue
+      val result =
+        connector.createApplePass(createApplePassDetails.fullName, createApplePassDetails.nino).value.futureValue
 
       result mustBe a[Right[_, _]]
       result.getOrElse(None) mustBe Some(passId)
@@ -146,7 +151,8 @@ class AppleWalletConnectorSpec extends ConnectorSpec
 
     "return Left(UpstreamErrorResponse) when API call fails" in new LocalSetup {
       stubWithDelay(url, INTERNAL_SERVER_ERROR, Some(Json.toJson(createApplePassDetails).toString()), None, delay)
-      val result = connector.createApplePass(createApplePassDetails.fullName, createApplePassDetails.nino).value.futureValue
+      val result =
+        connector.createApplePass(createApplePassDetails.fullName, createApplePassDetails.nino).value.futureValue
 
       result mustBe a[Left[UpstreamErrorResponse, _]]
       result.swap.getOrElse(UpstreamErrorResponse("", OK)).statusCode mustBe INTERNAL_SERVER_ERROR

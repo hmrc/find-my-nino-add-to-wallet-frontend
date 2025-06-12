@@ -41,12 +41,13 @@ import util.WireMockHelper
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class ActionHelperISpec extends AnyWordSpec
-with GuiceOneAppPerSuite
-with WireMockHelper
-with ScalaFutures
-with IntegrationPatience
-with Matchers {
+class ActionHelperISpec
+    extends AnyWordSpec
+    with GuiceOneAppPerSuite
+    with WireMockHelper
+    with ScalaFutures
+    with IntegrationPatience
+    with Matchers {
 
   override def fakeApplication(): Application = {
     server.start()
@@ -54,21 +55,22 @@ with Matchers {
       .configure(
         "microservice.services.find-my-nino-add-to-wallet-service.port" -> server.port(),
         "microservice.services.find-my-nino-add-to-wallet-service.host" -> "127.0.0.1",
-        "microservice.services.individual-details.port" -> server.port(),
-        "microservice.services.individual-details.host" -> "127.0.0.1",
-        "features.crn-uplift-enabled" -> true
+        "microservice.services.individual-details.port"                 -> server.port(),
+        "microservice.services.individual-details.host"                 -> "127.0.0.1",
+        "features.crn-uplift-enabled"                                   -> true
       )
       .build()
   }
 
-  implicit val hc: HeaderCarrier = HeaderCarrier()
-  implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
+  implicit val hc: HeaderCarrier             = HeaderCarrier()
+  implicit val ec: ExecutionContext          = app.injector.instanceOf[ExecutionContext]
   implicit lazy val messagesApi: MessagesApi = app.injector.instanceOf[MessagesApi]
-  val nino: String = new Generator().nextNino.nino
-  val sessionId: String = "session-id"
-  val messages: Messages = MessagesImpl(Lang("en"), messagesApi).messages
+  val nino: String                           = new Generator().nextNino.nino
+  val sessionId: String                      = "session-id"
+  val messages: Messages                     = MessagesImpl(Lang("en"), messagesApi).messages
 
-  implicit val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("", "").withSession(SessionKeys.sessionId -> sessionId)
+  implicit val fakeRequest: FakeRequest[AnyContentAsEmpty.type] =
+    FakeRequest("", "").withSession(SessionKeys.sessionId -> sessionId)
 
   def fakeAuthContext: AuthContext[AnyContent] = AuthContext(
     nino = NationalInsuranceNumber(nino),
@@ -81,13 +83,13 @@ with Matchers {
     request = fakeRequest
   )
 
-
   lazy val actionHelper: ActionHelper = app.injector.instanceOf[ActionHelper]
 
-  val individualDetailsCrnTrueJson: String = Json.toJson(
-    fakeIndividualDetails.copy(crnIndicator = CrnIndicator.True)
-  ).toString()
-
+  val individualDetailsCrnTrueJson: String = Json
+    .toJson(
+      fakeIndividualDetails.copy(crnIndicator = CrnIndicator.True)
+    )
+    .toString()
 
   "ActionHelper.checkForCrn" must {
     "return 500 with TechnicalIssuesNoRetryView when individual details API fails with Left due to INTERNAL_SERVER_ERROR" in {
@@ -105,7 +107,6 @@ with Matchers {
 
       contentAsString(Future.successful(result)) must include("Sorry, the service is unavailable")
     }
-
 
     "return UserRequest when individualDetails are found but individualDetails.crnIndicator is FALSE" in {
 
@@ -128,7 +129,7 @@ with Matchers {
         .configure(
           "microservice.services.individual-details.port" -> server.port(),
           "microservice.services.individual-details.host" -> "127.0.0.1",
-          "features.crn-uplift-enabled" -> false
+          "features.crn-uplift-enabled"                   -> false
         )
         .build()
 
@@ -170,7 +171,6 @@ with Matchers {
       userRequest.enrolments mustBe Enrolments(Set(Enrolment("HMRC-PT")))
     }
 
-
     "return UserRequest when CRN uplift succeeds and adult-registration API responds with UNPROCESSABLE_ENTITY but contains alreadyAnAdultErrorCode" in {
 
       val jsonUnprocessableEntityAlreadyAdult: String =
@@ -201,7 +201,6 @@ with Matchers {
       val userRequest = result.toOption.get
       userRequest.enrolments mustBe Enrolments(Set(Enrolment("HMRC-PT")))
     }
-
 
     List(
       INTERNAL_SERVER_ERROR,

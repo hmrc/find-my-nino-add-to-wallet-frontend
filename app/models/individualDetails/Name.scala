@@ -92,9 +92,9 @@ final case class Name(
   requestedName: Option[RequestedName],
   otherTitle: Option[OtherTitle],
   honours: Option[Honours],
-  firstForename: String,
+  firstForename: Option[String],
   secondForename: Option[String],
-  surname: String
+  surname: Option[String]
 )
 
 object Name {

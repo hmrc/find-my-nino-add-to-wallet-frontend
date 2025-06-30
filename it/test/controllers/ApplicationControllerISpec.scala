@@ -26,13 +26,12 @@ import uk.gov.hmrc.http.SessionKeys
 class ApplicationControllerISpec extends IntegrationSpecBase {
 
   private val journeyId = "fake-journey-id"
-  private val url = s"/save-your-national-insurance-number/identity-check-complete?journeyId=$journeyId"
-  private val ivUrl = s"/mdtp/journey/journeyId/$journeyId"
+  private val url       = s"/save-your-national-insurance-number/identity-check-complete?journeyId=$journeyId"
+  private val ivUrl     = s"/mdtp/journey/journeyId/$journeyId"
 
   override def config: Map[String, _] = super.config ++ Map(
     "microservice.services.identity-verification-frontend.port" -> wiremockPort
   )
-
 
   "Accessing the uplift journey outcome" must {
 
@@ -57,7 +56,7 @@ class ApplicationControllerISpec extends IntegrationSpecBase {
       )
 
       val request = FakeRequest(GET, url).withSession(SessionKeys.sessionId -> "FAKE_SESSION_ID")
-      val result = route(app, request).get
+      val result  = route(app, request).get
 
       status(result) mustBe UNAUTHORIZED
       contentAsString(result) must include("You have tried to confirm your identity too many times")
@@ -71,7 +70,7 @@ class ApplicationControllerISpec extends IntegrationSpecBase {
       )
 
       val request = FakeRequest(GET, url).withSession(SessionKeys.sessionId -> "FAKE_SESSION_ID")
-      val result = route(app, request).get
+      val result  = route(app, request).get
 
       status(result) mustBe UNAUTHORIZED
       contentAsString(result) must include("We cannot confirm your identity")
@@ -85,7 +84,7 @@ class ApplicationControllerISpec extends IntegrationSpecBase {
       )
 
       val request = FakeRequest(GET, url).withSession(SessionKeys.sessionId -> "FAKE_SESSION_ID")
-      val result = route(app, request).get
+      val result  = route(app, request).get
 
       status(result) mustBe UNAUTHORIZED
       contentAsString(result) must include("We cannot confirm your identity")
@@ -99,7 +98,7 @@ class ApplicationControllerISpec extends IntegrationSpecBase {
       )
 
       val request = FakeRequest(GET, url).withSession(SessionKeys.sessionId -> "FAKE_SESSION_ID")
-      val result = route(app, request).get
+      val result  = route(app, request).get
 
       status(result) mustBe FAILED_DEPENDENCY
       contentAsString(result) must include("Sorry, we are currently experiencing technical issues")
@@ -113,7 +112,7 @@ class ApplicationControllerISpec extends IntegrationSpecBase {
       )
 
       val request = FakeRequest(GET, url).withSession(SessionKeys.sessionId -> "FAKE_SESSION_ID")
-      val result = route(app, request).get
+      val result  = route(app, request).get
 
       status(result) mustBe FAILED_DEPENDENCY
       contentAsString(result) must include("Sorry, we are currently experiencing technical issues")
@@ -123,7 +122,7 @@ class ApplicationControllerISpec extends IntegrationSpecBase {
       val urlWithoutJourneyId = "/save-your-national-insurance-number/identity-check-complete"
 
       val request = FakeRequest(GET, urlWithoutJourneyId).withSession(SessionKeys.sessionId -> "FAKE_SESSION_ID")
-      val result = route(app, request).get
+      val result  = route(app, request).get
 
       status(result) mustBe FAILED_DEPENDENCY
       contentAsString(result) must include("Sorry, we are currently experiencing technical issues")
@@ -135,7 +134,7 @@ class ApplicationControllerISpec extends IntegrationSpecBase {
       )
 
       val request = FakeRequest(GET, url).withSession(SessionKeys.sessionId -> "FAKE_SESSION_ID")
-      val result = route(app, request).get
+      val result  = route(app, request).get
 
       status(result) mustBe INTERNAL_SERVER_ERROR
       contentAsString(result) must include("Sorry, we are currently experiencing technical issues")

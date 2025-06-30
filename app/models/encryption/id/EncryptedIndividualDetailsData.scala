@@ -27,8 +27,8 @@ import java.time.{Instant, LocalDate}
 
 case class EncryptedIndividualDetailsData(
   fullName: EncryptedValue,
-  firstForename: EncryptedValue,
-  surname: EncryptedValue,
+  firstForename: Option[EncryptedValue],
+  surname: Option[EncryptedValue],
   initialsName: EncryptedValue,
   dateOfBirth: EncryptedValue,
   nino: String,
@@ -76,8 +76,8 @@ object EncryptedIndividualDetailsDataCache {
 
   private val encryptedIndividualDetailsDataFormat: OFormat[EncryptedIndividualDetailsData] =
     ((__ \ "fullName").format[EncryptedValue]
-      ~ (__ \ "firstForename").format[EncryptedValue]
-      ~ (__ \ "surname").format[EncryptedValue]
+      ~ (__ \ "firstForename").formatNullable[EncryptedValue]
+      ~ (__ \ "surname").formatNullable[EncryptedValue]
       ~ (__ \ "initialsName").format[EncryptedValue]
       ~ (__ \ "dateOfBirth").format[EncryptedValue]
       ~ (__ \ "nino").format[String]
@@ -119,8 +119,8 @@ object EncryptedIndividualDetailsDataCache {
       id = individualDetailsDataCache.id,
       individualDetailsData = EncryptedIndividualDetailsData(
         fullName = e(id.fullName),
-        firstForename = e(id.firstForename),
-        surname = e(id.surname),
+        firstForename = id.firstForename.map(e),
+        surname = id.surname.map(e),
         initialsName = e(id.initialsName),
         dateOfBirth = e(id.dateOfBirth.toString),
         nino = id.nino,
@@ -158,8 +158,8 @@ object EncryptedIndividualDetailsDataCache {
       id = encryptedIndividualDetailsDataCache.id,
       IndividualDetailsData(
         fullName = d(id.fullName),
-        firstForename = d(id.firstForename),
-        surname = d(id.surname),
+        firstForename = id.firstForename.map(d),
+        surname = id.surname.map(d),
         initialsName = d(id.initialsName),
         dateOfBirth = LocalDate.parse(d(id.dateOfBirth)),
         nino = id.nino,

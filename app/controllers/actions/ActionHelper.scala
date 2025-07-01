@@ -21,8 +21,9 @@ import com.google.inject.Inject
 import config.FrontendAppConfig
 import controllers.auth.AuthContext
 import controllers.auth.requests.UserRequest
-import models.individualDetails.IndividualDetailsDataCache
+import models.individualDetails.{IndividualDetailsData, IndividualDetailsDataCache}
 import models.nps.CRNUpliftRequest
+import play.api.Logging
 import play.api.i18n.Messages
 import play.api.mvc.Results.{InternalServerError, Ok}
 import play.api.mvc.{ControllerComponents, Result}
@@ -41,7 +42,7 @@ class ActionHelper @Inject() (
   postalFormView: RedirectToPostalFormView,
   frontendAppConfig: FrontendAppConfig,
   npsService: NPSService
-) {
+) extends Logging {
 
   def checkForCrn[A](identifier: String, sessionId: String, authContext: AuthContext[A], messages: Messages)(implicit
     hc: HeaderCarrier,
@@ -70,27 +71,44 @@ class ActionHelper @Inject() (
               )
             )
           case (false, true) =>
-            // Nino is not a full nino and uplift is enabled, Uplift nino with NPS
-            val request: CRNUpliftRequest = buildCrnUpliftRequest(individualDetails)
+            individualDetails.individualDetailsData match {
+              case IndividualDetailsData(_, Some(firstForename), Some(surname), _, dateOfBirth, _, _, _) =>
+                // Nino is not a full nino and uplift is enabled, Uplift nino with NPS
+                val request: CRNUpliftRequest = CRNUpliftRequest(
+                  firstForename,
+                  surname,
+                  dateOfBirth.toString
+                )
 
-            (for {
-              _ <- npsService.upliftCRN(identifier, request)
-              _ <- EitherT[Future, UpstreamErrorResponse, Boolean](
-                     individualDetailsService
-                       .deleteIdData(individualDetails.individualDetailsData.nino)
-                       .map(Right(_))
-                   )
-            } yield UserRequest(
-              Some(Nino(individualDetails.individualDetailsData.nino)),
-              authContext.confidenceLevel,
-              individualDetails,
-              authContext.allEnrolments,
-              authContext.request,
-              authContext.trustedHelper
-            )).leftMap { _ =>
-              val messages: Messages = cc.messagesApi.preferred(authContext.request)
-              InternalServerError(technicalIssuesNoRetryView()(authContext.request, frontendAppConfig, messages))
-            }.value
+                (for {
+                  _ <- npsService.upliftCRN(identifier, request)
+                  _ <- EitherT[Future, UpstreamErrorResponse, Boolean](
+                         individualDetailsService
+                           .deleteIdData(individualDetails.individualDetailsData.nino)
+                           .map(Right(_))
+                       )
+                } yield UserRequest(
+                  Some(Nino(individualDetails.individualDetailsData.nino)),
+                  authContext.confidenceLevel,
+                  individualDetails,
+                  authContext.allEnrolments,
+                  authContext.request,
+                  authContext.trustedHelper
+                )).leftMap { _ =>
+                  val messages: Messages = cc.messagesApi.preferred(authContext.request)
+                  InternalServerError(technicalIssuesNoRetryView()(authContext.request, frontendAppConfig, messages))
+                }.value
+
+              case _ =>
+                logger.error(
+                  "The customer does not have a full NINO and CRN uplift is enabled, but no firstForename or surname found."
+                )
+                Future.successful(
+                  Left(
+                    InternalServerError(technicalIssuesNoRetryView()(authContext.request, frontendAppConfig, messages))
+                  )
+                )
+            }
 
           case _ =>
             // CRN uplift disabled, redirecting user to paper form
@@ -101,10 +119,4 @@ class ActionHelper @Inject() (
   private def isFullNino(individualDetails: IndividualDetailsDataCache): Boolean =
     individualDetails.individualDetailsData.crnIndicator.toLowerCase.equals("false")
 
-  private def buildCrnUpliftRequest(individualDetails: IndividualDetailsDataCache): CRNUpliftRequest =
-    new CRNUpliftRequest(
-      individualDetails.individualDetailsData.firstForename,
-      individualDetails.individualDetailsData.surname,
-      individualDetails.individualDetailsData.dateOfBirth.toString
-    )
 }

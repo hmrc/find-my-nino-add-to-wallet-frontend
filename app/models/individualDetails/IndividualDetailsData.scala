@@ -24,8 +24,8 @@ import java.time.{Instant, LocalDate}
 
 case class IndividualDetailsData(
   fullName: String,
-  firstForename: String,
-  surname: String,
+  firstForename: Option[String],
+  surname: Option[String],
   initialsName: String,
   dateOfBirth: LocalDate,
   nino: String,
@@ -59,8 +59,8 @@ case class IndividualDetailsDataCache(
 object IndividualDetailsDataCache {
   private val individualDetailsDataFormat: OFormat[IndividualDetailsData] =
     ((__ \ "fullName").format[String]
-      ~ (__ \ "firstForename").format[String]
-      ~ (__ \ "surname").format[String]
+      ~ (__ \ "firstForename").formatNullable[String]
+      ~ (__ \ "surname").formatNullable[String]
       ~ (__ \ "initialsName").format[String]
       ~ (__ \ "dateOfBirth").format[LocalDate]
       ~ (__ \ "nino").format[String]

@@ -110,9 +110,9 @@ final case class IndividualDetails(
   def getFullName: String =
     List(
       getTitle,
-      preferredName.firstForename.toUpperCase(),
+      preferredName.firstForename.map(_.toUpperCase()).getOrElse(""),
       preferredName.secondForename.getOrElse("").toUpperCase(),
-      preferredName.surname.toUpperCase(),
+      preferredName.surname.map(_.toUpperCase()).getOrElse(""),
       getHonours
     )
       .filter(_.nonEmpty)
@@ -121,9 +121,9 @@ final case class IndividualDetails(
   def getInitialsName: String =
     List(
       getTitle,
-      preferredName.firstForename.toUpperCase().take(1),
+      preferredName.firstForename.map(_.toUpperCase().take(1)).getOrElse(""),
       preferredName.secondForename.getOrElse("").toUpperCase().take(1),
-      preferredName.surname.toUpperCase(),
+      preferredName.surname.map(_.toUpperCase()).getOrElse(""),
       getHonours
     )
       .filter(_.nonEmpty)

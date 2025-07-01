@@ -230,9 +230,9 @@ object Fixtures extends IndividualDetailsFixtures {
     requestedName = Some(RequestedName("Firstname Middlename")),
     otherTitle = Some(OtherTitle("Sir")),
     honours = Some(Honours("PhD")),
-    firstForename = "Firstname",
+    firstForename = Some("Firstname"),
     secondForename = Some("Middlename"),
-    surname = "Lastname"
+    surname = Some("Lastname")
   )
 
   val fakeKnownAsName: Name = models.individualDetails.Name(
@@ -242,9 +242,9 @@ object Fixtures extends IndividualDetailsFixtures {
     requestedName = Some(RequestedName("Known As Name")),
     otherTitle = Some(OtherTitle("Sir")),
     honours = Some(Honours("PhD")),
-    firstForename = "Known",
+    firstForename = Some("Known"),
     secondForename = Some("As"),
-    surname = "Name"
+    surname = Some("Name")
   )
 
   val fakeNameWithoutMiddleName = fakeName.copy(secondForename = None)
@@ -298,8 +298,8 @@ object Fixtures extends IndividualDetailsFixtures {
 
   val fakeIndividualDetailsData = IndividualDetailsData(
     fullName = "Dr Firstname Middlename Lastname Phd.",
-    firstForename = "Firstname",
-    surname = "Lastname",
+    firstForename = Some("Firstname"),
+    surname = Some("Lastname"),
     initialsName = "FML",
     dateOfBirth = LocalDate.now(),
     nino = "AB123456C",

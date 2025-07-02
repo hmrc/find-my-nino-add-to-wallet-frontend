@@ -12,7 +12,7 @@
         - and a sequence of one or more fo:page-sequences containing the text and formatting instructions
         -->
 
-<fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format" font-family="OpenSans">
+<fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format" xmlns:fox="http://xmlgraphics.apache.org/fop/extensions" font-family="OpenSans">
 
     <fo:layout-master-set>
         <!-- fo:layout-master-set defines in its children the page layout:
@@ -107,8 +107,13 @@
                               border-color="#28a197"
                               padding-start="4px">
                         <fo:wrapper role="artifact">
-                            <fo:external-graphic content-type="content-type:image/png" src="/pdf/logo/hmrc-logo.jpg"
-                                                 content-height="scale-to-fit" content-width="0.8cm"/>
+                            <fo:external-graphic content-type="content-type:image/png"
+                                                 src="/pdf/logo/hmrc-logo.jpg"
+                                                 content-height="scale-to-fit"
+                                                 content-width="0.8cm"
+                                                 role="Artifact"
+                                                 fox:alt-text="HMRC logo"
+                            />
                         </fo:wrapper>
                         <fo:block role="P"
                                   font-family="OpenSans"
@@ -194,7 +199,9 @@
                                   line-height="12pt">
                             <fo:basic-link color="#1F70B8"
                                            external-destination='https://@Messages("label.www_gov_uk_hmrc")'
-                                           text-decoration="underline">
+                                           text-decoration="underline"
+                                           role="Link"
+                                           fox:alt-text="Gov.uk website">
                                 @messages("label.www_gov_uk_hmrc")
                             </fo:basic-link>
                         </fo:block>
@@ -422,7 +429,9 @@
                             </fo:block>
                             <fo:basic-link color="#1F70B8"
                                            external-destination='https://@Messages("label.child.trust.fund.details.link")'
-                                           text-decoration="underline">
+                                           text-decoration="underline"
+                                           role="Link"
+                                           fox:alt-text="Child Trust Fund details link">
                                 @messages("label.child.trust.fund.details.link")
                             </fo:basic-link>
                         </fo:block>
@@ -458,7 +467,9 @@
                                         @Messages("label.email")
                                         <fo:basic-link color="#1F70B8"
                                                        external-destination='mailto:@Messages("label.email_for_welsh_language")'
-                                                       text-decoration="underline">
+                                                       text-decoration="underline"
+                                                       role="Link"
+                                                       fox:alt-text="Email for Welsh language">
                                             @messages("label.email_for_welsh_language")
                                         </fo:basic-link>
                                     </fo:block>
@@ -521,7 +532,9 @@
                                 </fo:block>
                                 <fo:basic-link color="#1F70B8"
                                                external-destination='https://@Messages("label.you_can_download_and_use_the_hmrc_app_or_go_online_to.link")'
-                                               text-decoration="underline">
+                                               text-decoration="underline"
+                                               role="Link"
+                                               fox:alt-text="HMRC app or online link">
                                     @messages("label.you_can_download_and_use_the_hmrc_app_or_go_online_to.link")
                                 </fo:basic-link>
                                 <fo:block>
@@ -615,7 +628,9 @@
                                 </fo:block>
                                 <fo:basic-link color="#1F70B8"
                                                external-destination='https://@Messages("label.www_gov_uk_national_insurance")'
-                                               text-decoration="underline">
+                                               text-decoration="underline"
+                                               role="Link"
+                                               fox:alt-text="Gov.uk National Insurance link">
                                     @messages("label.www_gov_uk_national_insurance")
                                 </fo:basic-link>
                                 <fo:block padding-before="6px" padding-after="6px">
@@ -623,7 +638,9 @@
                                 </fo:block>
                                 <fo:basic-link color="#1F70B8"
                                                external-destination='https://@Messages("label.www_youtube_com_hmrcgovuk")'
-                                               text-decoration="underline">
+                                               text-decoration="underline"
+                                               role="Link"
+                                               fox:alt-text="HMRC YouTube channel link">
                                     @messages("label.www_youtube_com_hmrcgovuk")
                                 </fo:basic-link>
                             </fo:block>

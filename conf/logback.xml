@@ -45,15 +45,17 @@
 
     <logger name="org.apache.http" level="INFO"/>
 
+    <logger name="org.apache.fop.apps.FOUserAgent" level="WARN"/>
+
     <logger name="org.jboss" level="INFO"/>
     <logger name="io.netty" level="INFO"/>
     <logger name="sun.net.www.protocol.http" level="INFO"/>
 
-    <logger name="connector" level="TRACE">
+    <logger name="connector" level="WARN">
         <appender-ref ref="STDOUT"/>
     </logger>
 
-    <root level="DEBUG">
+    <root level="WARN">
         <appender-ref ref="FILE"/>
         <appender-ref ref="STDOUT"/>
     </root>

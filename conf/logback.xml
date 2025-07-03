@@ -45,7 +45,7 @@
 
     <logger name="org.apache.http" level="INFO"/>
 
-    <logger name="org.apache.fop.apps.FOUserAgent" level="WARN"/>
+    <logger name="org.apache.fop.apps.FOUserAgent" level="INFO"/>
 
     <logger name="org.jboss" level="INFO"/>
     <logger name="io.netty" level="INFO"/>

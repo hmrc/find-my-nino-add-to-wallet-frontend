@@ -88,7 +88,6 @@ class NinoLetterController @Inject() (
           Ok(pdf)
             .as(MimeConstants.MIME_PDF)
             .withHeaders(
-              CONTENT_TYPE        -> "application/x-download",
               CONTENT_DISPOSITION -> s"attachment; filename=${filename.replaceAll(" ", "-")}.pdf"
             )
         )

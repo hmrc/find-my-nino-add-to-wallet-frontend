@@ -53,11 +53,11 @@ class IndividualDetailsConnectorSpec
       val httpClientV2       = inject[HttpClientV2]
       val appConfig          = inject[FrontendAppConfig]
       val httpClientResponse = inject[HttpClientResponse]
-      new DefaultIndividualDetailsConnector(httpClientV2, appConfig, httpClientResponse)
+      new IndividualDetailsConnector(httpClientV2, appConfig, httpClientResponse)
     }
   }
 
-  "DefaultIndividualDetailsConnector#getIndividualDetails" should {
+  "IndividualDetailsConnector#getIndividualDetails" should {
 
     "return IndividualDetailsDataCache when API call succeeds" in new Setup {
       stubGet(url, OK, Some(jsonBody))

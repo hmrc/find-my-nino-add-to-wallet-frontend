@@ -56,11 +56,11 @@ class IndividualDetailsConnectorSpec
   implicit val hc: HeaderCarrier    = HeaderCarrier()
   implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
 
-  lazy val connector: DefaultIndividualDetailsConnector = {
+  lazy val connector: IndividualDetailsConnector = {
     val httpClientV2       = app.injector.instanceOf[HttpClientV2]
     val frontendAppConfig  = app.injector.instanceOf[FrontendAppConfig]
     val httpClientResponse = app.injector.instanceOf[HttpClientResponse]
-    new DefaultIndividualDetailsConnector(httpClientV2, frontendAppConfig, httpClientResponse)
+    new IndividualDetailsConnector(httpClientV2, frontendAppConfig, httpClientResponse)
   }
 
   val nino: String                                     = "AA123456A"
@@ -77,7 +77,7 @@ class IndividualDetailsConnectorSpec
       get(url).willReturn(response)
     }
 
-  "DefaultIndividualDetailsConnector#getIndividualDetails" should {
+  "IndividualDetailsConnector#getIndividualDetails" should {
 
     "should return IndividualDetailsDataCache when API call succeeds" in {
       stubGet(url, OK, Some(fakeIndividualDetailsJson))
@@ -102,7 +102,7 @@ class IndividualDetailsConnectorSpec
     }
   }
 
-  "DefaultIndividualDetailsConnector#deleteIndividualDetails" must {
+  "IndividualDetailsConnector#deleteIndividualDetails" must {
     "return false for deleteIndividualDetails" in {
       val result = connector.deleteIndividualDetails(nino).futureValue
       result mustBe false

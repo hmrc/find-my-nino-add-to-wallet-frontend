@@ -16,14 +16,13 @@
 
 package config
 
-import connectors.{CachingIndividualDetailsConnector, DefaultIndividualDetailsConnector, IndividualDetailsConnector}
 import controllers.actions.*
 import org.apache.fop.apps.FopFactory
+import play.api.inject.{Binding, Module}
 import play.api.{Configuration, Environment}
 import repositories.{EncryptedIndividualDetailsRepository, IndividualDetailsRepoTrait, IndividualDetailsRepository}
 import util.{BaseResourceStreamResolver, DefaultFopURIResolver, DefaultResourceStreamResolver, FopURIResolver}
 import views.html.templates.{LayoutProvider, NewLayoutProvider}
-import play.api.inject.{Binding, Module}
 
 import java.time.{Clock, ZoneOffset}
 
@@ -39,8 +38,6 @@ class HmrcModule extends Module {
       bind[FopURIResolver].to(classOf[DefaultFopURIResolver]),
       bind[BaseResourceStreamResolver].to(classOf[DefaultResourceStreamResolver]),
       bind[LayoutProvider].to(classOf[NewLayoutProvider]),
-      bind[IndividualDetailsConnector].qualifiedWith("default").to(classOf[DefaultIndividualDetailsConnector]),
-      bind[IndividualDetailsConnector].to(classOf[CachingIndividualDetailsConnector]),
       if (encryptionEnabled) {
         bind[IndividualDetailsRepoTrait]
           .to(classOf[EncryptedIndividualDetailsRepository])

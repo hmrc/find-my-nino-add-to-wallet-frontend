@@ -21,33 +21,20 @@ import com.google.inject.{Inject, Singleton}
 import config.FrontendAppConfig
 import models.individualDetails.*
 import play.api.Logging
-import repositories.IndividualDetailsRepoTrait
 import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps, UpstreamErrorResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait IndividualDetailsConnector {
-  def getIndividualDetails(nino: String, sessionId: String)(implicit
-    hc: HeaderCarrier,
-    ec: ExecutionContext
-  ): EitherT[Future, UpstreamErrorResponse, IndividualDetailsDataCache]
-
-  def deleteIndividualDetails(nino: String)(implicit
-    ec: ExecutionContext
-  ): Future[Boolean]
-}
-
 @Singleton
-class DefaultIndividualDetailsConnector @Inject() (
+class IndividualDetailsConnector @Inject() (
   httpClient: HttpClientV2,
   appConfig: FrontendAppConfig,
   httpClientResponse: HttpClientResponse
-) extends IndividualDetailsConnector
-    with Logging {
+) extends Logging {
 
-  override def getIndividualDetails(nino: String, sessionId: String)(implicit
+  def getIndividualDetails(nino: String, sessionId: String)(implicit
     hc: HeaderCarrier,
     ec: ExecutionContext
   ): EitherT[Future, UpstreamErrorResponse, IndividualDetailsDataCache] = {
@@ -78,44 +65,6 @@ class DefaultIndividualDetailsConnector @Inject() (
       }
   }
 
-  override def deleteIndividualDetails(nino: String)(implicit ec: ExecutionContext): Future[Boolean] =
+  def deleteIndividualDetails(nino: String)(implicit ec: ExecutionContext): Future[Boolean] =
     Future.successful(false)
-}
-
-@Singleton
-class CachingIndividualDetailsConnector @Inject() (
-  @javax.inject.Named("default") underlying: IndividualDetailsConnector,
-  repo: IndividualDetailsRepoTrait
-) extends IndividualDetailsConnector
-    with Logging {
-
-  override def getIndividualDetails(nino: String, sessionId: String)(implicit
-    hc: HeaderCarrier,
-    ec: ExecutionContext
-  ): EitherT[Future, UpstreamErrorResponse, IndividualDetailsDataCache] =
-    EitherT {
-      repo
-        .findIndividualDetailsDataByNino(nino)
-        .flatMap {
-          case Some(cache) =>
-            logger.info(s"[Cache Hit] Individual details for NINO: $nino")
-            Future.successful(Right(cache))
-
-          case None =>
-            logger.info(s"[Cache Miss] Fetching individual details for NINO: $nino")
-            underlying
-              .getIndividualDetails(nino, sessionId)
-              .semiflatMap { fetched =>
-                repo.insertOrReplaceIndividualDetailsDataCache(fetched).map(_ => fetched)
-              }
-              .value
-        }
-        .recover { case ex =>
-          logger.warn(s"[Cache Error] Failed to lookup individual details for NINO: $nino - ${ex.getMessage}")
-          Left(UpstreamErrorResponse(s"Cache error: ${ex.getMessage}", 500))
-        }
-    }
-
-  override def deleteIndividualDetails(nino: String)(implicit ec: ExecutionContext): Future[Boolean] =
-    repo.deleteIndividualDetailsDataByNino(nino).map(_.wasAcknowledged())
 }

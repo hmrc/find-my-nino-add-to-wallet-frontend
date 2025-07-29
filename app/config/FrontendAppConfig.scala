@@ -59,10 +59,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
     "cy" -> Lang("cy")
   )
 
-  val cacheTtl: Long                  = configuration.get[Int]("mongodb.timeToLiveInSeconds")
-  val individualDetailsCacheTtl: Long = configuration.get[Int]("mongodb.individualDetailsTtlInSeconds")
-
-  val encryptionKey: String = configuration.get[String]("mongodb.encryption.key")
+  val cacheTtl: Long = configuration.get[Int]("mongodb.timeToLiveInSeconds")
 
   val crnUpliftAPIAlreadyAdultErrorCode: String = configuration.get[String]("crnUpliftAPI.alreadyAnAdultErrorCode")
 

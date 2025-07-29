@@ -20,7 +20,6 @@ import controllers.actions.*
 import org.apache.fop.apps.FopFactory
 import play.api.inject.{Binding, Module}
 import play.api.{Configuration, Environment}
-import repositories.{EncryptedIndividualDetailsRepository, IndividualDetailsRepoTrait, IndividualDetailsRepository}
 import util.{BaseResourceStreamResolver, DefaultFopURIResolver, DefaultResourceStreamResolver, FopURIResolver}
 import views.html.templates.{LayoutProvider, NewLayoutProvider}
 
@@ -28,8 +27,7 @@ import java.time.{Clock, ZoneOffset}
 
 class HmrcModule extends Module {
 
-  override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = {
-    val encryptionEnabled = configuration.get[Boolean]("mongodb.encryption.enabled")
+  override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] =
     // For session based storage instead of cred based, change to SessionIdentifierAction
     Seq(
       bind[IdentifierAction].to(classOf[SessionIdentifierAction]),
@@ -37,14 +35,6 @@ class HmrcModule extends Module {
       bind[FopFactory].toProvider(classOf[FopFactoryProvider]),
       bind[FopURIResolver].to(classOf[DefaultFopURIResolver]),
       bind[BaseResourceStreamResolver].to(classOf[DefaultResourceStreamResolver]),
-      bind[LayoutProvider].to(classOf[NewLayoutProvider]),
-      if (encryptionEnabled) {
-        bind[IndividualDetailsRepoTrait]
-          .to(classOf[EncryptedIndividualDetailsRepository])
-      } else {
-        bind[IndividualDetailsRepoTrait]
-          .to(classOf[IndividualDetailsRepository])
-      }
+      bind[LayoutProvider].to(classOf[NewLayoutProvider])
     )
-  }
 }

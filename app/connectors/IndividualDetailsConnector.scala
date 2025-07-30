@@ -37,7 +37,7 @@ class IndividualDetailsConnector @Inject() (
   def getIndividualDetails(nino: String, sessionId: String)(implicit
     hc: HeaderCarrier,
     ec: ExecutionContext
-  ): EitherT[Future, UpstreamErrorResponse, IndividualDetailsDataCache] = {
+  ): EitherT[Future, UpstreamErrorResponse, IndividualDetailsData] = {
     val url =
       s"${appConfig.individualDetailsServiceUrl}/find-my-nino-add-to-wallet/individuals/details/NINO/${nino.take(8)}/Y"
 
@@ -47,7 +47,7 @@ class IndividualDetailsConnector @Inject() (
           .get(url"$url")
           .execute[Either[UpstreamErrorResponse, HttpResponse]]
       )
-      .map(_.json.as[IndividualDetailsDataCache])
+      .map(_.json.as[IndividualDetailsData])
   }
 
   def deleteIndividualDetails(nino: String)(implicit ec: ExecutionContext): Future[Boolean] =

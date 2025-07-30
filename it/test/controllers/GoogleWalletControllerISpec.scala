@@ -21,7 +21,7 @@ import com.github.tomakehurst.wiremock.client.WireMock._
 import config.FrontendAppConfig
 import controllers.auth.requests.UserRequest
 import controllers.auth.routes
-import models.individualDetails.IndividualDetailsDataCache
+import models.individualDetails.IndividualDetailsData
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.scalatest.Assertion
@@ -51,7 +51,7 @@ class GoogleWalletControllerISpec extends IntegrationSpecBase {
     def buildUserRequest[A](
       nino: Option[Nino] = Some(generatedNino),
       confidenceLevel: ConfidenceLevel = ConfidenceLevel.L200,
-      individualDetailsData: IndividualDetailsDataCache = Fixtures.fakeIndividualDetailsDataCache,
+      individualDetailsData: IndividualDetailsData = Fixtures.fakeIndividualDetailsData,
       request: Request[A] = FakeRequest().asInstanceOf[Request[A]]
     ): UserRequest[A] =
       UserRequest(

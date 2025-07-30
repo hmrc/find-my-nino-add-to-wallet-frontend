@@ -16,7 +16,7 @@
 
 package util
 
-import models.individualDetails.{AddressData, AddressLine, AddressType, IndividualDetailsDataCache}
+import models.individualDetails.{AddressData, AddressLine, AddressType, IndividualDetailsData}
 import play.api.libs.json.{Format, JsValue, Json, OFormat}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
@@ -110,8 +110,8 @@ object AuditUtils {
       }
     )
 
-  private def getIndividualsAddress(individualDetailsDataCache: IndividualDetailsDataCache): AuditAddress =
-    individualDetailsDataCache.individualDetailsData.address match {
+  private def getIndividualsAddress(individualDetailsDataCache: IndividualDetailsData): AuditAddress =
+    individualDetailsDataCache.address match {
       case Some(a: AddressData) => getAuditAddress(a)
       case _                    => getAuditAddress(emptyAddress)
     }
@@ -139,7 +139,7 @@ object AuditUtils {
   }
 
   private def buildDetails(
-    individualDetailsDataCache: IndividualDetailsDataCache,
+    individualDetailsDataCache: IndividualDetailsData,
     journeyId: String,
     hc: HeaderCarrier,
     walletProvider: Option[String]
@@ -152,8 +152,8 @@ object AuditUtils {
     YourDetailsAuditEvent(
       journeyId,
       timestamp(),
-      individualDetailsDataCache.individualDetailsData.nino,
-      name = individualDetailsDataCache.individualDetailsData.fullName,
+      individualDetailsDataCache.nino,
+      name = individualDetailsDataCache.fullName,
       mainAddress = mainAddress,
       device = Some(strDevice),
       language = strLang,
@@ -165,7 +165,7 @@ object AuditUtils {
     java.time.Instant.now().atOffset(ZoneOffset.UTC).format(DateTimeFormatter.ISO_DATE_TIME)
 
   def buildAuditEvent(
-    individualDetailsDataCache: IndividualDetailsDataCache,
+    individualDetailsDataCache: IndividualDetailsData,
     auditType: String,
     appName: String,
     walletProvider: Option[String]

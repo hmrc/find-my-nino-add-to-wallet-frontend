@@ -65,7 +65,7 @@ class IndividualDetailsConnectorSpec
 
   val nino: String                                     = "AA123456A"
   val sessionId: String                                = "test-session-id"
-  val fakeIndividualDetailsJson: String                = Json.toJson(fakeIndividualDetailsDataCache).toString()
+  val fakeIndividualDetailsJson: String                = Json.toJson(fakeIndividualDetailsData).toString()
   val url: String                                      = s"/find-my-nino-add-to-wallet/individuals/details/NINO/${nino.take(8)}/Y"
   implicit override val patienceConfig: PatienceConfig =
     PatienceConfig(timeout = Span(2, Seconds), interval = Span(50, Millis))
@@ -79,14 +79,14 @@ class IndividualDetailsConnectorSpec
 
   "IndividualDetailsConnector#getIndividualDetails" should {
 
-    "should return IndividualDetailsDataCache when API call succeeds" in {
+    "should return IndividualDetailsData when API call succeeds" in {
       stubGet(url, OK, Some(fakeIndividualDetailsJson))
 
       val result = connector.getIndividualDetails(nino, "testSessionId").value
 
       whenReady(result) {
         case Right(cache) =>
-          cache.individualDetailsData.nino mustBe "AB123456C"
+          cache.nino mustBe "AB123456C"
         case Left(err)    =>
           fail(s"Expected Right but got Left: $err")
       }

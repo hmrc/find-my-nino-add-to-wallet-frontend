@@ -27,7 +27,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import services.{IndividualDetailsService, NPSService}
 import uk.gov.hmrc.http.UpstreamErrorResponse
-import util.Fixtures.{fakeIndividualDetailsDataCache, fakeIndividualDetailsDataCacheWithCRN}
+import util.Fixtures.{fakeIndividualDetailsData, fakeIndividualDetailsDataWithCRN}
 import util.IndividualDetailsFixtures
 import util.Stubs.userLoggedInFMNUser
 import util.TestData.NinoUser
@@ -59,7 +59,7 @@ class NinoLetterControllerSpec extends SpecBase with IndividualDetailsFixtures w
 
       when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
         .thenReturn(
-          EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCache)
+          EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsData)
         )
 
       when(mockFandFConnector.getTrustedHelper()(any())).thenReturn(Future.successful(None))
@@ -89,7 +89,7 @@ class NinoLetterControllerSpec extends SpecBase with IndividualDetailsFixtures w
 
       when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
         .thenReturn(
-          EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCache)
+          EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsData)
         )
 
       val application = applicationBuilderWithConfig()
@@ -114,8 +114,8 @@ class NinoLetterControllerSpec extends SpecBase with IndividualDetailsFixtures w
       userLoggedInFMNUser(NinoUser)
       when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
         .thenReturn(
-          EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCacheWithCRN),
-          EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCache)
+          EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataWithCRN),
+          EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsData)
         )
       when(mockIndividualDetailsService.deleteIdData(any())(any()))
         .thenReturn(Future.successful(true))
@@ -151,7 +151,7 @@ class NinoLetterControllerSpec extends SpecBase with IndividualDetailsFixtures w
 
       when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
         .thenReturn(
-          EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCache)
+          EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsData)
         )
 
       when(mockFandFConnector.getTrustedHelper()(any())).thenReturn(Future.successful(None))

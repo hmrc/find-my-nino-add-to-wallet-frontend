@@ -17,7 +17,7 @@
 package util
 
 import controllers.auth.requests.UserRequest
-import models.individualDetails.IndividualDetailsDataCache
+import models.individualDetails.IndividualDetailsData
 import play.api.mvc.Request
 import uk.gov.hmrc.auth.core.retrieve.v2.TrustedHelper
 import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolments}
@@ -28,7 +28,7 @@ object UserRequestFixture {
   def buildUserRequest[A](
     nino: Option[Nino] = Some(Fixtures.fakeNino),
     confidenceLevel: ConfidenceLevel = ConfidenceLevel.L200,
-    individualDetailsData: IndividualDetailsDataCache = Fixtures.fakeIndividualDetailsDataCache,
+    individualDetailsData: IndividualDetailsData = Fixtures.fakeIndividualDetailsData,
     enrolments: Enrolments,
     request: Request[A],
     trustedHelper: Option[TrustedHelper] = None

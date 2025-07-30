@@ -19,7 +19,7 @@ package controllers
 import config.FrontendAppConfig
 import connectors.{AppleWalletConnector, FandFConnector, GoogleWalletConnector}
 import controllers.actions.CheckChildRecordActionWithCacheInvalidation
-import models.individualDetails.IndividualDetailsDataCache
+import models.individualDetails.IndividualDetailsData
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc.*
 import play.api.{Configuration, Environment}
@@ -61,7 +61,7 @@ class StoreMyNinoController @Inject() (
 
       auditSMNLandingPage("ViewNinoLanding", userRequestNew.individualDetails, hc)
 
-      val fullName = userRequestNew.individualDetails.individualDetailsData.fullName
+      val fullName = userRequestNew.individualDetails.fullName
 
       val result = for {
         googleId <- googleWalletConnector.createGooglePass(fullName, ninoFormatted)
@@ -102,7 +102,7 @@ class StoreMyNinoController @Inject() (
 
   private def auditSMNLandingPage(
     event: String,
-    individualDetailsDataCache: IndividualDetailsDataCache,
+    individualDetailsDataCache: IndividualDetailsData,
     hc: HeaderCarrier
   ): Unit =
     auditService.audit(

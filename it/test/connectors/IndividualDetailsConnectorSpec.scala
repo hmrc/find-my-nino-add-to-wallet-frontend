@@ -17,14 +17,14 @@
 package connectors
 
 import config.FrontendAppConfig
-import models.individualDetails.IndividualDetailsDataCache
+import models.individualDetails.IndividualDetailsData
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.Application
 import play.api.libs.json.Json
 import play.api.test.{DefaultAwaitTimeout, Injecting}
 import uk.gov.hmrc.http.UpstreamErrorResponse
 import uk.gov.hmrc.http.client.HttpClientV2
-import util.Fixtures.fakeIndividualDetailsDataCache
+import util.Fixtures.fakeIndividualDetailsData
 import util.WireMockHelper
 
 class IndividualDetailsConnectorSpec
@@ -47,7 +47,7 @@ class IndividualDetailsConnectorSpec
     val url: String       =
       s"/find-my-nino-add-to-wallet/individuals/details/NINO/${nino.take(8)}/Y"
 
-    val jsonBody: String = Json.toJson(fakeIndividualDetailsDataCache).toString()
+    val jsonBody: String = Json.toJson(fakeIndividualDetailsData).toString()
 
     lazy val connector: IndividualDetailsConnector = {
       val httpClientV2       = inject[HttpClientV2]
@@ -59,17 +59,17 @@ class IndividualDetailsConnectorSpec
 
   "IndividualDetailsConnector#getIndividualDetails" should {
 
-    "return IndividualDetailsDataCache when API call succeeds" in new Setup {
+    "return IndividualDetailsData when API call succeeds" in new Setup {
       stubGet(url, OK, Some(jsonBody))
 
-      val result: Either[UpstreamErrorResponse, IndividualDetailsDataCache] =
+      val result: Either[UpstreamErrorResponse, IndividualDetailsData] =
         connector.getIndividualDetails(nino, sessionId).value.futureValue
 
       result mustBe a[Right[_, _]]
       result match {
-        case Right(cache: IndividualDetailsDataCache) =>
-          cache.individualDetailsData.nino mustBe fakeIndividualDetailsDataCache.individualDetailsData.nino
-        case _                                        => fail("Expected Right[IndividualDetailsDataCache]")
+        case Right(cache: IndividualDetailsData) =>
+          cache.nino mustBe fakeIndividualDetailsData.nino
+        case _                                   => fail("Expected Right[IndividualDetailsData]")
       }
     }
 
@@ -85,7 +85,7 @@ class IndividualDetailsConnectorSpec
       s"return UpstreamErrorResponse($errorStatus) when API call fails" in new Setup {
         stubGet(url, errorStatus, None)
 
-        val result: Either[UpstreamErrorResponse, IndividualDetailsDataCache] =
+        val result: Either[UpstreamErrorResponse, IndividualDetailsData] =
           connector.getIndividualDetails(nino, sessionId).value.futureValue
 
         result mustBe a[Left[UpstreamErrorResponse, _]]

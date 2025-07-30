@@ -19,7 +19,7 @@ package services
 import cats.data.EitherT
 import cats.instances.future.*
 import connectors.IndividualDetailsConnector
-import models.individualDetails.IndividualDetailsDataCache
+import models.individualDetails.IndividualDetailsData
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.*
 import org.scalatest.concurrent.ScalaFutures
@@ -45,11 +45,11 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec with ScalaFutures with Mo
     val service       = new IndividualDetailsServiceImpl(mockConnector)
 
     when(mockConnector.getIndividualDetails(any, any)(any, any))
-      .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCache))
+      .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsData))
 
     val result = service.getIdData("testNino", "testSessionId").value
 
-    result.futureValue shouldBe Right(fakeIndividualDetailsDataCache)
+    result.futureValue shouldBe Right(fakeIndividualDetailsData)
   }
 
   it should "propagate UpstreamErrorResponse when connector returns an error" in {
@@ -58,7 +58,7 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec with ScalaFutures with Mo
     val error         = UpstreamErrorResponse("Not found", 404)
 
     when(mockConnector.getIndividualDetails(any, any)(any, any))
-      .thenReturn(EitherT.leftT[Future, IndividualDetailsDataCache](error))
+      .thenReturn(EitherT.leftT[Future, IndividualDetailsData](error))
 
     val result = service.getIdData("testNino", "testSessionId").value
 

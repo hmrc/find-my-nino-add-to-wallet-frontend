@@ -20,7 +20,7 @@ import base.SpecBase
 import cats.data.EitherT
 import connectors.*
 import controllers.auth.requests.UserRequest
-import models.individualDetails.IndividualDetailsDataCache
+import models.individualDetails.IndividualDetailsData
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{reset, times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
@@ -32,7 +32,7 @@ import services.{IndividualDetailsService, NPSService}
 import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolment, Enrolments}
 import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
-import util.Fixtures.{fakeIndividualDetailsDataCache, fakeIndividualDetailsDataCacheWithCRN}
+import util.Fixtures.{fakeIndividualDetailsData, fakeIndividualDetailsDataWithCRN}
 import util.IndividualDetailsFixtures
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
 import util.TestData.{NinoUser, NinoUserNoEnrolments, NinoUser_With_CL50, NinoUser_With_Credential_Strength_Weak, trustedHelper}
@@ -60,7 +60,7 @@ class StoreMyNinoControllerSpec
 
     reset(mockIndividualDetailsService)
     when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
-      .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCache))
+      .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsData))
 
     reset(mockNPSService)
 
@@ -133,7 +133,7 @@ class StoreMyNinoControllerSpec
         val userRequest = UserRequest(
           None,
           ConfidenceLevel.L200,
-          fakeIndividualDetailsDataCache,
+          fakeIndividualDetailsData,
           Enrolments(Set(Enrolment("HMRC-PT"))),
           request.withAttrs(requestAttributeMap),
           None
@@ -181,7 +181,7 @@ class StoreMyNinoControllerSpec
         val userRequest = UserRequest(
           None,
           ConfidenceLevel.L200,
-          fakeIndividualDetailsDataCache,
+          fakeIndividualDetailsData,
           Enrolments(Set(Enrolment("HMRC-PT"))),
           request.withAttrs(requestAttributeMap),
           Some(trustedHelper)
@@ -269,7 +269,7 @@ class StoreMyNinoControllerSpec
         .thenReturn(Future.successful(true))
 
       when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
-        .thenReturn(EitherT.leftT[Future, IndividualDetailsDataCache](UpstreamErrorResponse("Not Found", NOT_FOUND)))
+        .thenReturn(EitherT.leftT[Future, IndividualDetailsData](UpstreamErrorResponse("Not Found", NOT_FOUND)))
 
       val application =
         applicationBuilderWithConfig()
@@ -299,7 +299,7 @@ class StoreMyNinoControllerSpec
         .thenReturn(Future.successful(true))
 
       when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
-        .thenReturn(EitherT.leftT[Future, IndividualDetailsDataCache](UpstreamErrorResponse(" ", UNPROCESSABLE_ENTITY)))
+        .thenReturn(EitherT.leftT[Future, IndividualDetailsData](UpstreamErrorResponse(" ", UNPROCESSABLE_ENTITY)))
 
       val application =
         applicationBuilderWithConfig()
@@ -375,7 +375,7 @@ class StoreMyNinoControllerSpec
         val userRequest = UserRequest(
           None,
           ConfidenceLevel.L200,
-          fakeIndividualDetailsDataCache,
+          fakeIndividualDetailsData,
           Enrolments(Set(Enrolment("HMRC-PT"))),
           request,
           None
@@ -439,7 +439,7 @@ class StoreMyNinoControllerSpec
         val userRequest = UserRequest(
           None,
           ConfidenceLevel.L200,
-          fakeIndividualDetailsDataCache,
+          fakeIndividualDetailsData,
           Enrolments(Set(Enrolment("HMRC-PT"))),
           request,
           None
@@ -604,8 +604,8 @@ class StoreMyNinoControllerSpec
 
       when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
         .thenReturn(
-          EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCacheWithCRN),
-          EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCache)
+          EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataWithCRN),
+          EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsData)
         )
       when(mockIndividualDetailsService.deleteIdData(any())(any()))
         .thenReturn(Future.successful(true))
@@ -636,7 +636,7 @@ class StoreMyNinoControllerSpec
         val userRequest = UserRequest(
           None,
           ConfidenceLevel.L200,
-          fakeIndividualDetailsDataCache,
+          fakeIndividualDetailsData,
           Enrolments(Set(Enrolment("HMRC-PT"))),
           request.withAttrs(requestAttributeMap),
           None
@@ -659,7 +659,7 @@ class StoreMyNinoControllerSpec
         .thenReturn(Future.successful(true))
 
       when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
-        .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCacheWithCRN))
+        .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataWithCRN))
 
       val app =
         applicationBuilderWithConfig()
@@ -694,7 +694,7 @@ class StoreMyNinoControllerSpec
         .thenReturn(Future.successful(true))
 
       when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
-        .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCacheWithCRN))
+        .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataWithCRN))
       when(mockNPSService.upliftCRN(any(), any())(any()))
         .thenReturn(EitherT.leftT[Future, Boolean](UpstreamErrorResponse(" ", INTERNAL_SERVER_ERROR)))
 

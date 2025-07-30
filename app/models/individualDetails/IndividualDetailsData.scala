@@ -75,17 +75,17 @@ object IndividualDetailsData {
     )
 }
 
-case class IndividualDetailsDataCache(
-  id: String,
-  individualDetailsData: IndividualDetailsData
-)
+//case class IndividualDetailsData(
+//  id: String,
+//  individualDetailsData: IndividualDetailsData
+//)
 
-object IndividualDetailsDataCache {
-
-  implicit val individualDetailsDataCacheFormat: Format[IndividualDetailsDataCache] =
-    ((__ \ "id").format[String]
-      ~ (__ \ "individualDetails").format[IndividualDetailsData])(
-      IndividualDetailsDataCache.apply,
-      unlift(iddc => Some(Tuple2(iddc.id, iddc.individualDetailsData)))
-    )
-}
+//object IndividualDetailsData {
+//
+//  implicit val individualDetailsDataCacheFormat: Format[IndividualDetailsData] =
+//    ((__ \ "id").format[String]
+//      ~ (__ \ "individualDetails").format[IndividualDetailsData])(
+//      IndividualDetailsData.apply,
+//      unlift(iddc => Some(Tuple2(iddc.id, iddc)))
+//    )
+//}

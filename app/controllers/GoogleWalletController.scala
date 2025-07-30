@@ -19,7 +19,7 @@ package controllers
 import config.FrontendAppConfig
 import connectors.{FandFConnector, GoogleWalletConnector}
 import controllers.actions.CheckChildRecordAction
-import models.individualDetails.IndividualDetailsDataCache
+import models.individualDetails.IndividualDetailsData
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc.*
 import play.api.{Configuration, Environment}
@@ -65,7 +65,7 @@ class GoogleWalletController @Inject() (
         auditGoogleWallet("ViewWalletPage", userRequestNew.individualDetails, hc)
         val nino: String  = userRequestNew.nino.getOrElse(throw new IllegalArgumentException("No nino found")).nino
         val ninoFormatted = nino.grouped(2).mkString(" ")
-        val fullName      = userRequestNew.individualDetails.individualDetailsData.fullName
+        val fullName      = userRequestNew.individualDetails.fullName
         googleWalletConnector
           .createGooglePass(fullName, ninoFormatted)
           .fold(
@@ -144,7 +144,7 @@ class GoogleWalletController @Inject() (
 
   def auditGoogleWallet(
     eventType: String,
-    individualDetailsDataCache: IndividualDetailsDataCache,
+    individualDetailsDataCache: IndividualDetailsData,
     hc: HeaderCarrier
   ): Unit =
     auditService.audit(

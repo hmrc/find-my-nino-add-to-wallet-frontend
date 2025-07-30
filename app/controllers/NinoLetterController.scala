@@ -20,7 +20,7 @@ import config.FrontendAppConfig
 import connectors.FandFConnector
 import controllers.actions.CheckChildRecordActionWithCacheInvalidation
 import controllers.auth.requests.UserRequest
-import models.individualDetails.IndividualDetailsDataCache
+import models.individualDetails.IndividualDetailsData
 import org.apache.xmlgraphics.util.MimeConstants
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
@@ -96,7 +96,7 @@ class NinoLetterController @Inject() (
     }
 
   private def createPDF(
-    individualDetailsDataCache: IndividualDetailsDataCache,
+    individualDetailsDataCache: IndividualDetailsData,
     userRequestNew: UserRequest[AnyContent]
   ): Future[Array[Byte]] = {
     implicit val messages: Messages = cc.messagesApi.preferred(userRequestNew.request)
@@ -107,7 +107,7 @@ class NinoLetterController @Inject() (
 
   private def auditNinoLetter(
     eventType: String,
-    individualDetailsDataCache: IndividualDetailsDataCache,
+    individualDetailsDataCache: IndividualDetailsData,
     hc: HeaderCarrier
   ): Unit =
     auditService.audit(

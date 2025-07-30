@@ -1,8 +1,8 @@
-@import models.individualDetails.IndividualDetailsDataCache
+@import models.individualDetails.IndividualDetailsData
 
         @this()
 
-        @(individualDetailsDataCache: IndividualDetailsDataCache, date: String, lang: String)(implicit messages: Messages)
+        @(individualDetailsDataCache: IndividualDetailsData, date: String, lang: String)(implicit messages: Messages)
 
 
         <!-- example for a simple fo file. At the beginning the page layout is set.
@@ -141,9 +141,9 @@
                     <fo:block>
                         <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal"
                                   line-height="12pt">
-                            <fo:block>@individualDetailsDataCache.individualDetailsData.initialsName</fo:block>
+                            <fo:block>@individualDetailsDataCache.initialsName</fo:block>
                         </fo:block>
-                        @individualDetailsDataCache.individualDetailsData.getAddressLines.map { line =>
+                        @individualDetailsDataCache.getAddressLines.map { line =>
                         <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal"
                                   line-height="12pt">
                             <fo:block>@line</fo:block>
@@ -151,7 +151,7 @@
                         }
                         <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal"
                                   line-height="12pt">
-                            <fo:block>@individualDetailsDataCache.individualDetailsData.getPostCode.getOrElse("").toUpperCase</fo:block>
+                            <fo:block>@individualDetailsDataCache.getPostCode.getOrElse("").toUpperCase</fo:block>
                         </fo:block>
                     </fo:block>
                 </fo:inline-container>
@@ -206,7 +206,7 @@
             <!-- name and title -->
             <fo:block font-size="10.5pt" font-family="OpenSans" font-weight="normal" line-height="12pt"
                       padding-after="6px" padding-before="6px">
-                @individualDetailsDataCache.individualDetailsData.fullName
+                @individualDetailsDataCache.fullName
             </fo:block>
             <!-- end name and title -->
 
@@ -226,7 +226,7 @@
                           text-align="center"
                           font-family="OpenSans-Bold"
                           font-weight="bold">
-                    @individualDetailsDataCache.individualDetailsData.nino.grouped(2).mkString(" ")
+                    @individualDetailsDataCache.nino.grouped(2).mkString(" ")
                 </fo:block>
             </fo:block>
             <fo:block role="P"

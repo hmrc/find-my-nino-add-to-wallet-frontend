@@ -280,22 +280,7 @@ object Fixtures extends IndividualDetailsFixtures {
     addressType = AddressType.ResidentialAddress
   )
 
-//  val fakeIndividualDetails: IndividualDetails = IndividualDetails(
-//    ninoWithoutSuffix = "AB123456",
-//    ninoSuffix = Some(NinoSuffix("C")),
-//    dateOfBirth = LocalDate.of(1990, 1, 1),
-//    crnIndicator = CrnIndicator.False,
-//    nameList = NameList(List(fakeName)),
-//    addressList = AddressList(Some(List(fakeAddress)))
-//  )
-
-//  val fakeIndividualDetailsWithKnownAsName =
-//    fakeIndividualDetails.copy(nameList = NameList(List(fakeName, fakeKnownAsName)))
-//
-//  val fakeIndividualDetailsWithoutMiddleName =
-//    fakeIndividualDetails.copy(nameList = NameList(List(fakeNameWithoutMiddleName)))
-
-  val fakeIndividualDetailsData = IndividualDetailsData(
+  val fakeIndividualDetailsData: IndividualDetailsData = IndividualDetailsData(
     fullName = "Dr Firstname Middlename Lastname Phd.",
     firstForename = Some("Firstname"),
     surname = Some("Lastname"),
@@ -306,20 +291,8 @@ object Fixtures extends IndividualDetailsFixtures {
     crnIndicator = "false"
   )
 
-  val fakeIndividualDetailsDataNoAddress = fakeIndividualDetailsData.copy(address = None)
+  val fakeIndividualDetailsDataNoAddress: IndividualDetailsData = fakeIndividualDetailsData.copy(address = None)
 
-  val fakeIndividualDetailsDataCache = IndividualDetailsDataCache(
-    id = "some-fake-Id",
-    individualDetailsData = fakeIndividualDetailsData
-  )
+  val fakeIndividualDetailsDataWithCRN: IndividualDetailsData = fakeIndividualDetailsData.copy(crnIndicator = "true")
 
-  val fakeIndividualDetailsDataCacheNoAddress = IndividualDetailsDataCache(
-    "some-fake-Id",
-    fakeIndividualDetailsDataNoAddress
-  )
-
-  val fakeIndividualDetailsDataWithCRN = fakeIndividualDetailsData.copy(crnIndicator = "true")
-
-  val fakeIndividualDetailsDataCacheWithCRN =
-    fakeIndividualDetailsDataCache.copy(individualDetailsData = fakeIndividualDetailsDataWithCRN)
 }

@@ -180,8 +180,9 @@ class ActionHelperISpec
                 .toJson(
                   fakeIndividualDetailsDataCache.copy(
                     individualDetailsData = fakeIndividualDetailsDataCache.individualDetailsData.copy(
-                      crnIndicator = "true"
-//                    fullName = NameList(List(fakeName.copy(firstForename = None, surname = None)))
+                      crnIndicator = "true",
+                      firstForename = None,
+                      surname = None
                     )
                   )
                 )

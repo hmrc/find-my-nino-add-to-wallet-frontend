@@ -30,7 +30,22 @@ case class IndividualDetailsData(
   nino: String,
   address: Option[AddressData],
   crnIndicator: String
-)
+) {
+  def getAddressLines: List[String] =
+    address match {
+      case Some(address) =>
+        List(
+          address.addressLine1.value,
+          address.addressLine2.value,
+          address.addressLine3.map(_.value).getOrElse(""),
+          address.addressLine4.map(_.value).getOrElse(""),
+          address.addressLine5.map(_.value).getOrElse("")
+        ).filter(_.nonEmpty)
+      case _             => List.empty
+    }
+
+  def getPostCode: Option[String] = address.flatMap(_.addressPostcode.map(_.value))
+}
 
 object IndividualDetailsData {
   implicit val individualDetailsDataFormat: Format[IndividualDetailsData] =
@@ -63,24 +78,7 @@ object IndividualDetailsData {
 case class IndividualDetailsDataCache(
   id: String,
   individualDetailsData: IndividualDetailsData
-) {
-
-  def getAddressLines: List[String] =
-    individualDetailsData.address match {
-      case Some(address) =>
-        List(
-          address.addressLine1.value,
-          address.addressLine2.value,
-          address.addressLine3.map(_.value).getOrElse(""),
-          address.addressLine4.map(_.value).getOrElse(""),
-          address.addressLine5.map(_.value).getOrElse("")
-        ).filter(_.nonEmpty)
-      case _             => List.empty
-    }
-
-  def getPostCode: Option[String] =
-    individualDetailsData.address.flatMap(addr => addr.addressPostcode.map(postcode => postcode.value))
-}
+)
 
 object IndividualDetailsDataCache {
 

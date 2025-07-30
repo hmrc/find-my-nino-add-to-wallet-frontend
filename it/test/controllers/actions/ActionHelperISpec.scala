@@ -170,30 +170,31 @@ class ActionHelperISpec
       userRequest.enrolments mustBe Enrolments(Set(Enrolment("HMRC-PT")))
     }
 
-//    "return 500 with TechnicalIssuesNoRetryView when CRN uplift fails because no name is available" in {
-//
-//      server.stubFor(
-//        get(urlEqualTo(s"/find-my-nino-add-to-wallet/individuals/details/NINO/${nino.take(8)}/Y"))
-//          .willReturn(
-//            okJson(
-//              Json
-//                .toJson(
-//                  fakeIndividualDetailsDataCache.copy(
-//                    individualDetailsData = fakeIndividualDetailsDataCache.individualDetailsData.copy(
-//                    crnIndicator = "true",
-//                    nameList = NameList(List(fakeName.copy(firstForename = None, surname = None)))
-//                  )
-//                )
-//                .toString()
-//            )
-//          )
-//      )
-//
-//      val result = actionHelper.checkForCrn(nino, sessionId, fakeAuthContext, messages).futureValue
-//
-//      result mustBe a[Left[_, _]]
-//      result.swap.getOrElse(Results.Ok("")).header.status mustBe INTERNAL_SERVER_ERROR
-//    }
+    "return 500 with TechnicalIssuesNoRetryView when CRN uplift fails because no name is available" in {
+
+      server.stubFor(
+        get(urlEqualTo(s"/find-my-nino-add-to-wallet/individuals/details/NINO/${nino.take(8)}/Y"))
+          .willReturn(
+            okJson(
+              Json
+                .toJson(
+                  fakeIndividualDetailsDataCache.copy(
+                    individualDetailsData = fakeIndividualDetailsDataCache.individualDetailsData.copy(
+                      crnIndicator = "true"
+//                    fullName = NameList(List(fakeName.copy(firstForename = None, surname = None)))
+                    )
+                  )
+                )
+                .toString()
+            )
+          )
+      )
+
+      val result = actionHelper.checkForCrn(nino, sessionId, fakeAuthContext, messages).futureValue
+
+      result mustBe a[Left[_, _]]
+      result.swap.getOrElse(Results.Ok("")).header.status mustBe INTERNAL_SERVER_ERROR
+    }
 
     "return UserRequest when CRN uplift succeeds and adult-registration API responds with UNPROCESSABLE_ENTITY but contains alreadyAnAdultErrorCode" in {
 

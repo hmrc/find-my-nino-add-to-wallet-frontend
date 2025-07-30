@@ -310,9 +310,9 @@ object Fixtures extends IndividualDetailsFixtures {
   val fakeIndividualDetailsDataNoAddress = fakeIndividualDetailsData.copy(address = None)
 
   val fakeIndividualDetailsDataCache = IndividualDetailsDataCache(
-    "some-fake-Id",
-    fakeIndividualDetailsData,
-    Instant.now(java.time.Clock.systemUTC())
+    id = "some-fake-Id",
+    individualDetailsData = fakeIndividualDetailsData,
+    lastUpdated = Instant.now(java.time.Clock.systemUTC())
   )
 
   val fakeIndividualDetailsDataCacheNoAddress = IndividualDetailsDataCache(

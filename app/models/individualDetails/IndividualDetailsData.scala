@@ -18,9 +18,8 @@ package models.individualDetails
 
 import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
 import play.api.libs.json.{Format, OFormat, __}
-import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats.instantFormat
 
-import java.time.{Instant, LocalDate}
+import java.time.LocalDate
 
 case class IndividualDetailsData(
   fullName: String,
@@ -63,8 +62,7 @@ object IndividualDetailsData {
 
 case class IndividualDetailsDataCache(
   id: String,
-  individualDetailsData: IndividualDetailsData,
-  lastUpdated: Instant = Instant.now(java.time.Clock.systemUTC())
+  individualDetailsData: IndividualDetailsData
 ) {
 
   def getAddressLines: List[String] =
@@ -88,9 +86,8 @@ object IndividualDetailsDataCache {
 
   implicit val individualDetailsDataCacheFormat: Format[IndividualDetailsDataCache] =
     ((__ \ "id").format[String]
-      ~ (__ \ "individualDetails").format[IndividualDetailsData]
-      ~ (__ \ "lastUpdated").format[Instant](instantFormat))(
+      ~ (__ \ "individualDetails").format[IndividualDetailsData])(
       IndividualDetailsDataCache.apply,
-      unlift(iddc => Some(Tuple3(iddc.id, iddc.individualDetailsData, iddc.lastUpdated)))
+      unlift(iddc => Some(Tuple2(iddc.id, iddc.individualDetailsData)))
     )
 }

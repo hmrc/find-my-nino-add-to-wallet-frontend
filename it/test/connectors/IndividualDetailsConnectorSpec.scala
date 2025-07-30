@@ -17,14 +17,14 @@
 package connectors
 
 import config.FrontendAppConfig
-import models.individualDetails.{IndividualDetails, IndividualDetailsDataCache}
+import models.individualDetails.IndividualDetailsDataCache
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.Application
 import play.api.libs.json.Json
 import play.api.test.{DefaultAwaitTimeout, Injecting}
 import uk.gov.hmrc.http.UpstreamErrorResponse
 import uk.gov.hmrc.http.client.HttpClientV2
-import util.Fixtures.fakeIndividualDetails
+import util.Fixtures.fakeIndividualDetailsDataCache
 import util.WireMockHelper
 
 class IndividualDetailsConnectorSpec
@@ -47,7 +47,7 @@ class IndividualDetailsConnectorSpec
     val url: String       =
       s"/find-my-nino-add-to-wallet/individuals/details/NINO/${nino.take(8)}/Y"
 
-    val jsonBody: String = Json.toJson(fakeIndividualDetails).toString()
+    val jsonBody: String = Json.toJson(fakeIndividualDetailsDataCache).toString()
 
     lazy val connector: IndividualDetailsConnector = {
       val httpClientV2       = inject[HttpClientV2]
@@ -68,7 +68,7 @@ class IndividualDetailsConnectorSpec
       result mustBe a[Right[_, _]]
       result match {
         case Right(cache: IndividualDetailsDataCache) =>
-          cache.individualDetailsData.nino mustBe fakeIndividualDetails.getNino
+          cache.individualDetailsData.nino mustBe fakeIndividualDetailsDataCache.individualDetailsData.nino
         case _                                        => fail("Expected Right[IndividualDetailsDataCache]")
       }
     }

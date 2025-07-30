@@ -65,7 +65,7 @@ class IndividualDetailsConnectorSpec
 
   val nino: String                                     = "AA123456A"
   val sessionId: String                                = "test-session-id"
-  val fakeIndividualDetailsJson: String                = Json.toJson(fakeIndividualDetails).toString()
+  val fakeIndividualDetailsJson: String                = Json.toJson(fakeIndividualDetailsDataCache).toString()
   val url: String                                      = s"/find-my-nino-add-to-wallet/individuals/details/NINO/${nino.take(8)}/Y"
   implicit override val patienceConfig: PatienceConfig =
     PatienceConfig(timeout = Span(2, Seconds), interval = Span(50, Millis))

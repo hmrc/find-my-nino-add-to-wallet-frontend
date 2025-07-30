@@ -47,22 +47,7 @@ class IndividualDetailsConnector @Inject() (
           .get(url"$url")
           .execute[Either[UpstreamErrorResponse, HttpResponse]]
       )
-      .map { response =>
-        val individualDetails = response.json.as[IndividualDetails]
-        IndividualDetailsDataCache(
-          sessionId,
-          IndividualDetailsData(
-            individualDetails.getFullName,
-            individualDetails.preferredName.firstForename,
-            individualDetails.preferredName.surname,
-            individualDetails.getInitialsName,
-            individualDetails.dateOfBirth,
-            individualDetails.getNino,
-            individualDetails.getAddressData,
-            individualDetails.crnIndicator.asString
-          )
-        )
-      }
+      .map(_.json.as[IndividualDetailsDataCache])
   }
 
   def deleteIndividualDetails(nino: String)(implicit ec: ExecutionContext): Future[Boolean] =

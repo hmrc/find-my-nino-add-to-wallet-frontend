@@ -17,7 +17,7 @@
 package util
 
 import controllers.auth.requests.UserRequest
-import models.individualDetails._
+import models.individualDetails.*
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatest.concurrent.{PatienceConfiguration, ScalaFutures}
@@ -29,7 +29,7 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.mvc._
+import play.api.mvc.*
 import play.api.test.{FakeRequest, Helpers, Injecting}
 import play.twirl.api.Html
 import uk.gov.hmrc.domain.{Generator, Nino, SaUtrGenerator}
@@ -281,20 +281,20 @@ object Fixtures extends IndividualDetailsFixtures {
     addressType = AddressType.ResidentialAddress
   )
 
-  val fakeIndividualDetails: IndividualDetails = IndividualDetails(
-    ninoWithoutSuffix = "AB123456",
-    ninoSuffix = Some(NinoSuffix("C")),
-    dateOfBirth = LocalDate.of(1990, 1, 1),
-    crnIndicator = CrnIndicator.False,
-    nameList = NameList(List(fakeName)),
-    addressList = AddressList(Some(List(fakeAddress)))
-  )
+//  val fakeIndividualDetails: IndividualDetails = IndividualDetails(
+//    ninoWithoutSuffix = "AB123456",
+//    ninoSuffix = Some(NinoSuffix("C")),
+//    dateOfBirth = LocalDate.of(1990, 1, 1),
+//    crnIndicator = CrnIndicator.False,
+//    nameList = NameList(List(fakeName)),
+//    addressList = AddressList(Some(List(fakeAddress)))
+//  )
 
-  val fakeIndividualDetailsWithKnownAsName =
-    fakeIndividualDetails.copy(nameList = NameList(List(fakeName, fakeKnownAsName)))
-
-  val fakeIndividualDetailsWithoutMiddleName =
-    fakeIndividualDetails.copy(nameList = NameList(List(fakeNameWithoutMiddleName)))
+//  val fakeIndividualDetailsWithKnownAsName =
+//    fakeIndividualDetails.copy(nameList = NameList(List(fakeName, fakeKnownAsName)))
+//
+//  val fakeIndividualDetailsWithoutMiddleName =
+//    fakeIndividualDetails.copy(nameList = NameList(List(fakeNameWithoutMiddleName)))
 
   val fakeIndividualDetailsData = IndividualDetailsData(
     fullName = "Dr Firstname Middlename Lastname Phd.",

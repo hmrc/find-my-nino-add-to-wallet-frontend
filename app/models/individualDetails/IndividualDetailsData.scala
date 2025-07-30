@@ -17,7 +17,7 @@
 package models.individualDetails
 
 import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
-import play.api.libs.json.{OFormat, __}
+import play.api.libs.json.{Format, OFormat, __}
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats.instantFormat
 
 import java.time.{Instant, LocalDate}
@@ -32,6 +32,34 @@ case class IndividualDetailsData(
   address: Option[AddressData],
   crnIndicator: String
 )
+
+object IndividualDetailsData {
+  implicit val individualDetailsDataFormat: Format[IndividualDetailsData] =
+    ((__ \ "fullName").format[String]
+      ~ (__ \ "firstForename").formatNullable[String]
+      ~ (__ \ "surname").formatNullable[String]
+      ~ (__ \ "initialsName").format[String]
+      ~ (__ \ "dateOfBirth").format[LocalDate]
+      ~ (__ \ "nino").format[String]
+      ~ (__ \ "address").formatNullable[AddressData]
+      ~ (__ \ "crnIndicator").format[String])(
+      IndividualDetailsData.apply,
+      unlift { idd =>
+        Some(
+          Tuple8(
+            idd.fullName,
+            idd.firstForename,
+            idd.surname,
+            idd.initialsName,
+            idd.dateOfBirth,
+            idd.nino,
+            idd.address,
+            idd.crnIndicator
+          )
+        )
+      }
+    )
+}
 
 case class IndividualDetailsDataCache(
   id: String,
@@ -57,35 +85,10 @@ case class IndividualDetailsDataCache(
 }
 
 object IndividualDetailsDataCache {
-  private val individualDetailsDataFormat: OFormat[IndividualDetailsData] =
-    ((__ \ "fullName").format[String]
-      ~ (__ \ "firstForename").formatNullable[String]
-      ~ (__ \ "surname").formatNullable[String]
-      ~ (__ \ "initialsName").format[String]
-      ~ (__ \ "dateOfBirth").format[LocalDate]
-      ~ (__ \ "nino").format[String]
-      ~ (__ \ "address").formatNullable[AddressData]
-      ~ (__ \ "crnIndicator").format[String])(
-      IndividualDetailsData.apply,
-      unlift { idd =>
-        Some(
-          Tuple8(
-            idd.fullName,
-            idd.firstForename,
-            idd.surname,
-            idd.initialsName,
-            idd.dateOfBirth,
-            idd.nino,
-            idd.address,
-            idd.crnIndicator
-          )
-        )
-      }
-    )
 
-  val individualDetailsDataCacheFormat: OFormat[IndividualDetailsDataCache] =
+  implicit val individualDetailsDataCacheFormat: Format[IndividualDetailsDataCache] =
     ((__ \ "id").format[String]
-      ~ (__ \ "individualDetails").format[IndividualDetailsData](individualDetailsDataFormat)
+      ~ (__ \ "individualDetails").format[IndividualDetailsData]
       ~ (__ \ "lastUpdated").format[Instant](instantFormat))(
       IndividualDetailsDataCache.apply,
       unlift(iddc => Some(Tuple3(iddc.id, iddc.individualDetailsData, iddc.lastUpdated)))

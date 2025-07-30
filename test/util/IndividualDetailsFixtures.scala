@@ -57,7 +57,7 @@ trait IndividualDetailsFixtures {
     implicit val hc: HeaderCarrier    = HeaderCarrier()
     implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
 
-    val mockPartialRetriever = mock[FormPartialRetriever]
+    val mockPartialRetriever: FormPartialRetriever = mock[FormPartialRetriever]
     when(mockPartialRetriever.getPartialContentAsync(any(), any(), any())(any(), any())) thenReturn Future(Html(""))
 
     val configValues: Map[String, Any] =
@@ -65,7 +65,6 @@ trait IndividualDetailsFixtures {
         "cookie.encryption.key"         -> "gvBoGdgzqG1AarzF1LY0zQ==",
         "sso.encryption.key"            -> "gvBoGdgzqG1AarzF1LY0zQ==",
         "queryParameter.encryption.key" -> "gvBoGdgzqG1AarzF1LY0zQ==",
-        "json.encryption.key"           -> "gvBoGdgzqG1AarzF1LY0zQ==",
         "metrics.enabled"               -> false,
         "auditing.enabled"              -> false
       )

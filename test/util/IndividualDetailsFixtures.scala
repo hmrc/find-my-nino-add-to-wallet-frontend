@@ -109,165 +109,6 @@ object Fixtures extends IndividualDetailsFixtures {
     FakeRequest(method, uri).withSession(session.toList: _*)
   }
 
-  val individualRespJson =
-    """
-      |{
-      |    "nino": "AA000003",
-      |    "ninoSuffix": "B",
-      |    "names": {
-      |        "1": {
-      |            "sequenceNumber": 3,
-      |            "title": 2,
-      |            "firstForenameOrInitial": "BOB",
-      |            "surname": "JONES",
-      |            "startDate": "2016-04-06"
-      |        }
-      |    },
-      |    "sex": "F",
-      |    "dateOfBirth": "1962-09-08",
-      |    "dateOfBirthStatus": 0,
-      |    "deceased": false,
-      |    "dateOfDeathStatus": 0,
-      |    "addresses": {
-      |        "1": {
-      |            "sequenceNumber": 3,
-      |            "countryCode": 1,
-      |            "line1": "11 Test Street",
-      |            "line2": "Testtown",
-      |            "postcode": "FX97 4TU",
-      |            "startDate": "2016-04-06",
-      |            "lastConfirmedDate": "2002-07-08"
-      |        },
-      |        "2": {
-      |            "sequenceNumber": 3,
-      |            "countryCode": 1,
-      |            "line1": "11 Test Street",
-      |            "line2": "Testtown",
-      |            "postcode": "FX97 4TU",
-      |            "startDate": "2012-07-05",
-      |            "lastConfirmedDate": "2012-07-08"
-      |        }
-      |    },
-      |    "phoneNumbers": {
-      |        "3": {
-      |            "telephoneType": 3,
-      |            "telephoneNumber": "3984425669.02115"
-      |        }
-      |    },
-      |    "accountStatus": 0,
-      |    "manualCorrespondenceInd": false,
-      |    "dateOfEntry": "1978-09-08",
-      |    "hasSelfAssessmentAccount": false,
-      |    "utr": "1097133333",
-      |    "audioOutputRequired": false,
-      |    "brailleOutputRequired": false,
-      |    "largePrintOutputRequired": false,
-      |    "welshOutputRequired": true
-      |}
-      |""".stripMargin
-
-  val individualRespJsonInvalid: String =
-    """
-      |{
-      |    "nino": "AA000003",
-      |    "ninoSuffix": "B",
-      |    "names": {
-      |        "1": {
-      |            "sequenceNumber": 3,
-      |            "title": 2,
-      |            "firstForenameOrInitial": "BOB",
-      |            "startDate": "2016-04-06"
-      |        }
-      |    },
-      |    "sex": "F",
-      |    "dateOfBirth": "1962-09-08",
-      |    "dateOfBirthStatus": 0,
-      |    "deceased": false,
-      |    "dateOfDeathStatus": 0,
-      |    "addresses": {
-      |        "1": {
-      |            "sequenceNumber": 3,
-      |            "countryCode": 1,
-      |            "line1": "11 Test Street",
-      |            "line2": "Testtown",
-      |            "postcode": "FX97 4TU",
-      |            "startDate": "2016-04-06",
-      |            "lastConfirmedDate": "2002-07-08"
-      |        },
-      |        "2": {
-      |            "sequenceNumber": 3,
-      |            "countryCode": 1,
-      |            "line1": "11 Test Street",
-      |            "line2": "Testtown",
-      |            "postcode": "FX97 4TU",
-      |            "startDate": "2012-07-05",
-      |            "lastConfirmedDate": "2012-07-08"
-      |        }
-      |    },
-      |    "phoneNumbers": {
-      |        "3": {
-      |            "telephoneType": 3,
-      |            "telephoneNumber": "3984425669.02115"
-      |        }
-      |    },
-      |    "accountStatus": 0,
-      |    "manualCorrespondenceInd": false,
-      |    "dateOfEntry": "1978-09-08",
-      |    "hasSelfAssessmentAccount": false,
-      |    "utr": "1097133333",
-      |    "audioOutputRequired": false,
-      |    "brailleOutputRequired": false,
-      |    "largePrintOutputRequired": false,
-      |    "welshOutputRequired": true
-      |}
-      |""".stripMargin
-
-  val fakeName: Name = models.individualDetails.Name(
-    nameSequenceNumber = 1,
-    nameType = NameType.RealName,
-    titleType = Some(TitleType.Dr),
-    requestedName = Some(RequestedName("Firstname Middlename")),
-    otherTitle = Some(OtherTitle("Sir")),
-    honours = Some(Honours("PhD")),
-    firstForename = Some("Firstname"),
-    secondForename = Some("Middlename"),
-    surname = Some("Lastname")
-  )
-
-  val fakeKnownAsName: Name = models.individualDetails.Name(
-    nameSequenceNumber = 2,
-    nameType = NameType.KnownAsName,
-    titleType = Some(TitleType.Dr),
-    requestedName = Some(RequestedName("Known As Name")),
-    otherTitle = Some(OtherTitle("Sir")),
-    honours = Some(Honours("PhD")),
-    firstForename = Some("Known"),
-    secondForename = Some("As"),
-    surname = Some("Name")
-  )
-
-  val fakeNameWithoutMiddleName = fakeName.copy(secondForename = None)
-
-  val fakeAddress: Address = Address(
-    addressSequenceNumber = AddressSequenceNumber(0),
-    addressSource = Some(AddressSource.Customer),
-    countryCode = CountryCode(826),
-    addressType = AddressType.ResidentialAddress,
-    addressStatus = Some(AddressStatus.NotDlo),
-    addressStartDate = LocalDate.of(2000, 1, 1),
-    addressEndDate = Some(LocalDate.of(2022, 12, 31)),
-    addressLastConfirmedDate = Some(LocalDate.of(2022, 1, 1)),
-    vpaMail = Some(VpaMail(1)),
-    deliveryInfo = Some(DeliveryInfo("Delivery info")),
-    pafReference = Some(PafReference("PAF reference")),
-    addressLine1 = AddressLine("123 Fake Street"),
-    addressLine2 = AddressLine("Apt 4B"),
-    addressLine3 = Some(AddressLine("Faketown")),
-    addressLine4 = Some(AddressLine("Fakeshire")),
-    addressLine5 = Some(AddressLine("Fakecountry")),
-    addressPostcode = Some(AddressPostcode("AA1 1AA"))
-  )
-
   val fakeAddressData: AddressData = AddressData(
     addressLine1 = AddressLine("123 Fake Street"),
     addressLine2 = AddressLine("Apt 4B"),
@@ -281,10 +122,11 @@ object Fixtures extends IndividualDetailsFixtures {
   )
 
   val fakeIndividualDetailsData: IndividualDetailsData = IndividualDetailsData(
-    fullName = "Dr Firstname Middlename Lastname Phd.",
+    title = Some("Dr"),
     firstForename = Some("Firstname"),
+    secondForename = Some("Middlename"),
     surname = Some("Lastname"),
-    initialsName = "FML",
+    honours = Some("Phd."),
     dateOfBirth = LocalDate.now(),
     nino = "AB123456C",
     address = Some(fakeAddressData),

@@ -141,7 +141,7 @@
                     <fo:block>
                         <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal"
                                   line-height="12pt">
-                            <fo:block>@individualDetailsDataCache.initialsName</fo:block>
+                            <fo:block>@individualDetailsDataCache.getInitialsName</fo:block>
                         </fo:block>
                         @individualDetailsDataCache.getAddressLines.map { line =>
                         <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal"
@@ -206,7 +206,7 @@
             <!-- name and title -->
             <fo:block font-size="10.5pt" font-family="OpenSans" font-weight="normal" line-height="12pt"
                       padding-after="6px" padding-before="6px">
-                @individualDetailsDataCache.fullName
+                @individualDetailsDataCache.getFullName
             </fo:block>
             <!-- end name and title -->
 

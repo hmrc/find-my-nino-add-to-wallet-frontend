@@ -22,10 +22,11 @@ import play.api.libs.json.{Format, OFormat, __}
 import java.time.LocalDate
 
 case class IndividualDetailsData(
-  fullName: String,
+  title: Option[String],
   firstForename: Option[String],
+  secondForename: Option[String], //
   surname: Option[String],
-  initialsName: String,
+  honours: Option[String],
   dateOfBirth: LocalDate,
   nino: String,
   address: Option[AddressData],
@@ -45,14 +46,42 @@ case class IndividualDetailsData(
     }
 
   def getPostCode: Option[String] = address.flatMap(_.addressPostcode.map(_.value))
+
+  private def getHonours: String = honours.getOrElse("")
+
+  private def getTitle: String = title.getOrElse("")
+
+  def getFullName: String =
+    List(
+      getTitle,
+      firstForename.map(_.toUpperCase()).getOrElse(""),
+      secondForename.getOrElse("").toUpperCase(),
+      surname.map(_.toUpperCase()).getOrElse(""),
+      getHonours
+    )
+      .filter(_.nonEmpty)
+      .mkString(" ")
+
+  def getInitialsName: String =
+    List(
+      getTitle,
+      firstForename.map(_.toUpperCase().take(1)).getOrElse(""),
+      secondForename.getOrElse("").toUpperCase().take(1),
+      surname.map(_.toUpperCase()).getOrElse(""),
+      getHonours
+    )
+      .filter(_.nonEmpty)
+      .mkString(" ")
+
 }
 
 object IndividualDetailsData {
   implicit val individualDetailsDataFormat: Format[IndividualDetailsData] =
-    ((__ \ "fullName").format[String]
+    ((__ \ "title").formatNullable[String]
       ~ (__ \ "firstForename").formatNullable[String]
+      ~ (__ \ "secondForename").formatNullable[String]
       ~ (__ \ "surname").formatNullable[String]
-      ~ (__ \ "initialsName").format[String]
+      ~ (__ \ "honours").formatNullable[String]
       ~ (__ \ "dateOfBirth").format[LocalDate]
       ~ (__ \ "nino").format[String]
       ~ (__ \ "address").formatNullable[AddressData]
@@ -60,11 +89,12 @@ object IndividualDetailsData {
       IndividualDetailsData.apply,
       unlift { idd =>
         Some(
-          Tuple8(
-            idd.fullName,
+          Tuple9(
+            idd.title,
             idd.firstForename,
+            idd.secondForename,
             idd.surname,
-            idd.initialsName,
+            idd.honours,
             idd.dateOfBirth,
             idd.nino,
             idd.address,
@@ -74,18 +104,3 @@ object IndividualDetailsData {
       }
     )
 }
-
-//case class IndividualDetailsData(
-//  id: String,
-//  individualDetailsData: IndividualDetailsData
-//)
-
-//object IndividualDetailsData {
-//
-//  implicit val individualDetailsDataCacheFormat: Format[IndividualDetailsData] =
-//    ((__ \ "id").format[String]
-//      ~ (__ \ "individualDetails").format[IndividualDetailsData])(
-//      IndividualDetailsData.apply,
-//      unlift(iddc => Some(Tuple2(iddc.id, iddc)))
-//    )
-//}

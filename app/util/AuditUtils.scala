@@ -153,7 +153,7 @@ object AuditUtils {
       journeyId,
       timestamp(),
       individualDetailsDataCache.nino,
-      name = individualDetailsDataCache.fullName,
+      name = individualDetailsDataCache.getFullName,
       mainAddress = mainAddress,
       device = Some(strDevice),
       language = strLang,

@@ -43,7 +43,7 @@ implicit request: Request[_], messages: play.api.i18n.Messages)
             <div class="govuk-grid-column-one-half govuk-body document-address__recipient">
                 @individualDetailsDataCache.address.map { residentialAddress =>
                     <address>
-                        <span>@individualDetailsDataCache.initialsName</span>
+                        <span>@individualDetailsDataCache.getInitialsName</span>
                         @individualDetailsDataCache.getAddressLines.map { line => <span>@line</span> }
                         <span>@individualDetailsDataCache.getPostCode.getOrElse("").toUpperCase</span>
                     </address>
@@ -75,7 +75,7 @@ implicit request: Request[_], messages: play.api.i18n.Messages)
         <div class="grid-row main-content">
             <div class="govuk-grid-column-full">
 
-                <p class="name govuk-body">@individualDetailsDataCache.fullName</p>
+                <p class="name govuk-body">@individualDetailsDataCache.getFullName</p>
                 <div class="print-document__information-box">
                     <h2 class="govuk-body insurance-number-text govuk-!-font-size-27 govuk-!-font-weight-bold">@messages("label.your_national_insurance_number_is")</h2>
                     <span class="govuk-body insurance-number govuk-!-font-size-36 govuk-!-font-weight-bold">@nino</span>

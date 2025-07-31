@@ -67,9 +67,9 @@ class IndividualDetailsConnectorSpec
 
       result mustBe a[Right[_, _]]
       result match {
-        case Right(cache: IndividualDetailsData) =>
-          cache.nino mustBe fakeIndividualDetailsData.nino
-        case _                                   => fail("Expected Right[IndividualDetailsData]")
+        case Right(idd: IndividualDetailsData) =>
+          idd.nino mustBe fakeIndividualDetailsData.nino
+        case _                                 => fail("Expected Right[IndividualDetailsData]")
       }
     }
 

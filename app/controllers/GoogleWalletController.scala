@@ -65,7 +65,7 @@ class GoogleWalletController @Inject() (
         auditGoogleWallet("ViewWalletPage", userRequestNew.individualDetails, hc)
         val nino: String  = userRequestNew.nino.getOrElse(throw new IllegalArgumentException("No nino found")).nino
         val ninoFormatted = nino.grouped(2).mkString(" ")
-        val fullName      = userRequestNew.individualDetails.fullName
+        val fullName      = userRequestNew.individualDetails.getFullName
         googleWalletConnector
           .createGooglePass(fullName, ninoFormatted)
           .fold(

@@ -72,7 +72,7 @@ class ActionHelper @Inject() (
             )
           case (false, true) =>
             individualDetails match {
-              case IndividualDetailsData(_, Some(firstForename), Some(surname), _, dateOfBirth, _, _, _) =>
+              case IndividualDetailsData(_, Some(firstForename), _, Some(surname), _, dateOfBirth, _, _, _) =>
                 // Nino is not a full nino and uplift is enabled, Uplift nino with NPS
                 val request: CRNUpliftRequest = CRNUpliftRequest(
                   firstForename,

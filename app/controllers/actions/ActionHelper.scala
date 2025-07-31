@@ -21,7 +21,7 @@ import com.google.inject.Inject
 import config.FrontendAppConfig
 import controllers.auth.AuthContext
 import controllers.auth.requests.UserRequest
-import models.individualDetails.IndividualDetailsData
+import models.individualDetails.IndividualDetails
 import models.nps.CRNUpliftRequest
 import play.api.Logging
 import play.api.i18n.Messages
@@ -72,7 +72,7 @@ class ActionHelper @Inject() (
             )
           case (false, true) =>
             individualDetails match {
-              case IndividualDetailsData(_, Some(firstForename), _, Some(surname), _, dateOfBirth, _, _, _) =>
+              case IndividualDetails(_, Some(firstForename), _, Some(surname), _, dateOfBirth, _, _, _) =>
                 // Nino is not a full nino and uplift is enabled, Uplift nino with NPS
                 val request: CRNUpliftRequest = CRNUpliftRequest(
                   firstForename,
@@ -116,7 +116,7 @@ class ActionHelper @Inject() (
         }
     }
 
-  private def isFullNino(individualDetails: IndividualDetailsData): Boolean =
+  private def isFullNino(individualDetails: IndividualDetails): Boolean =
     individualDetails.crnIndicator.toLowerCase.equals("false")
 
 }

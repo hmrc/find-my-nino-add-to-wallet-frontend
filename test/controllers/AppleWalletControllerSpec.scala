@@ -20,7 +20,7 @@ import base.SpecBase
 import cats.data.EitherT
 import connectors.*
 import controllers.auth.requests.UserRequest
-import models.individualDetails.IndividualDetailsData
+import models.individualDetails.IndividualDetails
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{reset, when}
 import org.scalatestplus.mockito.MockitoSugar
@@ -32,7 +32,7 @@ import services.IndividualDetailsService
 import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolment, Enrolments}
 import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
-import util.Fixtures.{fakeIndividualDetailsData, fakeIndividualDetailsDataNoAddress}
+import util.Fixtures.{fakeIndividualDetails, fakeindividualDetailsNoAddress}
 import util.IndividualDetailsFixtures
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
 import util.TestData.{NinoUser, NinoUser_With_CL50, trustedHelper}
@@ -66,7 +66,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
     reset(mockIndividualDetailsService)
     when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
-      .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsData))
+      .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetails))
 
     reset(mockIdentityVerificationFrontendConnector)
     when(mockIdentityVerificationFrontendConnector.getIVJourneyStatus(any())(any(), any()))
@@ -94,7 +94,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
       "must redirect to error view when ID cache is not found" in {
 
         when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
-          .thenReturn(EitherT.leftT[Future, IndividualDetailsData](UpstreamErrorResponse("Not Found", NOT_FOUND)))
+          .thenReturn(EitherT.leftT[Future, IndividualDetails](UpstreamErrorResponse("Not Found", NOT_FOUND)))
 
         val application = applicationBuilderWithConfig()
           .overrides(
@@ -135,7 +135,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
         val view = application.injector.instanceOf[AppleWalletView]
 
         when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
-          .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsData))
+          .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetails))
 
         running(application) {
           userLoggedInFMNUser(NinoUser)
@@ -168,7 +168,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
         val view = application.injector.instanceOf[AppleWalletView]
 
         when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
-          .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataNoAddress))
+          .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](fakeindividualDetailsNoAddress))
 
         running(application) {
           userLoggedInFMNUser(NinoUser)
@@ -233,7 +233,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
           val userRequest = UserRequest(
             None,
             ConfidenceLevel.L200,
-            fakeIndividualDetailsData,
+            fakeIndividualDetails,
             Enrolments(Set(Enrolment("HMRC-PT"))),
             request,
             None
@@ -318,7 +318,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
           val userRequest = UserRequest(
             None,
             ConfidenceLevel.L200,
-            fakeIndividualDetailsData,
+            fakeIndividualDetails,
             Enrolments(Set(Enrolment("HMRC-PT"))),
             request,
             None
@@ -438,7 +438,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
             .build()
 
         when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
-          .thenReturn(EitherT.leftT[Future, IndividualDetailsData](UpstreamErrorResponse("Not Found", NOT_FOUND)))
+          .thenReturn(EitherT.leftT[Future, IndividualDetails](UpstreamErrorResponse("Not Found", NOT_FOUND)))
 
         running(application) {
           userLoggedInFMNUser(NinoUser)
@@ -465,7 +465,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
             .build()
 
         when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
-          .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsData))
+          .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetails))
 
         running(application) {
           userLoggedInFMNUser(NinoUser)
@@ -521,7 +521,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
           val userRequest = UserRequest(
             None,
             ConfidenceLevel.L200,
-            fakeIndividualDetailsData,
+            fakeIndividualDetails,
             Enrolments(Set(Enrolment("HMRC-PT"))),
             request,
             None
@@ -584,7 +584,7 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
           val userRequest = UserRequest(
             None,
             ConfidenceLevel.L200,
-            fakeIndividualDetailsData,
+            fakeIndividualDetails,
             Enrolments(Set(Enrolment("HMRC-PT"))),
             request,
             None

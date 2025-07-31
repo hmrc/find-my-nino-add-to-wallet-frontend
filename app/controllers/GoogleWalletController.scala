@@ -19,7 +19,7 @@ package controllers
 import config.FrontendAppConfig
 import connectors.{FandFConnector, GoogleWalletConnector}
 import controllers.actions.CheckChildRecordAction
-import models.individualDetails.IndividualDetailsData
+import models.individualDetails.IndividualDetails
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc.*
 import play.api.{Configuration, Environment}
@@ -144,12 +144,12 @@ class GoogleWalletController @Inject() (
 
   def auditGoogleWallet(
     eventType: String,
-    individualDetailsDataCache: IndividualDetailsData,
+    individualDetails: IndividualDetails,
     hc: HeaderCarrier
   ): Unit =
     auditService.audit(
       AuditUtils.buildAuditEvent(
-        individualDetailsDataCache,
+        individualDetails,
         eventType,
         frontendAppConfig.appName,
         Some("Google")

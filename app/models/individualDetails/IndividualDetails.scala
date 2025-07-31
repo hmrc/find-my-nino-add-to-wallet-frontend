@@ -21,7 +21,7 @@ import play.api.libs.json.{Format, OFormat, __}
 
 import java.time.LocalDate
 
-case class IndividualDetailsData(
+case class IndividualDetails(
   title: Option[String],
   firstForename: Option[String],
   secondForename: Option[String], //
@@ -75,8 +75,8 @@ case class IndividualDetailsData(
 
 }
 
-object IndividualDetailsData {
-  implicit val individualDetailsDataFormat: Format[IndividualDetailsData] =
+object IndividualDetails {
+  implicit val format: Format[IndividualDetails] =
     ((__ \ "title").formatNullable[String]
       ~ (__ \ "firstForename").formatNullable[String]
       ~ (__ \ "secondForename").formatNullable[String]
@@ -86,7 +86,7 @@ object IndividualDetailsData {
       ~ (__ \ "nino").format[String]
       ~ (__ \ "address").formatNullable[AddressData]
       ~ (__ \ "crnIndicator").format[String])(
-      IndividualDetailsData.apply,
+      IndividualDetails.apply,
       unlift { idd =>
         Some(
           Tuple9(

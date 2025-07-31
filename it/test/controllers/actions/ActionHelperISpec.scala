@@ -34,7 +34,7 @@ import play.api.test.Helpers.{contentAsString, defaultAwaitTimeout}
 import uk.gov.hmrc.auth.core.{AffinityGroup, ConfidenceLevel, Enrolment, Enrolments}
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
-import util.Fixtures.fakeIndividualDetailsData
+import util.Fixtures.fakeIndividualDetails
 import util.WireMockHelper
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -85,7 +85,7 @@ class ActionHelperISpec
 
   val individualDetailsCrnTrueJson: String = Json
     .toJson(
-      fakeIndividualDetailsData.copy(crnIndicator = "true")
+      fakeIndividualDetails.copy(crnIndicator = "true")
     )
     .toString()
 
@@ -108,7 +108,7 @@ class ActionHelperISpec
 
     "return UserRequest when individualDetails are found but individualDetails.crnIndicator is FALSE" in {
 
-      val individualDetailsJson = Json.toJson(fakeIndividualDetailsData).toString()
+      val individualDetailsJson = Json.toJson(fakeIndividualDetails).toString()
 
       server.stubFor(
         get(urlEqualTo(s"/find-my-nino-add-to-wallet/individuals/details/NINO/${nino.take(8)}/Y"))
@@ -177,7 +177,7 @@ class ActionHelperISpec
             okJson(
               Json
                 .toJson(
-                  fakeIndividualDetailsData.copy(
+                  fakeIndividualDetails.copy(
                     crnIndicator = "true",
                     firstForename = None,
                     surname = None

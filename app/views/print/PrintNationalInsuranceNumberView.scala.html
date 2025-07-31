@@ -25,7 +25,7 @@
     niLetter: NiLetterView
 )
 
-@(individualDetailsDataCache: models.individualDetails.IndividualDetailsData, dateString: String, saveNiLetterAsPdfLinkEnabled: Boolean, nino : String)(implicit request: Request[_], messages: Messages)
+@(individualDetails: models.individualDetails.IndividualDetails, dateString: String, saveNiLetterAsPdfLinkEnabled: Boolean, nino : String)(implicit request: Request[_], messages: Messages)
 
 @stylesheet = {
     <link rel="stylesheet" href='@routes.Assets.versioned("stylesheets/partials/print-this-document.css")'>
@@ -53,7 +53,7 @@
         </div>
     </div>
 
-    @niLetter(individualDetailsDataCache, dateString, nino)
+    @niLetter(individualDetails, dateString, nino)
 
     <script @CSPNonce.attr>
         document.getElementById("print-link").addEventListener("click", function() {

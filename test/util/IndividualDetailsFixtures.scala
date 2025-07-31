@@ -121,7 +121,7 @@ object Fixtures extends IndividualDetailsFixtures {
     addressType = AddressType.ResidentialAddress
   )
 
-  val fakeIndividualDetailsData: IndividualDetailsData = IndividualDetailsData(
+  val fakeIndividualDetails: IndividualDetails = IndividualDetails(
     title = Some("Dr"),
     firstForename = Some("Firstname"),
     secondForename = Some("Middlename"),
@@ -133,8 +133,8 @@ object Fixtures extends IndividualDetailsFixtures {
     crnIndicator = "false"
   )
 
-  val fakeIndividualDetailsDataNoAddress: IndividualDetailsData = fakeIndividualDetailsData.copy(address = None)
+  val fakeindividualDetailsNoAddress: IndividualDetails = fakeIndividualDetails.copy(address = None)
 
-  val fakeIndividualDetailsDataWithCRN: IndividualDetailsData = fakeIndividualDetailsData.copy(crnIndicator = "true")
+  val fakeindividualDetailsWithCRN: IndividualDetails = fakeIndividualDetails.copy(crnIndicator = "true")
 
 }

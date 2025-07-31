@@ -21,7 +21,7 @@ import config.FrontendAppConfig
 import com.github.tomakehurst.wiremock.client.WireMock._
 import controllers.auth.requests.UserRequest
 import controllers.auth.routes
-import models.individualDetails.IndividualDetailsData
+import models.individualDetails.IndividualDetails
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.scalatest.Assertion
@@ -53,13 +53,13 @@ class StoreMyNinoControllerISpec extends IntegrationSpecBase {
     def buildUserRequest[A](
       nino: Option[Nino] = Some(generatedNino),
       confidenceLevel: ConfidenceLevel = ConfidenceLevel.L200,
-      individualDetailsData: IndividualDetailsData = Fixtures.fakeIndividualDetailsData,
+      individualDetails: IndividualDetails = Fixtures.fakeIndividualDetails,
       request: Request[A] = FakeRequest().asInstanceOf[Request[A]]
     ): UserRequest[A] =
       UserRequest(
         nino,
         confidenceLevel,
-        individualDetailsData,
+        individualDetails,
         Enrolments(Set(Enrolment("HMRC-PT"))),
         request,
         None

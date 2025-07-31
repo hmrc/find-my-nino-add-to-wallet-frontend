@@ -19,7 +19,7 @@ package controllers
 import config.FrontendAppConfig
 import connectors.{AppleWalletConnector, FandFConnector, GoogleWalletConnector}
 import controllers.actions.CheckChildRecordActionWithCacheInvalidation
-import models.individualDetails.IndividualDetailsData
+import models.individualDetails.IndividualDetails
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc.*
 import play.api.{Configuration, Environment}
@@ -102,10 +102,10 @@ class StoreMyNinoController @Inject() (
 
   private def auditSMNLandingPage(
     event: String,
-    individualDetailsDataCache: IndividualDetailsData,
+    individualDetails: IndividualDetails,
     hc: HeaderCarrier
   ): Unit =
     auditService.audit(
-      AuditUtils.buildAuditEvent(individualDetailsDataCache, event, frontendAppConfig.appName, None)(hc)
+      AuditUtils.buildAuditEvent(individualDetails, event, frontendAppConfig.appName, None)(hc)
     )(hc)
 }

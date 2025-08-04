@@ -56,7 +56,6 @@ class ActionHelper @Inject() (
         )
 
       case Right(individualDetails) =>
-        println("\nHERE:" + individualDetails.getFullName)
         (isFullNino(individualDetails), frontendAppConfig.crnUpliftEnabled) match {
           case (true, _)     =>
             Future.successful(

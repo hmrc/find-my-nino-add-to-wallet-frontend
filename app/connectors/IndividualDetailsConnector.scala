@@ -21,7 +21,6 @@ import com.google.inject.{Inject, Singleton}
 import config.FrontendAppConfig
 import models.individualDetails.*
 import play.api.Logging
-import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps, UpstreamErrorResponse}
@@ -48,32 +47,32 @@ class IndividualDetailsConnector @Inject() (
           .get(url"$url")
           .execute[Either[UpstreamErrorResponse, HttpResponse]]
       )
-      .map { _ =>
-        // Temp code while testing:-
-        val hardCodedTestJson = Json
-          .parse("""{
-                    |   "title":"Mr",
-                    |   "firstForename":"Martin",
-                    |   "surname":"Hempton",
-                    |   "dateOfBirth":"1948-04-23",
-                    |   "nino":"AB216913B",
-                    |   "address":{
-                    |      "addressLine1":"88 TESTING ROAD",
-                    |      "addressCountry":"GREAT BRITAIN",
-                    |      "addressLine3":"TESTREGION",
-                    |      "addressLine2":"TESTTOWN",
-                    |      "addressType":1,
-                    |      "addressLine5":"TESTSHIRE",
-                    |      "addressStartDate":"2003-04-30",
-                    |      "addressPostcode":"EC4 2AA",
-                    |      "addressLine4":"TESTAREA"
-                    |   },
-                    |   "crnIndicator":"false"
-                    |}""".stripMargin)
-          .as[JsObject]
-        hardCodedTestJson.as[IndividualDetails]
-      }
-    // .map(_.json.as[IndividualDetails])
+//      .map { _ =>
+//        // Temp code while testing:-
+//        val hardCodedTestJson = Json
+//          .parse("""{
+//                    |   "title":"Mr",
+//                    |   "firstForename":"Martin",
+//                    |   "surname":"Hempton",
+//                    |   "dateOfBirth":"1948-04-23",
+//                    |   "nino":"AB216913B",
+//                    |   "address":{
+//                    |      "addressLine1":"88 TESTING ROAD",
+//                    |      "addressCountry":"GREAT BRITAIN",
+//                    |      "addressLine3":"TESTREGION",
+//                    |      "addressLine2":"TESTTOWN",
+//                    |      "addressType":1,
+//                    |      "addressLine5":"TESTSHIRE",
+//                    |      "addressStartDate":"2003-04-30",
+//                    |      "addressPostcode":"EC4 2AA",
+//                    |      "addressLine4":"TESTAREA"
+//                    |   },
+//                    |   "crnIndicator":"false"
+//                    |}""".stripMargin)
+//          .as[JsObject]
+//        hardCodedTestJson.as[IndividualDetails]
+//      }
+      .map(_.json.as[IndividualDetails])
   }
 
   // TODO: FIX

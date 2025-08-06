@@ -27,7 +27,7 @@ import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject
 import play.api.test.Helpers.*
 import play.api.test.{DefaultAwaitTimeout, FakeRequest}
-import repositories.SessionRepository
+
 import services.{IndividualDetailsService, NPSService}
 import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolment, Enrolments}
 import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
@@ -54,9 +54,6 @@ class StoreMyNinoControllerSpec
       .thenReturn(Future.successful(Some(wrapperDataResponse)))
     when(mockScaWrapperDataConnector.messageData()(any(), any()))
       .thenReturn(Future.successful(messageDataResponse))
-
-    reset(mockSessionRepository)
-    when(mockSessionRepository.get(any())) thenReturn Future.successful(Some(emptyUserAnswers))
 
     reset(mockIndividualDetailsService)
     when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
@@ -95,7 +92,6 @@ class StoreMyNinoControllerSpec
   val mockAppleWalletConnector: AppleWalletConnector   = mock[AppleWalletConnector]
   val mockGoogleWalletConnector: GoogleWalletConnector = mock[GoogleWalletConnector]
 
-  val mockSessionRepository: SessionRepository                                         = mock[SessionRepository]
   val mockIndividualDetailsService: IndividualDetailsService                           = mock[IndividualDetailsService]
   val mockIdentityVerificationFrontendConnector: IdentityVerificationFrontendConnector =
     mock[IdentityVerificationFrontendConnector]
@@ -115,7 +111,6 @@ class StoreMyNinoControllerSpec
       val application =
         applicationBuilderWithConfig()
           .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
             inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
             inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),
@@ -164,7 +159,6 @@ class StoreMyNinoControllerSpec
       val application =
         applicationBuilderWithConfig()
           .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
             inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
             inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),
@@ -212,7 +206,6 @@ class StoreMyNinoControllerSpec
       val application =
         applicationBuilderWithConfig()
           .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
             inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
             inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),
@@ -245,7 +238,6 @@ class StoreMyNinoControllerSpec
       val application =
         applicationBuilderWithConfig()
           .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
             inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
             inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
@@ -275,7 +267,6 @@ class StoreMyNinoControllerSpec
       val application =
         applicationBuilderWithConfig()
           .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
             inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
             inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
@@ -303,7 +294,6 @@ class StoreMyNinoControllerSpec
 
       val application = applicationBuilderWithConfig()
         .overrides(
-          inject.bind[SessionRepository].toInstance(mockSessionRepository),
           inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
           inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
           inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
@@ -329,7 +319,6 @@ class StoreMyNinoControllerSpec
 
       val application = applicationBuilderWithConfig()
         .overrides(
-          inject.bind[SessionRepository].toInstance(mockSessionRepository),
           inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
           inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
           inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
@@ -367,7 +356,6 @@ class StoreMyNinoControllerSpec
 
       val application = applicationBuilderWithConfig()
         .overrides(
-          inject.bind[SessionRepository].toInstance(mockSessionRepository),
           inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
           inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
           inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
@@ -393,7 +381,6 @@ class StoreMyNinoControllerSpec
 
       val application = applicationBuilderWithConfig()
         .overrides(
-          inject.bind[SessionRepository].toInstance(mockSessionRepository),
           inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
           inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
           inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
@@ -440,7 +427,6 @@ class StoreMyNinoControllerSpec
 
       val application = applicationBuilderWithConfig()
         .overrides(
-          inject.bind[SessionRepository].toInstance(mockSessionRepository),
           inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
           inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
           inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
@@ -473,7 +459,6 @@ class StoreMyNinoControllerSpec
 
       val application = applicationBuilderWithConfig()
         .overrides(
-          inject.bind[SessionRepository].toInstance(mockSessionRepository),
           inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
           inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
           inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
@@ -496,7 +481,6 @@ class StoreMyNinoControllerSpec
 
       val application = applicationBuilderWithConfig()
         .overrides(
-          inject.bind[SessionRepository].toInstance(mockSessionRepository),
           inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
           inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
           inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
@@ -515,7 +499,6 @@ class StoreMyNinoControllerSpec
     "must return INTERNAL_SERVER_ERROR when auth returns an unauthorized" in {
       val application = applicationBuilderWithConfig()
         .overrides(
-          inject.bind[SessionRepository].toInstance(mockSessionRepository),
           inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
           inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
           inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
@@ -534,7 +517,6 @@ class StoreMyNinoControllerSpec
     "must fail to login user with 50 CL" in {
       val application = applicationBuilderWithConfig()
         .overrides(
-          inject.bind[SessionRepository].toInstance(mockSessionRepository),
           inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
           inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
           inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
@@ -553,7 +535,6 @@ class StoreMyNinoControllerSpec
     "must fail to login user with weak credential strength" in {
       val application = applicationBuilderWithConfig()
         .overrides(
-          inject.bind[SessionRepository].toInstance(mockSessionRepository),
           inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
           inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
           inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
@@ -586,7 +567,6 @@ class StoreMyNinoControllerSpec
       val app =
         applicationBuilderWithConfig()
           .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
             inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
             inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),
@@ -635,7 +615,6 @@ class StoreMyNinoControllerSpec
       val app =
         applicationBuilderWithConfig()
           .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
             inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
             inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),
@@ -672,7 +651,6 @@ class StoreMyNinoControllerSpec
       val application =
         applicationBuilderWithConfig()
           .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[AppleWalletConnector].toInstance(mockAppleWalletConnector),
             inject.bind[GoogleWalletConnector].toInstance(mockGoogleWalletConnector),
             inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),

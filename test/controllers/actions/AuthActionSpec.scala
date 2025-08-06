@@ -21,14 +21,10 @@ import com.google.inject.Inject
 import config.FrontendAppConfig
 import controllers.actions.AuthActionSpec.{fakeAuthConnector, retrievals}
 import controllers.routes
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
-import play.api.inject
 import play.api.mvc.{Action, AnyContent, BodyParsers, Results}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-import repositories.SessionRepository
 import uk.gov.hmrc.auth.core.*
 import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.auth.core.retrieve.Retrieval
@@ -49,14 +45,8 @@ class AuthActionSpec extends SpecBase with MockitoSugar {
 
       "must redirect the user to log in " in {
 
-        val mockSessionRepository = mock[SessionRepository]
-        when(mockSessionRepository.get(any())) thenReturn Future.successful(None)
-
         val application =
           applicationBuilder()
-            .overrides(
-              inject.bind[SessionRepository].toInstance(mockSessionRepository)
-            )
             .build()
 
         running(application) {
@@ -81,14 +71,8 @@ class AuthActionSpec extends SpecBase with MockitoSugar {
 
       "must redirect the user to log in " in {
 
-        val mockSessionRepository = mock[SessionRepository]
-        when(mockSessionRepository.get(any())) thenReturn Future.successful(None)
-
         val application =
           applicationBuilder()
-            .overrides(
-              inject.bind[SessionRepository].toInstance(mockSessionRepository)
-            )
             .build()
 
         running(application) {
@@ -113,14 +97,8 @@ class AuthActionSpec extends SpecBase with MockitoSugar {
 
       "must redirect the user to the unauthorised page" in {
 
-        val mockSessionRepository = mock[SessionRepository]
-        when(mockSessionRepository.get(any())) thenReturn Future.successful(None)
-
         val application =
           applicationBuilder()
-            .overrides(
-              inject.bind[SessionRepository].toInstance(mockSessionRepository)
-            )
             .build()
 
         running(application) {
@@ -145,14 +123,8 @@ class AuthActionSpec extends SpecBase with MockitoSugar {
 
       "must redirect the user to the unauthorised page" in {
 
-        val mockSessionRepository = mock[SessionRepository]
-        when(mockSessionRepository.get(any())) thenReturn Future.successful(None)
-
         val application =
           applicationBuilder()
-            .overrides(
-              inject.bind[SessionRepository].toInstance(mockSessionRepository)
-            )
             .build()
 
         running(application) {
@@ -177,14 +149,8 @@ class AuthActionSpec extends SpecBase with MockitoSugar {
 
       "must redirect the user to the unauthorised page" in {
 
-        val mockSessionRepository = mock[SessionRepository]
-        when(mockSessionRepository.get(any())) thenReturn Future.successful(None)
-
         val application =
           applicationBuilder()
-            .overrides(
-              inject.bind[SessionRepository].toInstance(mockSessionRepository)
-            )
             .build()
 
         running(application) {
@@ -209,14 +175,8 @@ class AuthActionSpec extends SpecBase with MockitoSugar {
 
       "must redirect the user to the unauthorised page" in {
 
-        val mockSessionRepository = mock[SessionRepository]
-        when(mockSessionRepository.get(any())) thenReturn Future.successful(None)
-
         val application =
           applicationBuilder()
-            .overrides(
-              inject.bind[SessionRepository].toInstance(mockSessionRepository)
-            )
             .build()
 
         running(application) {
@@ -241,14 +201,8 @@ class AuthActionSpec extends SpecBase with MockitoSugar {
 
       "must redirect the user to the unauthorised page" in {
 
-        val mockSessionRepository = mock[SessionRepository]
-        when(mockSessionRepository.get(any())) thenReturn Future.successful(None)
-
         val application =
           applicationBuilder()
-            .overrides(
-              inject.bind[SessionRepository].toInstance(mockSessionRepository)
-            )
             .build()
 
         running(application) {
@@ -273,14 +227,8 @@ class AuthActionSpec extends SpecBase with MockitoSugar {
 
       "must redirect the user to foo" in {
 
-        val mockSessionRepository = mock[SessionRepository]
-        when(mockSessionRepository.get(any())) thenReturn Future.successful(None)
-
         val application =
           applicationBuilder()
-            .overrides(
-              inject.bind[SessionRepository].toInstance(mockSessionRepository)
-            )
             .build()
 
         running(application) {

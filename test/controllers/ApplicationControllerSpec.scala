@@ -27,7 +27,7 @@ import play.api.{Application, inject}
 import play.api.mvc.{AnyContentAsEmpty, MessagesControllerComponents, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-import repositories.SessionRepository
+
 import services.*
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.UpstreamErrorResponse
@@ -47,9 +47,6 @@ class ApplicationControllerSpec extends SpecBase with IndividualDetailsFixtures 
     when(mockScaWrapperDataConnector.wrapperData()(any(), any(), any()))
       .thenReturn(Future.successful(Some(wrapperDataResponse)))
 
-    reset(mockSessionRepository)
-    when(mockSessionRepository.get(any())) thenReturn Future.successful(Some(emptyUserAnswers))
-
     reset(mockIndividualDetailsService)
     when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
       .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetails))
@@ -59,7 +56,6 @@ class ApplicationControllerSpec extends SpecBase with IndividualDetailsFixtures 
       .thenReturn(cats.data.EitherT.right[UpstreamErrorResponse](Future.successful(HttpResponse(OK, ""))))
   }
 
-  val mockSessionRepository: SessionRepository                                         = mock[SessionRepository]
   val mockIndividualDetailsService: IndividualDetailsService                           = mock[IndividualDetailsService]
   val mockIdentityVerificationFrontendConnector: IdentityVerificationFrontendConnector =
     mock[IdentityVerificationFrontendConnector]
@@ -78,7 +74,6 @@ class ApplicationControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
     lazy val application: Application = applicationBuilderWithConfig()
       .overrides(
-        inject.bind[SessionRepository].toInstance(mockSessionRepository),
         inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
         inject.bind[IdentityVerificationFrontendConnector].toInstance(mockIdentityVerificationFrontendConnector)
       )

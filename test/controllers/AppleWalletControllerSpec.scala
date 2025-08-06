@@ -27,7 +27,6 @@ import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-import repositories.SessionRepository
 import services.IndividualDetailsService
 import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolment, Enrolments}
 import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
@@ -61,9 +60,6 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
     when(mockApplePassConnector.getAppleQrCode(eqTo(passId))(any(), any()))
       .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](Some(Base64.getDecoder.decode(fakeBase64String))))
 
-    reset(mockSessionRepository)
-    when(mockSessionRepository.get(any())) thenReturn Future.successful(Some(emptyUserAnswers))
-
     reset(mockIndividualDetailsService)
     when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
       .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetails))
@@ -80,7 +76,6 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
   val controller: AppleWalletController = applicationWithConfig.injector.instanceOf[AppleWalletController]
 
-  val mockSessionRepository: SessionRepository                                         = mock[SessionRepository]
   val mockApplePassConnector: AppleWalletConnector                                     = mock[AppleWalletConnector]
   val mockIndividualDetailsService: IndividualDetailsService                           = mock[IndividualDetailsService]
   val mockIdentityVerificationFrontendConnector: IdentityVerificationFrontendConnector =
@@ -98,7 +93,6 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
         val application = applicationBuilderWithConfig()
           .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
             inject.bind[IdentityVerificationFrontendConnector].toInstance(mockIdentityVerificationFrontendConnector)
@@ -122,7 +116,6 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
         val application =
           applicationBuilderWithConfig()
             .overrides(
-              inject.bind[SessionRepository].toInstance(mockSessionRepository),
               inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
               inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),
               inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
@@ -154,7 +147,6 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
         val application =
           applicationBuilderWithConfig()
             .overrides(
-              inject.bind[SessionRepository].toInstance(mockSessionRepository),
               inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
               inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),
               inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
@@ -187,7 +179,6 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
         val application = applicationBuilderWithConfig()
           .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
           )
@@ -213,7 +204,6 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
         val application = applicationBuilderWithConfig()
           .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
           )
@@ -255,7 +245,6 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
         val application = applicationBuilderWithConfig()
           .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
           )
@@ -275,7 +264,6 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
       "must return QR code" in {
         val application = applicationBuilderWithConfig()
           .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
           )
@@ -298,7 +286,6 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
         val application = applicationBuilderWithConfig()
           .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
           )
@@ -339,7 +326,6 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
         val application = applicationBuilderWithConfig()
           .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
           )
@@ -359,7 +345,6 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
       "must fail to login user" in {
         val application = applicationBuilderWithConfig()
           .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
           )
@@ -381,7 +366,6 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
       "must fail to login user2" in {
         val application = applicationBuilderWithConfig()
           .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
           )
@@ -404,7 +388,6 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
         val application = applicationBuilderWithConfig()
           .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
             inject.bind[FandFConnector].toInstance(mockFandFConnector)
@@ -429,7 +412,6 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
         val application =
           applicationBuilderWithConfig()
             .overrides(
-              inject.bind[SessionRepository].toInstance(mockSessionRepository),
               inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
               inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
               inject.bind[IdentityVerificationFrontendConnector].toInstance(mockIdentityVerificationFrontendConnector)
@@ -456,7 +438,6 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
         val application =
           applicationBuilderWithConfig()
             .overrides(
-              inject.bind[SessionRepository].toInstance(mockSessionRepository),
               inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
               inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),
               inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
@@ -481,7 +462,6 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
         val application = applicationBuilderWithConfig()
           .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
           )
@@ -504,7 +484,6 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
         val application = applicationBuilderWithConfig()
           .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
           )
@@ -540,7 +519,6 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
       "must return QR code" in {
         val application = applicationBuilderWithConfig()
           .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
           )
@@ -565,7 +543,6 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
         val application = applicationBuilderWithConfig()
           .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
           )
@@ -602,7 +579,6 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
       "must fail to login user" in {
         val application = applicationBuilderWithConfig()
           .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
           )
@@ -623,7 +599,6 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
       "must fail to login user2" in {
         val application = applicationBuilderWithConfig()
           .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
           )
@@ -645,7 +620,6 @@ class AppleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
         val application = applicationBuilderWithConfig()
           .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[AppleWalletConnector].toInstance(mockApplePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
             inject.bind[FandFConnector].toInstance(mockFandFConnector)

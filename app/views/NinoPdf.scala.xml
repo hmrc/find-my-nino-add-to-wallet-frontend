@@ -12,7 +12,12 @@
         - and a sequence of one or more fo:page-sequences containing the text and formatting instructions
         -->
 
-<fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format" font-family="OpenSans">
+<fo:root
+        xmlns:fo="http://www.w3.org/1999/XSL/Format"
+        xmlns:fox="http://xmlgraphics.apache.org/fop/extensions"
+        font-family="OpenSans"
+        xml:lang="@lang"
+>
 
     <fo:layout-master-set>
         <!-- fo:layout-master-set defines in its children the page layout:
@@ -33,7 +38,7 @@
                                margin-right="2.2cm">
             <fo:region-body margin-top="0.7cm"/>
             <fo:region-before extent="0.5cm"/>
-            <fo:region-after extent="0.3cm"/>
+            <fo:region-after extent="0.6cm"/>
         </fo:simple-page-master>
 
         <!-- layout for the other pages -->
@@ -46,7 +51,7 @@
                                margin-right="2.2cm">
             <fo:region-body margin-top="0.5cm"/>
             <fo:region-before extent="0.5cm"/>
-            <fo:region-after extent="0.3cm"/>
+            <fo:region-after extent="0.6cm"/>
         </fo:simple-page-master>
 
         <fo:page-sequence-master master-name="basicPSM">
@@ -77,6 +82,14 @@
     </fo:declarations>
     <!-- end Document metadata -->
 
+    <fo:bookmark-tree>
+        <fo:bookmark internal-destination="heading-h1-1">
+            <fo:bookmark-title>@Messages("label.your_national_insurance_number")</fo:bookmark-title>
+            <fo:bookmark internal-destination="heading-h1-1-h2-1">
+                <fo:bookmark-title>@messages("label.your_national_insurance_number_is")</fo:bookmark-title>
+            </fo:bookmark>
+        </fo:bookmark>
+    </fo:bookmark-tree>
 
     <!-- start page-sequence
          here comes the text (contained in flow objects)
@@ -107,8 +120,13 @@
                               border-color="#28a197"
                               padding-start="4px">
                         <fo:wrapper role="artifact">
-                            <fo:external-graphic content-type="content-type:image/png" src="/pdf/logo/hmrc-logo.jpg"
-                                                 content-height="scale-to-fit" content-width="0.8cm"/>
+                            <fo:external-graphic content-type="content-type:image/png"
+                                                 src="/pdf/logo/hmrc-logo.jpg"
+                                                 content-height="scale-to-fit"
+                                                 content-width="0.8cm"
+                                                 role="Artifact"
+                                                 fox:alt-text="@Messages("label.alt.hmrc_logo")"
+                            />
                         </fo:wrapper>
                         <fo:block role="P"
                                   font-family="OpenSans"
@@ -128,7 +146,8 @@
                               padding-before="10px"
                               padding-after="6px"
                               font-family="OpenSans-Bold"
-                              font-weight="bold">
+                              font-weight="bold"
+                              id="heading-h1-1">
                         @Messages("label.your_national_insurance_number")
                     </fo:block>
                 </fo:inline-container>
@@ -194,7 +213,9 @@
                                   line-height="12pt">
                             <fo:basic-link color="#1F70B8"
                                            external-destination='https://@Messages("label.www_gov_uk_hmrc")'
-                                           text-decoration="underline">
+                                           text-decoration="underline"
+                                           role="Link"
+                                           fox:alt-text="@Message("label.alt.www_gov_uk_hmrc")">
                                 @messages("label.www_gov_uk_hmrc")
                             </fo:basic-link>
                         </fo:block>
@@ -217,8 +238,14 @@
                       border-style="solid"
                       border-width="1.5px"
                       border-color="#28a197">
-                <fo:block role="H2" font-size="10.5pt" font-family="OpenSans-Bold" font-weight="bold"
-                          padding-before="8px" padding-after="6px" text-align="center">
+                <fo:block role="H2"
+                          font-size="10.5pt"
+                          font-family="OpenSans-Bold"
+                          font-weight="bold"
+                          padding-before="8px"
+                          padding-after="6px"
+                          text-align="center"
+                          id="heading-h1-1-h2-1">
                     @messages("label.your_national_insurance_number_is")
                 </fo:block>
                 <fo:block role="P"
@@ -422,7 +449,9 @@
                             </fo:block>
                             <fo:basic-link color="#1F70B8"
                                            external-destination='https://@Messages("label.child.trust.fund.details.link")'
-                                           text-decoration="underline">
+                                           text-decoration="underline"
+                                           role="Link"
+                                           fox:alt-text="@Messages("label.alt.child_trust_link")">
                                 @messages("label.child.trust.fund.details.link")
                             </fo:basic-link>
                         </fo:block>
@@ -458,7 +487,9 @@
                                         @Messages("label.email")
                                         <fo:basic-link color="#1F70B8"
                                                        external-destination='mailto:@Messages("label.email_for_welsh_language")'
-                                                       text-decoration="underline">
+                                                       text-decoration="underline"
+                                                       role="Link"
+                                                       fox:alt-text="@Messages("label.alt.email_for_welsh_language")">
                                             @messages("label.email_for_welsh_language")
                                         </fo:basic-link>
                                     </fo:block>
@@ -521,7 +552,9 @@
                                 </fo:block>
                                 <fo:basic-link color="#1F70B8"
                                                external-destination='https://@Messages("label.you_can_download_and_use_the_hmrc_app_or_go_online_to.link")'
-                                               text-decoration="underline">
+                                               text-decoration="underline"
+                                               role="Link"
+                                               fox:alt-text="@Messages("label.alt.pta_link"))">
                                     @messages("label.you_can_download_and_use_the_hmrc_app_or_go_online_to.link")
                                 </fo:basic-link>
                                 <fo:block>
@@ -615,7 +648,9 @@
                                 </fo:block>
                                 <fo:basic-link color="#1F70B8"
                                                external-destination='https://@Messages("label.www_gov_uk_national_insurance")'
-                                               text-decoration="underline">
+                                               text-decoration="underline"
+                                               role="Link"
+                                               fox:alt-text="@Message("label.alt.national_insurance_link"))">
                                     @messages("label.www_gov_uk_national_insurance")
                                 </fo:basic-link>
                                 <fo:block padding-before="6px" padding-after="6px">
@@ -623,7 +658,9 @@
                                 </fo:block>
                                 <fo:basic-link color="#1F70B8"
                                                external-destination='https://@Messages("label.www_youtube_com_hmrcgovuk")'
-                                               text-decoration="underline">
+                                               text-decoration="underline"
+                                               role="Link"
+                                               fox:alt-text="@Messages("label.alt.youtube_channel")">
                                     @messages("label.www_youtube_com_hmrcgovuk")
                                 </fo:basic-link>
                             </fo:block>

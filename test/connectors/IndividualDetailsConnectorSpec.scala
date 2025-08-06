@@ -111,7 +111,7 @@ class IndividualDetailsConnectorSpec
   }
 
   "IndividualDetailsConnector#deleteIndividualDetails" must {
-    "return unit for deleteIndividualDetails when true returned in response body" in {
+    "return unit for deleteIndividualDetails when successful" in {
       val url: String = s"/find-my-nino-add-to-wallet/individuals/details/cache/NINO/${nino.take(8)}"
       stubDelete(url, OK, Some("true"))
       val result      = Await.result(connector.deleteIndividualDetails(nino).value, Duration.Inf)

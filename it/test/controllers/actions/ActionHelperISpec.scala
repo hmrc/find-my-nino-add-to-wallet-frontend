@@ -231,7 +231,6 @@ class ActionHelperISpec
 
       result.isRight mustBe true
 
-      //  result mustBe a[Right[_, _]]
       val userRequest = result.toOption.get
       userRequest.enrolments mustBe Enrolments(Set(Enrolment("HMRC-PT")))
     }

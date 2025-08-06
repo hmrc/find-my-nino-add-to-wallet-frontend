@@ -28,7 +28,6 @@ import java.time.{Clock, ZoneOffset}
 class HmrcModule extends Module {
 
   override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] =
-    // For session based storage instead of cred based, change to SessionIdentifierAction
     Seq(
       bind[IdentifierAction].to(classOf[SessionIdentifierAction]),
       bind[Clock].toInstance(Clock.systemDefaultZone.withZone(ZoneOffset.UTC)),

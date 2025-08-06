@@ -111,14 +111,9 @@ class IndividualDetailsConnectorSpec
     "remove individualDetails when API call succeeds" in new SetupForDelete {
       stubDelete(url, OK, Some("true"))
 
-      val result: Either[UpstreamErrorResponse, Boolean] = connector.deleteIndividualDetails(nino).value.futureValue
+      val result: Either[UpstreamErrorResponse, Unit] = connector.deleteIndividualDetails(nino).value.futureValue
 
-      result mustBe a[Right[_, _]]
-      result match {
-        case Right(d: Boolean) =>
-          d mustBe true
-        case _                 => fail("Expected true")
-      }
+      result mustBe Right((): Unit)
     }
   }
 

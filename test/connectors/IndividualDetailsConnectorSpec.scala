@@ -111,17 +111,11 @@ class IndividualDetailsConnectorSpec
   }
 
   "IndividualDetailsConnector#deleteIndividualDetails" must {
-    "return true for deleteIndividualDetails when true returned in response body" in {
+    "return unit for deleteIndividualDetails when true returned in response body" in {
       val url: String = s"/find-my-nino-add-to-wallet/individuals/details/cache/NINO/${nino.take(8)}"
       stubDelete(url, OK, Some("true"))
       val result      = Await.result(connector.deleteIndividualDetails(nino).value, Duration.Inf)
-      result mustBe Right(true)
-    }
-    "return false for deleteIndividualDetails when false returned in response body" in {
-      val url: String = s"/find-my-nino-add-to-wallet/individuals/details/cache/NINO/${nino.take(8)}"
-      stubDelete(url, OK, Some("false"))
-      val result      = Await.result(connector.deleteIndividualDetails(nino).value, Duration.Inf)
-      result mustBe Right(false)
+      result mustBe Right((): Unit)
     }
   }
 }

@@ -54,10 +54,7 @@ class CheckChildRecordActionWithCacheInvalidation @Inject() (
       .deleteIdData(identifier)
       .biflatMap(
         error => throw error,
-        {
-          case true  => EitherT(actionHelper.checkForCrn(identifier, sessionId, authContext, messages))
-          case false => throw new RuntimeException("Failed to invalidate individual details data cache")
-        }
+        _ => EitherT(actionHelper.checkForCrn(identifier, sessionId, authContext, messages))
       )
       .value
   }

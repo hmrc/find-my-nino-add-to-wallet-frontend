@@ -65,25 +65,15 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec with ScalaFutures with Mo
     result.futureValue shouldBe Left(error)
   }
 
-  it should "delegate delete to connector and return true if acknowledged" in {
+  it should "delegate delete to connector and return unit" in {
     val mockConnector = mock[IndividualDetailsConnector]
     val service       = new IndividualDetailsServiceImpl(mockConnector)
 
     when(mockConnector.deleteIndividualDetails(any)(any, any))
-      .thenReturn(EitherT(Future.successful(Right(true))))
+      .thenReturn(EitherT(Future.successful(Right((): Unit))))
 
     val result = Await.result(service.deleteIdData("testNino").value, Duration.Inf)
-    result shouldBe Right(true)
+    result shouldBe Right((): Unit)
   }
 
-  it should "return false if deletion not acknowledged" in {
-    val mockConnector = mock[IndividualDetailsConnector]
-    val service       = new IndividualDetailsServiceImpl(mockConnector)
-
-    when(mockConnector.deleteIndividualDetails(any)(any, any))
-      .thenReturn(EitherT(Future.successful(Right(false))))
-
-    val result = Await.result(service.deleteIdData("testNino").value, Duration.Inf)
-    result shouldBe Right(false)
-  }
 }

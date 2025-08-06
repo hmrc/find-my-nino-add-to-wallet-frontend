@@ -35,7 +35,7 @@ trait IndividualDetailsService {
 
   def deleteIdData(
     nino: String
-  )(implicit hc: HeaderCarrier, ec: ExecutionContext): EitherT[Future, UpstreamErrorResponse, Boolean]
+  )(implicit hc: HeaderCarrier, ec: ExecutionContext): EitherT[Future, UpstreamErrorResponse, Unit]
 }
 
 class IndividualDetailsServiceImpl @Inject() (
@@ -52,6 +52,6 @@ class IndividualDetailsServiceImpl @Inject() (
   override def deleteIdData(nino: String)(implicit
     hc: HeaderCarrier,
     ec: ExecutionContext
-  ): EitherT[Future, UpstreamErrorResponse, Boolean] =
+  ): EitherT[Future, UpstreamErrorResponse, Unit] =
     connector.deleteIndividualDetails(nino)
 }

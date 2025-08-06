@@ -30,8 +30,8 @@ import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import util.Fixtures.*
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration.DurationInt
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.duration.{Duration, DurationInt}
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.language.postfixOps
 
 class IndividualDetailsServiceSpec extends AnyFlatSpec with ScalaFutures with MockitoSugar {
@@ -69,23 +69,21 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec with ScalaFutures with Mo
     val mockConnector = mock[IndividualDetailsConnector]
     val service       = new IndividualDetailsServiceImpl(mockConnector)
 
-    when(mockConnector.deleteIndividualDetails(any)(any))
-      .thenReturn(Future.successful(true))
+    when(mockConnector.deleteIndividualDetails(any)(any, any))
+      .thenReturn(EitherT(Future.successful(Right(true))))
 
-    val result = service.deleteIdData("testNino")
-
-    result.futureValue shouldBe true
+    val result = Await.result(service.deleteIdData("testNino").value, Duration.Inf)
+    result shouldBe Right(true)
   }
 
   it should "return false if deletion not acknowledged" in {
     val mockConnector = mock[IndividualDetailsConnector]
     val service       = new IndividualDetailsServiceImpl(mockConnector)
 
-    when(mockConnector.deleteIndividualDetails(any)(any))
-      .thenReturn(Future.successful(false))
+    when(mockConnector.deleteIndividualDetails(any)(any, any))
+      .thenReturn(EitherT(Future.successful(Right(false))))
 
-    val result = service.deleteIdData("testNino")
-
-    result.futureValue shouldBe false
+    val result = Await.result(service.deleteIdData("testNino").value, Duration.Inf)
+    result shouldBe Right(false)
   }
 }

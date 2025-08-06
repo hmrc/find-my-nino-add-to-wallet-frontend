@@ -57,7 +57,7 @@ class IndividualDetailsConnectorSpec
     }
   }
 
-  "IndividualDetailsConnector#getIndividualDetails" should {
+  "getIndividualDetails" should {
 
     "return individualDetails when API call succeeds" in new Setup {
       stubGet(url, OK, Some(jsonBody))
@@ -93,4 +93,33 @@ class IndividualDetailsConnectorSpec
       }
     }
   }
+
+  trait SetupForDelete {
+    val nino: String                               = "AA123456A"
+    val sessionId: String                          = "session-123"
+    val url: String                                =
+      s"/find-my-nino-add-to-wallet/individuals/details/cache/NINO/${nino.take(8)}"
+    lazy val connector: IndividualDetailsConnector = {
+      val httpClientV2       = inject[HttpClientV2]
+      val appConfig          = inject[FrontendAppConfig]
+      val httpClientResponse = inject[HttpClientResponse]
+      new IndividualDetailsConnector(httpClientV2, appConfig, httpClientResponse)
+    }
+  }
+
+  "deleteIndividualDetails" should {
+    "remove individualDetails when API call succeeds" in new SetupForDelete {
+      stubDelete(url, OK, Some("true"))
+
+      val result: Either[UpstreamErrorResponse, Boolean] = connector.deleteIndividualDetails(nino).value.futureValue
+
+      result mustBe a[Right[_, _]]
+      result match {
+        case Right(d: Boolean) =>
+          d mustBe true
+        case _                 => fail("Expected true")
+      }
+    }
+  }
+
 }

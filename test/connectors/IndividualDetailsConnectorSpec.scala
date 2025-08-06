@@ -16,7 +16,7 @@
 
 package connectors
 
-import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get}
+import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, delete, get}
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import config.FrontendAppConfig
 import org.scalatest.concurrent.ScalaFutures
@@ -34,7 +34,8 @@ import uk.gov.hmrc.http.client.HttpClientV2
 import util.Fixtures.*
 import util.WireMockHelper
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, ExecutionContext}
 
 class IndividualDetailsConnectorSpec
     extends PlaySpec
@@ -70,12 +71,19 @@ class IndividualDetailsConnectorSpec
   implicit override val patienceConfig: PatienceConfig =
     PatienceConfig(timeout = Span(2, Seconds), interval = Span(50, Millis))
 
-  def stubGet(url: String, responseStatus: Int, responseBody: Option[String] = None): StubMapping =
+  private def stubGet(url: String, responseStatus: Int, responseBody: Option[String] = None): StubMapping =
     server.stubFor {
       val baseResponse = aResponse().withStatus(responseStatus).withHeader(CONTENT_TYPE, JSON)
       val response     = responseBody.fold(baseResponse)(body => baseResponse.withBody(body))
       get(url).willReturn(response)
     }
+
+  private def stubDelete(url: String, responseStatus: Int, responseBody: Option[String]): StubMapping = server.stubFor {
+    val baseResponse = aResponse().withStatus(responseStatus).withHeader(CONTENT_TYPE, JSON)
+    val response     = responseBody.fold(baseResponse)(body => baseResponse.withBody(body))
+
+    delete(url).willReturn(response)
+  }
 
   "IndividualDetailsConnector#getIndividualDetails" should {
 
@@ -103,9 +111,17 @@ class IndividualDetailsConnectorSpec
   }
 
   "IndividualDetailsConnector#deleteIndividualDetails" must {
-    "return false for deleteIndividualDetails" in {
-      val result = connector.deleteIndividualDetails(nino).futureValue
-      result mustBe false
+    "return true for deleteIndividualDetails when true returned in response body" in {
+      val url: String = s"/find-my-nino-add-to-wallet/individuals/details/cache/NINO/${nino.take(8)}"
+      stubDelete(url, OK, Some("true"))
+      val result      = Await.result(connector.deleteIndividualDetails(nino).value, Duration.Inf)
+      result mustBe Right(true)
+    }
+    "return false for deleteIndividualDetails when false returned in response body" in {
+      val url: String = s"/find-my-nino-add-to-wallet/individuals/details/cache/NINO/${nino.take(8)}"
+      stubDelete(url, OK, Some("false"))
+      val result      = Await.result(connector.deleteIndividualDetails(nino).value, Duration.Inf)
+      result mustBe Right(false)
     }
   }
 }

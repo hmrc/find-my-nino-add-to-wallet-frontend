@@ -16,7 +16,6 @@
 
 package controllers.actions
 
-import cats.data.EitherT
 import com.google.inject.Inject
 import config.FrontendAppConfig
 import controllers.auth.AuthContext
@@ -82,11 +81,7 @@ class ActionHelper @Inject() (
 
                 (for {
                   _ <- npsService.upliftCRN(identifier, request)
-                  _ <- EitherT[Future, UpstreamErrorResponse, Boolean](
-                         individualDetailsService
-                           .deleteIdData(individualDetails.nino)
-                           .map(Right(_))
-                       )
+                  _ <- individualDetailsService.deleteIdData(individualDetails.nino)
                 } yield UserRequest(
                   Some(Nino(individualDetails.nino)),
                   authContext.confidenceLevel,

@@ -102,14 +102,15 @@ class StoreMyNinoControllerSpec
   val mockNPSService: NPSService                                                       = mock[NPSService]
   val mockFandFConnector: FandFConnector                                               = mock[FandFConnector]
 
-  val fakeBase64String      = "UEsDBBQACAgIABxqJlYAAAAAAA"
-  val fakeGooglePassSaveUrl = "testURL"
-
+  val fakeBase64String                                                       = "UEsDBBQACAgIABxqJlYAAAAAAA"
+  val fakeGooglePassSaveUrl                                                  = "testURL"
+  private val trueResponse: EitherT[Future, UpstreamErrorResponse, Boolean]  = EitherT.right(Future.successful(true))
+  private val falseResponse: EitherT[Future, UpstreamErrorResponse, Boolean] = EitherT.right(Future.successful(false))
   "StoreMyNino Controller" - {
 
     "must return OK and the correct view for a GET" in {
-      when(mockIndividualDetailsService.deleteIdData(any())(any()))
-        .thenReturn(Future.successful(true))
+      when(mockIndividualDetailsService.deleteIdData(any())(any(), any()))
+        .thenReturn(trueResponse)
 
       val application =
         applicationBuilderWithConfig()
@@ -155,8 +156,8 @@ class StoreMyNinoControllerSpec
     }
 
     "must return correct view with the trusted helpers displayed and no add to wallet links when loaded by trusted helper" in {
-      when(mockIndividualDetailsService.deleteIdData(any())(any()))
-        .thenReturn(Future.successful(true))
+      when(mockIndividualDetailsService.deleteIdData(any())(any(), any()))
+        .thenReturn(trueResponse)
 
       when(mockFandFConnector.getTrustedHelper()(any())).thenReturn(Future.successful(Some(trustedHelper)))
 
@@ -205,8 +206,8 @@ class StoreMyNinoControllerSpec
     }
 
     "must throw an exception when the individual details cache can't be invalidated" in {
-      when(mockIndividualDetailsService.deleteIdData(any())(any()))
-        .thenReturn(Future.successful(false))
+      when(mockIndividualDetailsService.deleteIdData(any())(any(), any()))
+        .thenReturn(falseResponse)
 
       val application =
         applicationBuilderWithConfig()
@@ -235,8 +236,8 @@ class StoreMyNinoControllerSpec
     }
 
     "must redirect to redirect url" in {
-      when(mockIndividualDetailsService.deleteIdData(any())(any()))
-        .thenReturn(Future.successful(true))
+      when(mockIndividualDetailsService.deleteIdData(any())(any(), any()))
+        .thenReturn(trueResponse)
 
       val application =
         applicationBuilderWithConfig()
@@ -265,8 +266,8 @@ class StoreMyNinoControllerSpec
     }
 
     "must redirect to error view when individuals details could not be found" in {
-      when(mockIndividualDetailsService.deleteIdData(any())(any()))
-        .thenReturn(Future.successful(true))
+      when(mockIndividualDetailsService.deleteIdData(any())(any(), any()))
+        .thenReturn(trueResponse)
 
       when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
         .thenReturn(EitherT.leftT[Future, IndividualDetails](UpstreamErrorResponse("Not Found", NOT_FOUND)))
@@ -295,8 +296,8 @@ class StoreMyNinoControllerSpec
     }
 
     "must redirect to error view when individuals details could not be parsed" in {
-      when(mockIndividualDetailsService.deleteIdData(any())(any()))
-        .thenReturn(Future.successful(true))
+      when(mockIndividualDetailsService.deleteIdData(any())(any(), any()))
+        .thenReturn(trueResponse)
 
       when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
         .thenReturn(EitherT.leftT[Future, IndividualDetails](UpstreamErrorResponse(" ", UNPROCESSABLE_ENTITY)))
@@ -327,8 +328,8 @@ class StoreMyNinoControllerSpec
     }
 
     "must return google pass" in {
-      when(mockIndividualDetailsService.deleteIdData(any())(any()))
-        .thenReturn(Future.successful(true))
+      when(mockIndividualDetailsService.deleteIdData(any())(any(), any()))
+        .thenReturn(trueResponse)
 
       val application = applicationBuilderWithConfig()
         .overrides(
@@ -350,8 +351,8 @@ class StoreMyNinoControllerSpec
     }
 
     "must redirect to passIdNotFoundView when no Google pass is returned" in {
-      when(mockIndividualDetailsService.deleteIdData(any())(any()))
-        .thenReturn(Future.successful(true))
+      when(mockIndividualDetailsService.deleteIdData(any())(any(), any()))
+        .thenReturn(trueResponse)
 
       when(mockGoogleWalletConnector.getGooglePassUrl(eqTo(googlePassId))(any(), any()))
         .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](None))
@@ -391,8 +392,8 @@ class StoreMyNinoControllerSpec
     }
 
     "must return apple pass" in {
-      when(mockIndividualDetailsService.deleteIdData(any())(any()))
-        .thenReturn(Future.successful(true))
+      when(mockIndividualDetailsService.deleteIdData(any())(any(), any()))
+        .thenReturn(trueResponse)
 
       val application = applicationBuilderWithConfig()
         .overrides(
@@ -414,8 +415,8 @@ class StoreMyNinoControllerSpec
     }
 
     "must redirect to passIdNotFoundView when no Apple pass is returned" in {
-      when(mockIndividualDetailsService.deleteIdData(any())(any()))
-        .thenReturn(Future.successful(true))
+      when(mockIndividualDetailsService.deleteIdData(any())(any(), any()))
+        .thenReturn(trueResponse)
 
       when(mockAppleWalletConnector.getApplePass(eqTo(applePassId))(any(), any()))
         .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](None))
@@ -456,8 +457,8 @@ class StoreMyNinoControllerSpec
     }
 
     "must return InternalServerError when Apple pass creation fails" in {
-      when(mockIndividualDetailsService.deleteIdData(any())(any()))
-        .thenReturn(Future.successful(true))
+      when(mockIndividualDetailsService.deleteIdData(any())(any(), any()))
+        .thenReturn(trueResponse)
 
       when(mockAppleWalletConnector.createApplePass(any(), any())(any(), any()))
         .thenReturn(
@@ -489,8 +490,8 @@ class StoreMyNinoControllerSpec
     }
 
     "must return InternalServerError when Google Pass creation fails" in {
-      when(mockIndividualDetailsService.deleteIdData(any())(any()))
-        .thenReturn(Future.successful(true))
+      when(mockIndividualDetailsService.deleteIdData(any())(any(), any()))
+        .thenReturn(trueResponse)
 
       when(mockAppleWalletConnector.createApplePass(any(), any())(any(), any()))
         .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](Some(applePassId)))
@@ -599,16 +600,16 @@ class StoreMyNinoControllerSpec
     }
 
     "must uplift a CRN when CRN uplift is toggled on" in {
-      when(mockIndividualDetailsService.deleteIdData(any())(any()))
-        .thenReturn(Future.successful(true))
+      when(mockIndividualDetailsService.deleteIdData(any())(any(), any()))
+        .thenReturn(trueResponse)
 
       when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
         .thenReturn(
           EitherT.rightT[Future, UpstreamErrorResponse](fakeindividualDetailsWithCRN),
           EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetails)
         )
-      when(mockIndividualDetailsService.deleteIdData(any())(any()))
-        .thenReturn(Future.successful(true))
+      when(mockIndividualDetailsService.deleteIdData(any())(any(), any()))
+        .thenReturn(trueResponse)
       when(mockNPSService.upliftCRN(any(), any())(any()))
         .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](true))
 
@@ -655,8 +656,8 @@ class StoreMyNinoControllerSpec
     }
 
     "must return OK and RedirectToPostalFormView when CRN uplift is toggled off" in {
-      when(mockIndividualDetailsService.deleteIdData(any())(any()))
-        .thenReturn(Future.successful(true))
+      when(mockIndividualDetailsService.deleteIdData(any())(any(), any()))
+        .thenReturn(trueResponse)
 
       when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
         .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](fakeindividualDetailsWithCRN))
@@ -690,8 +691,8 @@ class StoreMyNinoControllerSpec
     }
 
     "must return INTERNAL_SERVER_ERROR with error view for Left(UpstreamErrorResponse) from CRN uplift" in {
-      when(mockIndividualDetailsService.deleteIdData(any())(any()))
-        .thenReturn(Future.successful(true))
+      when(mockIndividualDetailsService.deleteIdData(any())(any(), any()))
+        .thenReturn(trueResponse)
 
       when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
         .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](fakeindividualDetailsWithCRN))

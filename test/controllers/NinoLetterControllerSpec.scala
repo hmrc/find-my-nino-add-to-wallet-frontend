@@ -51,11 +51,13 @@ class NinoLetterControllerSpec extends SpecBase with IndividualDetailsFixtures w
 
   implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
+  private val trueResponse: EitherT[Future, UpstreamErrorResponse, Boolean]  = EitherT.right(Future.successful(true))
+  private val falseResponse: EitherT[Future, UpstreamErrorResponse, Boolean] = EitherT.right(Future.successful(false))
+
   "NinoLetter Controller" - {
     "must return OK and the correct view for a GET" in {
       userLoggedInFMNUser(NinoUser)
-      when(mockIndividualDetailsService.deleteIdData(any())(any()))
-        .thenReturn(Future.successful(true))
+      when(mockIndividualDetailsService.deleteIdData(any())(any(), any())).thenReturn(trueResponse)
 
       when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
         .thenReturn(
@@ -82,8 +84,8 @@ class NinoLetterControllerSpec extends SpecBase with IndividualDetailsFixtures w
 
     "must throw an exception when the individual details cache can't be invalidated" in {
       userLoggedInFMNUser(NinoUser)
-      when(mockIndividualDetailsService.deleteIdData(any())(any()))
-        .thenReturn(Future.successful(false))
+      when(mockIndividualDetailsService.deleteIdData(any())(any(), any()))
+        .thenReturn(falseResponse)
 
       when(mockFandFConnector.getTrustedHelper()(any())).thenReturn(Future.successful(None))
 
@@ -117,8 +119,8 @@ class NinoLetterControllerSpec extends SpecBase with IndividualDetailsFixtures w
           EitherT.rightT[Future, UpstreamErrorResponse](fakeindividualDetailsWithCRN),
           EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetails)
         )
-      when(mockIndividualDetailsService.deleteIdData(any())(any()))
-        .thenReturn(Future.successful(true))
+      when(mockIndividualDetailsService.deleteIdData(any())(any(), any()))
+        .thenReturn(trueResponse)
       when(mockNPSService.upliftCRN(any(), any())(any()))
         .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](true))
 
@@ -146,8 +148,8 @@ class NinoLetterControllerSpec extends SpecBase with IndividualDetailsFixtures w
   "NinoLetterController saveNationalInsuranceNumberAsPdf" - {
     "must return OK and pdf file with correct content" in {
       userLoggedInFMNUser(NinoUser)
-      when(mockIndividualDetailsService.deleteIdData(any())(any()))
-        .thenReturn(Future.successful(true))
+      when(mockIndividualDetailsService.deleteIdData(any())(any(), any()))
+        .thenReturn(trueResponse)
 
       when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
         .thenReturn(

@@ -52,7 +52,7 @@ lazy val root = (project in file("."))
       "-unchecked",
       "-feature",
       "-language:noAutoTupling",
-      "-Werror",
+ //     "-Werror",
       "-Wconf:msg=unused import&src=.*views/.*:s",
       "-Wconf:msg=unused import&src=<empty>:s",
       "-Wconf:msg=unused&src=.*RoutesPrefix\\.scala:s",

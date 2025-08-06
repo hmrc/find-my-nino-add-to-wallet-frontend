@@ -151,10 +151,14 @@ class ActionHelperISpec
     }
 
     "return UserRequest when CRN uplift succeeds and adult-registration API responds with NO_CONTENT" in {
-
       server.stubFor(
         get(urlEqualTo(s"/find-my-nino-add-to-wallet/individuals/details/NINO/${nino.take(8)}/Y"))
           .willReturn(okJson(individualDetailsCrnTrueJson))
+      )
+
+      server.stubFor(
+        delete(urlEqualTo(s"/find-my-nino-add-to-wallet/individuals/details/cache/NINO/AB123456"))
+          .willReturn(okJson("true"))
       )
 
       server.stubFor(
@@ -214,13 +218,20 @@ class ActionHelperISpec
       )
 
       server.stubFor(
+        delete(urlEqualTo(s"/find-my-nino-add-to-wallet/individuals/details/cache/NINO/AB123456"))
+          .willReturn(okJson("true"))
+      )
+
+      server.stubFor(
         put(urlEqualTo(s"/find-my-nino-add-to-wallet/adult-registration/$nino"))
           .willReturn(aResponse().withStatus(UNPROCESSABLE_ENTITY).withBody(jsonUnprocessableEntityAlreadyAdult))
       )
 
       val result = actionHelper.checkForCrn(nino, sessionId, fakeAuthContext, messages).futureValue
 
-      result mustBe a[Right[_, _]]
+      result.isRight mustBe true
+
+      //  result mustBe a[Right[_, _]]
       val userRequest = result.toOption.get
       userRequest.enrolments mustBe Enrolments(Set(Enrolment("HMRC-PT")))
     }

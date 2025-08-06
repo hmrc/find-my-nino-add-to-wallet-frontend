@@ -90,6 +90,15 @@ label.view_more_information_about_national_insurance_at=Gallwch weld rhagor o wy
 label.www_gov_uk_national_insurance=www.gov.uk/yswiriant-gwladol
 label.or_our_youtube_channel_at=neu ar ein sianel YouTube yn:
 label.www_youtube_com_hmrcgovuk=www.youtube.com/HMRCgovuk
+
+label.alt.www_gov_uk_hmrc=Ymweld â hafan CThEF
+label.alt.child_trust_link=Dysgwch ragor am Gronfeydd Ymddiriedolaeth Plant ar GOV.UK
+label.alt.pta_link=Creu a chael mynediad at eich cyfrif treth personol ar GOV.UK
+label.alt.national_insurance_link=Dysgwch ragor am Yswiriant Gwladol ar GOV.UK
+label.alt.youtube_channel=Gwyliwch fideos ynghylch Yswiriant Gwladol ar sianel YouTube CThEF
+label.alt.email_for_welsh_language=Anfonwch e-bost i gwasanaeth.cymraeg@hmrc.gov.uk i gael yr wybodaeth hon yn Gymraeg
+label.alt.hmrc_logo=HMRC logo
+
 label.information_is_available_in_large_print_audio_tape_and_braille_formats=Mae gwybodaeth ar gael ar sain, mewn print bras a Braille.
 label.text_relay_service_prefix_number_18001=I gael gwasanaeth Text Relay, gwasgwch 18001 yn gyntaf.
 label.hmrc_date=CThEF {0}

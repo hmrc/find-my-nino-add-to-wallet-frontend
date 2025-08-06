@@ -125,7 +125,7 @@
                                                  content-height="scale-to-fit"
                                                  content-width="0.8cm"
                                                  role="Artifact"
-                                                 fox:alt-text="HMRC logo"
+                                                 fox:alt-text="@Messages("label.alt.hmrc_logo")"
                             />
                         </fo:wrapper>
                         <fo:block role="P"
@@ -215,7 +215,7 @@
                                            external-destination='https://@Messages("label.www_gov_uk_hmrc")'
                                            text-decoration="underline"
                                            role="Link"
-                                           fox:alt-text="Gov.uk website">
+                                           fox:alt-text="@Message("label.alt.www_gov_uk_hmrc")">
                                 @messages("label.www_gov_uk_hmrc")
                             </fo:basic-link>
                         </fo:block>
@@ -451,7 +451,7 @@
                                            external-destination='https://@Messages("label.child.trust.fund.details.link")'
                                            text-decoration="underline"
                                            role="Link"
-                                           fox:alt-text="Child Trust Fund details link">
+                                           fox:alt-text="@Messages("label.alt.child_trust_link")">
                                 @messages("label.child.trust.fund.details.link")
                             </fo:basic-link>
                         </fo:block>
@@ -489,7 +489,7 @@
                                                        external-destination='mailto:@Messages("label.email_for_welsh_language")'
                                                        text-decoration="underline"
                                                        role="Link"
-                                                       fox:alt-text="Email for Welsh language">
+                                                       fox:alt-text="@Messages("label.alt.email_for_welsh_language")">
                                             @messages("label.email_for_welsh_language")
                                         </fo:basic-link>
                                     </fo:block>
@@ -554,7 +554,7 @@
                                                external-destination='https://@Messages("label.you_can_download_and_use_the_hmrc_app_or_go_online_to.link")'
                                                text-decoration="underline"
                                                role="Link"
-                                               fox:alt-text="HMRC app or online link">
+                                               fox:alt-text="@Messages("label.alt.pta_link"))">
                                     @messages("label.you_can_download_and_use_the_hmrc_app_or_go_online_to.link")
                                 </fo:basic-link>
                                 <fo:block>
@@ -650,7 +650,7 @@
                                                external-destination='https://@Messages("label.www_gov_uk_national_insurance")'
                                                text-decoration="underline"
                                                role="Link"
-                                               fox:alt-text="Gov.uk National Insurance link">
+                                               fox:alt-text="@Message("label.alt.national_insurance_link"))">
                                     @messages("label.www_gov_uk_national_insurance")
                                 </fo:basic-link>
                                 <fo:block padding-before="6px" padding-after="6px">
@@ -660,7 +660,7 @@
                                                external-destination='https://@Messages("label.www_youtube_com_hmrcgovuk")'
                                                text-decoration="underline"
                                                role="Link"
-                                               fox:alt-text="HMRC YouTube channel link">
+                                               fox:alt-text="@Messages("label.alt.youtube_channel")">
                                     @messages("label.www_youtube_com_hmrcgovuk")
                                 </fo:basic-link>
                             </fo:block>

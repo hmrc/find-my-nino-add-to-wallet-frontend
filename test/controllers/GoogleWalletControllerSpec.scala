@@ -46,10 +46,8 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
 
   override protected def beforeEach(): Unit = {
     reset(mockScaWrapperDataConnector)
-    when(mockScaWrapperDataConnector.wrapperData()(any(), any(), any()))
+    when(mockScaWrapperDataConnector.wrapperDataWithMessages()(any(), any(), any()))
       .thenReturn(Future.successful(Some(wrapperDataResponse)))
-    when(mockScaWrapperDataConnector.messageData()(any(), any()))
-      .thenReturn(Future.successful(messageDataResponse))
 
     reset(mockGooglePassConnector)
     when(mockGooglePassConnector.getGooglePassUrl(eqTo(passId))(any(), any()))

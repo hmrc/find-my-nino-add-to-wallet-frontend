@@ -25,7 +25,6 @@ import play.api.Logging
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import com.mongodb.client.result.DeleteResult
-import org.mongodb.scala.SingleObservableFuture
 
 import java.util.concurrent.TimeUnit
 import scala.concurrent.{ExecutionContext, Future}

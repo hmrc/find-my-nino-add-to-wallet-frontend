@@ -16,12 +16,11 @@
 
 package controllers.actions
 
-import cats.data.EitherT
 import com.google.inject.Inject
 import config.FrontendAppConfig
 import controllers.auth.AuthContext
 import controllers.auth.requests.UserRequest
-import models.individualDetails.{IndividualDetailsData, IndividualDetailsDataCache}
+import models.individualDetails.IndividualDetails
 import models.nps.CRNUpliftRequest
 import play.api.Logging
 import play.api.i18n.Messages
@@ -61,7 +60,7 @@ class ActionHelper @Inject() (
             Future.successful(
               Right(
                 UserRequest(
-                  Some(Nino(individualDetails.individualDetailsData.nino)),
+                  Some(Nino(individualDetails.nino)),
                   authContext.confidenceLevel,
                   individualDetails,
                   authContext.allEnrolments,
@@ -71,8 +70,8 @@ class ActionHelper @Inject() (
               )
             )
           case (false, true) =>
-            individualDetails.individualDetailsData match {
-              case IndividualDetailsData(_, Some(firstForename), Some(surname), _, dateOfBirth, _, _, _) =>
+            individualDetails match {
+              case IndividualDetails(_, Some(firstForename), _, Some(surname), _, dateOfBirth, _, _, _) =>
                 // Nino is not a full nino and uplift is enabled, Uplift nino with NPS
                 val request: CRNUpliftRequest = CRNUpliftRequest(
                   firstForename,
@@ -82,13 +81,9 @@ class ActionHelper @Inject() (
 
                 (for {
                   _ <- npsService.upliftCRN(identifier, request)
-                  _ <- EitherT[Future, UpstreamErrorResponse, Boolean](
-                         individualDetailsService
-                           .deleteIdData(individualDetails.individualDetailsData.nino)
-                           .map(Right(_))
-                       )
+                  _ <- individualDetailsService.deleteIdData(individualDetails.nino)
                 } yield UserRequest(
-                  Some(Nino(individualDetails.individualDetailsData.nino)),
+                  Some(Nino(individualDetails.nino)),
                   authContext.confidenceLevel,
                   individualDetails,
                   authContext.allEnrolments,
@@ -116,7 +111,7 @@ class ActionHelper @Inject() (
         }
     }
 
-  private def isFullNino(individualDetails: IndividualDetailsDataCache): Boolean =
-    individualDetails.individualDetailsData.crnIndicator.toLowerCase.equals("false")
+  private def isFullNino(individualDetails: IndividualDetails): Boolean =
+    individualDetails.crnIndicator.toLowerCase.equals("false")
 
 }

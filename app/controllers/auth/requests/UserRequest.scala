@@ -16,7 +16,7 @@
 
 package controllers.auth.requests
 
-import models.individualDetails.IndividualDetailsDataCache
+import models.individualDetails.IndividualDetails
 import play.api.mvc.{Request, WrappedRequest}
 import uk.gov.hmrc.auth.core.retrieve.v2.TrustedHelper
 import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolments}
@@ -25,7 +25,7 @@ import uk.gov.hmrc.domain.Nino
 final case class UserRequest[A](
   nino: Option[Nino],
   confidenceLevel: ConfidenceLevel,
-  individualDetails: IndividualDetailsDataCache,
+  individualDetails: IndividualDetails,
   enrolments: Enrolments,
   request: Request[A],
   trustedHelper: Option[TrustedHelper]

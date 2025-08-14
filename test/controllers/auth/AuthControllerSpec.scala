@@ -18,16 +18,10 @@ package controllers.auth
 
 import base.SpecBase
 import controllers.bindable.Origin
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
-import play.api.inject.bind
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
-import repositories.SessionRepository
+import play.api.test.Helpers.*
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
-
-import scala.concurrent.Future
 
 class AuthControllerSpec extends SpecBase with MockitoSugar {
 
@@ -35,12 +29,8 @@ class AuthControllerSpec extends SpecBase with MockitoSugar {
 
     "must clear user answers and redirect to sign out" in {
 
-      val mockSessionRepository = mock[SessionRepository]
-      when(mockSessionRepository.clear(any())) thenReturn Future.successful(true)
-
       val application =
         applicationBuilder()
-          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
           .build()
 
       running(application) {
@@ -62,12 +52,8 @@ class AuthControllerSpec extends SpecBase with MockitoSugar {
 
     "must return unknown when no origin is present when url not supplied" in {
 
-      val mockSessionRepository = mock[SessionRepository]
-      when(mockSessionRepository.clear(any())) thenReturn Future.successful(true)
-
       val application =
         applicationBuilder()
-          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
           .build()
 
       running(application) {
@@ -85,12 +71,8 @@ class AuthControllerSpec extends SpecBase with MockitoSugar {
 
     "must clear user answers and redirect to sign out when safeSignOutUrl returns none" in {
 
-      val mockSessionRepository = mock[SessionRepository]
-      when(mockSessionRepository.clear(any())) thenReturn Future.successful(true)
-
       val application =
         applicationBuilder()
-          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
           .build()
 
       running(application) {

@@ -16,6 +16,7 @@
 
 package controllers.actions
 
+import cats.data.EitherT
 import com.google.inject.Inject
 import controllers.auth.AuthContext
 import controllers.auth.requests.*
@@ -49,10 +50,13 @@ class CheckChildRecordActionWithCacheInvalidation @Inject() (
         throw new IllegalArgumentException("Session is required")
       )
 
-    individualDetailsService.deleteIdData(identifier).flatMap {
-      case true => actionHelper.checkForCrn(identifier, sessionId, authContext, messages)
-      case _    => throw new RuntimeException("Failed to invalidate individual details data cache")
-    }
+    individualDetailsService
+      .deleteIdData(identifier)
+      .biflatMap(
+        error => throw error,
+        _ => EitherT(actionHelper.checkForCrn(identifier, sessionId, authContext, messages))
+      )
+      .value
   }
 
   override protected def executionContext: ExecutionContext = cc.executionContext

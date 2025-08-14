@@ -19,7 +19,7 @@ package services
 import cats.data.EitherT
 import cats.instances.future.*
 import connectors.IndividualDetailsConnector
-import models.individualDetails.IndividualDetailsDataCache
+import models.individualDetails.IndividualDetails
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.*
 import org.scalatest.concurrent.ScalaFutures
@@ -30,8 +30,8 @@ import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import util.Fixtures.*
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration.DurationInt
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.duration.{Duration, DurationInt}
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.language.postfixOps
 
 class IndividualDetailsServiceSpec extends AnyFlatSpec with ScalaFutures with MockitoSugar {
@@ -45,11 +45,11 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec with ScalaFutures with Mo
     val service       = new IndividualDetailsServiceImpl(mockConnector)
 
     when(mockConnector.getIndividualDetails(any, any)(any, any))
-      .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCache))
+      .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetails))
 
     val result = service.getIdData("testNino", "testSessionId").value
 
-    result.futureValue shouldBe Right(fakeIndividualDetailsDataCache)
+    result.futureValue shouldBe Right(fakeIndividualDetails)
   }
 
   it should "propagate UpstreamErrorResponse when connector returns an error" in {
@@ -58,34 +58,22 @@ class IndividualDetailsServiceSpec extends AnyFlatSpec with ScalaFutures with Mo
     val error         = UpstreamErrorResponse("Not found", 404)
 
     when(mockConnector.getIndividualDetails(any, any)(any, any))
-      .thenReturn(EitherT.leftT[Future, IndividualDetailsDataCache](error))
+      .thenReturn(EitherT.leftT[Future, IndividualDetails](error))
 
     val result = service.getIdData("testNino", "testSessionId").value
 
     result.futureValue shouldBe Left(error)
   }
 
-  it should "delegate delete to connector and return true if acknowledged" in {
+  it should "delegate delete to connector and return unit" in {
     val mockConnector = mock[IndividualDetailsConnector]
     val service       = new IndividualDetailsServiceImpl(mockConnector)
 
-    when(mockConnector.deleteIndividualDetails(any)(any))
-      .thenReturn(Future.successful(true))
+    when(mockConnector.deleteIndividualDetails(any)(any, any))
+      .thenReturn(EitherT(Future.successful(Right((): Unit))))
 
-    val result = service.deleteIdData("testNino")
-
-    result.futureValue shouldBe true
+    val result = Await.result(service.deleteIdData("testNino").value, Duration.Inf)
+    result shouldBe Right((): Unit)
   }
 
-  it should "return false if deletion not acknowledged" in {
-    val mockConnector = mock[IndividualDetailsConnector]
-    val service       = new IndividualDetailsServiceImpl(mockConnector)
-
-    when(mockConnector.deleteIndividualDetails(any)(any))
-      .thenReturn(Future.successful(false))
-
-    val result = service.deleteIdData("testNino")
-
-    result.futureValue shouldBe false
-  }
 }

@@ -20,19 +20,19 @@ import base.SpecBase
 import cats.data.EitherT
 import connectors.{FandFConnector, GoogleWalletConnector, IdentityVerificationFrontendConnector}
 import controllers.auth.requests.UserRequest
-import models.individualDetails.IndividualDetailsDataCache
+import models.individualDetails.IndividualDetails
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{reset, when}
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-import repositories.SessionRepository
+
 import services.IndividualDetailsService
 import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolment, Enrolments}
 import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.sca.connectors.ScaWrapperDataConnector
-import util.Fixtures.fakeIndividualDetailsDataCache
+import util.Fixtures.fakeIndividualDetails
 import util.IndividualDetailsFixtures
 import util.Stubs.{userLoggedInFMNUser, userLoggedInIsNotFMNUser}
 import util.TestData.{NinoUser, trustedHelper}
@@ -61,12 +61,9 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
     when(mockGooglePassConnector.getGooglePassQrCode(eqTo(passId))(any(), any()))
       .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](Some(Base64.getDecoder.decode(fakeBase64String))))
 
-    reset(mockSessionRepository)
-    when(mockSessionRepository.get(any())) thenReturn Future.successful(Some(emptyUserAnswers))
-
     reset(mockIndividualDetailsService)
     when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
-      .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCache))
+      .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetails))
 
     reset(mockIdentityVerificationFrontendConnector)
     when(mockIdentityVerificationFrontendConnector.getIVJourneyStatus(any())(any(), any()))
@@ -81,7 +78,6 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
 
   val controller: GoogleWalletController = applicationWithConfig.injector.instanceOf[GoogleWalletController]
 
-  val mockSessionRepository: SessionRepository                                         = mock[SessionRepository]
   val mockGooglePassConnector: GoogleWalletConnector                                   = mock[GoogleWalletConnector]
   val mockIndividualDetailsService: IndividualDetailsService                           = mock[IndividualDetailsService]
   val mockIdentityVerificationFrontendConnector: IdentityVerificationFrontendConnector =
@@ -96,7 +92,6 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
         val application =
           applicationBuilderWithConfig()
             .overrides(
-              inject.bind[SessionRepository].toInstance(mockSessionRepository),
               inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
               inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
               inject.bind[IdentityVerificationFrontendConnector].toInstance(mockIdentityVerificationFrontendConnector)
@@ -105,7 +100,7 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
             .build()
 
         when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
-          .thenReturn(EitherT.leftT[Future, IndividualDetailsDataCache](UpstreamErrorResponse("Not Found", NOT_FOUND)))
+          .thenReturn(EitherT.leftT[Future, IndividualDetails](UpstreamErrorResponse("Not Found", NOT_FOUND)))
 
         running(application) {
           userLoggedInFMNUser(NinoUser)
@@ -123,7 +118,6 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
         val application =
           applicationBuilderWithConfig()
             .overrides(
-              inject.bind[SessionRepository].toInstance(mockSessionRepository),
               inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
               inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),
               inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
@@ -154,7 +148,6 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
         val application =
           applicationBuilderWithConfig()
             .overrides(
-              inject.bind[SessionRepository].toInstance(mockSessionRepository),
               inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
               inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),
               inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
@@ -177,7 +170,6 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
 
         val application = applicationBuilderWithConfig()
           .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
           )
@@ -200,7 +192,6 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
 
         val application = applicationBuilderWithConfig()
           .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
           )
@@ -217,7 +208,7 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
           val userRequest = UserRequest(
             None,
             ConfidenceLevel.L200,
-            fakeIndividualDetailsDataCache,
+            fakeIndividualDetails,
             Enrolments(Set(Enrolment("HMRC-PT"))),
             request,
             None
@@ -238,7 +229,6 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
 
         val application = applicationBuilderWithConfig()
           .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
           )
@@ -258,7 +248,6 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
       "must return QR code" in {
         val application = applicationBuilderWithConfig()
           .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
           )
@@ -281,7 +270,6 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
 
         val application = applicationBuilderWithConfig()
           .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
           )
@@ -298,7 +286,7 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
           val userRequest = UserRequest(
             None,
             ConfidenceLevel.L200,
-            fakeIndividualDetailsDataCache,
+            fakeIndividualDetails,
             Enrolments(Set(Enrolment("HMRC-PT"))),
             request,
             None
@@ -319,7 +307,6 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
 
         val application = applicationBuilderWithConfig()
           .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
           )
@@ -340,7 +327,6 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
       "must fail to login user" in {
         val application = applicationBuilderWithConfig()
           .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
           )
@@ -362,7 +348,6 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
 
         val application = applicationBuilderWithConfig()
           .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
             inject.bind[FandFConnector].toInstance(mockFandFConnector)
@@ -387,7 +372,6 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
         val application =
           applicationBuilderWithConfig()
             .overrides(
-              inject.bind[SessionRepository].toInstance(mockSessionRepository),
               inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
               inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
               inject.bind[IdentityVerificationFrontendConnector].toInstance(mockIdentityVerificationFrontendConnector)
@@ -396,7 +380,7 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
             .build()
 
         when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
-          .thenReturn(EitherT.leftT[Future, IndividualDetailsDataCache](UpstreamErrorResponse("Not Found", NOT_FOUND)))
+          .thenReturn(EitherT.leftT[Future, IndividualDetails](UpstreamErrorResponse("Not Found", NOT_FOUND)))
 
         running(application) {
           userLoggedInFMNUser(NinoUser)
@@ -414,7 +398,6 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
         val application =
           applicationBuilderWithConfig()
             .overrides(
-              inject.bind[SessionRepository].toInstance(mockSessionRepository),
               inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
               inject.bind[ScaWrapperDataConnector].toInstance(mockScaWrapperDataConnector),
               inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
@@ -436,7 +419,6 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
 
         val application = applicationBuilderWithConfig()
           .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
           )
@@ -459,7 +441,6 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
 
         val application = applicationBuilderWithConfig()
           .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
           )
@@ -476,7 +457,7 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
           val userRequest = UserRequest(
             None,
             ConfidenceLevel.L200,
-            fakeIndividualDetailsDataCache,
+            fakeIndividualDetails,
             Enrolments(Set(Enrolment("HMRC-PT"))),
             request,
             None
@@ -494,7 +475,6 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
       "must return QR code" in {
         val application = applicationBuilderWithConfig()
           .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
           )
@@ -517,7 +497,6 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
 
         val application = applicationBuilderWithConfig()
           .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
           )
@@ -534,7 +513,7 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
           val userRequest = UserRequest(
             None,
             ConfidenceLevel.L200,
-            fakeIndividualDetailsDataCache,
+            fakeIndividualDetails,
             Enrolments(Set(Enrolment("HMRC-PT"))),
             request,
             None
@@ -552,7 +531,6 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
       "must fail to login user" in {
         val application = applicationBuilderWithConfig()
           .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService)
           )
@@ -572,7 +550,6 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
 
         val application = applicationBuilderWithConfig()
           .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository),
             inject.bind[GoogleWalletConnector].toInstance(mockGooglePassConnector),
             inject.bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
             inject.bind[FandFConnector].toInstance(mockFandFConnector)

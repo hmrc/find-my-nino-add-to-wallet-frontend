@@ -19,7 +19,7 @@ package controllers
 import config.FrontendAppConfig
 import connectors.{AppleWalletConnector, FandFConnector}
 import controllers.actions.CheckChildRecordAction
-import models.individualDetails.IndividualDetailsDataCache
+import models.individualDetails.IndividualDetails
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc.*
 import play.api.{Configuration, Environment}
@@ -67,7 +67,7 @@ class AppleWalletController @Inject() (
           auditApple("ViewWalletPage", userRequestNew.individualDetails, hc)
           val nino: String  = userRequestNew.nino.getOrElse(throw new IllegalArgumentException("No nino found")).nino
           val ninoFormatted = nino.grouped(2).mkString(" ")
-          val fullName      = userRequestNew.individualDetails.individualDetailsData.fullName
+          val fullName      = userRequestNew.individualDetails.getFullName
 
           appleWalletConnector
             .createApplePass(fullName, ninoFormatted)
@@ -121,7 +121,7 @@ class AppleWalletController @Inject() (
 
   private def getApplePass(
     passId: String,
-    individualDetailsDataCache: IndividualDetailsDataCache,
+    individualDetails: IndividualDetails,
     request: Request[AnyContent],
     hc: HeaderCarrier,
     messages: Messages
@@ -132,7 +132,7 @@ class AppleWalletController @Inject() (
           case Some("true") => "AddNinoToWalletFromQRCode"
           case _            => "AddNinoToWallet"
         }
-        auditApple(eventType, individualDetailsDataCache, hc)
+        auditApple(eventType, individualDetails, hc)
         Ok(data).withHeaders("Content-Disposition" -> s"attachment; filename=$passFileName")
 
       case Right(None) =>
@@ -143,14 +143,14 @@ class AppleWalletController @Inject() (
 
   private def getAppleQRCode(
     passId: String,
-    individualDetailsDataCache: IndividualDetailsDataCache,
+    individualDetails: IndividualDetails,
     request: Request[AnyContent],
     hc: HeaderCarrier,
     messages: Messages
   ): Future[Result] =
     appleWalletConnector.getAppleQrCode(passId)(ec, hc).value.map {
       case Right(Some(data)) =>
-        auditApple("DisplayQRCode", individualDetailsDataCache, hc)
+        auditApple("DisplayQRCode", individualDetails, hc)
         Ok(data).withHeaders("Content-Disposition" -> s"attachment; filename=$passFileName")
 
       case Right(None) =>
@@ -159,7 +159,7 @@ class AppleWalletController @Inject() (
       case Left(error) => InternalServerError(s"Failed to get Apple QR Code: ${error.message}")
     }
 
-  private def auditApple(eventType: String, individualDataCache: IndividualDetailsDataCache, hc: HeaderCarrier): Unit =
+  private def auditApple(eventType: String, individualDataCache: IndividualDetails, hc: HeaderCarrier): Unit =
     auditService.audit(
       AuditUtils.buildAuditEvent(
         individualDataCache,

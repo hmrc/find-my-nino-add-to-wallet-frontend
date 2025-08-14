@@ -19,7 +19,6 @@ package controllers.actions
 import com.github.tomakehurst.wiremock.client.WireMock.*
 import controllers.auth.AuthContext
 import models.NationalInsuranceNumber
-import models.individualDetails.{CrnIndicator, NameList}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -31,12 +30,11 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.mvc.{AnyContent, AnyContentAsEmpty, Result, Results}
 import play.api.test.FakeRequest
-import play.api.test.Helpers.contentAsString
-import play.api.test.Helpers.defaultAwaitTimeout
+import play.api.test.Helpers.{contentAsString, defaultAwaitTimeout}
 import uk.gov.hmrc.auth.core.{AffinityGroup, ConfidenceLevel, Enrolment, Enrolments}
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
-import util.Fixtures.{fakeIndividualDetails, fakeName}
+import util.Fixtures.fakeIndividualDetails
 import util.WireMockHelper
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -87,7 +85,7 @@ class ActionHelperISpec
 
   val individualDetailsCrnTrueJson: String = Json
     .toJson(
-      fakeIndividualDetails.copy(crnIndicator = CrnIndicator.True)
+      fakeIndividualDetails.copy(crnIndicator = "true")
     )
     .toString()
 
@@ -153,10 +151,14 @@ class ActionHelperISpec
     }
 
     "return UserRequest when CRN uplift succeeds and adult-registration API responds with NO_CONTENT" in {
-
       server.stubFor(
         get(urlEqualTo(s"/find-my-nino-add-to-wallet/individuals/details/NINO/${nino.take(8)}/Y"))
           .willReturn(okJson(individualDetailsCrnTrueJson))
+      )
+
+      server.stubFor(
+        delete(urlEqualTo(s"/find-my-nino-add-to-wallet/individuals/details/cache/NINO/AB123456"))
+          .willReturn(okJson("true"))
       )
 
       server.stubFor(
@@ -180,8 +182,9 @@ class ActionHelperISpec
               Json
                 .toJson(
                   fakeIndividualDetails.copy(
-                    crnIndicator = CrnIndicator.True,
-                    nameList = NameList(List(fakeName.copy(firstForename = None, surname = None)))
+                    crnIndicator = "true",
+                    firstForename = None,
+                    surname = None
                   )
                 )
                 .toString()
@@ -215,13 +218,19 @@ class ActionHelperISpec
       )
 
       server.stubFor(
+        delete(urlEqualTo(s"/find-my-nino-add-to-wallet/individuals/details/cache/NINO/AB123456"))
+          .willReturn(okJson("true"))
+      )
+
+      server.stubFor(
         put(urlEqualTo(s"/find-my-nino-add-to-wallet/adult-registration/$nino"))
           .willReturn(aResponse().withStatus(UNPROCESSABLE_ENTITY).withBody(jsonUnprocessableEntityAlreadyAdult))
       )
 
       val result = actionHelper.checkForCrn(nino, sessionId, fakeAuthContext, messages).futureValue
 
-      result mustBe a[Right[_, _]]
+      result.isRight mustBe true
+
       val userRequest = result.toOption.get
       userRequest.enrolments mustBe Enrolments(Set(Enrolment("HMRC-PT")))
     }

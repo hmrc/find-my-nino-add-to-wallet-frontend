@@ -91,27 +91,6 @@ object AddressType {
   }
 }
 
-sealed trait AddressStatus
-
-object AddressStatus {
-  case object NotDlo extends AddressStatus
-  case object Dlo extends AddressStatus
-  case object Nfa extends AddressStatus
-
-  implicit val reads: Reads[AddressStatus]   = JsPath
-    .read[Int]
-    .map {
-      case 0 => NotDlo
-      case 1 => Dlo
-      case 2 => Nfa
-    }
-  implicit val writes: Writes[AddressStatus] = WritesNumber[AddressStatus] {
-    case NotDlo => 0
-    case Dlo    => 1
-    case Nfa    => 2
-  }
-
-}
 final case class AddressStartDate(value: Int) extends AnyVal
 
 object AddressStartDate {
@@ -140,7 +119,6 @@ final case class Address(
   addressSource: Option[AddressSource],
   countryCode: CountryCode,
   addressType: AddressType,
-  addressStatus: Option[AddressStatus],
   addressStartDate: LocalDate,
   addressEndDate: Option[LocalDate],
   addressLastConfirmedDate: Option[LocalDate],

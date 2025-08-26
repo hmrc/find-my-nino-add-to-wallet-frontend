@@ -17,7 +17,7 @@
 package connectors
 
 import config.FrontendAppConfig
-import models.individualDetails.{IndividualDetails, IndividualDetailsDataCache}
+import models.individualDetails.IndividualDetails
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.Application
 import play.api.libs.json.Json
@@ -53,23 +53,23 @@ class IndividualDetailsConnectorSpec
       val httpClientV2       = inject[HttpClientV2]
       val appConfig          = inject[FrontendAppConfig]
       val httpClientResponse = inject[HttpClientResponse]
-      new DefaultIndividualDetailsConnector(httpClientV2, appConfig, httpClientResponse)
+      new IndividualDetailsConnector(httpClientV2, appConfig, httpClientResponse)
     }
   }
 
-  "DefaultIndividualDetailsConnector#getIndividualDetails" should {
+  "getIndividualDetails" should {
 
-    "return IndividualDetailsDataCache when API call succeeds" in new Setup {
+    "return individualDetails when API call succeeds" in new Setup {
       stubGet(url, OK, Some(jsonBody))
 
-      val result: Either[UpstreamErrorResponse, IndividualDetailsDataCache] =
+      val result: Either[UpstreamErrorResponse, IndividualDetails] =
         connector.getIndividualDetails(nino, sessionId).value.futureValue
 
       result mustBe a[Right[_, _]]
       result match {
-        case Right(cache: IndividualDetailsDataCache) =>
-          cache.individualDetailsData.nino mustBe fakeIndividualDetails.getNino
-        case _                                        => fail("Expected Right[IndividualDetailsDataCache]")
+        case Right(idd: IndividualDetails) =>
+          idd.nino mustBe fakeIndividualDetails.nino
+        case _                             => fail("Expected Right[individualDetails]")
       }
     }
 
@@ -85,7 +85,7 @@ class IndividualDetailsConnectorSpec
       s"return UpstreamErrorResponse($errorStatus) when API call fails" in new Setup {
         stubGet(url, errorStatus, None)
 
-        val result: Either[UpstreamErrorResponse, IndividualDetailsDataCache] =
+        val result: Either[UpstreamErrorResponse, IndividualDetails] =
           connector.getIndividualDetails(nino, sessionId).value.futureValue
 
         result mustBe a[Left[UpstreamErrorResponse, _]]
@@ -93,4 +93,28 @@ class IndividualDetailsConnectorSpec
       }
     }
   }
+
+  trait SetupForDelete {
+    val nino: String                               = "AA123456A"
+    val sessionId: String                          = "session-123"
+    val url: String                                =
+      s"/find-my-nino-add-to-wallet/individuals/details/cache/NINO/${nino.take(8)}"
+    lazy val connector: IndividualDetailsConnector = {
+      val httpClientV2       = inject[HttpClientV2]
+      val appConfig          = inject[FrontendAppConfig]
+      val httpClientResponse = inject[HttpClientResponse]
+      new IndividualDetailsConnector(httpClientV2, appConfig, httpClientResponse)
+    }
+  }
+
+  "deleteIndividualDetails" should {
+    "remove individualDetails when API call succeeds" in new SetupForDelete {
+      stubDelete(url, OK, Some("true"))
+
+      val result: Either[UpstreamErrorResponse, Unit] = connector.deleteIndividualDetails(nino).value.futureValue
+
+      result mustBe Right((): Unit)
+    }
+  }
+
 }

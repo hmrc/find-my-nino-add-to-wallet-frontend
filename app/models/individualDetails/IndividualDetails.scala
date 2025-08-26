@@ -16,103 +16,47 @@
 
 package models.individualDetails
 
-import models.individualDetails.AddressType.ResidentialAddress
-import models.json.WritesNumber
-import play.api.libs.functional.syntax._
-import play.api.libs.json._
+import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
+import play.api.libs.json.{Format, OFormat, __}
 
 import java.time.LocalDate
 
-final case class NinoSuffix(value: String) extends AnyVal
-
-object NinoSuffix {
-  implicit val format: Format[NinoSuffix] = Json.valueFormat[NinoSuffix]
-}
-
-sealed trait CrnIndicator {
-  val asString: String
-}
-
-object CrnIndicator {
-  object False extends CrnIndicator {
-    override val asString: String = "false"
-  }
-  object True extends CrnIndicator {
-    override val asString: String = "true"
-  }
-
-  implicit val reads: Reads[CrnIndicator]   = JsPath
-    .read[Int]
-    .map {
-      case 0 => False
-      case 1 => True
-    }
-  implicit val writes: Writes[CrnIndicator] = WritesNumber[CrnIndicator] {
-    case False => 0
-    case True  => 1
-  }
-}
-
-final case class IndividualDetails(
-  ninoWithoutSuffix: String,
-  ninoSuffix: Option[NinoSuffix],
+case class IndividualDetails(
+  title: Option[String],
+  firstForename: Option[String],
+  secondForename: Option[String], //
+  surname: Option[String],
+  honours: Option[String],
   dateOfBirth: LocalDate,
-  crnIndicator: CrnIndicator,
-  nameList: NameList,
-  addressList: AddressList
+  nino: String,
+  address: Option[AddressData],
+  crnIndicator: String
 ) {
-  def fullIdentifier: String = s"""$ninoWithoutSuffix${ninoSuffix.map(_.value).getOrElse("")}"""
-
-  def getResidenceAddress: Option[Address] = addressList.getAddress
-    .find(_.addressType.equals(ResidentialAddress))
-
-  private def getCorrespondenceAddress: Option[Address] = addressList.getAddress
-    .find(_.addressType.equals(AddressType.CorrespondenceAddress))
-
-  private def getAddress: Option[Address] = getCorrespondenceAddress.orElse(getResidenceAddress)
-
-  def getAddressData: Option[AddressData] =
-    getAddress.map(addr =>
-      AddressData(
-        addr.addressLine1,
-        addr.addressLine2,
-        addr.addressLine3,
-        addr.addressLine4,
-        addr.addressLine5,
-        addr.addressPostcode,
-        CountryCodeLookup.convertCodeToCountryName(addr.countryCode.value),
-        addr.addressStartDate,
-        addr.addressType
-      )
-    )
-
-  def getNino: String = ninoWithoutSuffix + ninoSuffix.map(_.value).getOrElse("")
-
-  lazy val preferredName: Name =
-    nameList.name.find(_.nameType.equals(NameType.KnownAsName)).getOrElse(nameList.name.head)
-
-  private def getTitle: String = {
-    val maybeTitle: TitleType = preferredName.titleType.getOrElse(TitleType.NotKnown)
-    maybeTitle match {
-      case TitleType.Mr   => "Mr"
-      case TitleType.Mrs  => "Mrs"
-      case TitleType.Miss => "Miss"
-      case TitleType.Ms   => "Ms"
-      case TitleType.Dr   => "Dr"
-      case TitleType.Rev  => "Rev"
-      case _              => ""
+  def getAddressLines: List[String] =
+    address match {
+      case Some(address) =>
+        List(
+          address.addressLine1.value,
+          address.addressLine2.value,
+          address.addressLine3.map(_.value).getOrElse(""),
+          address.addressLine4.map(_.value).getOrElse(""),
+          address.addressLine5.map(_.value).getOrElse("")
+        ).filter(_.nonEmpty)
+      case _             => List.empty
     }
-  }
 
-  private def getHonours: String =
-    preferredName.honours.map(_.value).getOrElse("")
+  def getPostCode: Option[String] = address.flatMap(_.addressPostcode.map(_.value))
+
+  private def getHonours: String = honours.getOrElse("")
+
+  private def getTitle: String = title.getOrElse("")
 
   def getFullName: String =
     List(
       getTitle,
-      preferredName.firstForename.map(_.toUpperCase()).getOrElse(""),
-      preferredName.secondForename.getOrElse("").toUpperCase(),
-      preferredName.surname.map(_.toUpperCase()).getOrElse(""),
+      firstForename.map(_.toUpperCase()).getOrElse(""),
+      secondForename.getOrElse("").toUpperCase(),
+      surname.map(_.toUpperCase()).getOrElse(""),
       getHonours
     )
       .filter(_.nonEmpty)
@@ -121,9 +65,9 @@ final case class IndividualDetails(
   def getInitialsName: String =
     List(
       getTitle,
-      preferredName.firstForename.map(_.toUpperCase().take(1)).getOrElse(""),
-      preferredName.secondForename.getOrElse("").toUpperCase().take(1),
-      preferredName.surname.map(_.toUpperCase()).getOrElse(""),
+      firstForename.map(_.toUpperCase().take(1)).getOrElse(""),
+      secondForename.getOrElse("").toUpperCase().take(1),
+      surname.map(_.toUpperCase()).getOrElse(""),
       getHonours
     )
       .filter(_.nonEmpty)
@@ -132,18 +76,31 @@ final case class IndividualDetails(
 }
 
 object IndividualDetails {
-
-  implicit val reads: Format[IndividualDetails] =
-    ((JsPath \ "details" \ "nino").format[String] ~
-      (__ \ "details" \ "ninoSuffix")
-        .formatNullable[NinoSuffix]
-        .inmap(_.filter(_ != NinoSuffix(" ")), identity[Option[NinoSuffix]]) ~
-      (__ \ "details" \ "dateOfBirth").format[LocalDate] ~
-      (__ \ "details" \ "crnIndicator").format[CrnIndicator] ~
-      (__ \ "nameList").format[NameList] ~
-      (__ \ "addressList").format[AddressList])(
+  implicit val format: Format[IndividualDetails] =
+    ((__ \ "title").formatNullable[String]
+      ~ (__ \ "firstForename").formatNullable[String]
+      ~ (__ \ "secondForename").formatNullable[String]
+      ~ (__ \ "surname").formatNullable[String]
+      ~ (__ \ "honours").formatNullable[String]
+      ~ (__ \ "dateOfBirth").format[LocalDate]
+      ~ (__ \ "nino").format[String]
+      ~ (__ \ "address").formatNullable[AddressData]
+      ~ (__ \ "crnIndicator").format[String])(
       IndividualDetails.apply,
-      id => Tuple6(id.ninoWithoutSuffix, id.ninoSuffix, id.dateOfBirth, id.crnIndicator, id.nameList, id.addressList)
+      unlift { idd =>
+        Some(
+          Tuple9(
+            idd.title,
+            idd.firstForename,
+            idd.secondForename,
+            idd.surname,
+            idd.honours,
+            idd.dateOfBirth,
+            idd.nino,
+            idd.address,
+            idd.crnIndicator
+          )
+        )
+      }
     )
-
 }

@@ -20,10 +20,8 @@ import base.SpecBase
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{reset, when}
 import org.scalatestplus.mockito.MockitoSugar
-import play.api.inject
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
-import repositories.SessionRepository
+import play.api.test.Helpers.*
 import views.html.UnauthorisedView
 
 import scala.concurrent.Future
@@ -40,14 +38,8 @@ class UnauthorisedControllerSpec extends SpecBase with MockitoSugar {
 
     "must return OK and the correct view for a GET" in {
 
-      val mockSessionRepository = mock[SessionRepository]
-      when(mockSessionRepository.get(any())) thenReturn Future.successful(Some(emptyUserAnswers))
-
       val application =
         applicationBuilder()
-          .overrides(
-            inject.bind[SessionRepository].toInstance(mockSessionRepository)
-          )
           .build()
 
       running(application) {

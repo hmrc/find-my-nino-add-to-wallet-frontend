@@ -19,7 +19,7 @@ package services
 import cats.data.EitherT
 import com.google.inject.ImplementedBy
 import connectors.IndividualDetailsConnector
-import models.individualDetails.IndividualDetailsDataCache
+import models.individualDetails.IndividualDetails
 import play.api.Logging
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
@@ -31,9 +31,11 @@ trait IndividualDetailsService {
   def getIdData(nino: String, sessionId: String)(implicit
     ec: ExecutionContext,
     hc: HeaderCarrier
-  ): EitherT[Future, UpstreamErrorResponse, IndividualDetailsDataCache]
+  ): EitherT[Future, UpstreamErrorResponse, IndividualDetails]
 
-  def deleteIdData(nino: String)(implicit ec: ExecutionContext): Future[Boolean]
+  def deleteIdData(
+    nino: String
+  )(implicit hc: HeaderCarrier, ec: ExecutionContext): EitherT[Future, UpstreamErrorResponse, Unit]
 }
 
 class IndividualDetailsServiceImpl @Inject() (
@@ -44,9 +46,12 @@ class IndividualDetailsServiceImpl @Inject() (
   override def getIdData(nino: String, sessionId: String)(implicit
     ec: ExecutionContext,
     hc: HeaderCarrier
-  ): EitherT[Future, UpstreamErrorResponse, IndividualDetailsDataCache] =
+  ): EitherT[Future, UpstreamErrorResponse, IndividualDetails] =
     connector.getIndividualDetails(nino, sessionId)
 
-  override def deleteIdData(nino: String)(implicit ec: ExecutionContext): Future[Boolean] =
+  override def deleteIdData(nino: String)(implicit
+    hc: HeaderCarrier,
+    ec: ExecutionContext
+  ): EitherT[Future, UpstreamErrorResponse, Unit] =
     connector.deleteIndividualDetails(nino)
 }

@@ -16,38 +16,24 @@
 
 package config
 
-import connectors.{CachingIndividualDetailsConnector, DefaultIndividualDetailsConnector, IndividualDetailsConnector}
 import controllers.actions.*
 import org.apache.fop.apps.FopFactory
+import play.api.inject.{Binding, Module}
 import play.api.{Configuration, Environment}
-import repositories.{EncryptedIndividualDetailsRepository, IndividualDetailsRepoTrait, IndividualDetailsRepository}
 import util.{BaseResourceStreamResolver, DefaultFopURIResolver, DefaultResourceStreamResolver, FopURIResolver}
 import views.html.templates.{LayoutProvider, NewLayoutProvider}
-import play.api.inject.{Binding, Module}
 
 import java.time.{Clock, ZoneOffset}
 
 class HmrcModule extends Module {
 
-  override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = {
-    val encryptionEnabled = configuration.get[Boolean]("mongodb.encryption.enabled")
-    // For session based storage instead of cred based, change to SessionIdentifierAction
+  override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] =
     Seq(
       bind[IdentifierAction].to(classOf[SessionIdentifierAction]),
       bind[Clock].toInstance(Clock.systemDefaultZone.withZone(ZoneOffset.UTC)),
       bind[FopFactory].toProvider(classOf[FopFactoryProvider]),
       bind[FopURIResolver].to(classOf[DefaultFopURIResolver]),
       bind[BaseResourceStreamResolver].to(classOf[DefaultResourceStreamResolver]),
-      bind[LayoutProvider].to(classOf[NewLayoutProvider]),
-      bind[IndividualDetailsConnector].qualifiedWith("default").to(classOf[DefaultIndividualDetailsConnector]),
-      bind[IndividualDetailsConnector].to(classOf[CachingIndividualDetailsConnector]),
-      if (encryptionEnabled) {
-        bind[IndividualDetailsRepoTrait]
-          .to(classOf[EncryptedIndividualDetailsRepository])
-      } else {
-        bind[IndividualDetailsRepoTrait]
-          .to(classOf[IndividualDetailsRepository])
-      }
+      bind[LayoutProvider].to(classOf[NewLayoutProvider])
     )
-  }
 }

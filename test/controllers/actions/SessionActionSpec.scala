@@ -17,18 +17,13 @@
 package controllers.actions
 
 import base.SpecBase
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
-import play.api.inject
 import play.api.mvc.{Action, AnyContent, BodyParsers, Results}
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
-import repositories.SessionRepository
+import play.api.test.Helpers.*
 import uk.gov.hmrc.http.SessionKeys
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 
 class SessionActionSpec extends SpecBase with MockitoSugar {
 
@@ -42,14 +37,8 @@ class SessionActionSpec extends SpecBase with MockitoSugar {
 
       "must redirect to the session expired page" in {
 
-        val mockSessionRepository = mock[SessionRepository]
-        when(mockSessionRepository.get(any())) thenReturn Future.successful(None)
-
         val application =
           applicationBuilder()
-            .overrides(
-              inject.bind[SessionRepository].toInstance(mockSessionRepository)
-            )
             .build()
 
         running(application) {
@@ -71,14 +60,8 @@ class SessionActionSpec extends SpecBase with MockitoSugar {
 
       "must perform the action" in {
 
-        val mockSessionRepository = mock[SessionRepository]
-        when(mockSessionRepository.get(any())) thenReturn Future.successful(None)
-
         val application =
           applicationBuilder()
-            .overrides(
-              inject.bind[SessionRepository].toInstance(mockSessionRepository)
-            )
             .build()
 
         running(application) {

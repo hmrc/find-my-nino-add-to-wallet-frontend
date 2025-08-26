@@ -27,7 +27,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import services.{IndividualDetailsService, NPSService}
 import uk.gov.hmrc.http.UpstreamErrorResponse
-import util.Fixtures.{fakeIndividualDetailsDataCache, fakeIndividualDetailsDataCacheWithCRN}
+import util.Fixtures.{fakeIndividualDetails, fakeindividualDetailsWithCRN}
 import util.IndividualDetailsFixtures
 import util.Stubs.userLoggedInFMNUser
 import util.TestData.NinoUser
@@ -51,15 +51,17 @@ class NinoLetterControllerSpec extends SpecBase with IndividualDetailsFixtures w
 
   implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
+  private val deleteSuccessResponse: EitherT[Future, UpstreamErrorResponse, Unit] =
+    EitherT.right(Future.successful((): Unit))
+
   "NinoLetter Controller" - {
     "must return OK and the correct view for a GET" in {
       userLoggedInFMNUser(NinoUser)
-      when(mockIndividualDetailsService.deleteIdData(any())(any()))
-        .thenReturn(Future.successful(true))
+      when(mockIndividualDetailsService.deleteIdData(any())(any(), any())).thenReturn(deleteSuccessResponse)
 
       when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
         .thenReturn(
-          EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCache)
+          EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetails)
         )
 
       when(mockFandFConnector.getTrustedHelper()(any())).thenReturn(Future.successful(None))
@@ -80,45 +82,14 @@ class NinoLetterControllerSpec extends SpecBase with IndividualDetailsFixtures w
       }
     }
 
-    "must throw an exception when the individual details cache can't be invalidated" in {
-      userLoggedInFMNUser(NinoUser)
-      when(mockIndividualDetailsService.deleteIdData(any())(any()))
-        .thenReturn(Future.successful(false))
-
-      when(mockFandFConnector.getTrustedHelper()(any())).thenReturn(Future.successful(None))
-
-      when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
-        .thenReturn(
-          EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCache)
-        )
-
-      val application = applicationBuilderWithConfig()
-        .overrides(
-          bind[IndividualDetailsService].toInstance(mockIndividualDetailsService),
-          bind[FandFConnector].toInstance(mockFandFConnector)
-        )
-        .build()
-
-      running(application) {
-        assertThrows[RuntimeException] {
-          val request = FakeRequest(GET, routes.NinoLetterController.onPageLoad.url)
-            .withSession(("authToken", "Bearer 123"))
-
-          val result = route(application, request).value
-          status(result)
-        }
-      }
-    }
-
     "must uplift CRN and return OK and the correct view for a GET" in {
       userLoggedInFMNUser(NinoUser)
       when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
         .thenReturn(
-          EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCacheWithCRN),
-          EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCache)
+          EitherT.rightT[Future, UpstreamErrorResponse](fakeindividualDetailsWithCRN),
+          EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetails)
         )
-      when(mockIndividualDetailsService.deleteIdData(any())(any()))
-        .thenReturn(Future.successful(true))
+      when(mockIndividualDetailsService.deleteIdData(any())(any(), any())).thenReturn(deleteSuccessResponse)
       when(mockNPSService.upliftCRN(any(), any())(any()))
         .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](true))
 
@@ -146,12 +117,12 @@ class NinoLetterControllerSpec extends SpecBase with IndividualDetailsFixtures w
   "NinoLetterController saveNationalInsuranceNumberAsPdf" - {
     "must return OK and pdf file with correct content" in {
       userLoggedInFMNUser(NinoUser)
-      when(mockIndividualDetailsService.deleteIdData(any())(any()))
-        .thenReturn(Future.successful(true))
+      when(mockIndividualDetailsService.deleteIdData(any())(any(), any()))
+        .thenReturn(deleteSuccessResponse)
 
       when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))
         .thenReturn(
-          EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetailsDataCache)
+          EitherT.rightT[Future, UpstreamErrorResponse](fakeIndividualDetails)
         )
 
       when(mockFandFConnector.getTrustedHelper()(any())).thenReturn(Future.successful(None))

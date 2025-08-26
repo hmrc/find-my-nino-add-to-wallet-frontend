@@ -16,7 +16,7 @@
 
 package util
 
-import models.individualDetails.{AddressData, AddressLine, AddressType, IndividualDetailsDataCache}
+import models.individualDetails.{AddressData, AddressLine, AddressType, IndividualDetails}
 import play.api.libs.json.{Format, JsValue, Json, OFormat}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
@@ -110,8 +110,8 @@ object AuditUtils {
       }
     )
 
-  private def getIndividualsAddress(individualDetailsDataCache: IndividualDetailsDataCache): AuditAddress =
-    individualDetailsDataCache.individualDetailsData.address match {
+  private def getIndividualsAddress(individualDetails: IndividualDetails): AuditAddress =
+    individualDetails.address match {
       case Some(a: AddressData) => getAuditAddress(a)
       case _                    => getAuditAddress(emptyAddress)
     }
@@ -139,21 +139,21 @@ object AuditUtils {
   }
 
   private def buildDetails(
-    individualDetailsDataCache: IndividualDetailsDataCache,
+    individualDetails: IndividualDetails,
     journeyId: String,
     hc: HeaderCarrier,
     walletProvider: Option[String]
   ): YourDetailsAuditEvent = {
 
-    val mainAddress = getIndividualsAddress(individualDetailsDataCache)
+    val mainAddress = getIndividualsAddress(individualDetails)
     val strLang     = getLanguageFromCookieStr(hc)
     val strDevice   = getUserDevice(hc)
 
     YourDetailsAuditEvent(
       journeyId,
       timestamp(),
-      individualDetailsDataCache.individualDetailsData.nino,
-      name = individualDetailsDataCache.individualDetailsData.fullName,
+      individualDetails.nino,
+      name = individualDetails.getFullName,
       mainAddress = mainAddress,
       device = Some(strDevice),
       language = strLang,
@@ -165,7 +165,7 @@ object AuditUtils {
     java.time.Instant.now().atOffset(ZoneOffset.UTC).format(DateTimeFormatter.ISO_DATE_TIME)
 
   def buildAuditEvent(
-    individualDetailsDataCache: IndividualDetailsDataCache,
+    individualDetails: IndividualDetails,
     auditType: String,
     appName: String,
     walletProvider: Option[String]
@@ -173,7 +173,7 @@ object AuditUtils {
     buildDataEvent(
       auditType,
       s"$appName-$auditType",
-      Json.toJson(buildDetails(individualDetailsDataCache, auditType, hc, walletProvider))
+      Json.toJson(buildDetails(individualDetails, auditType, hc, walletProvider))
     )
 
 }

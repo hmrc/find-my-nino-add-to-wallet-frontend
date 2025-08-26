@@ -20,10 +20,8 @@ import base.SpecBase
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{reset, when}
 import org.scalatestplus.mockito.MockitoSugar
-import play.api.inject
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
-import repositories.SessionRepository
+import play.api.test.Helpers.*
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
 import views.html.{JourneyRecoveryContinueView, JourneyRecoveryStartAgainView}
 
@@ -44,14 +42,8 @@ class JourneyRecoveryControllerSpec extends SpecBase with MockitoSugar {
 
       "must return OK and the continue view" in {
 
-        val mockSessionRepository = mock[SessionRepository]
-        when(mockSessionRepository.get(any())) thenReturn Future.successful(None)
-
         val application =
           applicationBuilder()
-            .overrides(
-              inject.bind[SessionRepository].toInstance(mockSessionRepository)
-            )
             .build()
 
         running(application) {
@@ -75,14 +67,8 @@ class JourneyRecoveryControllerSpec extends SpecBase with MockitoSugar {
 
       "must return OK and the start again view" in {
 
-        val mockSessionRepository = mock[SessionRepository]
-        when(mockSessionRepository.get(any())) thenReturn Future.successful(None)
-
         val application =
           applicationBuilder()
-            .overrides(
-              inject.bind[SessionRepository].toInstance(mockSessionRepository)
-            )
             .build()
 
         running(application) {
@@ -104,14 +90,8 @@ class JourneyRecoveryControllerSpec extends SpecBase with MockitoSugar {
 
       "must return OK and the start again view" in {
 
-        val mockSessionRepository = mock[SessionRepository]
-        when(mockSessionRepository.get(any())) thenReturn Future.successful(None)
-
         val application =
           applicationBuilder()
-            .overrides(
-              inject.bind[SessionRepository].toInstance(mockSessionRepository)
-            )
             .build()
 
         running(application) {

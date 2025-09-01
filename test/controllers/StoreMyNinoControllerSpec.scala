@@ -50,10 +50,8 @@ class StoreMyNinoControllerSpec
 
   override protected def beforeEach(): Unit = {
     reset(mockScaWrapperDataConnector)
-    when(mockScaWrapperDataConnector.wrapperData()(any(), any(), any()))
+    when(mockScaWrapperDataConnector.wrapperDataWithMessages()(any(), any(), any()))
       .thenReturn(Future.successful(Some(wrapperDataResponse)))
-    when(mockScaWrapperDataConnector.messageData()(any(), any()))
-      .thenReturn(Future.successful(messageDataResponse))
 
     reset(mockIndividualDetailsService)
     when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))

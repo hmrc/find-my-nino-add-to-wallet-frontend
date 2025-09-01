@@ -137,14 +137,13 @@ class SpecBase extends WireMockSupport with MockitoSugar with GuiceOneAppPerSuit
     Seq(menuItemConfig1, menuItemConfig2, menuItemConfig3, menuItemConfig4, menuItemConfig5),
     ptaMenuConfig,
     List.empty,
-    List.empty
+    List.empty,
+    Some(2)
   )
-
-  val messageDataResponse: Option[Int] = Some(2)
 
   val requestAttributeMap: TypedMap = TypedMap(
     Keys.wrapperDataKey    -> wrapperDataResponse,
-    Keys.messageDataKey    -> messageDataResponse.get,
+    Keys.messageDataKey    -> wrapperDataResponse.unreadMessageCount.get,
     RequestAttrKey.Cookies -> Cell(Cookies(Seq(Cookie("PLAY_LANG", "en"))))
   )
 

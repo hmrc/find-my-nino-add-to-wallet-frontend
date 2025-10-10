@@ -69,7 +69,7 @@ object AuditUtils {
 
   private def emptyAddress = AddressData(
     addressLine1 = AddressLine(""),
-    addressLine2 = AddressLine(""),
+    addressLine2 = None,
     addressLine3 = None,
     addressLine4 = None,
     addressLine5 = None,
@@ -81,7 +81,7 @@ object AuditUtils {
 
   final case class AuditAddress(
     line1: String,
-    line2: String,
+    line2: Option[String],
     line3: Option[String],
     line4: Option[String],
     line5: Option[String],
@@ -97,7 +97,7 @@ object AuditUtils {
   private def getAuditAddress(addressData: AddressData): AuditAddress =
     AuditAddress(
       line1 = addressData.addressLine1.value,
-      line2 = addressData.addressLine2.value,
+      line2 = addressData.addressLine2.map(x => x.value),
       line3 = addressData.addressLine3.map(x => x.value),
       line4 = addressData.addressLine4.map(x => x.value),
       line5 = addressData.addressLine5.map(x => x.value),

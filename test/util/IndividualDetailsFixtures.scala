@@ -111,7 +111,7 @@ object Fixtures extends IndividualDetailsFixtures {
 
   val fakeAddressData: AddressData = AddressData(
     addressLine1 = AddressLine("123 Fake Street"),
-    addressLine2 = AddressLine("Apt 4B"),
+    addressLine2 = Some(AddressLine("Apt 4B")),
     addressLine3 = Some(AddressLine("Faketown")),
     addressLine4 = Some(AddressLine("Fakeshire")),
     addressLine5 = Some(AddressLine("Fakecountry")),

@@ -22,7 +22,7 @@ import java.time.LocalDate
 
 final case class AddressData(
   addressLine1: AddressLine,
-  addressLine2: AddressLine,
+  addressLine2: Option[AddressLine],
   addressLine3: Option[AddressLine],
   addressLine4: Option[AddressLine],
   addressLine5: Option[AddressLine],

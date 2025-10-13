@@ -37,7 +37,7 @@ case class IndividualDetails(
       case Some(address) =>
         List(
           address.addressLine1.value,
-          address.addressLine2.value,
+          address.addressLine2.map(_.value).getOrElse(""),
           address.addressLine3.map(_.value).getOrElse(""),
           address.addressLine4.map(_.value).getOrElse(""),
           address.addressLine5.map(_.value).getOrElse("")

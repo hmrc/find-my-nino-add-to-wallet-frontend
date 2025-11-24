@@ -57,6 +57,28 @@ label.contact_number=0300 200 1900
 label.www_gov_uk_hmrc=www.gov.uk/cymraeg
 label.www_gov_uk_hmrc.alt=Cyllid a Thollau EF
 label.your_national_insurance_number_is=Eich rhif Yswiriant Gwladol yw
+
+
+label.letter.to.phone=Er mwyn cadw’ch rhif Yswiriant Gwladol i’ch ffôn ewch i GOV.UK a chwiliwch am ‘HMRC app’.
+label.letter.important.paragraph=Mae’ch rhif Yswiriant Gwladol (YG) yn bwysig, yn unigryw i chi, ac ni fydd byth yn newid. Dylech gadw’r llythyr hwn a’ch rhif YG yn saff er mwyn helpu gydag atal twyll. Nid yw’ch rhif YG yn profi pwy ydych nac yn profi’ch hawl i weithio yn y DU.
+label.letter.need.if=Bydd angen eich rhif YG arnoch os byddwch yn gwneud y canlynol:
+label.letter.need.work=dechrau gwaith am gyflog
+label.letter.need.apply=gwneud cais am drwydded yrru, benthyciad myfyriwr neu fudd-daliadau’r wladwriaeth
+label.letter.need.register=cofrestru i bleidleisio.
+label.letter.more.details=I gael rhagor o fanylion, ewch i GOV.UK a chwilio am ‘national insurance’, ac yna dewis yr opsiwn Cymraeg ar y dudalen berthnasol.
+label.letter.use.app.heading=Defnyddiwch ap CThEF er mwyn cadw’ch rhif YG i’ch ffôn
+label.letter.use.app.p1=Er mwyn cael ein ap sy’n rhad ac am ddim ewch i GOV.UK a chwiliwch am ‘HMRC app’, neu mae modd lawrlwytho’r ap o’ch siop apiau.
+label.letter.use.app.p2=Bydd angen i chi gofrestru i gael cyfrif yn yr ap, gan ddefnyddio llun ID (fel pasbort). Yna:
+label.letter.use.app.l1=Agorwch yr ap, a dewis ‘Bwrw golwg dros eich rhif Yswiriant Gwladol’.
+label.letter.use.app.l2=Dewiswch a ydych am ychwanegu’r rhif hwn at waled ddigidol eich ffôn, neu ei gadw fel PDF.
+label.letter.child.trust.heading=Dod o hyd i’ch Cronfa Ymddiriedolaeth Plant
+label.letter.child.trust.p=Os cawsoch eich geni rhwng 1 Medi 2002 a 2 Ionawr 2011, mae’n bosibl bod gennych arian mewn cyfrif cynilo. I gael rhagor o wybodaeth, ewch i GOV.UK a chwilio am ‘child trust fund’, ac yna dewis yr opsiwn Cymraeg ar y dudalen berthnasol.
+label.letter.welsh.heading=Os hoffech gael copi Cymraeg o’r llythyr hwn
+label.letter.welsh.p=Anfonwch e-bost at gwasanaeth.cymraeg@hmrc.gov.uk, neu ffoniwch 0300 200 1900.
+label.letter.protect.heading=Diogelu’ch hun a’ch gwybodaeth
+label.letter.protect.p=Mae CThEF yn blaenoriaethu diogelwch gwybodaeth cwsmeriaid. I wirio a yw cyswllt oddi wrth CThEF yn ddilys, ewch i GOV.UK a chwilio am ‘Check if a letter you’ve received from HMRC is genuine’, ac yna dewis yr opsiwn Cymraeg ar y dudalen berthnasol.  Rhowch wybod i phishing@hmrc.gov.uk am godau QR amheus gan gynnwys manylion fel ble y gwnaethoch ei weld a’r dudalen a arweiniodd ato.
+
+
 label.keep_this_number_in_a_safe_place_do_not_destroy_this_letter=Cadwch y rhif hwn mewn man diogel. Peidiwch â dinistrio’r llythyr hwn.
 label.about_your_national_insurance_number=Ynglŷn â’ch rhif Yswiriant Gwladol
 label.your_national_insurance_number_is_unique_to_you_and_will_never_change_=Mae’ch rhif Yswiriant Gwladol yn unigryw i chi, ac ni fydd byth yn newid. Er mwyn atal twyll hunaniaeth, peidiwch â’i rannu gydag unrhyw un nad oes ei angen arno.

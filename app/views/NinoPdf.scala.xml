@@ -116,7 +116,7 @@
                 <fo:inline-container role="Div" inline-progression-dimension="23%">
                     <fo:block role="Div"
                               border-left-style="solid"
-                              border-width="2px"
+                              border-width="1.5px"
                               border-color="#28a197"
                               padding-start="4px">
                         <fo:wrapper role="artifact">
@@ -243,27 +243,23 @@
             <!-- NINO number box -->
             <fo:block role="Div"
                       space-after="10px"
-                      background-color="#DAF4F2"
-                      border-style="solid"
-                      border-width="1.5px"
-                      border-color="#28a197">
-                <fo:block role="H2"
-                          font-size="10.5pt"
+                      color="#28a197">
+                <fo:inline role="H2"
+                          font-size="14pt"
                           font-family="OpenSans-Bold"
                           font-weight="bold"
                           padding-before="8px"
                           padding-after="6px"
-                          text-align="center"
                           id="heading-h1-1-h2-1">
                     @Messages("label.your_national_insurance_number_is")
-                </fo:block>
-                <fo:block role="P"
-                          font-size="20pt"
-                          text-align="center"
-                          font-family="OpenSans-Bold"
-                          font-weight="bold">
+                </fo:inline>
+                <fo:inline role="P"
+                    font-size="20pt"
+                    font-family="OpenSans-Bold"
+                    font-weight="bold">
                     @individualDetails.nino.grouped(2).mkString(" ")
-                </fo:block>
+                </fo:inline>
+
             </fo:block>
             <!-- end NINO number box -->
 

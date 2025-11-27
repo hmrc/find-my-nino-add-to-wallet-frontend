@@ -16,6 +16,8 @@
         xmlns:fo="http://www.w3.org/1999/XSL/Format"
         xmlns:fox="http://xmlgraphics.apache.org/fop/extensions"
         font-family="OpenSans"
+        font-size="10.5pt"
+        line-height="12pt"
         xml:lang="@lang"
 >
 
@@ -101,7 +103,8 @@
 
         <!-- footer -->
         <fo:static-content role="artifact" flow-name="xsl-region-after">
-            <fo:block font-size="9pt" font-family="OpenSans" font-weight="normal" line-height="14pt">
+            <fo:block font-size="9pt"
+                      line-height="14pt">
                 <!-- date -->
                 <fo:block text-align="end">
                     @Messages("label.hmrc_date", date)
@@ -125,12 +128,9 @@
                                                  content-height="scale-to-fit"
                                                  content-width="0.8cm"
                                                  role="Artifact"
-                                                 fox:alt-text="@Messages("label.alt.hmrc_logo")"
-                            />
+                                                 fox:alt-text="@Messages("label.alt.hmrc_logo")"/>
                         </fo:wrapper>
                         <fo:block role="P"
-                                  font-family="OpenSans"
-                                  font-weight="normal"
                                   line-height="14pt"
                                   font-size="14pt"
                                   padding-before="-14px"
@@ -158,59 +158,48 @@
             <fo:block role="Div">
                 <fo:inline-container role="Div" inline-progression-dimension="62%">
                     <fo:block>
-                        <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal"
-                                  line-height="12pt">
+                        <fo:block role="P">
                             <fo:block>@individualDetails.getInitialsName</fo:block>
                         </fo:block>
                         @individualDetails.getAddressLines.map { line =>
-                        <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal"
-                                  line-height="12pt">
+                        <fo:block role="P">
                             <fo:block>@line</fo:block>
                         </fo:block>
                         }
-                        <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal"
-                                  line-height="12pt">
+                        <fo:block role="P">
                             <fo:block>@individualDetails.getPostCode.getOrElse("").toUpperCase</fo:block>
                         </fo:block>
                     </fo:block>
                 </fo:inline-container>
                 <fo:inline-container role="Div" inline-progression-dimension="37%">
                     <fo:block>
-                        <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal"
-                                  line-height="12pt">
+                        <fo:block role="P">
                             <fo:block>
                                 @Messages("label.nic_eo_hmrc_address.line1.pdf")
                             </fo:block>
                         </fo:block>
-                        <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal"
-                                  line-height="12pt">
+                        <fo:block role="P">
                             <fo:block>
                                 @Messages("label.nic_eo_hmrc_address.line2")
                             </fo:block>
                         </fo:block>
                         @if(lang.eq("cy")) {
-                        <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal"
-                                  line-height="12pt">
+                        <fo:block role="P">
                             <fo:block>
                                 @Messages("label.nic_eo_hmrc_address.line3")
                             </fo:block>
                         </fo:block>
                         }
-                        <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal"
-                                  line-height="12pt">
-                            <fo:block>
+                        <fo:block role="P">
                                 @Messages("label.nic_eo_hmrc_address.postcode")
-                            </fo:block>
                         </fo:block>
-                        <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal"
-                                  line-height="12pt" padding-after="4px" padding-before="4px">
-                            <fo:block>
-                                @Messages("label.phone_text")
-                                @Messages("label.contact_number")
-                            </fo:block>
+                        <fo:block role="P"
+                                  padding-after="4px"
+                                  padding-before="4px">
+                            @Messages("label.phone_text")
+                            @Messages("label.contact_number")
                         </fo:block>
-                        <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal"
-                                  line-height="12pt">
+                        <fo:block role="P">
                             <fo:basic-link color="#1F70B8"
                                            external-destination='https://@Messages("label.www_gov_uk_hmrc")'
                                            text-decoration="underline"
@@ -225,15 +214,12 @@
             <!-- end Addresses -->
 
             <!-- name and title -->
-            <fo:block font-size="10.5pt" font-family="OpenSans" font-weight="normal" line-height="12pt"
-                      padding-after="6px" padding-before="6px">
+            <fo:block padding-after="6px"
+                      padding-before="6px">
                 @individualDetails.getFullName
             </fo:block>
             <fo:block role="P"
                       space-after="10px"
-                      text-align="left"
-                      font-family="OpenSans"
-                      font-weight="normal"
                       padding-before="6px"
                       padding-after="6px">
                 @messages("label.letter.to.phone")
@@ -243,20 +229,18 @@
             <!-- NINO number box -->
             <fo:block role="Div"
                       space-after="10px"
-                      color="#28a197">
+                      color="#28a197"
+                      font-family="OpenSans-Bold"
+                      font-weight="bold">
                 <fo:inline role="H2"
                           font-size="14pt"
-                          font-family="OpenSans-Bold"
-                          font-weight="bold"
                           padding-before="8px"
                           padding-after="6px"
                           id="heading-h1-1-h2-1">
                     @Messages("label.your_national_insurance_number_is")
                 </fo:inline>
                 <fo:inline role="P"
-                    font-size="20pt"
-                    font-family="OpenSans-Bold"
-                    font-weight="bold">
+                    font-size="20pt">
                     @individualDetails.nino.grouped(2).mkString(" ")
                 </fo:inline>
 
@@ -266,25 +250,23 @@
             <!-- about NINO information -->
                 <fo:block role="P"
                           space-after="10px"
-                          text-align="left"
-                          font-family="OpenSans"
-                          font-weight="normal"
                           padding-before="4px"
                           padding-after="4px">
                     @Messages("label.letter.important.paragraph")
                 </fo:block>
                 <fo:block role="P"
                           space-after="10px"
-                          text-align="left"
-                          font-family="OpenSans"
-                          font-weight="normal"
                           padding-before="4px"
                           padding-after="4px">
                     @Messages("label.letter.need.if")
                 </fo:block>
-                <fo:list-block role="L" provisional-distance-between-starts="0.3cm">
-                    <fo:list-item font-size="12pt" font-family="OpenSans" font-weight="normal"
-                                  line-height="12pt" padding-after="3px" padding-before="3px" role="LI">
+                <fo:list-block role="L" 
+                               provisional-distance-between-starts="0.3cm"
+                               font-size="12pt"
+                               line-height="12pt">
+                    <fo:list-item padding-after="3px"
+                                  padding-before="3px"
+                                  role="LI">
                         <fo:list-item-label role="Lbl" end-indent="1em">
                             <fo:block>
                                 <fo:inline>
@@ -302,8 +284,9 @@
                             </fo:block>
                         </fo:list-item-body>
                     </fo:list-item>
-                    <fo:list-item font-size="12pt" font-family="OpenSans" font-weight="normal"
-                                  line-height="12pt" padding-after="3px" padding-before="3px" role="LI">
+                    <fo:list-item padding-after="3px"
+                                  padding-before="3px"
+                                  role="LI">
                         <fo:list-item-label role="Lbl" end-indent="1em">
                             <fo:block>
                                 <fo:inline>
@@ -321,8 +304,9 @@
                             </fo:block>
                         </fo:list-item-body>
                     </fo:list-item>
-                    <fo:list-item font-size="12pt" font-family="OpenSans" font-weight="normal"
-                                  line-height="12pt" padding-after="3px" padding-before="3px" role="LI">
+                    <fo:list-item padding-after="3px"
+                                  padding-before="3px"
+                                  role="LI">
                         <fo:list-item-label role="Lbl" end-indent="1em">
                             <fo:block>
                                 <fo:inline>
@@ -343,15 +327,14 @@
                 </fo:list-block>
                 <fo:block role="P"
                           space-after="10px"
-                          text-align="left"
-                          font-family="OpenSans"
-                          font-weight="normal"
                           padding-before="6px"
                           padding-after="6px">
                     @Messages("label.letter.more.details")
                 </fo:block>
 
-                <fo:block role="H3" font-size="10.5pt" font-family="OpenSans-Bold" font-weight="bold"
+                <fo:block role="H2"
+                          font-family="OpenSans-Bold"
+                          font-weight="bold"
                           padding-before="8px" padding-after="6px">
                     <fo:block>
                         @Messages("label.letter.use.app.heading")
@@ -359,25 +342,23 @@
                 </fo:block>
                 <fo:block role="P"
                           space-after="10px"
-                          text-align="left"
-                          font-family="OpenSans"
-                          font-weight="normal"
                           padding-before="6px"
                           padding-after="6px">
                     @Messages("label.letter.use.app.p1")
                 </fo:block>
                 <fo:block role="P"
                           space-after="10px"
-                          text-align="left"
-                          font-family="OpenSans"
-                          font-weight="normal"
                           padding-before="6px"
                           padding-after="6px">
                     @Messages("label.letter.use.app.p2")
                 </fo:block>
-                <fo:list-block role="L" provisional-distance-between-starts="0.3cm">
-                    <fo:list-item font-size="12pt" font-family="OpenSans" font-weight="normal"
-                                  line-height="12pt" padding-after="3px" padding-before="3px" role="LI">
+                <fo:list-block role="L"
+                               provisional-distance-between-starts="0.3cm"
+                               font-size="12pt"
+                               line-height="12pt">
+                    <fo:list-item padding-after="3px"
+                                  padding-before="3px"
+                                  role="LI">
                         <fo:list-item-label role="Lbl" end-indent="1em">
                             <fo:block>
                                 <fo:inline>
@@ -393,8 +374,9 @@
                             </fo:block>
                         </fo:list-item-body>
                     </fo:list-item>
-                    <fo:list-item font-size="12pt" font-family="OpenSans" font-weight="normal"
-                                  line-height="12pt" padding-after="3px" padding-before="3px" role="LI">
+                    <fo:list-item padding-after="3px"
+                                  padding-before="3px"
+                                  role="LI">
                         <fo:list-item-label role="Lbl" end-indent="1em">
                             <fo:block>
                                 <fo:inline>
@@ -413,60 +395,66 @@
                         </fo:list-item-body>
                     </fo:list-item>
                 </fo:list-block>
-                <fo:block role="H3" font-size="10.5pt" font-family="OpenSans-Bold" font-weight="bold"
-                          padding-before="8px" padding-after="6px">
+                <fo:block role="H2"
+                          font-family="OpenSans-Bold"
+                          font-weight="bold"
+                          padding-before="8px"
+                          padding-after="6px">
                     <fo:block>
                         @Messages("label.letter.child.trust.heading")
                     </fo:block>
                 </fo:block>
                 <fo:block role="P"
                           space-after="10px"
-                          text-align="left"
-                          font-family="OpenSans"
-                          font-weight="normal"
                           padding-before="6px"
                           padding-after="6px">
                     @Messages("label.letter.child.trust.p")
                 </fo:block>
                 @if(lang.eq("en")) {
-                    <fo:block role="H3" font-size="10.5pt" font-family="OpenSans-Bold" font-weight="bold"
-                              padding-before="8px" padding-after="6px">
+                    <fo:block role="H2"
+                              font-family="OpenSans-Bold"
+                              font-weight="bold"
+                              padding-before="8px"
+                              padding-after="6px">
                         <fo:block>
                             @Messages("label.letter.welsh.heading")
                         </fo:block>
                     </fo:block>
-                    <fo:block role="P" font-size="10.5pt" font-family="OpenSans" font-weight="normal"
-                              line-height="12pt" padding-after="6px" padding-before="6px">
+                    <fo:block role="P"
+                              padding-after="6px"
+                              padding-before="6px">
                         <fo:block>
                             @Messages("label.letter.welsh.p")
                         </fo:block>
                     </fo:block>
                 }
-                <fo:block role="H3" font-size="10.5pt" font-family="OpenSans-Bold" font-weight="bold"
-                          padding-before="8px" padding-after="6px">
+                <fo:block role="H2"
+                          font-family="OpenSans-Bold"
+                          font-weight="bold"
+                          padding-before="8px"
+                          padding-after="6px">
                     <fo:block>
                         @Messages("label.letter.protect.heading")
                     </fo:block>
                 </fo:block>
                 <fo:block role="P"
                           space-after="10px"
-                          text-align="left"
-                          font-family="OpenSans"
-                          font-weight="normal"
                           padding-before="6px"
                           padding-after="6px">
                     @Messages("label.letter.protect.p")
                 </fo:block>
-                <fo:block role="Div" font-family="OpenSans" font-weight="normal">
-                    <fo:block role="P" font-size="16pt" padding-before="4px" padding-after="4px">
-                        <fo:block>
-                            @Messages("label.information_is_available_in_large_print_audio_tape_and_braille_formats")
-                        </fo:block>
+                <fo:block role="Div"
+                          font-size="16pt"
+                          line-height="16pt">
+                    <fo:block role="P"
+                              padding-before="4px"
+                              padding-after="4px">
+                        @Messages("label.information_is_available_in_large_print_audio_tape_and_braille_formats")
                     </fo:block>
-                    <fo:block role="P" font-size="16pt" padding-before="4px" padding-after="4px">
-                        <fo:block>
-                            @Messages("label.text_relay_service_prefix_number_18001")
-                        </fo:block>
+                    <fo:block role="P"
+                              padding-before="4px"
+                              padding-after="4px">
+                        @Messages("label.text_relay_service_prefix_number_18001")
                     </fo:block>
                 </fo:block>
 

@@ -77,7 +77,7 @@ implicit request: Request[_], messages: play.api.i18n.Messages)
                 <p class="name govuk-body">@individualDetails.getFullName</p>
                 <p class="govuk-body">@messages("label.letter.to.phone")</p>
                 <h2 class="govuk-body insurance-number-text govuk-!-font-size-27 govuk-!-font-weight-bold inline-headings govuk-!-margin-bottom-6">@messages("label.your_national_insurance_number_is")<span class="govuk-body insurance-number-text govuk-!-font-size-36 govuk-!-font-weight-bold"> @nino</span></h2>
-                <div class="ni-letter">
+                <div class="ni-letter govuk-!-margin-bottom-9">
                     <p class="govuk-body">@messages("label.letter.important.paragraph")</p>
                     <p class="govuk-body list-paragraph">@messages("label.letter.need.if")</p>
                     <ul class="govuk-list govuk-list--bullet">
@@ -97,13 +97,13 @@ implicit request: Request[_], messages: play.api.i18n.Messages)
                     <p class="govuk-body">@messages("label.letter.child.trust.p")</p>
                     @if(messages.lang.language.equals("en")) {
                         <h3 class="govuk-heading-s">@messages("label.letter.welsh.heading")</h3>
-                        <p class="govuk-body">@messages("label.letter.welsh.p")</p>
+                        <p class="govuk-body">@Html(messages("label.letter.welsh.p"))</p>
                     }
                     <h3 class="govuk-heading-s">@messages("label.letter.protect.heading")</h3>
-                    <p class="govuk-body">@messages("label.letter.protect.p")</p>
+                    <p class="govuk-body">@Html(messages("label.letter.protect.p"))</p>
                 </div>
 
-                <p class="braille-info govuk-body govuk-!-font-size-24" id="available-information-text-relay">
+                <p class="braille-info govuk-body govuk-!-font-size-24 govuk-!-margin-top-20" id="available-information-text-relay">
                     <span>@messages("label.information_is_available_in_large_print_audio_tape_and_braille_formats")</span>
                     <span>@messages("label.text_relay_service_prefix_number_18001")</span>
                 </p>

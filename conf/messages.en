@@ -65,6 +65,24 @@ label.www_gov_uk_hmrc=www.gov.uk/hmrc
 label.www_gov_uk_hmrc.alt=HM Revenue and Customs
 
 label.your_national_insurance_number_is=Your National Insurance number is
+label.letter.to.phone=To save your National Insurance number to your phone go to GOV.UK and search ‘HMRC app’.
+label.letter.important.paragraph=Your National Insurance (NI) number is important, unique to you and will never change. You should keep this letter and your NI number safe to help prevent fraud. Your NI number isn’t proof of your identity or your right to work in the UK.
+label.letter.need.if=You’ll need your NI number if you:
+label.letter.need.work=start paid work
+label.letter.need.apply=apply for a driving licence, student loan or state benefit
+label.letter.need.register=register to vote.
+label.letter.more.details=For more details, please go to GOV.UK and search ‘national insurance’.
+label.letter.use.app.heading=Use the HMRC app to save your NI number to your phone
+label.letter.use.app.p1=To get our free app go to GOV.UK and search ‘HMRC app’ or download it from your app store.
+label.letter.use.app.p2=You’ll need to register for an account in the app, using photo ID (such as a passport). Then:
+label.letter.use.app.l1=Open the app and select ‘View your National Insurance number’.
+label.letter.use.app.l2=Choose to add this number to your phone’s digital wallet or save it as a PDF.
+label.letter.child.trust.heading=Find your Child Trust Fund
+label.letter.child.trust.p=If you were born between 1 September 2002 and 2 January 2011, you may have money in a savings account. For more information, please go to GOV.UK and search ‘child trust fund’.
+label.letter.welsh.heading=If you’d like a Welsh language version of this letter
+label.letter.welsh.p=Please email <a class="govuk-link" href="mailto:gwasanaeth.cymraeg@hmrc.gov.uk">gwasanaeth.cymraeg@hmrc.gov.uk</a> or call us on 0300 200 1900.
+label.letter.protect.heading=Protect yourself and your information
+label.letter.protect.p=HMRC prioritises the security of customer information. To verify genuine contact from HMRC, go to GOV.UK and search ‘Check if a letter you’ve received from HMRC is genuine’. Report suspicious QR codes to <a class="govuk-link" href="mailto:phishing@hmrc.gov.uk">phishing@hmrc.gov.uk</a> with details such as where you saw it and the page it led to.
 
 label.keep_this_number_in_a_safe_place_do_not_destroy_this_letter=Keep this number in a safe place. Do not destroy this letter.
 

@@ -424,7 +424,7 @@
                               padding-after="6px"
                               padding-before="6px">
                         <fo:block>
-                            @Messages("label.letter.welsh.p")
+                            @Messages("label.letter.welsh.p.pdf")
                         </fo:block>
                     </fo:block>
                 }
@@ -441,7 +441,7 @@
                           space-after="10px"
                           padding-before="6px"
                           padding-after="6px">
-                    @Messages("label.letter.protect.p")
+                    @Html(Messages("label.letter.protect.p.pdf"))
                 </fo:block>
                 <fo:block role="Div"
                           font-size="16pt"

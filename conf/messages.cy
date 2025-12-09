@@ -74,9 +74,12 @@ label.letter.use.app.l2=Dewiswch a ydych am ychwanegu’r rhif hwn at waled ddig
 label.letter.child.trust.heading=Dod o hyd i’ch Cronfa Ymddiriedolaeth Plant
 label.letter.child.trust.p=Os cawsoch eich geni rhwng 1 Medi 2002 a 2 Ionawr 2011, mae’n bosibl bod gennych arian mewn cyfrif cynilo. I gael rhagor o wybodaeth, ewch i GOV.UK a chwilio am ‘child trust fund’, ac yna dewis yr opsiwn Cymraeg ar y dudalen berthnasol.
 label.letter.welsh.heading=Os hoffech gael copi Cymraeg o’r llythyr hwn
-label.letter.welsh.p=Anfonwch e-bost at gwasanaeth.cymraeg@hmrc.gov.uk, neu ffoniwch 0300 200 1900.
+label.letter.welsh.p=Anfonwch e-bost at <a class="govuk-link" href="mailto:gwasanaeth.cymraeg@hmrc.gov.uk">gwasanaeth.cymraeg@hmrc.gov.uk</a>, neu ffoniwch 0300 200 1900.
+label.letter.welsh.p.pdf=Anfonwch e-bost at gwasanaeth.cymraeg@hmrc.gov.uk, neu ffoniwch 0300 200 1900.
 label.letter.protect.heading=Diogelu’ch hun a’ch gwybodaeth
 label.letter.protect.p=Mae CThEF yn blaenoriaethu diogelwch gwybodaeth cwsmeriaid. I wirio a yw cyswllt oddi wrth CThEF yn ddilys, ewch i GOV.UK a chwilio am ‘Check if a letter you’ve received from HMRC is genuine’, ac yna dewis yr opsiwn Cymraeg ar y dudalen berthnasol.  Rhowch wybod i <a class="govuk-link" href="mailto:phishing@hmrc.gov.uk">phishing@hmrc.gov.uk</a> am godau QR amheus gan gynnwys manylion fel ble y gwnaethoch ei weld a’r dudalen a arweiniodd ato.
+label.letter.protect.p.pdf=Mae CThEF yn blaenoriaethu diogelwch gwybodaeth cwsmeriaid. I wirio a yw cyswllt oddi wrth CThEF yn ddilys, ewch i GOV.UK a chwilio am ‘Check if a letter you’ve received from HMRC is genuine’, ac yna dewis yr opsiwn Cymraeg ar y dudalen berthnasol.  Rhowch wybod i phishing@hmrc.gov.uk am godau QR amheus gan gynnwys manylion fel ble y gwnaethoch ei weld a’r dudalen a arweiniodd ato.
+
 
 
 label.keep_this_number_in_a_safe_place_do_not_destroy_this_letter=Cadwch y rhif hwn mewn man diogel. Peidiwch â dinistrio’r llythyr hwn.

@@ -31,11 +31,7 @@
     displayForMobile: Boolean
 )(implicit request: Request[_], messages: Messages)
 
-@stylesheet = {
-    <link rel="stylesheet" href='@routes.Assets.versioned("stylesheets/partials/save-your-nino.css")'>
-}
-
-@layout(pageTitle = titleNoForm(messages("appleWallet.title")), stylesheets = Some(stylesheet)) {
+@layout(pageTitle = titleNoForm(messages("appleWallet.title"))) {
 
     @h1("appleWallet.heading")
     @p("appleWallet.p1")
@@ -51,7 +47,7 @@
         <div class="show-on-phones">
             @h2("appleWallet.tapToAdd.heading")
             <a href='/@frontendAppConfig.serviceName/get-pass-card?passId=@{passId}'>
-                <img class=" add-wallet-ios" src="/@frontendAppConfig.serviceName/assets/images/apple-pay.svg" alt='@messages("appleWallet.addToWallet.alt")'>
+                <img class="add-wallet-ios" src="/@frontendAppConfig.serviceName/assets/images/apple-pay.svg" alt='@messages("appleWallet.addToWallet.alt")'>
             </a>
         </div>
     } else {

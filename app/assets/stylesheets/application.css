@@ -1,0 +1,131 @@
+.js-enabled .govuk-back-link {
+    visibility: visible;
+}
+
+.govuk-back-link {
+    visibility: hidden;
+}
+
+[class^="add-wallet"] {
+    height: 3em;
+}
+
+.show-on-phones a {
+   text-decoration: none;
+}
+
+#nino {
+    white-space: nowrap;
+}
+
+address {
+  font-style: normal;
+}
+
+.links-flex-row {
+    display: flex;
+    flex-direction: row;
+    gap: 1em;
+}
+
+.print-icon {
+    vertical-align: text-bottom;
+  }
+
+.js-enabled .print-this,
+.save-this {
+  display: block;
+  height: 1.3em;
+}
+
+.print-document {
+  border: 1px solid #6f777b;
+  box-shadow: 6px 6px 0 0 #dee0e2;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 35px;
+  padding: 4% 6%;
+}
+
+@media (min-width: 640px) {
+  .print-document {
+    grid-template-columns: 1fr max-content;
+    max-width: 720px;
+  }
+
+  .print-document .govuk-heading-m {
+    text-align: right;
+  }
+}
+
+.print-header {
+    border-left: #28a197 solid;
+    padding-left: 8px;
+    margin-left: -8px;
+}
+
+.hmrc-logo-text-wrapper {
+    line-height: 1 !important;
+}
+
+.print-header + div {
+  align-self: end;
+}
+
+.print-body {
+  grid-column: 1 / -1;
+}
+
+.document-address {
+    padding-top: 25px;
+    margin-bottom: 10px;
+}
+
+.phone-number {
+    margin-left: 1em;
+}
+
+.insurance-number-text {
+    color: #28a197;
+    margin-bottom: 5px;
+    text-wrap: balance;
+}
+
+@media print {
+
+    @page {
+      size: auto;
+      margin: 1cm 0;
+    }
+
+    .govuk-width-container {
+        max-width: 90%;
+    }
+
+  header,
+  footer,
+  .hmrc-account-menu,
+  .hmrc-account-menu + div,
+  .hide-for-print {
+    display: none !important;
+  }
+
+  .hide-for-print[href]:after {
+    display: none;
+  }
+
+  .print-document {
+    border: none;
+    box-shadow: none;
+    width: auto;
+    padding: 0;
+  }
+
+  .print-document h3:nth-of-type(2) {
+    break-before: page;
+  }
+
+  .govuk-link {
+    text-decoration-thickness: auto;
+  }
+}

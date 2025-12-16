@@ -14,104 +14,91 @@
  * limitations under the License.
  *@
 
-@import tags._
-
 @this()
 
 @(individualDetails: models.individualDetails.IndividualDetails,dateString: String,nino: String)(
 implicit request: Request[_], messages: play.api.i18n.Messages)
 
 
-<section aria-label='@messages("label.your_national_insurance_number_letter_preview")'>
-    <div class="print-document">
-        <div class="grid-row print-header">
-            <div class="govuk-grid-column-one-third">
-                <img class="print-header__hmrc-logo" alt='@messages("label.hm_revenue_and_customs")' width="40" height="40" src="assets/images/HMRC-logo.jpg"/>
-                <span class="govuk-heading-m hmrc-logo-text-wrapper govuk-!-font-weight-regular">
-                    <span class="hmrc-logo-text-inner">@messages("label.hm_revenue_customs_ni_print.revenue")</span>
-                    @Html(messages("label.hm_revenue_customs_ni_print.customs"))
-                </span>
-            </div>
-            <div class="govuk-grid-column-two-thirds">
-                <h1 class="govuk-heading-m print-header__heading">
-                    @messages("label.your_national_insurance_number")
-                </h1>
-            </div>
+<section aria-label='@messages("label.your_national_insurance_number_letter_preview")' class="govuk-body print-document">
+
+    <div class="print-header">
+        <img alt='@messages("label.hm_revenue_and_customs")' width="40" height="40" src="assets/images/HMRC-logo.jpg"/>
+        <div class="govuk-!-font-size-24 hmrc-logo-text-wrapper">
+            @messages("label.hm_revenue_customs_ni_print.revenue")<br>
+            @Html(messages("label.hm_revenue_customs_ni_print.customs"))
+        </div>
+    </div>
+    <div class="govuk-heading-m govuk-!-margin-0">
+        @messages("label.your_national_insurance_number")
+    </div>
+
+    @individualDetails.address.map { residentialAddress =>
+        <address>
+            <div>@individualDetails.getInitialsName</div>
+            @individualDetails.getAddressLines.map { line => <div>@line</div> }
+            <div>@individualDetails.getPostCode.getOrElse("").toUpperCase</div>
+        </address>
+    }.getOrElse(<address></address>)
+
+
+    <address class="govuk-!-padding-left-6">
+        <div>@Html(messages("label.nic_eo_hmrc_address.line1"))</div>
+        <div>@messages("label.nic_eo_hmrc_address.line2")</div>
+        @if(messages.lang.language.equals("cy")) {
+            <div>@messages("label.nic_eo_hmrc_address.line3")</div>
+        }
+        <div>@messages("label.nic_eo_hmrc_address.postcode")</div>
+        <p>@messages("label.phone_text")
+            <span class="govuk-!-margin-left-4">
+            @messages("label.contact_number")
+        </span>
+        </p>
+        <a class="govuk-link hide-for-print govuk-link--no-visited-state" href='https://@messages("label.www_gov_uk_hmrc")'>
+            @messages("label.www_gov_uk_hmrc")
+        </a>
+    </address>
+
+    <div class="print-body">
+        <p>@individualDetails.getFullName</p>
+        <p>@messages("label.letter.to.phone")</p>
+        <h2 class="insurance-number-text govuk-!-font-size-27 govuk-!-font-weight-bold govuk-!-margin-bottom-6">
+            @messages("label.your_national_insurance_number_is")
+            <span class="govuk-!-font-size-36"> @nino</span>
+        </h2>
+        <div class="govuk-!-margin-bottom-9">
+            <p>@messages("label.letter.important.paragraph")</p>
+            <p>@messages("label.letter.need.if")</p>
+            <ul class="govuk-list govuk-list--bullet">
+                <li>@messages("label.letter.need.work")</li>
+                <li>@messages("label.letter.need.apply")</li>
+                <li>@messages("label.letter.need.register")</li>
+            </ul>
+            <p>@messages("label.letter.more.details")</p>
+            <h3 class="govuk-heading-s">@messages("label.letter.use.app.heading")</h3>
+            <p>@messages("label.letter.use.app.p1")</p>
+            <p>@messages("label.letter.use.app.p2")</p>
+            <ol class="govuk-list govuk-list--number">
+                <li>@messages("label.letter.use.app.l1")</li>
+                <li>@messages("label.letter.use.app.l2")</li>
+            </ol>
+            <h3 class="govuk-heading-s">@messages("label.letter.child.trust.heading")</h3>
+            <p>@messages("label.letter.child.trust.p")</p>
+            @if(messages.lang.language.equals("en")) {
+                <h3 class="govuk-heading-s">@messages("label.letter.welsh.heading")</h3>
+                <p>@Html(messages("label.letter.welsh.p"))</p>
+            }
+            <h3 class="govuk-heading-s">@messages("label.letter.protect.heading")</h3>
+            <p >@Html(messages("label.letter.protect.p"))</p>
         </div>
 
-        <div class="grid-row document-address">
-            <div class="govuk-grid-column-one-half govuk-body document-address__recipient">
-                @individualDetails.address.map { residentialAddress =>
-                    <address>
-                        <span>@individualDetails.getInitialsName</span>
-                        @individualDetails.getAddressLines.map { line => <span>@line</span> }
-                        <span>@individualDetails.getPostCode.getOrElse("").toUpperCase</span>
-                    </address>
-                }.getOrElse(<address></address>)
-            </div>
+        <p class="govuk-!-font-size-24 govuk-!-margin-top-20" id="available-information-text-relay">
+            <span>@messages("label.information_is_available_in_large_print_audio_tape_and_braille_formats")</span>
+            <span>@messages("label.text_relay_service_prefix_number_18001")</span>
+        </p>
 
-            <div class="govuk-grid-column-one-half document-address__sender">
-                <div class="sender-details">
-                    <address class="govuk-body">
-                        <span>@Html(messages("label.nic_eo_hmrc_address.line1"))</span>
-                        <span>@messages("label.nic_eo_hmrc_address.line2")</span>
-                        @if(messages.lang.language.equals("cy")) {
-                            <span>@messages("label.nic_eo_hmrc_address.line3")</span>
-                        }
-                        <span>@messages("label.nic_eo_hmrc_address.postcode")</span>
-                    </address>
-                    <p class="phone govuk-body">@messages("label.phone_text")
-                        <span class="phone-number">
-                            @messages("label.contact_number")
-                        </span>
-                    </p>
-                    <a class="govuk-link govuk-body url hide-for-print govuk-link--no-visited-state" href='https://@messages("label.www_gov_uk_hmrc")'>
-                        @messages("label.www_gov_uk_hmrc")
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <div class="grid-row main-content">
-            <div class="govuk-grid-column-full">
-                <p class="name govuk-body">@individualDetails.getFullName</p>
-                <p class="govuk-body">@messages("label.letter.to.phone")</p>
-                <h2 class="govuk-body insurance-number-text govuk-!-font-size-27 govuk-!-font-weight-bold inline-headings govuk-!-margin-bottom-6">@messages("label.your_national_insurance_number_is")<span class="govuk-body insurance-number-text govuk-!-font-size-36 govuk-!-font-weight-bold"> @nino</span></h2>
-                <div class="ni-letter govuk-!-margin-bottom-9">
-                    <p class="govuk-body">@messages("label.letter.important.paragraph")</p>
-                    <p class="govuk-body list-paragraph">@messages("label.letter.need.if")</p>
-                    <ul class="govuk-list govuk-list--bullet">
-                        <li>@messages("label.letter.need.work")</li>
-                        <li>@messages("label.letter.need.apply")</li>
-                        <li>@messages("label.letter.need.register")</li>
-                    </ul>
-                    <p class="govuk-body">@messages("label.letter.more.details")</p>
-                    <h3 class="govuk-heading-s">@messages("label.letter.use.app.heading")</h3>
-                    <p class="govuk-body">@messages("label.letter.use.app.p1")</p>
-                    <p class="govuk-body list-paragraph">@messages("label.letter.use.app.p2")</p>
-                    <ol class="govuk-list govuk-list--number">
-                        <li>@messages("label.letter.use.app.l1")</li>
-                        <li>@messages("label.letter.use.app.l2")</li>
-                    </ol>
-                    <h3 class="govuk-heading-s">@messages("label.letter.child.trust.heading")</h3>
-                    <p class="govuk-body">@messages("label.letter.child.trust.p")</p>
-                    @if(messages.lang.language.equals("en")) {
-                        <h3 class="govuk-heading-s">@messages("label.letter.welsh.heading")</h3>
-                        <p class="govuk-body">@Html(messages("label.letter.welsh.p"))</p>
-                    }
-                    <h3 class="govuk-heading-s">@messages("label.letter.protect.heading")</h3>
-                    <p class="govuk-body">@Html(messages("label.letter.protect.p"))</p>
-                </div>
-
-                <p class="braille-info govuk-body govuk-!-font-size-24 govuk-!-margin-top-20" id="available-information-text-relay">
-                    <span>@messages("label.information_is_available_in_large_print_audio_tape_and_braille_formats")</span>
-                    <span>@messages("label.text_relay_service_prefix_number_18001")</span>
-                </p>
-
-                <div class="ni-footer-info govuk-!-font-size-14">
-                    <span class="footer-page-date">@messages("label.hmrc_date", dateString)</span>
-                </div>
-            </div>
+        <div class="govuk-!-margin-top-1 govuk-!-font-size-14 govuk-!-text-align-right">
+            @messages("label.hmrc_date", dateString)
         </div>
     </div>
 </section>

@@ -27,30 +27,22 @@
 
 @(individualDetails: models.individualDetails.IndividualDetails, dateString: String, saveNiLetterAsPdfLinkEnabled: Boolean, nino : String)(implicit request: Request[_], messages: Messages)
 
-@stylesheet = {
-    <link rel="stylesheet" href='@routes.Assets.versioned("stylesheets/partials/print-this-document.css")'>
-}
+@layout(pageTitle = titleNoForm(messages("label.your_national_insurance_number_letter")), fullWidth = true) {
 
-@layout(pageTitle = titleNoForm(messages("label.your_national_insurance_number_letter")), stylesheets = Some(stylesheet), fullWidth = true) {
+    <h1 class="govuk-heading-xl hide-for-print">@messages("label.your_national_insurance_number_letter")</h1>
 
-    <h1 class="govuk-heading-xl">@messages("label.your_national_insurance_number_letter")</h1>
-
-    <div class="links-flex-row">
-        <div class="link-container">
-            <div class="print-this">
-                <img class="print-this__icon" src='@routes.Assets.versioned("images/icon-print.svg")' alt="" aria-hidden="true"/>
-                <a id="print-link" class="print-this__link govuk-link govuk-link--no-underline govuk-link--no-visited-state" href="#" data-journey-click='print - click:Your National Insurance letter:@messages("label.print")'>
-                    @messages("label.print")
-                </a>
-            </div>
+    <div class="links-flex-row govuk-!-margin-bottom-3 hide-for-print">
+        <div class="print-this" hidden>
+            <img class="print-icon" src='@routes.Assets.versioned("images/icon-print.svg")' alt="" aria-hidden="true"/>
+            <a id="print-link" class="print-link govuk-link govuk-link--no-visited-state" href="#" data-journey-click='print - click:Your National Insurance letter:@messages("label.print")'>
+                @messages("label.print")
+            </a>
         </div>
-        <div class="link-container">
-            @if(saveNiLetterAsPdfLinkEnabled) {
-            <div class="save-this">
-                <a class="save-this__link govuk-link govuk-link--no-underline govuk-link--no-visited-state" href="/@frontendAppConfig.serviceName/print-letter/save-letter-as-pdf" data-journey-click='save - click:Your National Insurance letter:@messages("label.save_as_a_PDF")'>@messages("label.save_as_a_PDF")</a>
-            </div>
-            }
+        @if(saveNiLetterAsPdfLinkEnabled) {
+        <div class="save-this">
+            <a class="govuk-link govuk-link--no-visited-state" href="/@frontendAppConfig.serviceName/print-letter/save-letter-as-pdf" data-journey-click='save - click:Your National Insurance letter:@messages("label.save_as_a_PDF")'>@messages("label.save_as_a_PDF")</a>
         </div>
+        }
     </div>
 
     @niLetter(individualDetails, dateString, nino)

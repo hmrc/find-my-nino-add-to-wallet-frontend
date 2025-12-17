@@ -1,11 +1,3 @@
-.js-enabled .govuk-back-link {
-    visibility: visible;
-}
-
-.govuk-back-link {
-    visibility: hidden;
-}
-
 [class^="add-wallet"] {
     height: 3em;
 }

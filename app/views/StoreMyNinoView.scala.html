@@ -35,11 +35,7 @@
     trustedHelper: Option[TrustedHelper]
 )(implicit request: UserRequest[_], messages: Messages)
 
-@stylesheet = {
-    <link rel="stylesheet" href='@routes.Assets.versioned("stylesheets/partials/save-your-nino.css")'>
-}
-
-@layout(pageTitle = titleNoForm(messages("storeMyNino.title")), stylesheets = Some(stylesheet)) {
+@layout(pageTitle = titleNoForm(messages("storeMyNino.title")), stylesheets = None) {
     @h1("storeMyNino.heading")
 
     <div class="govuk-inset-text">

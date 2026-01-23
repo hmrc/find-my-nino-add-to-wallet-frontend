@@ -334,15 +334,14 @@
                 </fo:list-block>
                 <fo:block role="P"
                           space-after="6px"
-                          padding-before="6px"
-                          padding-after="6px">
+                          padding-before="6px">
                     @Messages("label.letter.more.details")
                 </fo:block>
 
                 <fo:block role="H2"
                           font-family="OpenSans-Bold"
                           font-weight="bold"
-                          padding-before="8px" padding-after="6px">
+                          padding-before="12px" padding-after="6px">
                     <fo:block>
                         @Messages("label.letter.use.app.heading")
                     </fo:block>
@@ -405,7 +404,7 @@
                 <fo:block role="H2"
                           font-family="OpenSans-Bold"
                           font-weight="bold"
-                          padding-before="8px"
+                          padding-before="12px"
                           padding-after="6px">
                     <fo:block>
                         @Messages("label.letter.child.trust.heading")
@@ -413,22 +412,20 @@
                 </fo:block>
                 <fo:block role="P"
                           space-after="5px"
-                          padding-before="6px"
-                          padding-after="6px">
+                          padding-before="6px">
                     @Messages("label.letter.child.trust.p")
                 </fo:block>
                 @if(lang.eq("en")) {
                     <fo:block role="H2"
                               font-family="OpenSans-Bold"
                               font-weight="bold"
-                              padding-before="8px"
+                              padding-before="12px"
                               padding-after="6px">
                         <fo:block>
                             @Messages("label.letter.welsh.heading")
                         </fo:block>
                     </fo:block>
                     <fo:block role="P"
-                              padding-after="6px"
                               padding-before="6px">
                         <fo:block>
                             @Messages("label.letter.welsh.p.pdf")
@@ -438,7 +435,7 @@
                 <fo:block role="H2"
                           font-family="OpenSans-Bold"
                           font-weight="bold"
-                          padding-before="8px"
+                          padding-before="12px"
                           padding-after="6px">
                     <fo:block>
                         @Messages("label.letter.protect.heading")

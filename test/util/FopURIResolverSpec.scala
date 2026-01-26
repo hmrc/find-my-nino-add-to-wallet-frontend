@@ -32,7 +32,7 @@ class FopURIResolverSpec extends SpecBase with MockitoSugar {
   }
 
   "Must return a valid Resource" in new Setup {
-    val inputResource = new URI("/pdf/niLetterXSL.xsl")
+    val inputResource = new URI("/pdf/logo/hmrc.pdf")
     val result        = fopURIResolver.getResource(inputResource)
 
     result mustBe a[Resource]

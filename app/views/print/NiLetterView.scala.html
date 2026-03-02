@@ -78,10 +78,10 @@ implicit request: Request[_], messages: play.api.i18n.Messages)
             <h3 class="govuk-heading-s">@messages("label.letter.use.app.heading")</h3>
             <p>@messages("label.letter.use.app.p1")</p>
             <p>@messages("label.letter.use.app.p2")</p>
-            <ol class="govuk-list govuk-list--number">
+            <ul class="govuk-list govuk-list--bullet">
                 <li>@messages("label.letter.use.app.l1")</li>
                 <li>@messages("label.letter.use.app.l2")</li>
-            </ol>
+            </ul>
             <h3 class="govuk-heading-s">@messages("label.letter.child.trust.heading")</h3>
             <p>@messages("label.letter.child.trust.p")</p>
             @if(messages.lang.language.equals("en")) {

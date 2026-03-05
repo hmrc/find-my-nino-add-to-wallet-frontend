@@ -14,7 +14,7 @@ The service consists of only 4 pages allowing you to:
 
 ### Note: Both Google and Apple integration should only be tested in staging or QA!
 
-The environments are pre-configured with the required Google and Apple cred`s via build jobs!
+The environments are pre-configured with the required Google and Apple creds via build jobs!
 
 For local development the Apple and Google pass creation is stubbed here (https://github.com/hmrc/sca-nino-stubs)
 

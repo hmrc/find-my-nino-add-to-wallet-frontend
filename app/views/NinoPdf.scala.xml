@@ -15,6 +15,7 @@
 <fo:root
         xmlns:fo="http://www.w3.org/1999/XSL/Format"
         xmlns:fox="http://xmlgraphics.apache.org/fop/extensions"
+        xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
         font-family="OpenSans"
         font-size="10.5pt"
         line-height="12pt"
@@ -359,15 +360,15 @@
                         <fo:list-item-label role="Lbl" end-indent="1em">
                             <fo:block>
                                 <fo:inline>
-                                    <fo:wrapper role="artifact">
-                                        &#8226;
-                                    </fo:wrapper>
+                                    <fo:wrapper role="artifact"><xsl:number level="single" format="1." count="fo:list-item"/></fo:wrapper>
                                 </fo:inline>
                             </fo:block>
                         </fo:list-item-label>
                         <fo:list-item-body role="LBody" start-indent="2em">
                             <fo:block>
-                                @Messages("label.letter.use.app.l1")
+                                <fo:block>
+                                    @Messages("label.letter.use.app.l1")
+                                </fo:block>
                             </fo:block>
                         </fo:list-item-body>
                     </fo:list-item>
@@ -377,9 +378,7 @@
                         <fo:list-item-label role="Lbl" end-indent="1em">
                             <fo:block>
                                 <fo:inline>
-                                    <fo:wrapper role="artifact">
-                                        &#8226;
-                                    </fo:wrapper>
+                                    <fo:wrapper role="artifact"><xsl:number level="single" format="1." count="fo:list-item"/></fo:wrapper>
                                 </fo:inline>
                             </fo:block>
                         </fo:list-item-label>

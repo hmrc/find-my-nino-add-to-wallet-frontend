@@ -349,49 +349,33 @@
                           padding-after="6px">
                     @Messages("label.letter.use.app.p2")
                 </fo:block>
+                @defining(Seq("label.letter.use.app.l1", "label.letter.use.app.l2")) { useAppList =>
                 <fo:list-block role="L"
                                provisional-distance-between-starts="0.3cm"
                                font-size="10pt"
                                line-height="10pt">
+                    @for((key, idx) <- useAppList.zipWithIndex) {
                     <fo:list-item padding-after="3px"
                                   padding-before="3px"
                                   role="LI">
                         <fo:list-item-label role="Lbl" end-indent="1em">
                             <fo:block>
                                 <fo:inline>
-                                    <fo:wrapper role="artifact">
-                                        &#8226;
-                                    </fo:wrapper>
-                                </fo:inline>
-                            </fo:block>
-                        </fo:list-item-label>
-                        <fo:list-item-body role="LBody" start-indent="2em">
-                            <fo:block>
-                                @Messages("label.letter.use.app.l1")
-                            </fo:block>
-                        </fo:list-item-body>
-                    </fo:list-item>
-                    <fo:list-item padding-after="3px"
-                                  padding-before="3px"
-                                  role="LI">
-                        <fo:list-item-label role="Lbl" end-indent="1em">
-                            <fo:block>
-                                <fo:inline>
-                                    <fo:wrapper role="artifact">
-                                        &#8226;
-                                    </fo:wrapper>
+                                    <fo:wrapper role="artifact">@( (idx + 1).toString + "." )</fo:wrapper>
                                 </fo:inline>
                             </fo:block>
                         </fo:list-item-label>
                         <fo:list-item-body role="LBody" start-indent="2em">
                             <fo:block>
                                 <fo:block>
-                                    @Messages("label.letter.use.app.l2")
+                                    @Messages(key)
                                 </fo:block>
                             </fo:block>
                         </fo:list-item-body>
                     </fo:list-item>
+                    }
                 </fo:list-block>
+                }
                 <fo:block role="H2"
                           font-family="OpenSans-Bold"
                           font-weight="bold"

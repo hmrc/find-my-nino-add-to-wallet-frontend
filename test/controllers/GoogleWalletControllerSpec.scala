@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,9 +25,9 @@ import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{reset, when}
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject
+import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-
 import services.IndividualDetailsService
 import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolment, Enrolments}
 import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
@@ -48,6 +48,8 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
     reset(mockScaWrapperDataConnector)
     when(mockScaWrapperDataConnector.wrapperDataWithMessages()(any(), any(), any()))
       .thenReturn(Future.successful(Some(wrapperDataResponse)))
+    when(mockScaWrapperDataConnector.serviceNavigationToggle()(any(), any()))
+      .thenReturn(Future.successful(Json.obj("useNewServiceNavigation" -> false)))
 
     reset(mockGooglePassConnector)
     when(mockGooglePassConnector.getGooglePassUrl(eqTo(passId))(any(), any()))

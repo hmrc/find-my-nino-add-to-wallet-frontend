@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,9 +25,9 @@ import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{reset, times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject
+import play.api.libs.json.Json
 import play.api.test.Helpers.*
 import play.api.test.{DefaultAwaitTimeout, FakeRequest}
-
 import services.{IndividualDetailsService, NPSService}
 import uk.gov.hmrc.auth.core.{ConfidenceLevel, Enrolment, Enrolments}
 import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
@@ -52,6 +52,8 @@ class StoreMyNinoControllerSpec
     reset(mockScaWrapperDataConnector)
     when(mockScaWrapperDataConnector.wrapperDataWithMessages()(any(), any(), any()))
       .thenReturn(Future.successful(Some(wrapperDataResponse)))
+    when(mockScaWrapperDataConnector.serviceNavigationToggle()(any(), any()))
+      .thenReturn(Future.successful(Json.obj("useNewServiceNavigation" -> false)))
 
     reset(mockIndividualDetailsService)
     when(mockIndividualDetailsService.getIdData(any(), any())(any(), any()))

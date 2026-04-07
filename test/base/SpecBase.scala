@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -138,7 +138,8 @@ class SpecBase extends WireMockSupport with MockitoSugar with GuiceOneAppPerSuit
     ptaMenuConfig,
     List.empty,
     List.empty,
-    Some(2)
+    Some(2),
+    None
   )
 
   val requestAttributeMap: TypedMap = TypedMap(

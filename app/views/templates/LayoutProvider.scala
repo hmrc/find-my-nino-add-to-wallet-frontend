@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import play.api.Logging
 import play.api.i18n.Messages
 import play.api.mvc.Request
 import play.twirl.api.{Html, HtmlFormat}
-import uk.gov.hmrc.auth.core.retrieve.v2.TrustedHelper
+import uk.gov.hmrc.sca.models.TrustedHelper
 import uk.gov.hmrc.hmrcfrontend.views.viewmodels.hmrcstandardpage.ServiceURLs
 import uk.gov.hmrc.sca.services.WrapperService
 import views.html.components.{AdditionalScript, HeadBlock}

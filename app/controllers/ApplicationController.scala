@@ -20,13 +20,13 @@ import com.google.inject.Inject
 import config.FrontendAppConfig
 import connectors.FandFConnector
 import play.api.i18n.I18nSupport
-import play.api.mvc.*
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request, Result}
 import play.api.{Configuration, Environment}
-import services.*
+import services.{IdentityVerificationFrontendService, IdentityVerificationResponse, PrecondFailed, Success, TechnicalIssue}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl.idFunctor
 import uk.gov.hmrc.play.bootstrap.binders.{OnlyRelative, RedirectUrl}
-import views.html.identity.*
+import views.html.identity.{SuccessView, TechnicalIssuesView};
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -35,10 +35,6 @@ class ApplicationController @Inject() (
   authConnector: AuthConnector,
   fandFConnector: FandFConnector,
   successView: SuccessView,
-  cannotConfirmIdentityView: CannotConfirmIdentityView,
-  failedIvIncompleteView: FailedIvIncompleteView,
-  lockedOutView: LockedOutView,
-  timeOutView: TimeOutView,
   technicalIssuesView: TechnicalIssuesView
 )(implicit
   config: Configuration,
@@ -68,10 +64,12 @@ class ApplicationController @Inject() (
             .getIVJourneyStatus(jid)
             .fold(
               error => {
-                logErrorMessage(s"Call to IdentityVerificationFrontendService failed: ${error.message}")
+                logErrorMessage(
+                  s"Call to IdentityVerificationFrontendService failed for journeyId: $jid. ${error.message}"
+                )
                 InternalServerError(technicalIssuesView(retryUrl))
               },
-              response => handleIVResponse(response, continueUrl, retryUrl)
+              response => handleIVResponse(jid, response, continueUrl, retryUrl)
             )
 
         case None =>
@@ -81,6 +79,7 @@ class ApplicationController @Inject() (
     }
 
   private def handleIVResponse(
+    journeyId: String,
     response: IdentityVerificationResponse,
     continueUrl: Option[RedirectUrl],
     retryUrl: String
@@ -95,28 +94,23 @@ class ApplicationController @Inject() (
         )
       )
 
-    case InsufficientEvidence | UserAborted | FailedMatching | PrecondFailed =>
-      logErrorMessage(response.toString)
-      Unauthorized(cannotConfirmIdentityView(retryUrl))
-
-    case Incomplete =>
-      logErrorMessage(Incomplete.toString)
-      Unauthorized(failedIvIncompleteView(retryUrl))
-
-    case LockedOut =>
-      logErrorMessage(LockedOut.toString)
-      Unauthorized(lockedOutView(allowContinue = false))
-
-    case Timeout =>
-      logErrorMessage(Timeout.toString)
-      Unauthorized(timeOutView(retryUrl))
-
     case TechnicalIssue =>
-      logErrorMessage("TechnicalIssue response from IdentityVerificationFrontendService")
-      FailedDependency(technicalIssuesView(retryUrl))
+      logger.warn(s"TechnicalIssue response from IdentityVerificationFrontendService for journeyId: $journeyId")
+      InternalServerError(technicalIssuesView(retryUrl))
 
-    case _ =>
-      logErrorMessage("unknown status from IdentityVerificationFrontendService")
+    case PrecondFailed =>
+      logger.error(
+        s"PreconditionFailed response from IdentityVerificationFrontendService for journeyId: $journeyId. " +
+          "This outcome should not occur because the user should not have been able to enter the service. " +
+          "Investigate the identity verification journey for this journeyId."
+      )
+      InternalServerError(technicalIssuesView(retryUrl))
+
+    case other =>
+      logErrorMessage(
+        s"Unexpected IV outcome '$other' for journeyId: $journeyId. " +
+          "This outcome is no longer handled by this service and is expected to be resolved within identity verification."
+      )
       FailedDependency(technicalIssuesView(retryUrl))
   }
 

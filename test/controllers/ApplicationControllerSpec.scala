@@ -85,10 +85,6 @@ class ApplicationControllerSpec extends SpecBase with IndividualDetailsFixtures 
         injected[AuthConnector],
         injected[FandFConnector],
         injected[SuccessView],
-        injected[CannotConfirmIdentityView],
-        injected[FailedIvIncompleteView],
-        injected[LockedOutView],
-        injected[TimeOutView],
         injected[TechnicalIssuesView]
       )(config, env, ec, injected[MessagesControllerComponents], mock[FrontendAppConfig])
 
@@ -144,54 +140,7 @@ class ApplicationControllerSpec extends SpecBase with IndividualDetailsFixtures 
 
       }
 
-      "showUpliftJourneyOutcome should return LockedOut when IV journey status is LockedOut" in new LocalSetup {
-
-        running(application) {
-          when(mockIdentityVerificationFrontendService.getIVJourneyStatus(any())(any(), any()))
-            .thenReturn(
-              EitherT[Future, UpstreamErrorResponse, IdentityVerificationResponse](Future.successful(Right(LockedOut)))
-            )
-
-          val request = FakeRequest(GET, "?journeyId=XXXXX&token=XXXXXX")
-          val result  = controller.showUpliftJourneyOutcome(None)(request)
-
-          assert(status(result) == UNAUTHORIZED)
-        }
-      }
-
-      "showUpliftJourneyOutcome should return Unauthorized when IV journey status is UserAborted" in new LocalSetup {
-
-        running(application) {
-          when(mockIdentityVerificationFrontendService.getIVJourneyStatus(any())(any(), any()))
-            .thenReturn(
-              EitherT[Future, UpstreamErrorResponse, IdentityVerificationResponse](
-                Future.successful(Right(UserAborted))
-              )
-            )
-
-          val request = FakeRequest(GET, "?journeyId=XXXXX&token=XXXXXX")
-          val result  = controller.showUpliftJourneyOutcome(None)(request)
-
-          assert(status(result) == UNAUTHORIZED)
-        }
-      }
-
-      "showUpliftJourneyOutcome should return Unauthorized when IV journey status is Incomplete" in new LocalSetup {
-
-        running(application) {
-          when(mockIdentityVerificationFrontendService.getIVJourneyStatus(any())(any(), any()))
-            .thenReturn(
-              EitherT[Future, UpstreamErrorResponse, IdentityVerificationResponse](Future.successful(Right(Incomplete)))
-            )
-
-          val request = FakeRequest(GET, "?journeyId=XXXXX&token=XXXXXX")
-          val result  = controller.showUpliftJourneyOutcome(None)(request)
-
-          assert(status(result) == UNAUTHORIZED)
-        }
-      }
-
-      "showUpliftJourneyOutcome should return Unauthorized when IV journey status is PrecondFailed" in new LocalSetup {
+      "showUpliftJourneyOutcome should return ServiceUnavailable(500) when IV journey status is PrecondFailed" in new LocalSetup {
 
         running(application) {
           when(mockIdentityVerificationFrontendService.getIVJourneyStatus(any())(any(), any()))
@@ -204,45 +153,11 @@ class ApplicationControllerSpec extends SpecBase with IndividualDetailsFixtures 
           val request = FakeRequest(GET, "?journeyId=XXXXX&token=XXXXXX")
           val result  = controller.showUpliftJourneyOutcome(None)(request)
 
-          assert(status(result) == UNAUTHORIZED)
+          assert(status(result) == INTERNAL_SERVER_ERROR)
         }
       }
 
-      "showUpliftJourneyOutcome should return Unauthorized when IV journey status is InsufficientEvidence" in new LocalSetup {
-
-        running(application) {
-          when(mockIdentityVerificationFrontendService.getIVJourneyStatus(any())(any(), any()))
-            .thenReturn(
-              EitherT[Future, UpstreamErrorResponse, IdentityVerificationResponse](
-                Future.successful(Right(InsufficientEvidence))
-              )
-            )
-
-          val request = FakeRequest(GET, "?journeyId=XXXXX&token=XXXXXX")
-          val result  = controller.showUpliftJourneyOutcome(None)(request)
-
-          assert(status(result) == UNAUTHORIZED)
-        }
-      }
-
-      "showUpliftJourneyOutcome should return Unauthorized when IV journey status is FailedMatching" in new LocalSetup {
-
-        running(application) {
-          when(mockIdentityVerificationFrontendService.getIVJourneyStatus(any())(any(), any()))
-            .thenReturn(
-              EitherT[Future, UpstreamErrorResponse, IdentityVerificationResponse](
-                Future.successful(Right(FailedMatching))
-              )
-            )
-
-          val request = FakeRequest(GET, "?journeyId=XXXXX&token=XXXXXX")
-          val result  = controller.showUpliftJourneyOutcome(None)(request)
-
-          assert(status(result) == UNAUTHORIZED)
-        }
-      }
-
-      "showUpliftJourneyOutcome should return TechnicalIssue(424) when IV journey outcome was TechnicalIssues(500)" in new LocalSetup {
+      "showUpliftJourneyOutcome should return TechnicalIssue(500) when IV journey outcome was TechnicalIssues(500)" in new LocalSetup {
 
         override lazy val getIVJourneyStatusResponse
           : EitherT[Future, UpstreamErrorResponse, IdentityVerificationResponse] =
@@ -256,24 +171,9 @@ class ApplicationControllerSpec extends SpecBase with IndividualDetailsFixtures 
             )
 
           val result = controller.showUpliftJourneyOutcome(None)(buildFakeRequestWithAuth("GET", "/?journeyId=XXXXX"))
-          status(result) mustBe FAILED_DEPENDENCY
+          status(result) mustBe INTERNAL_SERVER_ERROR
         }
 
-      }
-
-      "showUpliftJourneyOutcome should return Timeout when IV journey status is UserAborted" in new LocalSetup {
-
-        running(application) {
-          when(mockIdentityVerificationFrontendService.getIVJourneyStatus(any())(any(), any()))
-            .thenReturn(
-              EitherT[Future, UpstreamErrorResponse, IdentityVerificationResponse](Future.successful(Right(Timeout)))
-            )
-
-          val request = FakeRequest(GET, "?journeyId=XXXXX&token=XXXXXX")
-          val result  = controller.showUpliftJourneyOutcome(None)(request)
-
-          assert(status(result) == UNAUTHORIZED)
-        }
       }
 
       "showUpliftJourneyOutcome should return TechnicalIssue(424) when IV journey status is some other error" in new LocalSetup {

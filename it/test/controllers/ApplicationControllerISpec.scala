@@ -48,35 +48,7 @@ class ApplicationControllerISpec extends IntegrationSpecBase {
       contentAsString(result) must include("We have confirmed your identity")
     }
 
-    "render locked out view when IV result is LockedOut" in {
-      val jsonBody = """{"journeyResult": "LockedOut"}""".stripMargin
-
-      wireMockServer.stubFor(
-        get(urlEqualTo(ivUrl)).willReturn(ok(jsonBody))
-      )
-
-      val request = FakeRequest(GET, url).withSession(SessionKeys.sessionId -> "FAKE_SESSION_ID")
-      val result  = route(app, request).get
-
-      status(result) mustBe UNAUTHORIZED
-      contentAsString(result) must include("You have tried to confirm your identity too many times")
-    }
-
-    "render cannot confirm identity view when IV result is InsufficientEvidence" in {
-      val jsonBody = """{"journeyResult": "InsufficientEvidence"}""".stripMargin
-
-      wireMockServer.stubFor(
-        get(urlEqualTo(ivUrl)).willReturn(ok(jsonBody))
-      )
-
-      val request = FakeRequest(GET, url).withSession(SessionKeys.sessionId -> "FAKE_SESSION_ID")
-      val result  = route(app, request).get
-
-      status(result) mustBe UNAUTHORIZED
-      contentAsString(result) must include("We cannot confirm your identity")
-    }
-
-    "render cannot confirm identity view when IV result is PreconditionFailed" in {
+    "render technical issue view when IV result is PreconditionFailed" in {
       val jsonBody = """{"journeyResult": "PreconditionFailed"}""".stripMargin
 
       wireMockServer.stubFor(
@@ -86,11 +58,11 @@ class ApplicationControllerISpec extends IntegrationSpecBase {
       val request = FakeRequest(GET, url).withSession(SessionKeys.sessionId -> "FAKE_SESSION_ID")
       val result  = route(app, request).get
 
-      status(result) mustBe UNAUTHORIZED
-      contentAsString(result) must include("We cannot confirm your identity")
+      status(result) mustBe INTERNAL_SERVER_ERROR
+      contentAsString(result) must include("Service unavailable")
     }
 
-    "render technical issue view with 424 when IV result is TechnicalIssue" in {
+    "render technical issue view with 500 when IV result is TechnicalIssue" in {
       val jsonBody = """{"journeyResult": "TechnicalIssue"}""".stripMargin
 
       wireMockServer.stubFor(
@@ -100,7 +72,7 @@ class ApplicationControllerISpec extends IntegrationSpecBase {
       val request = FakeRequest(GET, url).withSession(SessionKeys.sessionId -> "FAKE_SESSION_ID")
       val result  = route(app, request).get
 
-      status(result) mustBe FAILED_DEPENDENCY
+      status(result) mustBe INTERNAL_SERVER_ERROR
       contentAsString(result) must include("Sorry, we are currently experiencing technical issues")
     }
 

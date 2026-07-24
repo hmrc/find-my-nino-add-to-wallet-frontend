@@ -10,6 +10,25 @@ The service consists of only 4 pages allowing you to:
 - Generate and save your National Insurance number letter in PDF or HTML
 - Add your National Insurance number to your Google Wallet and Apple Wallet
 
+Requirements
+------------
+
+This service is written in [Scala 3.x](http://www.scala-lang.org/) and [Play 3.x](http://playframework.com/), so needs at least a [JRE 21](http://www.oracle.com/technetwork/java/javase/downloads/index.html) to run.
+
+How to test the project
+===================
+
+Unit Tests
+----------
+- **Unit test the entire test suite:**  `sbt test`
+
+- **Unit test a single spec file:**  sbt "test:testOnly *fileName"   (for e.g : `sbt "test:testOnly *AppleWalletControllerSpec"`)
+
+
+Integration tests
+----------------
+- **`sbt it/test`**
+
 ## Prerequisites:
 
 ### Note: Both Google and Apple integration should only be tested in staging or QA!
@@ -46,38 +65,38 @@ You would need a **Google Cloud service account key**, you can potentially creat
 To create a Google Cloud service account key for testing:
 
 1. Log in to a Google Account:
-    - Use a Google account (preferably a personal account you have access to).
-      It's recommended to use Chrome for the best compatibility.
+   - Use a Google account (preferably a personal account you have access to).
+     It's recommended to use Chrome for the best compatibility.
 
 2. Visit the Google Cloud Console:
-    - Go to https://console.cloud.google.com.
+   - Go to https://console.cloud.google.com.
 
 3. Create a New Cloud Project (if you don’t have one):
-    - Click on the project dropdown at the top of the page.
-    - Select "New Project".
-    - Fill in the required information (Project name, etc.) and click "Create".
-    - If you already have an existing project, select it from the dropdown.
+   - Click on the project dropdown at the top of the page.
+   - Select "New Project".
+   - Fill in the required information (Project name, etc.) and click "Create".
+   - If you already have an existing project, select it from the dropdown.
 
 4. Navigate to the IAM & Admin Panel:
-    - In the left-hand navigation menu, go to "IAM & Admin".
+   - In the left-hand navigation menu, go to "IAM & Admin".
 
 5. Navigate to the Service Accounts Panel:
-    - In the IAM & Admin menu, select "Service Accounts".
+   - In the IAM & Admin menu, select "Service Accounts".
 
 6. Create a New Service Account (if needed):
-    - Click on the "Create Service Account" button at the top of the page.
-    - Fill in the required information (Service account name, ID, description).
-    - Click "Create and Continue".
-    - Optionally, grant roles to your service account, then click "Continue".
-    - Click "Done" to finish creating the service account.
+   - Click on the "Create Service Account" button at the top of the page.
+   - Fill in the required information (Service account name, ID, description).
+   - Click "Create and Continue".
+   - Optionally, grant roles to your service account, then click "Continue".
+   - Click "Done" to finish creating the service account.
 
 7. Generate a New Key for the Service Account:
-    - Find the service account you created in the list.
-    - Click on the email of the service account to open its details.
-    - Go to the "Keys" tab.
-    - Click "Add Key" and select "Create new key".
-    - Choose the key type (JSON is recommended) and click "Create".
-    - A JSON file containing the key will be downloaded to your computer.
+   - Find the service account you created in the list.
+   - Click on the email of the service account to open its details.
+   - Go to the "Keys" tab.
+   - Click "Add Key" and select "Create new key".
+   - Choose the key type (JSON is recommended) and click "Create".
+   - A JSON file containing the key will be downloaded to your computer.
 
 
 8. Base64 encode the JSON file and use it as env_variable with the key: “GOOGLE_PASS_KEY”, for local testing you can add a export command in your shell init file, for example .zshrc or .bashrc, the export command should look like this :

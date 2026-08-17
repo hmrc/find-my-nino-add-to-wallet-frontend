@@ -25,7 +25,6 @@ import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{reset, when}
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject
-import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import services.IndividualDetailsService
@@ -48,8 +47,6 @@ class GoogleWalletControllerSpec extends SpecBase with IndividualDetailsFixtures
     reset(mockScaWrapperDataConnector)
     when(mockScaWrapperDataConnector.wrapperDataWithMessages()(any(), any(), any()))
       .thenReturn(Future.successful(Some(wrapperDataResponse)))
-    when(mockScaWrapperDataConnector.serviceNavigationToggle()(any(), any()))
-      .thenReturn(Future.successful(Json.obj("useNewServiceNavigation" -> false)))
 
     reset(mockGooglePassConnector)
     when(mockGooglePassConnector.getGooglePassUrl(eqTo(passId))(any(), any()))

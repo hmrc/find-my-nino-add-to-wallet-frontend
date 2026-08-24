@@ -17,13 +17,14 @@
 package controllers
 
 import base.IntegrationSpecBase
-import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.client.WireMock.*
 import config.FrontendAppConfig
 import controllers.auth.requests.UserRequest
 import controllers.auth.routes
 import models.individualDetails.IndividualDetails
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
+import org.jsoup.select.Elements
 import org.scalatest.Assertion
 import play.api.i18n.{Lang, Messages, MessagesApi, MessagesImpl}
 import play.api.mvc.{AnyContentAsEmpty, Request}
@@ -109,7 +110,13 @@ class GoogleWalletControllerISpec extends IntegrationSpecBase {
 
     "rendering the view" must {
       "render the welsh language toggle" in new LocalSetup {
-        assertContainsLink(doc, "Cymraeg", "/hmrc-frontend/language/cy")
+        val languageLinks: Elements = doc.select("a[href*='/language/']")
+        val languageText: String    = languageLinks.eachText().toString
+        assert(
+          languageText.contains("CYM") || languageText.contains("Cymraeg") || languageText.contains("Gymraeg"),
+          s"\n\nWelsh language toggle text was not rendered: $languageText\n"
+        )
+        languageLinks.eachAttr("href") must contain("/save-your-national-insurance-number/hmrc-frontend/language/cy")
       }
 
       "render the google pass QR code on desktop" in new LocalSetup {

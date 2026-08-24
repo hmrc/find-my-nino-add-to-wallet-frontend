@@ -22,6 +22,7 @@ import play.api.Logging
 import play.api.i18n.Messages
 import play.api.mvc.Request
 import play.twirl.api.{Html, HtmlFormat}
+import uk.gov.hmrc.sca.config.BackLinkConfig
 import uk.gov.hmrc.sca.models.TrustedHelper
 import uk.gov.hmrc.hmrcfrontend.views.viewmodels.hmrcstandardpage.ServiceURLs
 import uk.gov.hmrc.sca.services.WrapperService
@@ -88,7 +89,10 @@ class NewLayoutProvider @Inject() (
       disableSessionExpired = disableSessionExpired,
       content = contentBlock,
       pageTitle = Some(pageTitle),
-      showBackLinkJS = showBackLink,
+      backLinkConfig =
+        if (!showBackLink) None
+        else if (backLinkUrl == "#") Some(BackLinkConfig.JsBack)
+        else Some(BackLinkConfig.UrlBack(backLinkUrl)),
       serviceURLs = ServiceURLs(
         serviceUrl = Some("/personal-account"),
         signOutUrl = Some(appConfig.signOutUrl)

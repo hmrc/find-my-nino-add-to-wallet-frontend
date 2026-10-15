@@ -4,3 +4,4 @@ test-repositories:
   - find-my-nino-add-to-wallet-performance-test
   - find-your-ni-number-performance-tests
   - find-my-nino-add-to-wallet-acceptance-tests
+serviceNowMapping: SNSVC0016779
